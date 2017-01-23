@@ -1,0 +1,8 @@
+Main developer: 
+   Davide Faconti
+   
+Contributors:
+   Arturo Martín-de-Nicolás
+   Dorian Scholz 
+   Kartik Mohta
+   Mikael Arguedas

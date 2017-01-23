@@ -1,0 +1,48 @@
+<RCC>
+    <qresource prefix="/icons">
+        <file>resources/ban_circle.png</file>
+        <file>resources/chart.png</file>
+        <file>resources/check.png</file>
+        <file>resources/checkboxalt.png</file>
+        <file>resources/circle_arrow_right.png</file>
+        <file>resources/cog.png</file>
+        <file>resources/line_chart_32px.png</file>
+        <file>resources/line_chart_48px.png</file>
+        <file>resources/line_chart_64px.png</file>
+        <file>resources/line_chart_tracker.png</file>
+        <file>resources/Line_tracker.png</file>
+        <file>resources/link.png</file>
+        <file>resources/list_alt_32px.png</file>
+        <file>resources/loader.gif</file>
+        <file>resources/mergecells_32px.png</file>
+        <file>resources/office_chart_line_stacked.png</file>
+        <file>resources/office_chart_lines.png</file>
+        <file>resources/open_new_window.png</file>
+        <file>resources/rangeX.png</file>
+        <file>resources/resize_horizontal.png</file>
+        <file>resources/resize_vertical.png</file>
+        <file>resources/settingsfour_gears_32px.png</file>
+        <file>resources/stacks_32px.png</file>
+        <file>resources/undo_32px.png</file>
+        <file>resources/zoom_in_32px.png</file>
+        <file>resources/zoom_out_32px.png</file>
+        <file>resources/move.png</file>
+        <file>resources/add_column.png</file>
+        <file>resources/add_row.png</file>
+        <file>resources/add_tab.png</file>
+        <file>resources/grid.png</file>
+        <file>resources/expand@2x.png</file>
+        <file>resources/filesave@2x.png</file>
+        <file>resources/zoom@2x.png</file>
+        <file>resources/run_small@2x.png</file>
+        <file>resources/splitbutton_horizontal@2x.png</file>
+        <file>resources/splitbutton_vertical@2x.png</file>
+        <file>resources/iconoverlay_add@2x.png</file>
+        <file>resources/clean_pane_small@2x.png</file>
+        <file>resources/columns.png</file>
+        <file>resources/rows.png</file>
+    </qresource>
+    <qresource prefix="/splash">
+        <file>resources/splash.jpg</file>
+    </qresource>
+</RCC>

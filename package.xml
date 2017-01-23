@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<package>
+<name>plotjuggler</name>
+<version>0.8.0</version>
+<description>PlotJuggler: juggle with data</description>
+
+<maintainer email="davide.faconti@gmail.com">Davide Faconti</maintainer>
+<license>LGPLv3</license>
+
+<url type="website">https://github.com/facontidavide/PlotJuggler</url>
+
+<author email="davide.faconti@gmail.com">Davide Faconti</author>
+
+<buildtool_depend>catkin</buildtool_depend>
+
+<build_depend>rosbag</build_depend>
+<build_depend>rosbag_storage</build_depend>
+<build_depend>roscpp</build_depend>
+<build_depend>roscpp_serialization</build_depend>
+<build_depend>rostime</build_depend>
+<build_depend>topic_tools</build_depend>
+<build_depend>ros_type_introspection</build_depend>
+
+<run_depend>rosbag</run_depend>
+<run_depend>rosbag_storage</run_depend>
+<run_depend>roscpp</run_depend>
+<run_depend>roscpp_serialization</run_depend>
+<run_depend>rostime</run_depend>
+<run_depend>topic_tools</run_depend>
+<run_depend>ros_type_introspection</run_depend>
+
+
+<!-- The export tag contains other, unspecified, tags -->
+<export>
+<!-- Other tools can request additional information be placed here -->
+
+</export>
+</package>
