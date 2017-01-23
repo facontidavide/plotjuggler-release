@@ -1,0 +1,8 @@
+ros-indigo-plotjuggler (0.8.0-1trusty) trusty; urgency=high
+
+  * First official beta of PJ
+  * Contributors: Arturo Martín-de-Nicolás, Davide Faconti, Kartik Mohta, Mikael Arguedas
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Sun, 22 Jan 2017 23:00:00 -0000
+
+
