@@ -29,7 +29,6 @@ int main(int argc, char *argv[])
 {
   QApplication app(argc, argv);
   QCoreApplication::setApplicationName("PlotJuggler");
-  QCoreApplication::setApplicationVersion("0.7.0");
 
   qApp->setStyleSheet(QString("QToolTip {\n"
                               "   border: 1px solid black;\n"
@@ -39,7 +38,6 @@ int main(int argc, char *argv[])
   QCommandLineParser parser;
   parser.setApplicationDescription("PlotJuggler ");
   parser.addHelpOption();
-  parser.addVersionOption();
 
   QCommandLineOption nosplash_option(QStringList() << "nosplash",
                                  QCoreApplication::translate("main", "Don't display the splashscreen"));

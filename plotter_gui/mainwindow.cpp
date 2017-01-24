@@ -1003,7 +1003,7 @@ void MainWindow::onActionLoadLayout(bool reload_previous)
 
 void MainWindow::onUndoInvoked( )
 {
-    qDebug() << "on_UndoInvoked "<<_undo_states.size() << " -> " <<_undo_states.size()-1;
+   // qDebug() << "on_UndoInvoked "<<_undo_states.size() << " -> " <<_undo_states.size()-1;
 
     _disable_undo_logging = true;
     if( _undo_states.size() > 1)

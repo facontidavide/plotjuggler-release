@@ -27,7 +27,7 @@ public:
 
 QT_BEGIN_NAMESPACE
 
-#define DataRead_iid "com.icarustechnology.Superplotter.DataLoader"
+#define DataRead_iid "com.icarustechnology.PlotJuggler.DataLoader"
 
 Q_DECLARE_INTERFACE(DataLoader, DataRead_iid)
 
