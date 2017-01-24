@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
 <name>plotjuggler</name>
-<version>0.8.0</version>
+<version>0.8.1</version>
 <description>PlotJuggler: juggle with data</description>
 
 <maintainer email="davide.faconti@gmail.com">Davide Faconti</maintainer>
@@ -20,6 +20,8 @@
 <build_depend>rostime</build_depend>
 <build_depend>topic_tools</build_depend>
 <build_depend>ros_type_introspection</build_depend>
+<build_depend>qtbase5-dev</build_depend>
+
 
 <run_depend>rosbag</run_depend>
 <run_depend>rosbag_storage</run_depend>
@@ -28,7 +30,7 @@
 <run_depend>rostime</run_depend>
 <run_depend>topic_tools</run_depend>
 <run_depend>ros_type_introspection</run_depend>
-
+<run_depend>qtbase5-dev</run_depend>
 
 <!-- The export tag contains other, unspecified, tags -->
 <export>
