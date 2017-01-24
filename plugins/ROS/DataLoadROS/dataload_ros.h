@@ -12,7 +12,7 @@
 class  DataLoadROS: public QObject, DataLoader
 {
     Q_OBJECT
-    Q_PLUGIN_METADATA(IID "com.icarustechnology.Superplotter.DataLoader" "../dataloader.json")
+    Q_PLUGIN_METADATA(IID "com.icarustechnology.PlotJuggler.DataLoader" "../dataloader.json")
     Q_INTERFACES(DataLoader)
 
 public:
