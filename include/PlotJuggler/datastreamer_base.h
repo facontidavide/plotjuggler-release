@@ -28,7 +28,7 @@ public:
 
 QT_BEGIN_NAMESPACE
 
-#define DataStream_iid "com.icarustechnology.Superplotter.DataStreamer"
+#define DataStream_iid "com.icarustechnology.PlotJuggler.DataStreamer"
 
 Q_DECLARE_INTERFACE(DataStreamer, DataStream_iid)
 

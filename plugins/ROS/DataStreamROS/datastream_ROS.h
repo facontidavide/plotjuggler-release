@@ -11,7 +11,7 @@
 class  DataStreamROS: public QObject, DataStreamer
 {
     Q_OBJECT
-    Q_PLUGIN_METADATA(IID "com.icarustechnology.Superplotter.DataStreamer" "../datastreamer.json")
+    Q_PLUGIN_METADATA(IID "com.icarustechnology.PlotJuggler.DataStreamer" "../datastreamer.json")
     Q_INTERFACES(DataStreamer)
 
 public:

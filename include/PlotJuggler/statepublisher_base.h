@@ -21,7 +21,7 @@ public:
 
 QT_BEGIN_NAMESPACE
 
-#define StatePublisher_iid "com.icarustechnology.Superplotter.StatePublisher"
+#define StatePublisher_iid "com.icarustechnology.PlotJuggler.StatePublisher"
 
 Q_DECLARE_INTERFACE(StatePublisher, StatePublisher_iid)
 
