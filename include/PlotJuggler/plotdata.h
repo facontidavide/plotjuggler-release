@@ -156,18 +156,12 @@ inline bool PlotDataGeneric<Time, Value>::flushAsyncBuffer()
 template < typename Time, typename Value>
 inline void PlotDataGeneric<Time, Value>::updateCapacityBasedOnMaxTime()
 {
-  const long sizeX      = _x_points.size();
-/*
-  if( sizeX >= 2 &&
-      _max_range_X != std::numeric_limits<Time>::max())
-  {
-    Time rangeX = _x_points.back() - _x_points.front();
-    while( rangeX > _max_range_X){
-        _x_points.pop_front();
-        _y_points.pop_front();
-        rangeX = _x_points.back() - _x_points.front();
-    }
-  }*/
+	while( _x_points.size() >= 2 &&
+		   (_x_points.back() - _x_points.front())> _max_range_X)
+	{
+		_x_points.pop_front();
+		_y_points.pop_front();
+	}
 }
 
 template < typename Time, typename Value>
