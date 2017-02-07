@@ -105,7 +105,7 @@ void DataStreamSample::loop()
 
             auto& plot = it.second;
             const double t = _simulated_time;
-            double y =  A*sin(B*t + C) +D*t*0.02;
+            double y =  A*sin(B*t + C) +D*t*0.05;
 
             if( _enabled ){
                 // IMPORTANT: don't use pushBack(), it may cause a segfault
