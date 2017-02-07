@@ -136,8 +136,8 @@ void MainWindow::getMaximumRangeX(double* minX, double* maxX)
     {
         auto rangeX = plots[i]->maximumRangeX();
 
-        if( *minX > rangeX.first )    *minX = rangeX.first ;
-        if( *maxX < rangeX.second )   *maxX = rangeX.second;
+        if( *minX > rangeX.min )   *minX = rangeX.min ;
+        if( *maxX < rangeX.max )   *maxX = rangeX.max;
     }
 }
 
@@ -1195,7 +1195,7 @@ void MainWindow::onReplotRequested()
     {
         _replot_timer->setSingleShot(true);
         _replot_timer->stop( );
-        _replot_timer->start( 10 );
+        _replot_timer->start( 20 );
     }
 }
 
