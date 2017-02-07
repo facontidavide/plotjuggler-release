@@ -32,9 +32,9 @@ public:
 
     void updateData(bool force_transform);
 
-    PlotData::RangeTime getRangeX();
+    PlotData::RangeTimeOpt getRangeX();
 
-    PlotData::RangeValue getRangeY(int first_index, int last_index );
+    PlotData::RangeValueOpt getRangeY(int first_index, int last_index );
 
     typedef enum{
       noTransform,
