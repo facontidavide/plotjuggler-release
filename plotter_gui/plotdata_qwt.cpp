@@ -60,7 +60,8 @@ QRectF PlotDataQwt::maximumBoundingRect(double min_X, double max_X)
       return QRectF();
     }
 
-    QRectF rect ( range_X->min,  range_Y->min,
+    QRectF rect ( range_X->min,
+                  range_Y->min,
                   range_X->max - range_X->min,
                   range_Y->max - range_Y->min );
     return rect;
@@ -127,23 +128,23 @@ void PlotDataQwt::updateData(bool force_transform)
   }
 }
 
-PlotData::RangeTime PlotDataQwt::getRangeX()
+PlotData::RangeTimeOpt PlotDataQwt::getRangeX()
 {
   // std::lock_guard<std::mutex> lock(_mutex);
   if( this->size() < 2 )
-    return  PlotData::RangeTime() ;
+    return  PlotData::RangeTimeOpt() ;
   else
-    return  PlotData::RangeTime( { sample(0).x(), sample( this->size() -1).x() } );
+    return  PlotData::RangeTimeOpt( { sample(0).x(), sample( this->size() -1).x() } );
 }
 
 
 
 
-PlotData::RangeValue PlotDataQwt::getRangeY(int first_index, int last_index)
+PlotData::RangeValueOpt PlotDataQwt::getRangeY(int first_index, int last_index)
 {
   if( first_index < 0 || last_index < 0 || first_index > last_index)
   {
-    return PlotData::RangeValue();
+    return PlotData::RangeValueOpt();
   }
   //std::lock_guard<std::mutex> lock(_mutex);
 
@@ -158,5 +159,5 @@ PlotData::RangeValue PlotDataQwt::getRangeY(int first_index, int last_index)
     if( Y < y_min )      y_min = Y;
     else if( Y > y_max ) y_max = Y;
   }
-  return PlotData::RangeValue( { y_min, y_max } );
+  return PlotData::RangeValueOpt( { y_min, y_max } );
 }

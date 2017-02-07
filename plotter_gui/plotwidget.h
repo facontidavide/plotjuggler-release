@@ -28,7 +28,7 @@ public:
     PlotWidget(PlotDataMap* datamap, QWidget *parent=0);
     virtual ~PlotWidget();
 
-    bool addCurve(const QString&  name, bool do_replot = true);
+    bool addCurve(const QString&  name, bool do_replot );
 
     bool isEmpty() const;
 
@@ -40,13 +40,13 @@ public:
 
     QRectF currentBoundingRect() const;
 
-    std::pair<double,double> maximumRangeX() const;
+    PlotData::RangeTime maximumRangeX() const;
 
-    std::pair<double,double> maximumRangeY(bool current_canvas = false) const;
+    PlotData::RangeValue maximumRangeY( PlotData::RangeTime range_X ) const;
 
     CurveTracker* tracker();
 
-    void setScale( QRectF rect, bool emit_signal = true );
+    void setScale( QRectF rect, bool emit_signal );
 
 
 protected:
@@ -71,7 +71,7 @@ public slots:
 
     void detachAllCurves();
 
-    void zoomOut(bool emit_signal = true);
+    void zoomOut(bool emit_signal);
 
     void on_zoomOutHorizontal_triggered(bool emit_signal = true);
 
@@ -111,12 +111,10 @@ private:
     PlotZoomer* _zoomer;
     PlotMagnifier* _magnifier;
     QwtPlotPanner* _panner;
-    // QRectF _prev_bounding;
+
     CurveTracker* _tracker;
     QwtPlotLegendItem* _legend;
     QwtPlotGrid* _grid;
-
-    void setAxisScale( int axisId, double min, double max, double step = 0 );
 
     PlotDataMap* _mapped_data;
     PlotDataQwt::Transform _current_transform;
