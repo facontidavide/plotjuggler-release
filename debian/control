@@ -1,0 +1,12 @@
+Source: ros-jade-plotjuggler
+Section: misc
+Priority: extra
+Maintainer: Davide Faconti <davide.faconti@gmail.com>
+Build-Depends: debhelper (>= 9.0.0), qtbase5-dev, ros-jade-catkin, ros-jade-ros-type-introspection, ros-jade-rosbag, ros-jade-rosbag-storage, ros-jade-roscpp, ros-jade-roscpp-serialization, ros-jade-rostime, ros-jade-topic-tools
+Homepage: https://github.com/facontidavide/PlotJuggler
+Standards-Version: 3.9.2
+
+Package: ros-jade-plotjuggler
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, qtbase5-dev, ros-jade-ros-type-introspection, ros-jade-rosbag, ros-jade-rosbag-storage, ros-jade-roscpp, ros-jade-roscpp-serialization, ros-jade-rostime, ros-jade-topic-tools
+Description: PlotJuggler: juggle with data
