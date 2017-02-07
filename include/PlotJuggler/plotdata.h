@@ -17,18 +17,18 @@ template <typename Time, typename Value> class PlotDataGeneric
 {
 public:
 
-  struct RangeTime_{
+  struct RangeTime{
     Time min;
     Time max;
   };
 
-  struct RangeValue_{
+  struct RangeValue{
     Value min;
     Value max;
   };
 
-  typedef nonstd::optional<RangeTime_>  RangeTime;
-  typedef nonstd::optional<RangeValue_> RangeValue;
+  typedef nonstd::optional<RangeTime>  RangeTimeOpt;
+  typedef nonstd::optional<RangeValue> RangeValueOpt;
 
   class Point{
   public:
@@ -74,7 +74,6 @@ public:
 
   void setMaximumRangeX(Time max_range);
 
-
 protected:
 
   std::string _name;
@@ -87,10 +86,8 @@ protected:
 
 private:
 
-  void updateCapacityBasedOnMaxTime();
   Time _max_range_X;
   std::mutex _mutex;
-
 };
 
 
@@ -123,8 +120,6 @@ inline void PlotDataGeneric<Time, Value>::pushBack(Point point)
 {
   _x_points.push_back( point.x );
   _y_points.push_back( point.y );
- // while(_x_points.size() > _capacity) _x_points.pop_front();
- // while(_y_points.size() > _capacity) _y_points.pop_front();
 }
 
 template < typename Time, typename Value>
@@ -144,30 +139,26 @@ inline bool PlotDataGeneric<Time, Value>::flushAsyncBuffer()
 
   while( !_pushed_points.empty() )
   {
-      updateCapacityBasedOnMaxTime();
       const Point& point = _pushed_points.front();
       _x_points.push_back( point.x );
       _y_points.push_back( point.y );
       _pushed_points.pop_front();
   }
+
+  while( _x_points.size()>2 &&
+         _x_points.back() - _x_points.front() > _max_range_X)
+  {
+      _x_points.pop_front();
+      _y_points.pop_front();
+  }
+
   return true;
 }
 
-template < typename Time, typename Value>
-inline void PlotDataGeneric<Time, Value>::updateCapacityBasedOnMaxTime()
-{
-	while( _x_points.size() >= 2 &&
-		   (_x_points.back() - _x_points.front())> _max_range_X)
-	{
-		_x_points.pop_front();
-		_y_points.pop_front();
-	}
-}
 
 template < typename Time, typename Value>
 inline int PlotDataGeneric<Time, Value>::getIndexFromX(Time x ) const
 {
- // std::lock_guard<std::mutex> lock(_mutex);
   if( _x_points.size() == 0 ){
     return -1;
   }
@@ -185,8 +176,6 @@ inline int PlotDataGeneric<Time, Value>::getIndexFromX(Time x ) const
 template < typename Time, typename Value>
 inline nonstd::optional<Value> PlotDataGeneric<Time, Value>::getYfromX(Time x) const
 {
-  //std::lock_guard<std::mutex> lock(_mutex);
-
   auto lower = std::lower_bound(_x_points.begin(), _x_points.end(), x );
   auto index = std::distance( _x_points.begin(), lower);
 
@@ -201,7 +190,6 @@ template < typename Time, typename Value>
 inline typename PlotDataGeneric<Time, Value>::Point
 PlotDataGeneric<Time, Value>::at(size_t index) const
 {
- // std::lock_guard<std::mutex> lock(_mutex);
   try{
     return { _x_points[index],  _y_points[index]  };
   }
@@ -209,13 +197,12 @@ PlotDataGeneric<Time, Value>::at(size_t index) const
   {
     return { _x_points.back(),  _y_points.back() };
   }
-}//
+}
 
 
 template < typename Time, typename Value>
 inline size_t PlotDataGeneric<Time, Value>::size() const
 {
-  //std::lock_guard<std::mutex> lock(_mutex);
   return _x_points.size();
 }
 
@@ -235,11 +222,7 @@ inline void PlotDataGeneric<Time, Value>::setColorHint(QColor color)
 template < typename Time, typename Value>
 inline void PlotDataGeneric<Time, Value>::setMaximumRangeX(Time max_range)
 {
-  //std::lock_guard<std::mutex> lock(_mutex);
   _max_range_X = max_range;
 }
-
-
-
 
 #endif // PLOTDATA_H
