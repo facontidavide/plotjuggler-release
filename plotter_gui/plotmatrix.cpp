@@ -205,29 +205,19 @@ const PlotWidget* PlotMatrix::plotAt( unsigned row, unsigned column ) const
 
 PlotWidget* PlotMatrix::plotAt( unsigned index )
 {
-    QLayoutItem* item = _layout->itemAt(index);
-    if(item) {
-        PlotWidget* plot = static_cast<PlotWidget*>( item->widget() );
-        return plot;
-    }
-    return NULL;
+  return plotAt(index% rowsCount(), index/rowsCount());
 }
 
 const PlotWidget* PlotMatrix::plotAt( unsigned index ) const
 {
-    QLayoutItem* item = _layout->itemAt(index);
-    if(item) {
-        PlotWidget* plot = static_cast<PlotWidget*>( item->widget() );
-        return plot;
-    }
-    return NULL;
+   return plotAt(index% rowsCount(), index/rowsCount());
 }
 
 
 void PlotMatrix::setAxisScale(QwtPlot::Axis axisId, unsigned row, unsigned col,
                                double min, double max, double step )
 {
-    QwtPlot *plt = plotAt( row, col );
+    PlotWidget *plt = plotAt( row, col );
     if ( plt )
     {
         plt->setAxisScale( axisId, min, max, step );
@@ -366,7 +356,7 @@ void PlotMatrix::maximumZoomOutVertical()
         PlotWidget *plot = plotAt(i);
         if( plot->isEmpty() == false)
         {
-            plot->on_zoomOutVertical_triggered();
+            plot->on_zoomOutVertical_triggered(false);
         }
     }
     replot();
@@ -379,7 +369,7 @@ void PlotMatrix::maximumZoomOut()
         PlotWidget *plot = plotAt(i);
         if( plot->isEmpty() == false)
         {
-            plot->zoomOut();
+            plot->zoomOut(false);
         }
     }
     replot();
