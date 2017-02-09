@@ -279,7 +279,7 @@ background: white;
      <x>0</x>
      <y>0</y>
      <width>1000</width>
-     <height>17</height>
+     <height>20</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -295,13 +295,14 @@ background: white;
     <addaction name="actionLoadRecentLayout"/>
     <addaction name="actionSaveLayout"/>
     <addaction name="separator"/>
-    <addaction name="actionSaveAsCSV"/>
+    <addaction name="actionExit"/>
    </widget>
    <widget class="QMenu" name="menuStreaming">
     <property name="title">
      <string>Streaming</string>
     </property>
-    <addaction name="actionStartStreaming"/>
+    <addaction name="actionStopStreaming"/>
+    <addaction name="separator"/>
    </widget>
    <widget class="QMenu" name="menuPublishers">
     <property name="enabled">
@@ -311,9 +312,16 @@ background: white;
      <string>Publishers</string>
     </property>
    </widget>
+   <widget class="QMenu" name="menuHelp">
+    <property name="title">
+     <string>Help</string>
+    </property>
+    <addaction name="actionAbout"/>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuStreaming"/>
    <addaction name="menuPublishers"/>
+   <addaction name="menuHelp"/>
   </widget>
   <action name="actionLoadData">
    <property name="text">
@@ -350,14 +358,25 @@ background: white;
     <string>Save layout</string>
    </property>
   </action>
-  <action name="actionSaveAsCSV">
+  <action name="actionExit">
    <property name="text">
-    <string>Save data as CSV</string>
+    <string>Exit</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Q</string>
    </property>
   </action>
-  <action name="actionStartStreaming">
+  <action name="actionAbout">
    <property name="text">
-    <string>Start streaming</string>
+    <string>About</string>
+   </property>
+  </action>
+  <action name="actionStopStreaming">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Stop streaming</string>
    </property>
   </action>
  </widget>

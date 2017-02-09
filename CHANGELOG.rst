@@ -2,6 +2,20 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.9.1 (2017-02-09)
+------------------
+* FIX: avoid the use of catkin when using plain cmake
+* IMPROVEMENT: exit option in the file menu
+* IMPROVEMENT: reduce the number of steps to launch a streamer
+* SPEEDUP: use a cache to avoid repeated creation of std::string
+* better way to stop streaming and reload the plugins
+* fixed a compilation problem on windows
+* fixed a problem with resizing
+* help menu with About added
+* qDebug commented
+* default to RelWithDebInfo
+* Contributors: Davide Faconti
+
 0.9.0 (2017-02-07)
 ------------------
 * bug fixes
