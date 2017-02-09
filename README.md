@@ -43,9 +43,16 @@ If you __don't want__ to compile the ROS plugins but catkin is installed in your
        find_package(catkin QUIET)
 
 You will also need to download and build this package: https://github.com/facontidavide/ros_type_introspection 
-In ROS Indigo and Kinetic, you can just run
+
+__IMPORTANT__: there is a critical bug in version 0.3.x of ros_type_introspection. Use version 0.4.X or later.
+
+__At the time of writing, you must compile it from source (master branch).__
+
+In the future you will be able to install it on ROS Indigo and Kinetic:
 
        sudo apt-get install ros-indigo-ros-type-introspection
 or
 
        sudo apt-get install ros-kinetic-ros-type-introspection
+      
+
