@@ -124,6 +124,10 @@ void DataStreamROS::extractInitialSamples()
 bool DataStreamROS::start()
 {
   _node = getGlobalRosNode();
+  if( !_node )
+  {
+    return false;
+  }
 
   using namespace RosIntrospection;
 

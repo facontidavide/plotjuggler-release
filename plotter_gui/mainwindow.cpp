@@ -26,7 +26,7 @@
 #include "filterablelistwidget.h"
 #include "tabbedplotwidget.h"
 #include "selectlistdialog.h"
-
+#include "aboutdialog.h"
 
 MainWindow::MainWindow(bool test_option, QWidget *parent) :
     QMainWindow(parent),
@@ -34,11 +34,13 @@ MainWindow::MainWindow(bool test_option, QWidget *parent) :
     _undo_shortcut(QKeySequence(Qt::CTRL + Qt::Key_Z), this),
     _redo_shortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Z), this),
     _current_streamer(nullptr),
-    _disable_undo_logging(false)
+    _disable_undo_logging(false),
+    _test_option(test_option)
 {
     QLocale::setDefault(QLocale::c()); // set as default
 
     _curvelist_widget = new FilterableListWidget(this);
+    _streamer_signal_mapper = new QSignalMapper(this);
 
     ui->setupUi(this);
 
@@ -64,6 +66,7 @@ MainWindow::MainWindow(bool test_option, QWidget *parent) :
     _replot_timer = new QTimer(this);
     connect(_replot_timer, SIGNAL(timeout()), this, SLOT(onReplotRequested()));
 
+    ui->menuFile->setToolTipsVisible(true);
     ui->horizontalSpacer->changeSize(0,0, QSizePolicy::Fixed, QSizePolicy::Fixed);
     ui->streamingLabel->setHidden(true);
     ui->streamingSpinBox->setHidden(true);
@@ -71,7 +74,10 @@ MainWindow::MainWindow(bool test_option, QWidget *parent) :
     
     this->repaint();
 
-    if( test_option )
+    connect(_streamer_signal_mapper, SIGNAL(mapped(QString)),
+            this, SLOT(onActionLoadStreamer(QString)) );
+
+    if( _test_option )
     {
       buildData();
     }
@@ -101,7 +107,7 @@ void MainWindow::onUndoableChange()
         _undo_states.push_back( xmlSaveState() );
         updateInternalState();
         _redo_states.clear();
-        qDebug() << "Undo pushed " <<  _undo_states.size();
+        //qDebug() << "Undo pushed " <<  _undo_states.size();
     }
 }
 
@@ -118,7 +124,7 @@ void MainWindow::onRedoInvoked()
 
         xmlLoadState( state_document );
 
-        qDebug() << "ReDo pushed " <<  _undo_states.size();
+        //qDebug() << "ReDo pushed " <<  _undo_states.size();
 
         updateInternalState();
     }
@@ -212,6 +218,7 @@ void MainWindow::createTabbedDialog(PlotMatrix* first_tab, bool undoable)
     window->setAttribute( Qt::WA_DeleteOnClose, true );
     window->show();
     window->activateWindow();
+    window->raise();
 
     if( undoable ) onUndoableChange();
 }
@@ -224,7 +231,7 @@ void MainWindow::dragEnterEvent(QDragEnterEvent *event)
 
     foreach(QString format, mimeFormats)
     {
-        qDebug() << " mimestuff " << format;
+       // qDebug() << " mimestuff " << format;
     }
 }
 
@@ -244,7 +251,6 @@ void MainWindow::createActions()
     connect(ui->actionLoadRecentDatafile,SIGNAL(triggered()), this, SLOT(onActionReloadDataFileFromSettings()) );
     connect(ui->actionLoadRecentLayout,SIGNAL(triggered()),   this, SLOT(onActionReloadRecentLayout()) );
     connect(ui->actionReloadData,SIGNAL(triggered()),         this, SLOT(onActionReloadSameDataFile()) );
-    connect(ui->actionStartStreaming,SIGNAL(triggered()),     this, SLOT(onActionLoadStreamer()) );
     connect(ui->actionDeleteAllData,SIGNAL(triggered()),      this, SLOT(onDeleteLoadedData()) );
 
     //---------------------------------------------
@@ -317,32 +323,60 @@ void MainWindow::loadPlugins(QString directory_name)
             if (loader)
             {
                 qDebug() << filename << ": is a DataLoader plugin";
-                loaded_plugins.insert( loader->name() );
-                _data_loader.insert( std::make_pair( loader->name(), loader) );
+                if( !_test_option && loader->isDebugPlugin())
+                {
+                  qDebug() << filename << "...but will be ignored unless the argument -t is used.";
+                }
+                else{
+                  loaded_plugins.insert( loader->name() );
+                  _data_loader.insert( std::make_pair( loader->name(), loader) );
+                }
             }
 
             StatePublisher *publisher = qobject_cast<StatePublisher *>(plugin);
             if (publisher)
             {
                 qDebug() << filename << ": is a StatePublisher plugin";
-                loaded_plugins.insert( publisher->name() );
-                _state_publisher.insert( std::make_pair(publisher->name(), publisher) );
+                if( !_test_option && publisher->isDebugPlugin())
+                {
+                  qDebug() << filename << "...but will be ignored unless the argument -t is used.";
+                }
+                else
+                {
+                  loaded_plugins.insert( publisher->name() );
+                  _state_publisher.insert( std::make_pair(publisher->name(), publisher) );
 
-                QAction* activatePublisher = new QAction( publisher->name() , this);
-                activatePublisher->setCheckable(true);
-                activatePublisher->setChecked(false);
-                ui->menuPublishers->setEnabled(true);
-                ui->menuPublishers->addAction(activatePublisher);
+                  QAction* activatePublisher = new QAction( publisher->name() , this);
+                  activatePublisher->setCheckable(true);
+                  activatePublisher->setChecked(false);
+                  ui->menuPublishers->setEnabled(true);
+                  ui->menuPublishers->addAction(activatePublisher);
 
-                connect(activatePublisher, SIGNAL( toggled(bool)), publisher->getObject(), SLOT(setEnabled(bool)) );
+                  connect(activatePublisher, SIGNAL( toggled(bool)),
+                          publisher->getObject(), SLOT(setEnabled(bool)) );
+                }
             }
 
             DataStreamer *streamer =  qobject_cast<DataStreamer *>(plugin);
             if (streamer)
             {
-                qDebug() << filename << ": is a DataStreamer plugin";
-                loaded_plugins.insert( streamer->name() );
-                _data_streamer.insert( std::make_pair(streamer->name() , streamer ) );
+              qDebug() << filename << ": is a DataStreamer plugin";
+              if( !_test_option && streamer->isDebugPlugin())
+              {
+                qDebug() << filename << "...but will be ignored unless the argument -t is used.";
+              }
+              else{
+                QString name(streamer->name());
+                loaded_plugins.insert( name );
+                _data_streamer.insert( std::make_pair(name , streamer ) );
+
+                QAction* startStreamer = new QAction(QString("Start: ") + name, this);
+                ui->menuStreaming->setEnabled(true);
+                ui->menuStreaming->addAction(startStreamer);
+
+                connect(startStreamer, SIGNAL(triggered()), _streamer_signal_mapper, SLOT(map()));
+                _streamer_signal_mapper->setMapping(startStreamer, name );
+              }
             }
         }
         else{
@@ -861,7 +895,7 @@ void MainWindow::onActionReloadRecentLayout()
     onActionLoadLayout( true );
 }
 
-void MainWindow::onActionLoadStreamer()
+void MainWindow::onActionLoadStreamer(QString streamer_name)
 {
     if( _current_streamer )
     {
@@ -881,29 +915,15 @@ void MainWindow::onActionLoadStreamer()
     }
     else if( _data_streamer.size() > 1)
     {
-        QStringList streamers_name;
-
-        for (auto& streamer_it: _data_streamer)
+        auto it = _data_streamer.find(streamer_name);
+        if( it != _data_streamer.end())
         {
-            streamers_name.push_back( QString( streamer_it.second->name()) );
+            _current_streamer = it->second;
         }
-
-        SelectFromListDialog dialog( &streamers_name, true, this );
-        dialog.exec();
-
-        int index = dialog.getSelectedRowNumber().at(0) ;
-        if( index >= 0)
-        {
-          for (auto& streamer_it: _data_streamer)
-          {
-            auto& streamer = streamer_it.second;
-            QString streamer_name(streamer->name() );
-            if( streamer_name == streamers_name[index] )
-            {
-              _current_streamer = streamer;
-              break;
-            }
-          }
+        else{
+            qDebug() << "Error. The streame " << streamer_name <<
+                        " can't be loaded";
+            return;
         }
     }
 
@@ -912,6 +932,13 @@ void MainWindow::onActionLoadStreamer()
         _current_streamer->enableStreaming( false );
         ui->pushButtonStreaming->setEnabled(true);
         importPlotDataMap( _current_streamer->getDataMap() );
+
+        for(auto& action: ui->menuStreaming->actions()) {
+            action->setEnabled(false);
+        }
+        ui->actionStopStreaming->setEnabled(true);
+        ui->actionDeleteAllData->setEnabled( false );
+        ui->actionDeleteAllData->setToolTip("Stop streaming to be able to delete the data");
     }
     else{
         qDebug() << "Failed to launch the streamer";
@@ -1140,6 +1167,11 @@ void MainWindow::onSwapPlots(PlotWidget *source, PlotWidget *destination)
 
        src_matrix->gridLayout()->addWidget( destination, src_pos.x(), src_pos.y() );
        dst_matrix->gridLayout()->addWidget( source,      dst_pos.x(), dst_pos.y() );
+
+       src_matrix->updateLayout();
+       if( src_matrix != dst_matrix){
+         dst_matrix->updateLayout();
+       }
     }
     onUndoableChange();
 }
@@ -1221,3 +1253,40 @@ void MainWindow::on_pushButtonActivateTracker_toggled(bool checked)
 
 }
 
+
+void MainWindow::on_actionAbout_triggered()
+{
+  AboutDialog* aboutdialog = new AboutDialog(this);
+  aboutdialog->show();
+}
+
+void MainWindow::on_actionStopStreaming_triggered()
+{
+    ui->pushButtonStreaming->setChecked(false);
+    ui->pushButtonStreaming->setEnabled(false);
+    _current_streamer->shutdown();
+    _current_streamer = nullptr;
+
+    for(auto& action: ui->menuStreaming->actions()) {
+        action->setEnabled(true);
+    }
+    ui->actionStopStreaming->setEnabled(false);
+
+    if( !_mapped_plot_data.numeric.empty()){
+        ui->actionDeleteAllData->setEnabled( true );
+        ui->actionDeleteAllData->setToolTip("");
+    }
+}
+
+
+void MainWindow::on_actionExit_triggered()
+{
+    QMessageBox::StandardButton reply;
+    reply = QMessageBox::question(0, tr("Warning"),
+                                  tr("Do you really want quit?\n"),
+                                  QMessageBox::Yes | QMessageBox::No,
+                                  QMessageBox::No );
+    if( reply == QMessageBox::Yes ) {
+        this->close();
+    }
+}
