@@ -32,6 +32,8 @@ public:
 
     virtual const char* name() const override { return "ROS Topic Streamer";  }
 
+    virtual QObject* getObject() override { return this; }
+
 private:
 
     void topicCallback(const topic_tools::ShapeShifter::ConstPtr& msg, const std::string &topic_name);
