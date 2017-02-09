@@ -17,6 +17,8 @@ RosTopicSelector::RosTopicSelector(QWidget *parent) :
 
     _rule_widget = new RuleLoaderWidget(this);
     ui->frame->layout()->addWidget( _rule_widget );
+
+    on_pushButtonRefresh_pressed();
 }
 
 RosTopicSelector::~RosTopicSelector()
