@@ -28,15 +28,22 @@ QString getFunnySubtitle(){
 int main(int argc, char *argv[])
 {
   QApplication app(argc, argv);
-  QCoreApplication::setApplicationName("PlotJuggler");
+  app.setApplicationName("PlotJuggler");
 
   qApp->setStyleSheet(QString("QToolTip {\n"
                               "   border: 1px solid black;\n"
                               "   border-radius: 6px;\n"
                               "   background: white;\n}" ));
 
+  QString VERSION_STRING = QString::number(PJ_MAJOR_VERSION) + QString(".") +
+      QString::number(PJ_MINOR_VERSION) + QString(".") +
+      QString::number(PJ_PATCH_VERSION);
+
+  app.setApplicationVersion(VERSION_STRING);
+
   QCommandLineParser parser;
-  parser.setApplicationDescription("PlotJuggler ");
+  parser.setApplicationDescription("PlotJuggler: the time series visualization tool that you deserve ");
+  parser.addVersionOption();
   parser.addHelpOption();
 
   QCommandLineOption nosplash_option(QStringList() << "nosplash",
