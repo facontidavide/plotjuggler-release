@@ -100,7 +100,7 @@ add_dependencies(RosTopicPublisher
 
 ## Mark executables and/or libraries for installation
 
-if(catkin_FOUND)
+if(COMPILING_WITH_CATKIN)
     install(TARGETS DataLoadROS DataStreamROS RosTopicPublisher
         ARCHIVE DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
         LIBRARY DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}

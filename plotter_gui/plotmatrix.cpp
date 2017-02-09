@@ -35,6 +35,8 @@ PlotWidget* PlotMatrix::addPlotWidget(unsigned row, unsigned col)
     plot->setAttribute(Qt::WA_DeleteOnClose);
 
     _layout->addWidget( plot, row, col );
+    _layout->setRowStretch(row,1);
+    _layout->setColumnStretch(col,1);
 
     emit plotAdded(plot);
 
@@ -87,6 +89,7 @@ void PlotMatrix::swapPlots( unsigned rowA, unsigned colA, unsigned rowB, unsigne
 
     _layout->addWidget(widgetA, rowB, colB);
     _layout->addWidget(widgetB, rowA, colA);
+    updateLayout();
 }
 
 void PlotMatrix::removeColumn(unsigned column_to_delete)
@@ -398,64 +401,35 @@ void PlotMatrix::on_singlePlotScaleChanged(PlotWidget *modified_plot, QRectF new
 
 void PlotMatrix::alignAxes( unsigned rowOrColumn, QwtPlot::Axis axisId )
 {
-    if ( axisId == QwtPlot::yLeft || axisId == QwtPlot::yRight )
+    bool iterating_rows = ( axisId == QwtPlot::yLeft || axisId == QwtPlot::yRight );
+    const int COUNT = iterating_rows ? rowsCount() : colsCount();
+
+    double maxExtent = 0;
+
+    for ( unsigned i = 0; i < COUNT; i++ )
     {
-        double maxExtent = 0;
+      QwtPlot *p = iterating_rows? plotAt( i, rowOrColumn ) : plotAt( rowOrColumn, i );
+      if ( p )
+      {
+        QwtScaleWidget *scaleWidget = p->axisWidget( axisId );
 
-        for ( unsigned row = 0; row < rowsCount(); row++ )
-        {
-            QwtPlot *p = plotAt( row, rowOrColumn );
-            if ( p )
-            {
-                QwtScaleWidget *scaleWidget = p->axisWidget( axisId );
+        QwtScaleDraw *sd = scaleWidget->scaleDraw();
+        sd->setMinimumExtent( 0.0 );
 
-                QwtScaleDraw *sd = scaleWidget->scaleDraw();
-                sd->setMinimumExtent( 0.0 );
-
-                const double extent = sd->extent( scaleWidget->font() );
-                if ( extent > maxExtent )
-                    maxExtent = extent;
-            }
-        }
-
-        for ( unsigned row = 0; row < rowsCount(); row++ )
-        {
-            QwtPlot *p = plotAt( row, rowOrColumn );
-            if ( p )
-            {
-                QwtScaleWidget *scaleWidget = p->axisWidget( axisId );
-                scaleWidget->scaleDraw()->setMinimumExtent( maxExtent );
-            }
-        }
+        const double extent = sd->extent( scaleWidget->font() );
+        if ( extent > maxExtent )
+          maxExtent = extent;
+      }
     }
-    else{
-        double maxExtent = 0;
 
-        for ( unsigned col = 0; col < colsCount(); col++ )
-        {
-            QwtPlot *p = plotAt( rowOrColumn, col );
-            if ( p )
-            {
-                QwtScaleWidget *scaleWidget = p->axisWidget( axisId );
-
-                QwtScaleDraw *sd = scaleWidget->scaleDraw();
-                sd->setMinimumExtent( 0.0 );
-
-                const double extent = sd->extent( scaleWidget->font() );
-                if ( extent > maxExtent )
-                    maxExtent = extent;
-            }
-        }
-
-        for ( unsigned col = 0; col < colsCount(); col++ )
-        {
-            QwtPlot *p = plotAt( rowOrColumn, col );
-            if ( p )
-            {
-                QwtScaleWidget *scaleWidget = p->axisWidget( axisId );
-                scaleWidget->scaleDraw()->setMinimumExtent( maxExtent );
-            }
-        }
+    for ( unsigned i = 0; i < COUNT; i++ )
+    {
+      QwtPlot *p = iterating_rows? plotAt( i, rowOrColumn ) : plotAt( rowOrColumn, i );
+      if ( p )
+      {
+        QwtScaleWidget *scaleWidget = p->axisWidget( axisId );
+        scaleWidget->scaleDraw()->setMinimumExtent( maxExtent );
+      }
     }
 }
 

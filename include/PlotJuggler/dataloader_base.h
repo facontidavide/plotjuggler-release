@@ -23,6 +23,8 @@ public:
     virtual const char* name() const = 0;
 
     virtual ~DataLoader() {}
+
+    virtual bool isDebugPlugin() { return false; }
 };
 
 QT_BEGIN_NAMESPACE
