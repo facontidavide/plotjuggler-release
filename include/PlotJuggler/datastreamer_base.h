@@ -24,6 +24,10 @@ public:
 
     virtual const char* name() const = 0;
 
+    virtual bool isDebugPlugin() { return false; }
+
+    virtual QObject* getObject() = 0;
+
 };
 
 QT_BEGIN_NAMESPACE
