@@ -16,6 +16,9 @@ public:
   ~QNodeDialog();
   explicit QNodeDialog(QWidget *parent = 0);
 
+  static bool Connect(const std::string &ros_master_uri,
+                      const std::string &hostname = "localhost");
+
 private slots:
   void on_checkBoxUseEnvironment_toggled(bool checked);
 
@@ -25,8 +28,6 @@ private slots:
 
 private:
   Ui::QNodeDialog *ui;
-
-  void showNoMasterMessage();
 
 };
 
