@@ -5,6 +5,7 @@
 #include <QElapsedTimer>
 #include <QShortcut>
 #include <QCommandLineParser>
+#include <QSignalMapper>
 #include <set>
 #include <deque>
 #include "plotwidget.h"
@@ -59,7 +60,7 @@ private slots:
 
     void onActionReloadRecentLayout();
 
-    void onActionLoadStreamer();
+    void onActionLoadStreamer(QString streamer_name);
 
     void onUndoInvoked();
 
@@ -86,6 +87,12 @@ private slots:
     void onDeleteLoadedData();
 
     void on_pushButtonActivateTracker_toggled(bool checked);
+
+    void on_actionAbout_triggered();
+
+    void on_actionStopStreaming_triggered();
+
+    void on_actionExit_triggered();
 
 private:
     Ui::MainWindow *ui;
@@ -135,10 +142,13 @@ private:
 
     QElapsedTimer _undo_timer;
     bool _disable_undo_logging;
+    bool _test_option;
 
     QString _loaded_datafile;
 
     std::string _last_load_configuration;
+
+    QSignalMapper *_streamer_signal_mapper;
 
     void createTabbedDialog(PlotMatrix *first_tab, bool undoable);
 
@@ -160,6 +170,7 @@ signals:
     void trackerTimeUpdated(QPointF point);
 
     void activateTracker(bool active);
+
 };
 
 #endif // MAINWINDOW_H
