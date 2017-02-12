@@ -2,6 +2,16 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.10.0 (2017-02-12)
+-------------------
+* auto loading of streamer based on saved layout
+* refactoring of the ROS plugins 
+* REFACTORING to allow future improvements of drag&drop
+* trying to fix a compilation problem
+* Update README.md
+* FIX: menu bar will stay where it is supposed to.
+* Contributors: Davide Faconti
+
 0.9.1 (2017-02-09)
 ------------------
 * FIX: avoid the use of catkin when using plain cmake
