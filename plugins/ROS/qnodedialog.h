@@ -22,9 +22,9 @@ public:
 private slots:
   void on_checkBoxUseEnvironment_toggled(bool checked);
 
-  void on_pushButtonDisconnect_pressed();
-
   void on_pushButtonConnect_pressed();
+
+  void on_pushButtonCancel_pressed();
 
 private:
   Ui::QNodeDialog *ui;
