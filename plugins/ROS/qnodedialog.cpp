@@ -81,20 +81,14 @@ void QNodeDialog::on_pushButtonConnect_pressed()
   else{
     std::string ros_master_uri = ui->lineEditMaster->text().toStdString();
     std::string hostname       = ui->lineEditHost->text().toStdString();
-    QNodeDialog::Connect(ros_master_uri, hostname);
+    bool connected = QNodeDialog::Connect(ros_master_uri, hostname);
+    if( connected )
+    {
+        this->close();
+    }
   }
-  ui->pushButtonConnect->setEnabled(false);
-  ui->pushButtonDisconnect->setEnabled(true);
-
 }
 
-
-
-void QNodeDialog::on_pushButtonDisconnect_pressed()
-{
-  ui->pushButtonConnect->setEnabled(true);
-  ui->pushButtonDisconnect->setEnabled(false);
-}
 
 void QNodeDialog::on_checkBoxUseEnvironment_toggled(bool checked)
 {
@@ -108,25 +102,28 @@ ros::NodeHandlePtr getGlobalRosNode()
 
   if( !node_ptr )
   {
-    if( !ros::isInitialized() )
+    if( !ros::master::check() )
     {
-      // TODO I need to decide when to enable this
-      //QNodeDialog dialog;
-      //dialog.exec();
-
-      std::string master_uri = getDefaultMasterURI();
-      QNodeDialog::Connect(master_uri, "localhost" );
+        std::string master_uri = getDefaultMasterURI();
+        bool connected = QNodeDialog::Connect(master_uri, "localhost" );
+        if ( ! connected )
+        {
+           //as a fallback strategy, launch the QNodeDialog
+          QNodeDialog dialog;
+          dialog.exec();
+        }
     }
 
-    if( ros::isInitialized()  )
+    if( ros::master::check() && ros::isInitialized()  )
     {
       node_ptr.reset( new ros::NodeHandle );
-    }
-    else{
-      showNoMasterMessage();
-      node_ptr.reset();
     }
   }
   return node_ptr;
 }
 
+
+void QNodeDialog::on_pushButtonCancel_pressed()
+{
+    this->close();
+}
