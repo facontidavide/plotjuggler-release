@@ -126,8 +126,8 @@ template < typename Time, typename Value>
 inline void PlotDataGeneric<Time, Value>::pushBackAsynchronously(Point point)
 {
   std::lock_guard<std::mutex> lock(_mutex);
-  while(_pushed_points.size() > ASYNC_BUFFER_CAPACITY) _pushed_points.pop_front();
   _pushed_points.push_back( point );
+  while(_pushed_points.size() > ASYNC_BUFFER_CAPACITY) _pushed_points.pop_front();
 }
 
 template < typename Time, typename Value>
@@ -151,7 +151,6 @@ inline bool PlotDataGeneric<Time, Value>::flushAsyncBuffer()
       _x_points.pop_front();
       _y_points.pop_front();
   }
-
   return true;
 }
 
