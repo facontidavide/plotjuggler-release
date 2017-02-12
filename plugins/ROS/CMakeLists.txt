@@ -15,15 +15,18 @@ add_definitions(-DQT_SHARED)
 #############
 
 SET( COMMON_SRC
-    ruleloaderwidget.h
-    ruleloaderwidget.cpp
+    rule_editing.h
+    rule_editing.cpp
     qnodedialog.h
     qnodedialog.cpp
+    dialog_select_ros_topics.h
+    dialog_select_ros_topics.cpp
     )
 
 QT5_WRAP_UI ( COMMON_UI_SRC
     qnodedialog.ui
-    ruleloaderwidget.ui
+    rule_editing.ui
+    dialog_select_ros_topics.ui
     )
 
 add_library( commonROS STATIC ${COMMON_SRC} ${COMMON_UI_SRC} )
@@ -34,20 +37,12 @@ target_link_libraries( commonROS
   )
 
 
-
 #############
 SET( DATALOAD_SRC
     DataLoadROS/dataload_ros.cpp
-    DataLoadROS/dialog_select_ros_topics.h
-    DataLoadROS/dialog_select_ros_topics.cpp
     )
 
-QT5_WRAP_UI ( DATALOAD_UI_SRC
-    DataLoadROS/dialog_select_ros_topics.ui
-    ruleloaderwidget.ui
-    )
-
-add_library( DataLoadROS SHARED ${DATALOAD_SRC} ${DATALOAD_UI_SRC} )
+add_library( DataLoadROS SHARED ${DATALOAD_SRC}  )
 target_link_libraries( DataLoadROS  commonROS)
 
 add_dependencies(DataLoadROS
@@ -59,14 +54,9 @@ add_dependencies(DataLoadROS
 SET( DATASTREAM_SRC
     DataStreamROS/datastream_ROS.cpp
     DataStreamROS/datastream_ROS.h
-    DataStreamROS/rostopicselector.h
-    DataStreamROS/rostopicselector.cpp
     )
 
-QT5_WRAP_UI ( DATASTREAM_UI_SRC
-    DataStreamROS/rostopicselector.ui )
-
-add_library( DataStreamROS SHARED ${DATASTREAM_SRC} ${DATASTREAM_UI_SRC} )
+add_library( DataStreamROS SHARED ${DATASTREAM_SRC} )
 target_link_libraries( DataStreamROS  commonROS )
 
 add_dependencies(DataStreamROS
