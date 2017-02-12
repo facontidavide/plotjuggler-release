@@ -70,9 +70,9 @@ MainWindow::MainWindow(bool test_option, QWidget *parent) :
     ui->horizontalSpacer->changeSize(0,0, QSizePolicy::Fixed, QSizePolicy::Fixed);
     ui->streamingLabel->setHidden(true);
     ui->streamingSpinBox->setHidden(true);
-    ui->menuBar->show();
-    
-    this->repaint();
+
+    this->setMenuBar(ui->menuBar);
+    ui->menuBar->setNativeMenuBar(false);
 
     connect(_streamer_signal_mapper, SIGNAL(mapped(QString)),
             this, SLOT(onActionLoadStreamer(QString)) );
@@ -396,7 +396,8 @@ void MainWindow::buildData()
     words_list << "siam" << "tre" << "piccoli" << "porcellin"
                << "mai" << "nessun" << "ci" << "dividera";
 
-    _curvelist_widget->addItems( words_list );
+    for(auto& word: words_list)
+        _curvelist_widget->addItem( new QListWidgetItem(word) );
 
     foreach( const QString& name, words_list)
     {
@@ -558,9 +559,16 @@ void MainWindow::onActionSaveLayout()
         QDomElement root = doc.namedItem("root").toElement();
         QDomElement previously_loaded_datafile =  doc.createElement( "previouslyLoadedDatafile" );
         QDomText textNode = doc.createTextNode( _loaded_datafile );
-
         previously_loaded_datafile.appendChild( textNode );
         root.appendChild( previously_loaded_datafile );
+    }
+    if( _current_streamer )
+    {
+        QDomElement root = doc.namedItem("root").toElement();
+        QDomElement loaded_streamer =  doc.createElement( "previouslyLoadedStreamer" );
+        QDomText textNode = doc.createTextNode( _current_streamer->name() );
+        loaded_streamer.appendChild( textNode );
+        root.appendChild( loaded_streamer );
     }
 
     QSettings settings( "IcarusTechnology", "PlotJuggler");
@@ -939,6 +947,8 @@ void MainWindow::onActionLoadStreamer(QString streamer_name)
         ui->actionStopStreaming->setEnabled(true);
         ui->actionDeleteAllData->setEnabled( false );
         ui->actionDeleteAllData->setToolTip("Stop streaming to be able to delete the data");
+
+        ui->pushButtonStreaming->setChecked(true);
     }
     else{
         qDebug() << "Failed to launch the streamer";
@@ -1000,8 +1010,8 @@ void MainWindow::onActionLoadLayout(bool reload_previous)
     }
 
     QDomElement root = domDocument.namedItem("root").toElement();
-    QDomElement previously_loaded_datafile =  root.firstChildElement( "previouslyLoadedDatafile" );
 
+    QDomElement previously_loaded_datafile =  root.firstChildElement( "previouslyLoadedDatafile" );
     if( previously_loaded_datafile.isNull() == false)
     {
         QString filename = previously_loaded_datafile.text();
@@ -1017,6 +1027,26 @@ void MainWindow::onActionLoadLayout(bool reload_previous)
             onActionLoadDataFileImpl( filename );
         }
     }
+
+    QDomElement previously_loaded_streamer =  root.firstChildElement( "previouslyLoadedStreamer" );
+    if( previously_loaded_streamer.isNull() == false)
+    {
+        QString streamer_name = previously_loaded_streamer.text();
+
+        bool streamer_loaded = false;
+        for(auto& it: _data_streamer)
+        {
+            if( it.first == streamer_name) streamer_loaded = true;
+        }
+        if( streamer_loaded ){
+            onActionLoadStreamer( streamer_name );
+        }
+        else{
+            QMessageBox::warning(this, tr("Error Loading Streamer"),
+                                 tr("The stramer named %1 can not be loaded.").arg(streamer_name));
+        }
+    }
+
     ///--------------------------------------------------
 
     xmlLoadState( domDocument );
@@ -1078,7 +1108,6 @@ void MainWindow::onFloatingWindowDestroyed(QObject *object)
             break;
         }
     }
-
     updateInternalState();
 }
 
@@ -1090,7 +1119,6 @@ void MainWindow::onCreateFloatingWindow(PlotMatrix* first_tab)
 
 void MainWindow::updateInternalState()
 {
-    //TODO. implement this with SIGNALS and SLOTS
     std::map<QString,TabbedPlotWidget*> tabbed_map;
     tabbed_map.insert( std::make_pair( QString("Main window"), _main_tabbed_widget) );
 
@@ -1227,7 +1255,7 @@ void MainWindow::onReplotRequested()
     {
         _replot_timer->setSingleShot(true);
         _replot_timer->stop( );
-        _replot_timer->start( 20 );
+        _replot_timer->start( 20 ); // 50 Hz at most
     }
 }
 
@@ -1235,13 +1263,13 @@ void MainWindow::on_streamingSpinBox_valueChanged(int value)
 {
     for (auto it = _mapped_plot_data.numeric.begin(); it != _mapped_plot_data.numeric.end(); it++ )
     {
-        auto plot = it->second;
+        auto& plot = it->second;
         plot->setMaximumRangeX( value );
     }
 
     for (auto it = _mapped_plot_data.user_defined.begin(); it != _mapped_plot_data.user_defined.end(); it++ )
     {
-        auto plot = it->second;
+        auto& plot = it->second;
         plot->setMaximumRangeX( value );
     }
 }
@@ -1285,7 +1313,7 @@ void MainWindow::on_actionExit_triggered()
     reply = QMessageBox::question(0, tr("Warning"),
                                   tr("Do you really want quit?\n"),
                                   QMessageBox::Yes | QMessageBox::No,
-                                  QMessageBox::No );
+                                  QMessageBox::Yes );
     if( reply == QMessageBox::Yes ) {
         this->close();
     }
