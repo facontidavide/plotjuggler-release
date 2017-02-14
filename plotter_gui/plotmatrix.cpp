@@ -109,6 +109,8 @@ void PlotMatrix::removeColumn(unsigned column_to_delete)
     {
         plotAt( row, _num_cols -1)->close();
     }
+    _layout->setColumnStretch(_num_cols -1,0);
+
     _num_cols--;
     if( _num_cols == 0){
         _num_rows = 0;
@@ -123,7 +125,6 @@ void PlotMatrix::removeRow(unsigned row_to_delete)
     if(_num_rows==1 && _num_cols ==1 ) {
         return;
     }
-
     for(unsigned row = row_to_delete; row< _num_rows-1; row++)
     {
         for(unsigned col = 0; col< _num_cols; col++)
@@ -135,6 +136,8 @@ void PlotMatrix::removeRow(unsigned row_to_delete)
     {
         plotAt( _num_rows-1, col)->close();
     }
+    _layout->setRowStretch(_num_rows -1,0);
+
     _num_rows--;
     if( _num_rows == 0){
         _num_cols = 0;
