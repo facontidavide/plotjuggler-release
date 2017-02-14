@@ -48,7 +48,9 @@ private:
 
     std::thread _thread;
 
-    RosIntrospection::ROSTypeList _ros_type_map;
+    std::mutex _mutex;
+
+    std::map<std::string, RosIntrospection::ROSTypeList> _ros_type_map;
 
     void extractInitialSamples();
 
