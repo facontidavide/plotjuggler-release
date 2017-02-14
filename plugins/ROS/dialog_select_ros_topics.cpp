@@ -24,6 +24,9 @@ DialogSelectRosTopics::DialogSelectRosTopics(const std::vector<std::pair<QString
     this->setWindowFlags( flags | Qt::WindowStaysOnTopHint);
 
     ui->setupUi(this);
+    QSettings settings( "IcarusTechnology", "PlotJuggler");
+    QString default_topics = settings.value("DialogSelectRosTopics.selectedItems", "" ).toString();
+    default_selected_topics = default_topics.split(' ', QString::SkipEmptyParts);
 
     ui->listRosTopics->setRowCount( topic_list.size() );
 
@@ -45,24 +48,24 @@ DialogSelectRosTopics::DialogSelectRosTopics(const std::vector<std::pair<QString
 
         if(default_selected_topics.contains(topic_name))
         {
-            ui->listRosTopics->selectRow(0);
+            ui->listRosTopics->selectRow(row);
         }
     }
 
     ui->listRosTopics->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
     ui->listRosTopics->horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
 
+    ui->listRosTopics->sortByColumn(0, Qt::AscendingOrder);
+
     //  if there is only one item in the list, select it by default
     if( topic_list.size() == 1){
         ui->listRosTopics->selectRow(0);
     }
 
-
-    QSettings settings( "IcarusTechnology", "PlotJuggler");
     ui->checkBoxEnableRules->setChecked(     settings.value("DialogSelectRosTopics.enableRules", true ).toBool());
     ui->checkBoxNormalizeTime->setChecked(   settings.value("DialogSelectRosTopics.normalizeTime", true ).toBool());
     ui->checkBoxUseHeaderStamp->setChecked(  settings.value("DialogSelectRosTopics.useHeaderStamp", true ).toBool());
-
+    restoreGeometry(settings.value("DialogSelectRosTopics.geometry").toByteArray());
 }
 
 DialogSelectRosTopics::~DialogSelectRosTopics()
@@ -93,16 +96,22 @@ QCheckBox* DialogSelectRosTopics::checkBoxUseRenamingRules()
 void DialogSelectRosTopics::on_buttonBox_accepted()
 {
     QModelIndexList indexes = ui->listRosTopics->selectionModel()->selectedIndexes();
+    QString selected_topics;
 
     foreach(QModelIndex index, indexes)
     {
-        if(index.column() == 0)
+        if(index.column() == 0){
             _topic_list.push_back( index.data(Qt::DisplayRole).toString() );
+            selected_topics.append( _topic_list.back() ).append(" ");
+        }
     }
     QSettings settings( "IcarusTechnology", "PlotJuggler");
     settings.setValue("DialogSelectRosTopics.enableRules",    ui->checkBoxEnableRules->isChecked() );
     settings.setValue("DialogSelectRosTopics.normalizeTime",  ui->checkBoxNormalizeTime->isChecked() );
     settings.setValue("DialogSelectRosTopics.useHeaderStamp", ui->checkBoxUseHeaderStamp->isChecked() );
+    settings.setValue("DialogSelectRosTopics.geometry", saveGeometry());
+    settings.setValue("DialogSelectRosTopics.selectedItems", selected_topics );
+
 }
 
 void DialogSelectRosTopics::on_listRosTopics_itemSelectionChanged()

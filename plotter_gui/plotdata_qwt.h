@@ -25,9 +25,6 @@ public:
 
     PlotDataPtr data() { return _plot_data; }
 
-    QColor randomColorHint() const;
-    void setColorHint(QColor color);
-
     void setSubsampleFactor();
 
     void updateData(bool force_transform);
