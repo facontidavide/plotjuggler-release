@@ -34,7 +34,8 @@ public:
   public:
     Time x;
     Value y;
-    Point( Time _x, Value _y): x(_x), y(_y) {}
+    Point( Time _x, Value _y):
+        x(_x), y(_y) {}
     Point() = default;
   };
 
@@ -111,6 +112,7 @@ typedef struct{
 template < typename Time, typename Value>
 inline PlotDataGeneric <Time, Value>::PlotDataGeneric():
   _max_range_X( std::numeric_limits<Time>::max() )
+  , _color_hint(Qt::black)
 {
   static_assert( std::is_arithmetic<Time>::value ,"Only numbers can be used as time");
 }

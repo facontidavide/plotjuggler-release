@@ -99,8 +99,9 @@ PlotDataMap DataLoadROS::readDataFromFile(const std::string& file_name,
 
     for(const rosbag::MessageInstance& msg: bag_view_reduced )
     {
-        const auto& md5sum    = msg.getMD5Sum();
-        const auto& datatype  = msg.getDataType();
+        const auto& topic      = msg.getTopic();
+        const auto& md5sum     = msg.getMD5Sum();
+        const auto& datatype   = msg.getDataType();
         auto msg_size = msg.size();
 
         std::vector<uint8_t> buffer ( msg_size );
@@ -122,7 +123,7 @@ PlotDataMap DataLoadROS::readDataFromFile(const std::string& file_name,
         // this single line takes almost the entire time of the loop
         msg.write(stream);
 
-        SString topic_name( msg.getTopic().data(),  msg.getTopic().size() );
+        SString topic_name( topic.data(),  topic.size() );
 
         buildRosFlatType(type_map[ datatype ], datatype, topic_name, buffer.data(), &flat_container);
         applyNameTransform( _rules[datatype], &flat_container );
@@ -148,28 +149,19 @@ PlotDataMap DataLoadROS::readDataFromFile(const std::string& file_name,
             msg_time -= first_time.toSec();
         }
 
-        static std::map<const SString*, PlotDataPtr> cache;
-
         for(const auto& it: flat_container.renamed_value )
         {
-            auto cache_it = cache.find( &it.first);
+            std::string field_name( it.first.data(), it.first.size());
 
-            if( cache_it == cache.end())
+            auto plot_pair = plot_map.numeric.find( field_name );
+            if( plot_pair == plot_map.numeric.end() )
             {
-                std::string field_name( it.first.data(), it.first.size());
-
-                auto plot_pair = plot_map.numeric.find( field_name );
-                if( plot_pair == plot_map.numeric.end() )
-                {
-                    PlotDataPtr temp(new PlotData());
-                    auto res = plot_map.numeric.insert( std::make_pair(field_name, temp ) );
-                    plot_pair = res.first;
-                }
-                auto res = cache.insert( std::make_pair( &it.first, plot_pair->second ) );
-                cache_it = res.first;
+                PlotDataPtr temp(new PlotData());
+                auto res = plot_map.numeric.insert( std::make_pair(field_name, temp ) );
+                plot_pair = res.first;
             }
 
-            const PlotDataPtr& plot_data = cache_it->second;
+            PlotDataPtr& plot_data = plot_pair->second;
             plot_data->pushBack( PlotData::Point(msg_time, it.second));
         } //end of for flat_container.renamed_value
 
@@ -181,7 +173,7 @@ PlotDataMap DataLoadROS::readDataFromFile(const std::string& file_name,
             if( plot_pair == plot_map.user_defined.end() )
             {
                 PlotDataAnyPtr temp(new PlotDataAny());
-                auto res = plot_map.user_defined.insert( std::make_pair( msg.getTopic(), temp ) );
+                auto res = plot_map.user_defined.insert( std::make_pair( topic, temp ) );
                 plot_pair = res.first;
             }
             PlotDataAnyPtr& plot_raw = plot_pair->second;
