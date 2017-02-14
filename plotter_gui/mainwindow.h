@@ -26,7 +26,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit MainWindow(bool test_option, QWidget *parent = 0);
+    explicit MainWindow(const QCommandLineParser& commandline_parser, QWidget *parent = 0);
     ~MainWindow();
 
 public slots:
@@ -49,6 +49,8 @@ private slots:
     void onActionSaveLayout();
 
     void onActionLoadLayout(bool reload_previous = false);
+
+    void onActionLoadLayoutFromFile(QString filename, bool load_data);
 
     void onActionLoadDataFile(bool reload_from_settings = false);
 
@@ -123,8 +125,6 @@ private:
     PlotDataMap    _mapped_plot_data;
 
     void rearrangeGridLayout();
-
-    QColor randomColorHint();
 
     void loadPlugins(QString subdir_name);
 

@@ -67,16 +67,6 @@ QRectF PlotDataQwt::maximumBoundingRect(double min_X, double max_X)
     return rect;
 }
 
-QColor PlotDataQwt::randomColorHint() const
-{   
-     return _plot_data->getColorHint() ;
-}
-
-void PlotDataQwt::setColorHint(QColor color)
-{
-     _plot_data->setColorHint(color) ;
-}
-
 void PlotDataQwt::setSubsampleFactor()
 {
   //  _subsample = (_plot_data->size() / 2000) + 1;
