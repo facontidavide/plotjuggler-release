@@ -19,6 +19,8 @@
 #include <qwt_text.h>
 #include <QActionGroup>
 
+#include <PlotJuggler/random_color.h>
+
 //#include <qwt_plot_opengl_canvas.h>
 //#include <qwt_plot_glcanvas.h>
 
@@ -233,12 +235,17 @@ bool PlotWidget::addCurve(const QString &name, bool do_replot)
             curve->setStyle( QwtPlotCurve::Lines);
         }
 
-        curve->setPen( data->getColorHint(),  0.7 );
+        QColor color = data->getColorHint();
+        if( color == Qt::black)
+        {
+            color = randomColorHint();
+            data->setColorHint(color);
+        }
+        curve->setPen( color,  0.7 );
         curve->setRenderHint( QwtPlotItem::RenderAntialiased, true );
 	    
         curve->attach( this );
         _curve_list.insert( std::make_pair(name, curve));
-        
     }
 
     auto rangeX = maximumRangeX();
