@@ -33,35 +33,36 @@ PlotDataMap& DataStreamROS::getDataMap()
 
 void DataStreamROS::topicCallback(const topic_tools::ShapeShifter::ConstPtr& msg, const std::string &topic_name)
 {
+    std::lock_guard<std::mutex> lock(_mutex);
 
-    if( !_running ||  !_enabled)
-    {
+    if( !_running ||  !_enabled){
         return;
     }
 
-//    static ros::Time prev_time = ros::Time::now();
-//    ros::Duration elapsed_time = ros::Time::now() - prev_time;
-//    _received_msg_count++;
-//    if( elapsed_time > ros::Duration(1))
-//    {
-//        prev_time += elapsed_time;
-//      //  qDebug() << "count: " << ((double)_received_msg_count)/ elapsed_time.toSec();
-//        _received_msg_count = 0;
-//    }
+    //    static ros::Time prev_time = ros::Time::now();
+    //    ros::Duration elapsed_time = ros::Time::now() - prev_time;
+    //    _received_msg_count++;
+    //    if( elapsed_time > ros::Duration(1))
+    //    {
+    //        prev_time += elapsed_time;
+    //      //  qDebug() << "count: " << ((double)_received_msg_count)/ elapsed_time.toSec();
+    //        _received_msg_count = 0;
+    //    }
     using namespace RosIntrospection;
-
-    static std::set<std::string> registered_type;
 
     auto& datatype = msg->getDataType();
 
     // Decode this message time if it is the first time you receive it
-    if( registered_type.find( datatype ) == registered_type.end() )
+    auto it = _ros_type_map.find(datatype);
+    if( it == _ros_type_map.end() )
     {
-        registered_type.insert( datatype );
-        _ros_type_map = buildROSTypeMapFromDefinition(
+        auto typemap = buildROSTypeMapFromDefinition(
                     datatype,
                     msg->getMessageDefinition() );
+        auto ret = _ros_type_map.insert( std::make_pair(datatype, std::move(typemap)));
+        it = ret.first;
     }
+    const RosIntrospection::ROSTypeList& type_map = it->second;
 
     //------------------------------------
     uint8_t buffer[1024*64]; // "64 KB ought to be enough for anybody"
@@ -74,7 +75,7 @@ void DataStreamROS::topicCallback(const topic_tools::ShapeShifter::ConstPtr& msg
 
     SString topicname( topic_name.data(), topic_name.length() );
 
-    buildRosFlatType( _ros_type_map, datatype, topicname, buffer, &flat_container);
+    buildRosFlatType( type_map, datatype, topicname, buffer, &flat_container);
     applyNameTransform( _rules[datatype], &flat_container );
 
     SString header_stamp_field( topic_name );
@@ -227,15 +228,23 @@ bool DataStreamROS::isStreamingEnabled() const { return _enabled; }
 
 void DataStreamROS::shutdown()
 {
-    _subscribers.clear();
-
-    if(ros::isStarted() && _running)
-    {
+    if( _running ){
         _running = false;
+        _thread.join();
+        _node.reset();
+    }
+
+    for(ros::Subscriber& sub: _subscribers)
+    {
+        sub.shutdown();
+    }
+    if(ros::isStarted() )
+    {
         ros::shutdown(); // explicitly needed since we use ros::start();;
         ros::waitForShutdown();
-        _thread.join();
     }
+
+    _subscribers.clear();
 }
 
 DataStreamROS::~DataStreamROS()
