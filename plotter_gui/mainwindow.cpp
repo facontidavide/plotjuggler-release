@@ -96,10 +96,20 @@ MainWindow::MainWindow(const QCommandLineParser &commandline_parser, QWidget *pa
                                   Q_ARG(QString, commandline_parser.value("layout")),
                                   Q_ARG(bool, file_loaded ) );
     }
+
+    QSettings settings( "IcarusTechnology", "PlotJuggler");
+    restoreGeometry(settings.value("MainWindow.geometry").toByteArray());
 }
 
 MainWindow::~MainWindow()
 {
+    if( _current_streamer )
+    {
+        _current_streamer->shutdown();
+        _current_streamer = nullptr;
+    }
+    QSettings settings( "IcarusTechnology", "PlotJuggler");
+    settings.setValue("MainWindow.geometry", saveGeometry());
     delete ui;
 }
 
