@@ -28,16 +28,17 @@
 #include "selectlistdialog.h"
 #include "aboutdialog.h"
 
-MainWindow::MainWindow(bool test_option, QWidget *parent) :
+MainWindow::MainWindow(const QCommandLineParser &commandline_parser, QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
     _undo_shortcut(QKeySequence(Qt::CTRL + Qt::Key_Z), this),
     _redo_shortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Z), this),
     _current_streamer(nullptr),
-    _disable_undo_logging(false),
-    _test_option(test_option)
+    _disable_undo_logging(false)
 {
     QLocale::setDefault(QLocale::c()); // set as default
+
+    _test_option = (commandline_parser.isSet("test"));
 
     _curvelist_widget = new FilterableListWidget(this);
     _streamer_signal_mapper = new QSignalMapper(this);
@@ -79,7 +80,21 @@ MainWindow::MainWindow(bool test_option, QWidget *parent) :
 
     if( _test_option )
     {
-      buildData();
+        buildData();
+    }
+
+    bool file_loaded = false;
+    if( commandline_parser.isSet("datafile"))
+    {
+        QMetaObject::invokeMethod(this, "onActionLoadDataFileImpl",
+                                  Q_ARG(QString, commandline_parser.value("datafile")) );
+        file_loaded = true;
+    }
+    if( commandline_parser.isSet("layout"))
+    {
+        QMetaObject::invokeMethod(this, "onActionLoadLayoutFromFile",
+                                  Q_ARG(QString, commandline_parser.value("layout")),
+                                  Q_ARG(bool, file_loaded ) );
     }
 }
 
@@ -210,8 +225,8 @@ void MainWindow::createTabbedDialog(PlotMatrix* first_tab, bool undoable)
 
     _floating_window.push_back( window );
 
-   // TabbedPlotWidget *tabbed_widget = new TabbedPlotWidget( &_mapped_plot_data, window);
-   //_tabbed_plotarea.push_back( tabbed_widget );
+    // TabbedPlotWidget *tabbed_widget = new TabbedPlotWidget( &_mapped_plot_data, window);
+    //_tabbed_plotarea.push_back( tabbed_widget );
 
     window->tabbedWidget()->setStreamingMode( ui->pushButtonStreaming->isChecked() );
 
@@ -231,7 +246,7 @@ void MainWindow::dragEnterEvent(QDragEnterEvent *event)
 
     foreach(QString format, mimeFormats)
     {
-       // qDebug() << " mimestuff " << format;
+        // qDebug() << " mimestuff " << format;
     }
 }
 
@@ -280,27 +295,6 @@ void MainWindow::createActions()
     }
 }
 
-
-QColor MainWindow::randomColorHint()
-{
-    static int index = 0;
-    QColor color;
-    switch( index%9 )
-    {
-    case 0:  color = QColor(Qt::black) ;break;
-    case 1:  color = QColor(Qt::blue);break;
-    case 2:  color =  QColor(Qt::red); break;
-    case 3:  color =  QColor(Qt::darkGreen); break;
-    case 4:  color =  QColor(Qt::magenta); break;
-    case 5:  color =  QColor(Qt::darkCyan); break;
-    case 6:  color =  QColor(Qt::gray); break;
-    case 7:  color =  QColor(Qt::darkBlue); break;
-    case 8:  color =  QColor(Qt::darkYellow); break;
-    }
-    index++;
-    return color;
-}
-
 void MainWindow::loadPlugins(QString directory_name)
 {
     static std::set<QString> loaded_plugins;
@@ -325,11 +319,11 @@ void MainWindow::loadPlugins(QString directory_name)
                 qDebug() << filename << ": is a DataLoader plugin";
                 if( !_test_option && loader->isDebugPlugin())
                 {
-                  qDebug() << filename << "...but will be ignored unless the argument -t is used.";
+                    qDebug() << filename << "...but will be ignored unless the argument -t is used.";
                 }
                 else{
-                  loaded_plugins.insert( loader->name() );
-                  _data_loader.insert( std::make_pair( loader->name(), loader) );
+                    loaded_plugins.insert( loader->name() );
+                    _data_loader.insert( std::make_pair( loader->name(), loader) );
                 }
             }
 
@@ -339,44 +333,44 @@ void MainWindow::loadPlugins(QString directory_name)
                 qDebug() << filename << ": is a StatePublisher plugin";
                 if( !_test_option && publisher->isDebugPlugin())
                 {
-                  qDebug() << filename << "...but will be ignored unless the argument -t is used.";
+                    qDebug() << filename << "...but will be ignored unless the argument -t is used.";
                 }
                 else
                 {
-                  loaded_plugins.insert( publisher->name() );
-                  _state_publisher.insert( std::make_pair(publisher->name(), publisher) );
+                    loaded_plugins.insert( publisher->name() );
+                    _state_publisher.insert( std::make_pair(publisher->name(), publisher) );
 
-                  QAction* activatePublisher = new QAction( publisher->name() , this);
-                  activatePublisher->setCheckable(true);
-                  activatePublisher->setChecked(false);
-                  ui->menuPublishers->setEnabled(true);
-                  ui->menuPublishers->addAction(activatePublisher);
+                    QAction* activatePublisher = new QAction( publisher->name() , this);
+                    activatePublisher->setCheckable(true);
+                    activatePublisher->setChecked(false);
+                    ui->menuPublishers->setEnabled(true);
+                    ui->menuPublishers->addAction(activatePublisher);
 
-                  connect(activatePublisher, SIGNAL( toggled(bool)),
-                          publisher->getObject(), SLOT(setEnabled(bool)) );
+                    connect(activatePublisher, SIGNAL( toggled(bool)),
+                            publisher->getObject(), SLOT(setEnabled(bool)) );
                 }
             }
 
             DataStreamer *streamer =  qobject_cast<DataStreamer *>(plugin);
             if (streamer)
             {
-              qDebug() << filename << ": is a DataStreamer plugin";
-              if( !_test_option && streamer->isDebugPlugin())
-              {
-                qDebug() << filename << "...but will be ignored unless the argument -t is used.";
-              }
-              else{
-                QString name(streamer->name());
-                loaded_plugins.insert( name );
-                _data_streamer.insert( std::make_pair(name , streamer ) );
+                qDebug() << filename << ": is a DataStreamer plugin";
+                if( !_test_option && streamer->isDebugPlugin())
+                {
+                    qDebug() << filename << "...but will be ignored unless the argument -t is used.";
+                }
+                else{
+                    QString name(streamer->name());
+                    loaded_plugins.insert( name );
+                    _data_streamer.insert( std::make_pair(name , streamer ) );
 
-                QAction* startStreamer = new QAction(QString("Start: ") + name, this);
-                ui->menuStreaming->setEnabled(true);
-                ui->menuStreaming->addAction(startStreamer);
+                    QAction* startStreamer = new QAction(QString("Start: ") + name, this);
+                    ui->menuStreaming->setEnabled(true);
+                    ui->menuStreaming->addAction(startStreamer);
 
-                connect(startStreamer, SIGNAL(triggered()), _streamer_signal_mapper, SLOT(map()));
-                _streamer_signal_mapper->setMapping(startStreamer, name );
-              }
+                    connect(startStreamer, SIGNAL(triggered()), _streamer_signal_mapper, SLOT(map()));
+                    _streamer_signal_mapper->setMapping(startStreamer, name );
+                }
             }
         }
         else{
@@ -415,9 +409,6 @@ void MainWindow::buildData()
             t += 0.001;
             plot->pushBack( PlotData::Point( t,  A*sin(B*t + C) + D*t*0.02 ) ) ;
         }
-        QColor color = randomColorHint();
-        plot->setColorHint( color );
-
         _mapped_plot_data.numeric.insert( std::make_pair( name.toStdString(), plot) );
     }
     ui->horizontalSlider->setRange(0, SIZE  );
@@ -623,7 +614,7 @@ std::vector<PlotWidget*> MainWindow::getAllPlots()
 
     tabbed_plotarea.push_back( _main_tabbed_widget );
     for (SubWindow* subwin: _floating_window){
-      tabbed_plotarea.push_back( subwin->tabbedWidget() );
+        tabbed_plotarea.push_back( subwin->tabbedWidget() );
     }
 
     for (size_t i = 0; i < tabbed_plotarea.size(); i++)
@@ -691,11 +682,11 @@ void MainWindow::onActionLoadDataFile(bool reload_from_settings)
 
     for (auto& it: _data_loader)
     {
-       DataLoader* loader = it.second;
-       for (QString extension: loader->compatibleFileExtensions() )
-       {
-          extensions.insert( extension.toLower() );
-       }
+        DataLoader* loader = it.second;
+        for (QString extension: loader->compatibleFileExtensions() )
+        {
+            extensions.insert( extension.toLower() );
+        }
     }
 
     for (auto it = extensions.begin(); it != extensions.end(); it++)
@@ -747,8 +738,6 @@ void MainWindow::importPlotDataMap(const PlotDataMap& mapped_data)
         // this is a new plot
         if( plot_with_same_name == _mapped_plot_data.numeric.end() )
         {
-            QColor color = randomColorHint();
-            plot->setColorHint( color );
             _curvelist_widget->addItem( new QListWidgetItem( qname ) );
             _mapped_plot_data.numeric.insert( std::make_pair(name, plot) );
         }
@@ -784,7 +773,6 @@ void MainWindow::importPlotDataMap(const PlotDataMap& mapped_data)
             }
         }
     }
-
     _undo_states.clear();
     _redo_states.clear();
     _undo_states.push_back(  xmlSaveState() );
@@ -804,62 +792,59 @@ void MainWindow::onActionLoadDataFileImpl(QString filename, bool reuse_last_time
 
     for (MapIterator it = _data_loader.begin(); it != _data_loader.end(); it++)
     {
-       DataLoader* data_loader = it->second;
-       std::vector<const char*> extensions = data_loader->compatibleFileExtensions();
+        DataLoader* data_loader = it->second;
+        std::vector<const char*> extensions = data_loader->compatibleFileExtensions();
 
-       for(auto& ext: extensions){
+        for(auto& ext: extensions){
 
-         if( extension == QString(ext).toLower()){
-           compatible_loaders.push_back( it );
-           break;
-         }
-       }
+            if( extension == QString(ext).toLower()){
+                compatible_loaders.push_back( it );
+                break;
+            }
+        }
     }
 
     if( compatible_loaders.size() == 1)
     {
-       loader = compatible_loaders.front()->second;
+        loader = compatible_loaders.front()->second;
     }
     else{
-      static QString last_plugin_name_used;
+        static QString last_plugin_name_used;
 
-      QStringList names;
-      for (auto cl: compatible_loaders)
-      {
-        const auto& name = cl->first;
+        QStringList names;
+        for (auto cl: compatible_loaders)
+        {
+            const auto& name = cl->first;
 
-        if( name == last_plugin_name_used ){
-            names.push_front( name );
+            if( name == last_plugin_name_used ){
+                names.push_front( name );
+            }
+            else{
+                names.push_back( name );
+            }
         }
-        else{
-            names.push_back( name );
-        }
-      }
 
-       bool ok;
-       QString plugin_name = QInputDialog::getItem(this, tr("QInputDialog::getItem()"), tr("Select the loader to use:"), names, 0, false, &ok);
-       if (ok && !plugin_name.isEmpty())
-       {
-             loader = _data_loader[ plugin_name ];
-             last_plugin_name_used = plugin_name;
-       }
+        bool ok;
+        QString plugin_name = QInputDialog::getItem(this, tr("QInputDialog::getItem()"), tr("Select the loader to use:"), names, 0, false, &ok);
+        if (ok && !plugin_name.isEmpty())
+        {
+            loader = _data_loader[ plugin_name ];
+            last_plugin_name_used = plugin_name;
+        }
     }
-
 
     if( loader )
     {
-        {
-            QFile file(filename);
+        QFile file(filename);
 
-            if (!file.open(QFile::ReadOnly | QFile::Text)) {
-                QMessageBox::warning(this, tr("Datafile"),
-                                     tr("Cannot read file %1:\n%2.")
-                                     .arg(filename)
-                                     .arg(file.errorString()));
-                return;
-            }
-            file.close();
+        if (!file.open(QFile::ReadOnly | QFile::Text)) {
+            QMessageBox::warning(this, tr("Datafile"),
+                                 tr("Cannot read file %1:\n%2.")
+                                 .arg(filename)
+                                 .arg(file.errorString()));
+            return;
         }
+        file.close();
 
         _loaded_datafile = filename;
         ui->actionReloadData->setEnabled( true );
@@ -977,11 +962,17 @@ void MainWindow::onActionLoadLayout(bool reload_previous)
                                                 directory_path,
                                                 "*.xml");
     }
-
     if (filename.isEmpty())
         return;
+    else
+        onActionLoadLayoutFromFile(filename, true);
+}
 
-    directory_path = QFileInfo(filename).absolutePath();
+void MainWindow::onActionLoadLayoutFromFile(QString filename, bool load_data)
+{
+    QSettings settings( "IcarusTechnology", "PlotJuggler");
+
+    QString directory_path = QFileInfo(filename).absolutePath();
     settings.setValue("MainWindow.lastLayoutDirectory",  directory_path);
     settings.setValue("MainWindow.recentlyLoadedLayout", filename);
 
@@ -1011,39 +1002,40 @@ void MainWindow::onActionLoadLayout(bool reload_previous)
 
     QDomElement root = domDocument.namedItem("root").toElement();
 
-    QDomElement previously_loaded_datafile =  root.firstChildElement( "previouslyLoadedDatafile" );
-    if( previously_loaded_datafile.isNull() == false)
+    if(load_data)
     {
-        QString filename = previously_loaded_datafile.text();
-
-        QMessageBox::StandardButton reload_previous;
-        reload_previous = QMessageBox::question(0, tr("Wait!"),
-                                                tr("Do you want to reload the datafile?\n\n[%1]\n").arg(filename),
-                                                QMessageBox::Yes | QMessageBox::No,
-                                                QMessageBox::Yes );
-
-        if( reload_previous == QMessageBox::Yes )
+        QDomElement previously_loaded_datafile =  root.firstChildElement( "previouslyLoadedDatafile" );
+        if( previously_loaded_datafile.isNull() == false)
         {
-            onActionLoadDataFileImpl( filename );
+            QString filename = previously_loaded_datafile.text();
+
+            QMessageBox::StandardButton reload_previous;
+            reload_previous = QMessageBox::question(0, tr("Wait!"),
+                                                    tr("Do you want to reload the datafile?\n\n[%1]\n").arg(filename),
+                                                    QMessageBox::Yes | QMessageBox::No,
+                                                    QMessageBox::Yes );
+
+            if( reload_previous == QMessageBox::Yes ) {
+                onActionLoadDataFileImpl( filename );
+            }
         }
-    }
 
-    QDomElement previously_loaded_streamer =  root.firstChildElement( "previouslyLoadedStreamer" );
-    if( previously_loaded_streamer.isNull() == false)
-    {
-        QString streamer_name = previously_loaded_streamer.text();
-
-        bool streamer_loaded = false;
-        for(auto& it: _data_streamer)
+        QDomElement previously_loaded_streamer =  root.firstChildElement( "previouslyLoadedStreamer" );
+        if( previously_loaded_streamer.isNull() == false)
         {
-            if( it.first == streamer_name) streamer_loaded = true;
-        }
-        if( streamer_loaded ){
-            onActionLoadStreamer( streamer_name );
-        }
-        else{
-            QMessageBox::warning(this, tr("Error Loading Streamer"),
-                                 tr("The stramer named %1 can not be loaded.").arg(streamer_name));
+            QString streamer_name = previously_loaded_streamer.text();
+
+            bool streamer_loaded = false;
+            for(auto& it: _data_streamer) {
+                if( it.first == streamer_name) streamer_loaded = true;
+            }
+            if( streamer_loaded ){
+                onActionLoadStreamer( streamer_name );
+            }
+            else{
+                QMessageBox::warning(this, tr("Error Loading Streamer"),
+                                     tr("The stramer named %1 can not be loaded.").arg(streamer_name));
+            }
         }
     }
 
@@ -1060,7 +1052,7 @@ void MainWindow::onActionLoadLayout(bool reload_previous)
 
 void MainWindow::onUndoInvoked( )
 {
-   // qDebug() << "on_UndoInvoked "<<_undo_states.size() << " -> " <<_undo_states.size()-1;
+    // qDebug() << "on_UndoInvoked "<<_undo_states.size() << " -> " <<_undo_states.size()-1;
 
     _disable_undo_logging = true;
     if( _undo_states.size() > 1)
@@ -1156,7 +1148,7 @@ void MainWindow::onSwapPlots(PlotWidget *source, PlotWidget *destination)
 
     tabbed_plotarea.push_back( _main_tabbed_widget );
     for (SubWindow* subwin: _floating_window){
-      tabbed_plotarea.push_back( subwin->tabbedWidget() );
+        tabbed_plotarea.push_back( subwin->tabbedWidget() );
     }
 
     for(size_t w=0; w < tabbed_plotarea.size(); w++)
@@ -1190,16 +1182,16 @@ void MainWindow::onSwapPlots(PlotWidget *source, PlotWidget *destination)
     }
     if(src_matrix && dst_matrix)
     {
-       src_matrix->gridLayout()->removeWidget( source );
-       dst_matrix->gridLayout()->removeWidget( destination );
+        src_matrix->gridLayout()->removeWidget( source );
+        dst_matrix->gridLayout()->removeWidget( destination );
 
-       src_matrix->gridLayout()->addWidget( destination, src_pos.x(), src_pos.y() );
-       dst_matrix->gridLayout()->addWidget( source,      dst_pos.x(), dst_pos.y() );
+        src_matrix->gridLayout()->addWidget( destination, src_pos.x(), src_pos.y() );
+        dst_matrix->gridLayout()->addWidget( source,      dst_pos.x(), dst_pos.y() );
 
-       src_matrix->updateLayout();
-       if( src_matrix != dst_matrix){
-         dst_matrix->updateLayout();
-       }
+        src_matrix->updateLayout();
+        if( src_matrix != dst_matrix){
+            dst_matrix->updateLayout();
+        }
     }
     onUndoableChange();
 }
@@ -1284,8 +1276,8 @@ void MainWindow::on_pushButtonActivateTracker_toggled(bool checked)
 
 void MainWindow::on_actionAbout_triggered()
 {
-  AboutDialog* aboutdialog = new AboutDialog(this);
-  aboutdialog->show();
+    AboutDialog* aboutdialog = new AboutDialog(this);
+    aboutdialog->show();
 }
 
 void MainWindow::on_actionStopStreaming_triggered()
