@@ -3,6 +3,29 @@
 #include <QSettings>
 #include <QMessageBox>
 
+void showNoMasterMessage()
+{
+  QMessageBox msgBox;
+  msgBox.setText("Could not connect to the ros master.");
+  msgBox.exec();
+}
+
+std::string getDefaultMasterURI()
+{
+    if(  qgetenv("ROS_MASTER_URI").isEmpty() )
+    {
+      QMessageBox msgBox;
+      msgBox.setText("WARNINGS: the ROS_MASTER_URI is not defined in your environment\n"
+                     "Using the default value [http://localhost:11311]\n");
+      msgBox.exec();
+      return "http://localhost:11311";
+    }
+    else{
+      auto master_uri = ( qgetenv("ROS_MASTER_URI"));
+      return std::string( master_uri.data() );
+    }
+}
+
 QNodeDialog::QNodeDialog( QWidget *parent) :
   QDialog(parent),
   ui(new Ui::QNodeDialog)
@@ -16,6 +39,21 @@ QNodeDialog::QNodeDialog( QWidget *parent) :
 
   ui->lineEditMaster->setText( master_ui );
   ui->lineEditHost->setText( host_ip );
+}
+
+bool QNodeDialog::Connect(const std::string& ros_master_uri,
+                          const std::string& hostname)
+{
+  std::map<std::string,std::string> remappings;
+  remappings["__master"] = ros_master_uri;
+  remappings["__hostname"] = hostname;
+
+  ros::init(remappings, "PlotJugglerStreamingListener");
+  bool connected = ros::master::check();
+  if ( ! connected ) {
+    showNoMasterMessage();
+  }
+  return connected;
 }
 
 
@@ -32,18 +70,6 @@ void QNodeDialog::on_pushButtonConnect_pressed()
   int init_argc = 0;
   char** init_argv = NULL;
 
-  if(ui->checkBoxUseEnvironment->isChecked() &&  qgetenv("ROS_MASTER_URI").isEmpty() )
-  {
-    QMessageBox msgBox;
-    msgBox.setText("ROS_MASTER_URI is not defined in the environment.\n"
-                   "Either type the following or (preferrably) add this to your ~/.bashrc \n"
-                   "file in order set up your local machine as a ROS master:\n\n"
-                   "    export ROS_MASTER_URI=http://localhost:11311\n\n"
-                   "Then, type 'roscore' in another shell to actually launch the master program.");
-    msgBox.exec();
-    return;
-  }
-
   if( ui->checkBoxUseEnvironment->isChecked() )
   {
     ros::init(init_argc,init_argv,"PlotJugglerStreamingListener");
@@ -53,34 +79,16 @@ void QNodeDialog::on_pushButtonConnect_pressed()
     }
   }
   else{
-    std::map<std::string,std::string> remappings;
-    remappings["__master"]   = ui->lineEditMaster->text().toStdString();
-    remappings["__hostname"] = ui->lineEditHost->text().toStdString();
-
-    ros::init(remappings, "PlotJugglerStreamingListener");
-    if ( ! ros::master::check() ) {
-      showNoMasterMessage();
-      return;
+    std::string ros_master_uri = ui->lineEditMaster->text().toStdString();
+    std::string hostname       = ui->lineEditHost->text().toStdString();
+    bool connected = QNodeDialog::Connect(ros_master_uri, hostname);
+    if( connected )
+    {
+        this->close();
     }
   }
-  ui->pushButtonConnect->setEnabled(false);
-  ui->pushButtonDisconnect->setEnabled(true);
-
-
 }
 
-void QNodeDialog::showNoMasterMessage()
-{
-  QMessageBox msgBox;
-  msgBox.setText("Couldn't find the ros master.");
-  msgBox.exec();
-}
-
-void QNodeDialog::on_pushButtonDisconnect_pressed()
-{
-  ui->pushButtonConnect->setEnabled(true);
-  ui->pushButtonDisconnect->setEnabled(false);
-}
 
 void QNodeDialog::on_checkBoxUseEnvironment_toggled(bool checked)
 {
@@ -94,13 +102,19 @@ ros::NodeHandlePtr getGlobalRosNode()
 
   if( !node_ptr )
   {
-    if( !ros::isInitialized() )
+    if( !ros::master::check() )
     {
-      QNodeDialog dialog;
-      dialog.exec();
+        std::string master_uri = getDefaultMasterURI();
+        bool connected = QNodeDialog::Connect(master_uri, "localhost" );
+        if ( ! connected )
+        {
+           //as a fallback strategy, launch the QNodeDialog
+          QNodeDialog dialog;
+          dialog.exec();
+        }
     }
 
-    if( ros::isInitialized()  )
+    if( ros::master::check() && ros::isInitialized()  )
     {
       node_ptr.reset( new ros::NodeHandle );
     }
@@ -108,3 +122,8 @@ ros::NodeHandlePtr getGlobalRosNode()
   return node_ptr;
 }
 
+
+void QNodeDialog::on_pushButtonCancel_pressed()
+{
+    this->close();
+}

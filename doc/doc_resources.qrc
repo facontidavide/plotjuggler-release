@@ -1,0 +1,10 @@
+<RCC>
+    <qresource prefix="/doc">
+        <file>pj-area-zoom.gif</file>
+        <file>pj-drag-curve.gif</file>
+        <file>pj-multiplot.gif</file>
+        <file>pj-swap-plots.gif</file>
+        <file>pj-tracker.gif</file>
+        <file>pj-wheel-zoom.gif</file>
+    </qresource>
+</RCC>
