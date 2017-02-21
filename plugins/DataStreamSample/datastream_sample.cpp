@@ -9,27 +9,6 @@
 #include <thread>
 #include <math.h>
 
-
-QColor randomColorHint()
-{
-    static int index = 0;
-    QColor color;
-    switch( index%9 )
-    {
-    case 0:  color = QColor(Qt::black) ;break;
-    case 1:  color = QColor(Qt::blue);break;
-    case 2:  color =  QColor(Qt::red); break;
-    case 3:  color =  QColor(Qt::darkGreen); break;
-    case 4:  color =  QColor(Qt::magenta); break;
-    case 5:  color =  QColor(Qt::darkCyan); break;
-    case 6:  color =  QColor(Qt::gray); break;
-    case 7:  color =  QColor(Qt::darkBlue); break;
-    case 8:  color =  QColor(Qt::darkYellow); break;
-    }
-    index++;
-    return color;
-}
-
 DataStreamSample::DataStreamSample():
     _simulated_time(0),
     _enabled(false)
@@ -50,13 +29,9 @@ DataStreamSample::DataStreamSample():
         vect_C.push_back(C);
         vect_D.push_back(D);
 
-        QColor color = randomColorHint();
-
         PlotDataPtr plot( new PlotData() );
         plot->setName( name.toStdString() );
         plot->setMaximumRangeX( 4.0 );
-        plot->setColorHint( color );
-
         _plot_data.numeric.insert( std::make_pair( name.toStdString(), plot) );
     }
 }

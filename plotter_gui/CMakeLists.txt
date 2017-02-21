@@ -1,19 +1,22 @@
 
 include_directories( ./ ../  ../include  ../common)
 
-QT5_ADD_RESOURCES (RES_SRC  resource.qrc)
+QT5_ADD_RESOURCES (RES_SRC  resource.qrc ../doc/doc_resources.qrc)
 
 QT5_WRAP_UI ( UI_SRC
+    aboutdialog.ui
     mainwindow.ui
     removecurvedialog.ui
     busydialog.ui
     curvecolorpick.ui
     filterablelistwidget.ui
     tabbedplotwidget.ui
+    help_dialog.ui
     ../common/selectlistdialog.ui
     )
 
 SET( PLOTTER_SRC
+    aboutdialog.cpp
     main.cpp
     mainwindow.cpp
     plotwidget.cpp
@@ -48,7 +51,7 @@ target_link_libraries(PlotJuggler
     qwt_static
     )
 
-if(catkin_FOUND)
+if(COMPILING_WITH_CATKIN)
     install(TARGETS PlotJuggler
        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
