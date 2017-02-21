@@ -5,6 +5,7 @@
 #include <QElapsedTimer>
 #include <QShortcut>
 #include <QCommandLineParser>
+#include <QSignalMapper>
 #include <set>
 #include <deque>
 #include "plotwidget.h"
@@ -25,7 +26,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit MainWindow(bool test_option, QWidget *parent = 0);
+    explicit MainWindow(const QCommandLineParser& commandline_parser, QWidget *parent = 0);
     ~MainWindow();
 
 public slots:
@@ -49,6 +50,8 @@ private slots:
 
     void onActionLoadLayout(bool reload_previous = false);
 
+    void onActionLoadLayoutFromFile(QString filename, bool load_data);
+
     void onActionLoadDataFile(bool reload_from_settings = false);
 
     void onActionLoadDataFileImpl(QString filename, bool reuse_last_timeindex = false );
@@ -59,7 +62,7 @@ private slots:
 
     void onActionReloadRecentLayout();
 
-    void onActionLoadStreamer();
+    void onActionLoadStreamer(QString streamer_name);
 
     void onUndoInvoked();
 
@@ -86,6 +89,14 @@ private slots:
     void onDeleteLoadedData();
 
     void on_pushButtonActivateTracker_toggled(bool checked);
+
+    void on_actionAbout_triggered();
+
+    void on_actionStopStreaming_triggered();
+
+    void on_actionExit_triggered();
+
+    void on_actionQuick_Help_triggered();
 
 private:
     Ui::MainWindow *ui;
@@ -117,8 +128,6 @@ private:
 
     void rearrangeGridLayout();
 
-    QColor randomColorHint();
-
     void loadPlugins(QString subdir_name);
 
     std::map<QString,DataLoader*>      _data_loader;
@@ -135,10 +144,13 @@ private:
 
     QElapsedTimer _undo_timer;
     bool _disable_undo_logging;
+    bool _test_option;
 
     QString _loaded_datafile;
 
     std::string _last_load_configuration;
+
+    QSignalMapper *_streamer_signal_mapper;
 
     void createTabbedDialog(PlotMatrix *first_tab, bool undoable);
 
@@ -160,6 +172,7 @@ signals:
     void trackerTimeUpdated(QPointF point);
 
     void activateTracker(bool active);
+
 };
 
 #endif // MAINWINDOW_H
