@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta content="text/html; charset=windows-1252" http-equiv="content-type">
+    <title>Plotjuggler-tracker</title>
+  </head>
+  <body>
+    <h1>The tracker</h1>
+    <p>The "tracker" is a vertical line that has two goals:</p>
+    <ol>
+      <li>To display the value of the time-series at a certain instant of time.</li>
+      <li>To trigger the plugins in the category "<span style="font-weight: bold;">StatePublisher</span>".</li>
+    </ol>
+    <p><br>
+    </p>
+  </body>
+</html>
