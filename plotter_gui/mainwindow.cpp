@@ -27,6 +27,8 @@
 #include "tabbedplotwidget.h"
 #include "selectlistdialog.h"
 #include "aboutdialog.h"
+#include <QMovie>
+#include "ui_help_dialog.h"
 
 MainWindow::MainWindow(const QCommandLineParser &commandline_parser, QWidget *parent) :
     QMainWindow(parent),
@@ -1319,4 +1321,38 @@ void MainWindow::on_actionExit_triggered()
     if( reply == QMessageBox::Yes ) {
         this->close();
     }
+}
+
+void MainWindow::on_actionQuick_Help_triggered()
+{
+    QDialog*  dialog = new QDialog(this);
+    Ui::HelpDialog *ui = new Ui::HelpDialog;
+    ui->setupUi(dialog);
+
+    QMovie *movie_1 = new QMovie(":/doc/pj-drag-curve.gif");
+    ui->label_1->setMovie(movie_1);
+    movie_1->start();
+
+    QMovie *movie_2 = new QMovie(":/doc/pj-multiplot.gif");
+    ui->label_2->setMovie(movie_2);
+    movie_2->start();
+
+    QMovie *movie_3 = new QMovie(":/doc/pj-area-zoom.gif");
+    ui->label_3->setMovie(movie_3);
+    movie_3->start();
+
+    QMovie *movie_4 = new QMovie(":/doc/pj-wheel-zoom.gif");
+    ui->label_4->setMovie(movie_4);
+    movie_4->start();
+
+    QMovie *movie_5 = new QMovie(":/doc/pj-tracker.gif");
+    ui->label_5->setMovie(movie_5);
+    movie_5->start();
+
+    QMovie *movie_6 = new QMovie(":/doc/pj-swap-plots.gif");
+    ui->label_6->setMovie(movie_6);
+    movie_6->start();
+
+
+    dialog->exec();
 }
