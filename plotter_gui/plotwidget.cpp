@@ -892,7 +892,7 @@ void PlotWidget::mouseReleaseEvent(QMouseEvent *event )
 
 bool PlotWidget::eventFilter(QObject *obj, QEvent *event)
 {
-    static bool isPressed = true;
+    static bool left_and_shift_pressed = false;
 
     if ( event->type() == QEvent::MouseButtonPress)
     {
@@ -901,7 +901,7 @@ bool PlotWidget::eventFilter(QObject *obj, QEvent *event)
         if( mouse_event->button() == Qt::LeftButton &&
             (mouse_event->modifiers() & Qt::ShiftModifier) )
         {
-            isPressed = true;
+            left_and_shift_pressed = true;
             const QPoint point = mouse_event->pos();
             QPointF pointF ( invTransform( xBottom, point.x()),
                              invTransform( yLeft, point.y()) );
@@ -914,7 +914,7 @@ bool PlotWidget::eventFilter(QObject *obj, QEvent *event)
 
         if( mouse_event->button() == Qt::LeftButton )
         {
-            isPressed = false;
+            left_and_shift_pressed = false;
         }
     }
     else if ( event->type() == QEvent::MouseMove )
@@ -922,7 +922,7 @@ bool PlotWidget::eventFilter(QObject *obj, QEvent *event)
         // special processing for mouse move
         QMouseEvent *mouse_event = static_cast<QMouseEvent*>(event);
 
-        if ( isPressed && mouse_event->modifiers() & Qt::ShiftModifier )
+        if ( left_and_shift_pressed && mouse_event->modifiers() & Qt::ShiftModifier )
         {
             const QPoint point = mouse_event->pos();
             QPointF pointF ( invTransform( xBottom, point.x()),
