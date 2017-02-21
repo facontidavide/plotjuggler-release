@@ -32,11 +32,13 @@ public:
 
     virtual const char* name() const override { return "ROS Topic Streamer";  }
 
+    virtual QObject* getObject() override { return this; }
+
 private:
 
     void topicCallback(const topic_tools::ShapeShifter::ConstPtr& msg, const std::string &topic_name);
 
-    void update();
+    void updateLoop();
 
     PlotDataMap _plot_data;
 
@@ -46,16 +48,25 @@ private:
 
     std::thread _thread;
 
-    RosIntrospection::ROSTypeList _ros_type_map;
+    std::mutex _mutex;
+
+    std::map<std::string, RosIntrospection::ROSTypeList> _ros_type_map;
 
     void extractInitialSamples();
 
-    ros::Time _initial_time;
+    double _initial_time;
+
+    bool _use_header_timestamp;
+
+    bool _normalize_time;
 
     ros::NodeHandlePtr _node;
+
     std::vector<ros::Subscriber> _subscribers;
 
     RosIntrospection::SubstitutionRuleMap _rules;
+
+    int _received_msg_count;
 };
 
 #endif // DATALOAD_CSV_H

@@ -218,7 +218,7 @@ border: 1px solid rgb(160, 160, 160);</string>
      <item>
       <widget class="QLabel" name="labelNumberDisplayed">
        <property name="text">
-        <string/>
+        <string>...</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignCenter</set>
@@ -227,54 +227,23 @@ border: 1px solid rgb(160, 160, 160);</string>
      </item>
      <item>
       <widget class="QListWidget" name="listWidget">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="minimumSize">
-        <size>
-         <width>100</width>
-         <height>0</height>
-        </size>
-       </property>
-       <property name="maximumSize">
-        <size>
-         <width>600</width>
-         <height>16777215</height>
-        </size>
-       </property>
-       <property name="baseSize">
-        <size>
-         <width>200</width>
-         <height>0</height>
-        </size>
-       </property>
-       <property name="focusPolicy">
-        <enum>Qt::NoFocus</enum>
-       </property>
-       <property name="styleSheet">
-        <string notr="true">border-radius: 3px;
-border: 1px solid rgb(160, 160, 160);</string>
-       </property>
-       <property name="frameShape">
-        <enum>QFrame::Box</enum>
-       </property>
-       <property name="frameShadow">
-        <enum>QFrame::Plain</enum>
-       </property>
        <property name="dragEnabled">
         <bool>true</bool>
        </property>
        <property name="selectionMode">
         <enum>QAbstractItemView::ExtendedSelection</enum>
        </property>
-       <property name="layoutMode">
-        <enum>QListView::SinglePass</enum>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="label">
+       <property name="font">
+        <font>
+         <pointsize>8</pointsize>
+        </font>
        </property>
-       <property name="sortingEnabled">
-        <bool>true</bool>
+       <property name="text">
+        <string>Tip: select multiple curves using left mouse + CTRL or SHIFT</string>
        </property>
       </widget>
      </item>

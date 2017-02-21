@@ -17,6 +17,8 @@ public:
     virtual void setEnabled(bool enabled) = 0;
 
     virtual QObject* getObject() = 0;
+
+    virtual bool isDebugPlugin() { return false; }
 };
 
 QT_BEGIN_NAMESPACE

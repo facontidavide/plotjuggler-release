@@ -12,154 +12,213 @@
 #include <ros/callback_queue.h>
 #include <QApplication>
 
-#include "rostopicselector.h"
-#include "../ruleloaderwidget.h"
+#include "../dialog_select_ros_topics.h"
+#include "../rule_editing.h"
 #include "../qnodedialog.h"
 
 DataStreamROS::DataStreamROS()
 {
-  _enabled = false;
-  _running = false;
+    _enabled = false;
+    _running = false;
+    _initial_time = std::numeric_limits<double>::max();
+
+    _use_header_timestamp = true;
+    _normalize_time = true;
 }
 
 PlotDataMap& DataStreamROS::getDataMap()
 {
-  return _plot_data;
+    return _plot_data;
 }
 
 void DataStreamROS::topicCallback(const topic_tools::ShapeShifter::ConstPtr& msg, const std::string &topic_name)
 {
-  if( !_running ||  !_enabled)
-  {
-    return;
-  }
+    std::lock_guard<std::mutex> lock(_mutex);
 
-  using namespace RosIntrospection;
-
-  static std::set<std::string> registered_type;
-
-  auto& datatype = msg->getDataType();
-
-  if( registered_type.find( datatype ) == registered_type.end() )
-  {
-    registered_type.insert( datatype );
-    _ros_type_map = buildROSTypeMapFromDefinition(
-          datatype,
-          msg->getMessageDefinition() );
-  }
-
-  //------------------------------------
-  uint8_t buffer[1024*64]; // "64 KB ought to be enough for anybody"
-  double msg_time = (ros::Time::now() - _initial_time).toSec();
-
-  ROSTypeFlat flat_container;
-
-  ros::serialization::OStream stream(buffer, sizeof(buffer));
-  msg->write(stream);
-
-  SString topicname( topic_name.data(), topic_name.length() );
-
-  buildRosFlatType( _ros_type_map, datatype, topicname, buffer, &flat_container);
-  applyNameTransform( _rules[topic_name], &flat_container );
-
-  // qDebug() << " pushing " << msg_time;
-
-  for(auto& it: flat_container.renamed_value )
-  {
-    std::string field_name ( it.first.data(), it.first.size());
-    auto value = it.second;
-
-    auto plot = _plot_data.numeric.find( field_name );
-    if( plot == _plot_data.numeric.end() )
-    {
-      PlotDataPtr temp(new PlotData());
-      temp->setMaximumRangeX( 4.0 );
-      auto res = _plot_data.numeric.insert( std::make_pair(field_name, temp ) );
-      plot = res.first;
+    if( !_running ||  !_enabled){
+        return;
     }
 
-    // IMPORTANT: don't use pushBack(), it may cause a segfault
-    plot->second->pushBackAsynchronously( PlotData::Point(msg_time, value));
-  }
+    //    static ros::Time prev_time = ros::Time::now();
+    //    ros::Duration elapsed_time = ros::Time::now() - prev_time;
+    //    _received_msg_count++;
+    //    if( elapsed_time > ros::Duration(1))
+    //    {
+    //        prev_time += elapsed_time;
+    //      //  qDebug() << "count: " << ((double)_received_msg_count)/ elapsed_time.toSec();
+    //        _received_msg_count = 0;
+    //    }
+    using namespace RosIntrospection;
+
+    auto& datatype = msg->getDataType();
+
+    // Decode this message time if it is the first time you receive it
+    auto it = _ros_type_map.find(datatype);
+    if( it == _ros_type_map.end() )
+    {
+        auto typemap = buildROSTypeMapFromDefinition(
+                    datatype,
+                    msg->getMessageDefinition() );
+        auto ret = _ros_type_map.insert( std::make_pair(datatype, std::move(typemap)));
+        it = ret.first;
+    }
+    const RosIntrospection::ROSTypeList& type_map = it->second;
+
+    //------------------------------------
+    uint8_t buffer[1024*64]; // "64 KB ought to be enough for anybody"
+
+    // it is more efficient to recycle ROSTypeFlat
+    static ROSTypeFlat flat_container;
+
+    ros::serialization::OStream stream(buffer, sizeof(buffer));
+    msg->write(stream);
+
+    SString topicname( topic_name.data(), topic_name.length() );
+
+    buildRosFlatType( type_map, datatype, topicname, buffer, &flat_container);
+    applyNameTransform( _rules[datatype], &flat_container );
+
+    SString header_stamp_field( topic_name );
+    header_stamp_field.append(".header.stamp");
+
+    double msg_time = 0;
+
+    // detrmine the time offset
+    if(_use_header_timestamp == false)
+    {
+        msg_time = ros::Time::now().toSec();
+    }
+    else{
+        auto offset = FlatContainedContainHeaderStamp(flat_container);
+        if(offset){
+            msg_time = offset.value();
+        }
+        else{
+            msg_time = ros::Time::now().toSec();
+        }
+    }
+    if( _normalize_time )
+    {
+        _initial_time = std::min( _initial_time, msg_time );
+        msg_time -= _initial_time;
+    }
+
+
+    for(auto& it: flat_container.renamed_value )
+    {
+        std::string field_name ( it.first.data(), it.first.size());
+        auto value = it.second;
+
+        auto plot = _plot_data.numeric.find( field_name );
+        if( plot == _plot_data.numeric.end() )
+        {
+            PlotDataPtr temp(new PlotData());
+            temp->setMaximumRangeX( 4.0 );
+            auto res = _plot_data.numeric.insert( std::make_pair(field_name, temp ) );
+            plot = res.first;
+        }
+
+        // IMPORTANT: don't use pushBack(), it may cause a segfault
+        plot->second->pushBackAsynchronously( PlotData::Point(msg_time, value));
+    }
 }
 
 void DataStreamROS::extractInitialSamples()
 {
-  _initial_time = ros::Time::now();
+    int wait_time = 2;
 
-  int wait_time = 4;
+    QProgressDialog progress_dialog;
+    progress_dialog.setLabelText( "Collecting ROS topic samples to understand data layout. ");
+    progress_dialog.setRange(0, wait_time*1000);
+    progress_dialog.setAutoClose(true);
+    progress_dialog.setAutoReset(true);
 
-  QProgressDialog progress_dialog;
-  progress_dialog.setLabelText( "Collecting ROS topic samples to understand data layout. ");
-  progress_dialog.setRange(0, wait_time*1000);
-  progress_dialog.setAutoClose(true);
-  progress_dialog.setAutoReset(true);
+    progress_dialog.show();
 
-  progress_dialog.show();
+    using namespace std::chrono;
+    auto start_time = system_clock::now();
 
-  using namespace std::chrono;
-  auto start_time = system_clock::now();
-
-  _enabled = true;
-  while ( system_clock::now() - start_time < seconds(wait_time) )
-  {
-    ros::getGlobalCallbackQueue()->callAvailable(ros::WallDuration(0.1));
-    int i = duration_cast<milliseconds>(system_clock::now() - start_time).count() ;
-    progress_dialog.setValue( i );
-    QApplication::processEvents();
-    if( progress_dialog.wasCanceled() )
+    _enabled = true;
+    while ( system_clock::now() - start_time < seconds(wait_time) )
     {
-      break;
+        ros::getGlobalCallbackQueue()->callAvailable(ros::WallDuration(0.1));
+        int i = duration_cast<milliseconds>(system_clock::now() - start_time).count() ;
+        progress_dialog.setValue( i );
+        QApplication::processEvents();
+        if( progress_dialog.wasCanceled() )
+        {
+            break;
+        }
     }
-  }
-  _enabled = false;
+    _enabled = false;
 
-  if( progress_dialog.wasCanceled() == false )
-  {
-    progress_dialog.cancel();
-  }
+    if( progress_dialog.wasCanceled() == false )
+    {
+        progress_dialog.cancel();
+    }
 }
 
 
 bool DataStreamROS::start()
 {
-  _node = getGlobalRosNode();
+    _plot_data.numeric.clear();
+    _plot_data.user_defined.clear();
+    _initial_time = std::numeric_limits<double>::max();
 
-  using namespace RosIntrospection;
+    _node = getGlobalRosNode();
+    if( !_node )
+    {
+        return false;
+    }
 
-  RosTopicSelector dialog( 0 );
-  int res = dialog.exec();
+    using namespace RosIntrospection;
 
-  QStringList topic_selected = dialog.getSelectedTopicsList();
+    std::vector<std::pair<QString,QString>> all_topics;
+    ros::master::V_TopicInfo topic_infos;
+    ros::master::getTopics(topic_infos);
+    for (ros::master::TopicInfo topic_info: topic_infos)
+    {
+        all_topics.push_back(
+                    std::make_pair(QString(topic_info.name.c_str()),
+                                   QString(topic_info.datatype.c_str()) ) );
+    }
 
-  if( res != QDialog::Accepted || topic_selected.empty() )
-  {
-    return false;
-  }
+    DialogSelectRosTopics dialog(all_topics, QStringList(), 0 );
+    int res = dialog.exec();
 
-  // load the rules
-  _rules = dialog.getLoadedRules();
+    QStringList topic_selected = dialog.getSelectedItems();
 
-  //-------------------------
+    if( res != QDialog::Accepted || topic_selected.empty() )
+    {
+        return false;
+    }
 
-  ros::start(); // needed because node will go out of scope
+    // load the rules
+    if( dialog.checkBoxUseRenamingRules()->isChecked() ){
+        _rules = RuleEditing::getRenamingRules();
+    }
+    _normalize_time       = dialog.checkBoxNormalizeTime()->isChecked();
+    _use_header_timestamp = dialog.checkBoxUseHeaderStamp()->isChecked();
+    //-------------------------
 
-  _subscribers.clear();
-  for (int i=0; i<topic_selected.size(); i++ )
-  {
-    auto topic_name = topic_selected.at(i).toStdString();
-    boost::function<void(const topic_tools::ShapeShifter::ConstPtr&) > callback;
-    callback = boost::bind( &DataStreamROS::topicCallback, this, _1, topic_name ) ;
-    _subscribers.push_back( _node->subscribe( topic_name, 1000,  callback)  );
-  }
+    ros::start(); // needed because node will go out of scope
 
-  _running = true;
+    _subscribers.clear();
+    for (int i=0; i<topic_selected.size(); i++ )
+    {
+        auto topic_name = topic_selected.at(i).toStdString();
+        boost::function<void(const topic_tools::ShapeShifter::ConstPtr&) > callback;
+        callback = boost::bind( &DataStreamROS::topicCallback, this, _1, topic_name ) ;
+        _subscribers.push_back( _node->subscribe( topic_name, 0,  callback)  );
+    }
 
-  extractInitialSamples();
+    _running = true;
 
-  _thread = std::thread([this](){ this->update();} );
+    extractInitialSamples();
 
-  return true;
+    _thread = std::thread([this](){ this->updateLoop();} );
+
+    return true;
 }
 
 void DataStreamROS::enableStreaming(bool enable) { _enabled = enable; }
@@ -169,16 +228,23 @@ bool DataStreamROS::isStreamingEnabled() const { return _enabled; }
 
 void DataStreamROS::shutdown()
 {
-    _subscribers.clear();
-    //_plot_data.numeric.clear();
-
-    if(ros::isStarted() && _running)
-    {
-      _running = false;
-      ros::shutdown(); // explicitly needed since we use ros::start();;
-      ros::waitForShutdown();
-      _thread.join();
+    if( _running ){
+        _running = false;
+        _thread.join();
+        _node.reset();
     }
+
+    for(ros::Subscriber& sub: _subscribers)
+    {
+        sub.shutdown();
+    }
+    if(ros::isStarted() )
+    {
+        ros::shutdown(); // explicitly needed since we use ros::start();;
+        ros::waitForShutdown();
+    }
+
+    _subscribers.clear();
 }
 
 DataStreamROS::~DataStreamROS()
@@ -187,11 +253,13 @@ DataStreamROS::~DataStreamROS()
 }
 
 
-void DataStreamROS::update()
+void DataStreamROS::updateLoop()
 {
-  while (ros::ok() && _running)
-  {
-    ros::getGlobalCallbackQueue()->callAvailable(ros::WallDuration(0.1));
-  }
-  ros::shutdown();
+    while (ros::ok() && _running)
+    {
+        //  ros::getGlobalCallbackQueue()->callAvailable(ros::WallDuration(0.2));
+        // _node->spin();
+        ros::spinOnce();
+    }
+    ros::shutdown();
 }
