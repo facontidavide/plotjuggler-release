@@ -14,11 +14,11 @@ To understand what PlotJuggler can do for you, take a look to the following vide
 
 # How to build
 
-First of all you need to clone the repository and its submodules either using the command:
+Clone the repository as usual:
 
       git clone https://github.com/facontidavide/PlotJuggler.git
 
-The only binary dependencies that you need installed on your system is Qt5. On Ubuntu the debians can be installed with the command:
+The only binary dependency that you need installed in your system is Qt5. On Ubuntu the debians can be installed with the command:
 
     sudo apt-get -y install qtbase5-dev 
     
@@ -26,26 +26,30 @@ On Fedora
 
     sudo dnf install qt5-qtbase-devel
     
-Then proceed as you would do with any cmake based project
+Then compile using cmake (qmake is NOT supported).
 
      mkdir build; cd build
      cmake ..
      make
      sudo make install
  
- Note: you should not skip the last installation step. Currently the plugins need to be installed in the folder __/usr/local/lib/PlotJuggler/__ otherwise PlotJuggle will not find them.
+ Note: the plugins need to be installed in the same folder of the executable or in __/usr/local/lib/PlotJuggler/__.
  
 # Note for ROS users
  
 If you use CATKIN to build this project, the ROS related plugins will be automatically included into the compilation.
-If you __don't want__ to compile the ROS plugins but catkin is installed in your system,  comment this line in CMakeLists.txt
-
-       find_package(catkin QUIET)
 
 You will also need to download and build this package: https://github.com/facontidavide/ros_type_introspection 
-In ROS Indigo and Kinetic, you can just run
+
+__IMPORTANT__: there is a critical bug in version 0.3.x of ros_type_introspection. Use version 0.4.X or later.
+
+__At the time of writing, you must compile ros_type_introspection from source (master branch).__
+
+In the future you will be able to install it on ROS Indigo and Kinetic:
 
        sudo apt-get install ros-indigo-ros-type-introspection
 or
 
        sudo apt-get install ros-kinetic-ros-type-introspection
+      
+

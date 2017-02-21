@@ -34,7 +34,8 @@ public:
   public:
     Time x;
     Value y;
-    Point( Time _x, Value _y): x(_x), y(_y) {}
+    Point( Time _x, Value _y):
+        x(_x), y(_y) {}
     Point() = default;
   };
 
@@ -111,6 +112,7 @@ typedef struct{
 template < typename Time, typename Value>
 inline PlotDataGeneric <Time, Value>::PlotDataGeneric():
   _max_range_X( std::numeric_limits<Time>::max() )
+  , _color_hint(Qt::black)
 {
   static_assert( std::is_arithmetic<Time>::value ,"Only numbers can be used as time");
 }
@@ -126,8 +128,8 @@ template < typename Time, typename Value>
 inline void PlotDataGeneric<Time, Value>::pushBackAsynchronously(Point point)
 {
   std::lock_guard<std::mutex> lock(_mutex);
-  while(_pushed_points.size() > ASYNC_BUFFER_CAPACITY) _pushed_points.pop_front();
   _pushed_points.push_back( point );
+  while(_pushed_points.size() > ASYNC_BUFFER_CAPACITY) _pushed_points.pop_front();
 }
 
 template < typename Time, typename Value>
@@ -151,7 +153,6 @@ inline bool PlotDataGeneric<Time, Value>::flushAsyncBuffer()
       _x_points.pop_front();
       _y_points.pop_front();
   }
-
   return true;
 }
 

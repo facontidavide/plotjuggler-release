@@ -19,6 +19,8 @@
 #include <qwt_text.h>
 #include <QActionGroup>
 
+#include <PlotJuggler/random_color.h>
+
 //#include <qwt_plot_opengl_canvas.h>
 //#include <qwt_plot_glcanvas.h>
 
@@ -92,9 +94,6 @@ PlotWidget::PlotWidget(PlotDataMap *datamap, QWidget *parent):
 
     this->canvas()->setMouseTracking(true);
     this->canvas()->installEventFilter(this);
-
-    // this->axisScaleDraw( QwtPlot::xBottom )->enableComponent( QwtAbstractScaleDraw::Labels, false );
-    //  this->axisScaleDraw( QwtPlot::yLeft   )->enableComponent( QwtAbstractScaleDraw::Labels, false );
 }
 
 void PlotWidget::buildActions()
@@ -219,7 +218,7 @@ bool PlotWidget::addCurve(const QString &name, bool do_replot)
         PlotDataQwt* plot_qwt = new PlotDataQwt( data );
 
         curve->setPaintAttribute( QwtPlotCurve::ClipPolygons, true );
-        //  curve->setPaintAttribute( QwtPlotCurve::FilterPointsAggressive, true );
+        curve->setPaintAttribute( QwtPlotCurve::FilterPointsAggressive, true );
 
 		if( _current_transform != PlotDataQwt::noTransform)
 		{
@@ -236,12 +235,17 @@ bool PlotWidget::addCurve(const QString &name, bool do_replot)
             curve->setStyle( QwtPlotCurve::Lines);
         }
 
-        curve->setPen( data->getColorHint(),  0.7 );
+        QColor color = data->getColorHint();
+        if( color == Qt::black)
+        {
+            color = randomColorHint();
+            data->setColorHint(color);
+        }
+        curve->setPen( color,  0.7 );
         curve->setRenderHint( QwtPlotItem::RenderAntialiased, true );
 	    
         curve->attach( this );
         _curve_list.insert( std::make_pair(name, curve));
-        
     }
 
     auto rangeX = maximumRangeX();
@@ -291,7 +295,7 @@ void PlotWidget::dragEnterEvent(QDragEnterEvent *event)
         QByteArray encoded = mimeData->data( format );
         QDataStream stream(&encoded, QIODevice::ReadOnly);
 
-        if( format.contains( "qabstractitemmodeldatalist") )
+        if( format.contains( "curveslist") )
         {
             event->acceptProposedAction();
         }
@@ -324,22 +328,17 @@ void PlotWidget::dropEvent(QDropEvent *event)
         QByteArray encoded = mimeData->data( format );
         QDataStream stream(&encoded, QIODevice::ReadOnly);
 
-        if( format.contains( "qabstractitemmodeldatalist") )
+        if( format.contains( "curveslist") )
         {
             bool plot_added = false;
             while (!stream.atEnd())
             {
-                int row, col;
-                QMap<int,  QVariant> roleDataMap;
-
-                stream >> row >> col >> roleDataMap;
-
-                QString curve_name = roleDataMap[0].toString();
+                QString curve_name;
+                stream >> curve_name;
                 addCurve( curve_name, true );
                 plot_added = true;
             }
-            if( plot_added )
-            {
+            if( plot_added ) {
                 emit undoableChange();
             }
         }
@@ -893,41 +892,37 @@ void PlotWidget::mouseReleaseEvent(QMouseEvent *event )
 
 bool PlotWidget::eventFilter(QObject *obj, QEvent *event)
 {
-    static bool isPressed = true;
-
-    // qDebug() <<  event->type();
+    static bool left_and_shift_pressed = false;
 
     if ( event->type() == QEvent::MouseButtonPress)
     {
         QMouseEvent *mouse_event = static_cast<QMouseEvent*>(event);
 
         if( mouse_event->button() == Qt::LeftButton &&
-                (mouse_event->modifiers() & Qt::ShiftModifier) )
+            (mouse_event->modifiers() & Qt::ShiftModifier) )
         {
-            isPressed = true;
+            left_and_shift_pressed = true;
             const QPoint point = mouse_event->pos();
             QPointF pointF ( invTransform( xBottom, point.x()),
                              invTransform( yLeft, point.y()) );
             emit trackerMoved(pointF);
         }
     }
-
-    if ( event->type() == QEvent::MouseButtonRelease)
+    else if ( event->type() == QEvent::MouseButtonRelease)
     {
         QMouseEvent *mouse_event = static_cast<QMouseEvent*>(event);
 
         if( mouse_event->button() == Qt::LeftButton )
         {
-            isPressed = false;
+            left_and_shift_pressed = false;
         }
     }
-
-    if ( event->type() == QEvent::MouseMove )
+    else if ( event->type() == QEvent::MouseMove )
     {
         // special processing for mouse move
         QMouseEvent *mouse_event = static_cast<QMouseEvent*>(event);
 
-        if ( isPressed && mouse_event->modifiers() & Qt::ShiftModifier )
+        if ( left_and_shift_pressed && mouse_event->modifiers() & Qt::ShiftModifier )
         {
             const QPoint point = mouse_event->pos();
             QPointF pointF ( invTransform( xBottom, point.x()),
@@ -936,9 +931,7 @@ bool PlotWidget::eventFilter(QObject *obj, QEvent *event)
             emit trackerMoved(pointF);
         }
     }
-
-    //------------------------------------------------------
-    if ( obj == this->canvas() && event->type() == QEvent::Paint )
+    else if ( obj == this->canvas() && event->type() == QEvent::Paint )
     {
         if ( !_fps_timeStamp.isValid() )
         {
@@ -956,9 +949,7 @@ bool PlotWidget::eventFilter(QObject *obj, QEvent *event)
                 QwtText fps;
                 fps.setText( QString::number( qRound( _fps_counter / elapsed ) ) );
                 fps.setFont(font_title);
-
-                //this->setTitle( fps );
-
+                //qDebug() << _fps_counter / elapsed ;
                 _fps_counter = 0;
                 _fps_timeStamp.start();
             }

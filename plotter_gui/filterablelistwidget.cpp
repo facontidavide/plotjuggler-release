@@ -1,16 +1,18 @@
 #include "filterablelistwidget.h"
 #include "ui_filterablelistwidget.h"
-
+#include <QDebug>
 #include <QLayoutItem>
 #include <QMenu>
 #include <QSettings>
-
+#include <QDrag>
+#include <QMimeData>
 
 FilterableListWidget::FilterableListWidget(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::FilterableListWidget)
 {
     ui->setupUi(this);
+    ui->listWidget->viewport()->installEventFilter( this );
 
     for( int i=0; i< ui->gridLayoutSettings->count(); i++)
     {
@@ -33,7 +35,7 @@ FilterableListWidget::~FilterableListWidget()
 
 int FilterableListWidget::count() const
 {
-    return ui->listWidget->count();
+    return list()->count();
 }
 
 void FilterableListWidget::clear()
@@ -48,11 +50,6 @@ void FilterableListWidget::addItem(QListWidgetItem *item)
     on_lineEdit_textChanged( ui->lineEdit->text() );
 }
 
-void FilterableListWidget::addItems(const QStringList &index_list)
-{
-    list()->addItems(index_list);
-    on_lineEdit_textChanged( ui->lineEdit->text() );
-}
 
 QList<QListWidgetItem *> FilterableListWidget::findItems(const QString &text) const
 {
@@ -67,6 +64,49 @@ const QListWidget *FilterableListWidget::list() const
 QListWidget *FilterableListWidget::list()
 {
     return ui->listWidget;
+}
+
+bool FilterableListWidget::eventFilter(QObject *object, QEvent *event)
+{
+   // qDebug() <<event->type();
+    if(event->type() == QEvent::MouseButtonPress)
+    {
+        QMouseEvent *mouse_event = static_cast<QMouseEvent*>(event);
+        if(mouse_event->button() == Qt::LeftButton )
+        {
+            if(mouse_event->modifiers() == Qt::ControlModifier)
+            {
+                //TODO
+            }
+            else{
+                _drag_start_pos = mouse_event->pos();
+            }
+        }
+    }
+    else if(event->type() == QEvent::MouseMove)
+    {
+        QMouseEvent *mouse_event = static_cast<QMouseEvent*>(event);
+        double distance_from_click = (mouse_event->pos() - _drag_start_pos).manhattanLength();
+
+        if ((mouse_event->buttons() == Qt::LeftButton) &&
+             distance_from_click >= QApplication::startDragDistance())
+        {
+            QDrag *drag = new QDrag(this);
+            QMimeData *mimeData = new QMimeData;
+            const QString mimeType("curveslist/copy");
+            QByteArray mdata;
+            QDataStream stream(&mdata, QIODevice::WriteOnly);
+
+            for(QListWidgetItem* item: list()->selectedItems()) {
+                stream << item->text();
+            }
+
+            mimeData->setData(mimeType, mdata);
+            drag->setMimeData(mimeData);
+            drag->exec(Qt::CopyAction | Qt::MoveAction);
+        }
+    }
+    return QWidget::eventFilter(object,event);
 }
 
 
@@ -96,7 +136,7 @@ void FilterableListWidget::on_checkBoxCaseSensitive_toggled(bool checked)
 
 void FilterableListWidget::on_lineEdit_textChanged(const QString &search_string)
 {
-    int item_count = ui->listWidget->count();
+    int item_count = list()->count();
     int visible_count = 0;
 
     Qt::CaseSensitivity cs = Qt::CaseInsensitive;
@@ -107,9 +147,9 @@ void FilterableListWidget::on_lineEdit_textChanged(const QString &search_string)
     QRegExp regexp( search_string,  cs, QRegExp::Wildcard );
     QRegExpValidator v(regexp, 0);
 
-    for (int i=0; i< ui->listWidget->count(); i++)
+    for (int i=0; i< list()->count(); i++)
     {
-        QListWidgetItem* item = ui->listWidget->item(i);
+        QListWidgetItem* item = list()->item(i);
         QString name = item->text();
         int pos = 0;
         bool toHide = false;
