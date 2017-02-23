@@ -37,11 +37,17 @@ Then compile using cmake (qmake is NOT supported).
  
 # Note for ROS users
  
-If you use CATKIN to build this project, the ROS related plugins will be automatically included into the compilation.
+If you use CATKIN to build this project, the ROS related plugins will be automatically included into the compilation. Both the executable and the plugins will be created in __devel/lib/plotjuggler__ (the address relative to the catkin workspace).
 
-You will also need to download and build this package: https://github.com/facontidavide/ros_type_introspection 
+To run the application, use the command:
 
-__IMPORTANT__: there is a critical bug in version 0.3.x of ros_type_introspection. Use version 0.4.X or later.
+    rosrun plotjuggler PlotJuggler
+    
+Alternatively, just execute the binary __PlotJuggler__. 
+
+A mandatory dependency is the package: https://github.com/facontidavide/ros_type_introspection 
+
+__IMPORTANT__: there is a critical bug in version 0.3.x of ros_type_introspection. Use version 0.4.3 or later.
 
 __At the time of writing, you must compile ros_type_introspection from source (master branch).__
 
