@@ -1,5 +1,5 @@
 
-add_definitions( -DQWT_NO_SVG )
+#add_definitions( -DQWT_NO_SVG )
 #add_definitions( -DUSE_OPENGL )
 
 
@@ -8,6 +8,7 @@ include_directories( ./  )
 set( QWT_SRC
     qwt.h
     qwt_abstract_scale_draw.h
+    qwt_bezier.h
     qwt_clipper.h
     qwt_color_map.h
     qwt_compat.h
@@ -102,109 +103,109 @@ set( QWT_SRC
     qwt_scale_widget.h
 
     qwt_curve_fitter.cpp
-     qwt_spline_curve_fitter.cpp
-     qwt_weeding_curve_fitter.cpp
-     qwt_abstract_legend.cpp
-     qwt_legend.cpp
-     qwt_legend_data.cpp
-     qwt_legend_label.cpp
-     qwt_plot.cpp
-     qwt_plot_renderer.cpp
-     qwt_plot_xml.cpp
-     qwt_plot_axis.cpp
-     qwt_plot_curve.cpp
-     qwt_plot_dict.cpp
-     qwt_plot_directpainter.cpp
-     qwt_plot_grid.cpp
-     qwt_plot_histogram.cpp
-     qwt_plot_item.cpp
-     qwt_plot_abstract_barchart.cpp
-     qwt_plot_barchart.cpp
-     qwt_plot_multi_barchart.cpp
-     qwt_plot_intervalcurve.cpp
-     qwt_plot_zoneitem.cpp
-     qwt_plot_tradingcurve.cpp
-     qwt_plot_spectrogram.cpp
-     qwt_plot_spectrocurve.cpp
-     qwt_plot_scaleitem.cpp
-     qwt_plot_legenditem.cpp
-     qwt_plot_seriesitem.cpp
-     qwt_plot_shapeitem.cpp
-     qwt_plot_marker.cpp
-     qwt_plot_textlabel.cpp
-     qwt_plot_layout.cpp
-     qwt_plot_abstract_canvas.cpp
-     qwt_plot_canvas.cpp
-     qwt_plot_panner.cpp
-     qwt_plot_rasteritem.cpp
-     qwt_plot_picker.cpp
-     qwt_plot_zoomer.cpp
-     qwt_plot_magnifier.cpp
-     qwt_plot_rescaler.cpp
-     qwt_point_mapper.cpp
-     qwt_raster_data.cpp
-     qwt_matrix_raster_data.cpp
-     qwt_sampling_thread.cpp
-     qwt_series_data.cpp
-     qwt_point_data.cpp
-     qwt_scale_widget.cpp
-     qwt_abstract_scale_draw.cpp
-     qwt_clipper.cpp
-     qwt_color_map.cpp
-     qwt_column_symbol.cpp
-     qwt_date.cpp
-     qwt_date_scale_draw.cpp
-     qwt_date_scale_engine.cpp
-     qwt_dyngrid_layout.cpp
-     qwt_event_pattern.cpp
-     qwt_graphic.cpp
-     qwt_interval.cpp
-     qwt_interval_symbol.cpp
-     qwt_math.cpp
-     qwt_magnifier.cpp
-     qwt_null_paintdevice.cpp
-     qwt_painter.cpp
-     qwt_painter_command.cpp
-     qwt_panner.cpp
-     qwt_picker.cpp
-     qwt_picker_machine.cpp
-     qwt_pixel_matrix.cpp
-     qwt_point_3d.cpp
-     qwt_point_polar.cpp
-     qwt_round_scale_draw.cpp
-     qwt_scale_div.cpp
-     qwt_scale_draw.cpp
-     qwt_scale_map.cpp
-     qwt_scale_engine.cpp
-     qwt_spline_approximation.cpp
-     qwt_spline_basis.cpp
-     qwt_spline.cpp
-     qwt_spline_parametrization.cpp
-     qwt_spline_local.cpp
-     qwt_spline_cubic.cpp
-     qwt_spline_pleasing.cpp
-     qwt_symbol.cpp
-     qwt_system_clock.cpp
-     qwt_text_engine.cpp
-     qwt_text_label.cpp
-     qwt_text.cpp
-     qwt_transform.cpp
-     qwt_widget_overlay.cpp
+    qwt_bezier.cpp
+    qwt_spline_curve_fitter.cpp
+    qwt_weeding_curve_fitter.cpp
+    qwt_abstract_legend.cpp
+    qwt_legend.cpp
+    qwt_legend_data.cpp
+    qwt_legend_label.cpp
+    qwt_plot.cpp
+    qwt_plot_renderer.cpp
+    qwt_plot_xml.cpp
+    qwt_plot_axis.cpp
+    qwt_plot_curve.cpp
+    qwt_plot_dict.cpp
+    qwt_plot_directpainter.cpp
+    qwt_plot_grid.cpp
+    qwt_plot_histogram.cpp
+    qwt_plot_item.cpp
+    qwt_plot_abstract_barchart.cpp
+    qwt_plot_barchart.cpp
+    qwt_plot_multi_barchart.cpp
+    qwt_plot_intervalcurve.cpp
+    qwt_plot_zoneitem.cpp
+    qwt_plot_tradingcurve.cpp
+    qwt_plot_spectrogram.cpp
+    qwt_plot_spectrocurve.cpp
+    qwt_plot_scaleitem.cpp
+    qwt_plot_legenditem.cpp
+    qwt_plot_seriesitem.cpp
+    qwt_plot_shapeitem.cpp
+    qwt_plot_marker.cpp
+    qwt_plot_textlabel.cpp
+    qwt_plot_layout.cpp
+    qwt_plot_abstract_canvas.cpp
+    qwt_plot_canvas.cpp
+    qwt_plot_panner.cpp
+    qwt_plot_rasteritem.cpp
+    qwt_plot_picker.cpp
+    qwt_plot_zoomer.cpp
+    qwt_plot_magnifier.cpp
+    qwt_plot_rescaler.cpp
+    qwt_point_mapper.cpp
+    qwt_raster_data.cpp
+    qwt_matrix_raster_data.cpp
+    qwt_sampling_thread.cpp
+    qwt_series_data.cpp
+    qwt_point_data.cpp
+    qwt_scale_widget.cpp
+    qwt_abstract_scale_draw.cpp
+    qwt_clipper.cpp
+    qwt_color_map.cpp
+    qwt_column_symbol.cpp
+    qwt_date.cpp
+    qwt_date_scale_draw.cpp
+    qwt_date_scale_engine.cpp
+    qwt_dyngrid_layout.cpp
+    qwt_event_pattern.cpp
+    qwt_graphic.cpp
+    qwt_interval.cpp
+    qwt_interval_symbol.cpp
+    qwt_math.cpp
+    qwt_magnifier.cpp
+    qwt_null_paintdevice.cpp
+    qwt_painter.cpp
+    qwt_painter_command.cpp
+    qwt_panner.cpp
+    qwt_picker.cpp
+    qwt_picker_machine.cpp
+    qwt_pixel_matrix.cpp
+    qwt_point_3d.cpp
+    qwt_point_polar.cpp
+    qwt_round_scale_draw.cpp
+    qwt_scale_div.cpp
+    qwt_scale_draw.cpp
+    qwt_scale_map.cpp
+    qwt_scale_engine.cpp
+    qwt_spline_approximation.cpp
+    qwt_spline_basis.cpp
+    qwt_spline.cpp
+    qwt_spline_parametrization.cpp
+    qwt_spline_local.cpp
+    qwt_spline_cubic.cpp
+    qwt_spline_pleasing.cpp
+    qwt_symbol.cpp
+    qwt_system_clock.cpp
+    qwt_text_engine.cpp
+    qwt_text_label.cpp
+    qwt_text.cpp
+    qwt_transform.cpp
+    qwt_widget_overlay.cpp
 
-     #qwt_plot_glcanvas.h
-     #qwt_plot_glcanvas.cpp
+    #qwt_plot_glcanvas.h
+    #qwt_plot_glcanvas.cpp
 
-     #qwt_plot_opengl_canvas.h
-     #qwt_plot_opengl_canvas.cpp
+    #qwt_plot_opengl_canvas.h
+    #qwt_plot_opengl_canvas.cpp
     )
 
 add_library(qwt_static STATIC ${QWT_SRC})
 
 target_link_libraries(qwt_static
-  #  GL
+    #  GL
     ${Qt5Widgets_LIBRARIES}
     ${Qt5PrintSupport_LIBRARIES}
     ${Qt5Concurrent_LIBRARIES}
-  #  ${Qt5OpenGL_LIBRARIES}
-
+    ${Qt5Svg_LIBRARIES}
     )

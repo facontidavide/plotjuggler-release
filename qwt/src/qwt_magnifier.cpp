@@ -63,6 +63,13 @@ QwtMagnifier::QwtMagnifier( QWidget *parent ):
     QObject( parent )
 {
     d_data = new PrivateData();
+
+    if ( parent )
+    {
+        if ( parent->focusPolicy() == Qt::NoFocus )
+            parent->setFocusPolicy( Qt::WheelFocus );
+    }
+
     setEnabled( true );
 }
 

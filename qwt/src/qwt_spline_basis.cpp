@@ -55,7 +55,7 @@ static inline void qwtSplineBezierControlPoints( const QwtSplineParametrization 
 }
 
 static QPainterPath qwtSplineBasisPathUniform( const QPolygonF& points, 
-    QwtSplineApproximation::BoundaryType boundaryType ) 
+    QwtSpline::BoundaryType boundaryType ) 
 {
     const int n = points.size();
     const QPointF *pd = points.constData();
@@ -64,7 +64,7 @@ static QPainterPath qwtSplineBasisPathUniform( const QPolygonF& points,
 
     QPointF cp1 = ( 2.0 * pd[0] + pd[1] ) / 3.0;;
 
-    if ( boundaryType == QwtSplineApproximation::ConditionalBoundaries )
+    if ( boundaryType == QwtSpline::ConditionalBoundaries )
     {
         path.moveTo( pd[0] );
     }
@@ -84,7 +84,7 @@ static QPainterPath qwtSplineBasisPathUniform( const QPolygonF& points,
         cp1 = cp3;
     }
 
-    if ( boundaryType == QwtSplineApproximation::ConditionalBoundaries )
+    if ( boundaryType == QwtSpline::ConditionalBoundaries )
     {
         const QPointF cp2 = ( pd[n-2] + 2.0 * pd[n-1] ) / 3.0;
         path.cubicTo( cp1, cp2, pd[n-1] );
@@ -96,7 +96,7 @@ static QPainterPath qwtSplineBasisPathUniform( const QPolygonF& points,
 
         path.cubicTo( cp1, cp2, 0.5 * ( cp2 + cp3 ) );
 
-        if ( boundaryType == QwtSplineApproximation::ClosedPolygon )
+        if ( boundaryType == QwtSpline::ClosedPolygon )
         {
             const QPointF cp4 = ( pd[n-1] + 2.0 * pd[0] ) / 3.0;
             const QPointF cp5 = ( 2.0 * pd[0] + pd[1] ) / 3.0;
@@ -110,7 +110,7 @@ static QPainterPath qwtSplineBasisPathUniform( const QPolygonF& points,
 
 static QPainterPath qwtSplineBasisPath( const QPolygonF &points, 
     const QwtSplineParametrization *param,
-    QwtSplineApproximation::BoundaryType boundaryType )
+    QwtSpline::BoundaryType boundaryType )
 {
     const int n = points.size();
     const QPointF *pd = points.constData();
@@ -121,7 +121,7 @@ static QPainterPath qwtSplineBasisPath( const QPolygonF &points,
     double t2 = param->valueIncrement( pd[1], pd[2] );
     
     double t0;
-    if ( boundaryType == QwtSplineApproximation::ConditionalBoundaries )
+    if ( boundaryType == QwtSpline::ConditionalBoundaries )
         t0 = t1;
     else
         t0 = param->valueIncrement( pd[n-1], pd[0] );
@@ -129,7 +129,7 @@ static QPainterPath qwtSplineBasisPath( const QPolygonF &points,
     double t012 = t0 + t1 + t2;
     QPointF cp1 = ( ( t1 + t2 ) * pd[0] + t0 * pd[1] ) / t012;
 
-    if ( boundaryType == QwtSplineApproximation::ConditionalBoundaries )
+    if ( boundaryType == QwtSpline::ConditionalBoundaries )
     {
         p0 = pd[0];
     }
@@ -166,7 +166,7 @@ static QPainterPath qwtSplineBasisPath( const QPolygonF &points,
 
     {   
         double t3;
-        if ( boundaryType == QwtSplineApproximation::ConditionalBoundaries )
+        if ( boundaryType == QwtSpline::ConditionalBoundaries )
             t3 = t2;
         else
             t3 = param->valueIncrement( pd[n-1], pd[0] );
@@ -190,7 +190,7 @@ static QPainterPath qwtSplineBasisPath( const QPolygonF &points,
 
     const QPointF cp2 = ( t2 * pd[n-2] + ( t0 + t1 ) * pd[n-1] ) / t012;
 
-    if ( boundaryType == QwtSplineApproximation::ConditionalBoundaries )
+    if ( boundaryType == QwtSpline::ConditionalBoundaries )
     {
         path.cubicTo( cp1, cp2, pd[n-1] );
     }
@@ -211,24 +211,32 @@ static QPainterPath qwtSplineBasisPath( const QPolygonF &points,
     return path;
 }
 
+//! Constructor
 QwtSplineBasis::QwtSplineBasis()
 {
 }
 
+//! Destructor
 QwtSplineBasis::~QwtSplineBasis()
 {
 }
 
+//! The locality is always 2
 uint QwtSplineBasis::locality() const
 {
     return 2;
 }
 
+/*!
+  Approximates a polygon piecewise with cubic Bezier curves
+  and returns them as QPainterPath.
+
+  \param points Control points
+  \return Painter path, that can be rendered by QPainter
+ */
 QPainterPath QwtSplineBasis::painterPath( const QPolygonF &points ) const
 {
-    // PeriodicPolygon/ClosedPolygon not implemented yet
-
-    if ( points.size()  < 4 )
+    if ( points.size() < 4 )
         return QPainterPath();
 
     QPainterPath path;

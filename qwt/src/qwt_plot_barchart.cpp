@@ -251,6 +251,8 @@ void QwtPlotBarChart::drawSeries( QPainter *painter,
   \param canvasRect Contents rect of the canvas
   \param boundingInterval Bounding interval of sample values
   \param sample Value of the sample
+
+  \return Geometry of the column
 */
 QwtColumnRect QwtPlotBarChart::columnRect( 
     const QwtScaleMap &xMap, const QwtScaleMap &yMap,
