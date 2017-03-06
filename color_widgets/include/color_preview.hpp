@@ -23,8 +23,6 @@
 #ifndef COLOR_PREVIEW_HPP
 #define COLOR_PREVIEW_HPP
 
-#include "colorwidgets_global.hpp"
-
 #include <QWidget>
 
 namespace color_widgets {
@@ -32,7 +30,7 @@ namespace color_widgets {
 /**
  * Simple widget that shows a preview of a color
  */
-class QCP_EXPORT ColorPreview : public QWidget
+class  ColorPreview : public QWidget
 {
     Q_OBJECT
     Q_PROPERTY(QColor color READ color WRITE setColor NOTIFY colorChanged DESIGNABLE true)

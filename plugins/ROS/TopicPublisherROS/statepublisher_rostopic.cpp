@@ -30,7 +30,6 @@ void TopicPublisherROS::setEnabled(bool to_enable)
 
 void TopicPublisherROS::updateState(PlotDataMap *datamap, double current_time)
 {
-  static long count = 0;
   if(!enabled_) return;
 
   for(const auto& data_it:  datamap->user_defined )
@@ -55,7 +54,7 @@ void TopicPublisherROS::updateState(PlotDataMap *datamap, double current_time)
       continue;
     }
 
-    std::vector<uint8_t> raw_buffer =  nonstd::any_cast<std::vector<uint8_t>>( any_value );
+    std::vector<uint8_t> raw_buffer =  nonstd::any_cast<std::vector<uint8_t>>( any_value.value() );
 
     ros::serialization::IStream stream( raw_buffer.data(), raw_buffer.size() );
     shapeshifted_msg->read( stream );
@@ -70,8 +69,7 @@ void TopicPublisherROS::updateState(PlotDataMap *datamap, double current_time)
     const ros::Publisher& publisher = publisher_it->second;
     publisher.publish( *shapeshifted_msg );
 
-    qDebug() << "publishing " << count++; ;
-
+    qDebug() << "publishing. Time " << current_time; ;
   }
 
 }
