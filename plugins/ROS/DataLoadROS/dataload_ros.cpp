@@ -33,8 +33,16 @@ PlotDataMap DataLoadROS::readDataFromFile(const std::string& file_name,
     PlotDataMap plot_map;
 
     rosbag::Bag bag;
-    bag.open( file_name, rosbag::bagmode::Read );
-
+    try{
+        bag.open( file_name, rosbag::bagmode::Read );
+    }
+    catch( rosbag::BagException&  ex)
+    {
+        QMessageBox::warning(0, tr("Error"),
+                             QString("rosbag::open thrown an exception:\n")+
+                             QString(ex.what()) );
+        return plot_map;
+    }
 
     rosbag::View bag_view ( bag, ros::TIME_MIN, ros::TIME_MAX, true );
     auto first_time = bag_view.getBeginTime();

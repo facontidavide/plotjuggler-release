@@ -176,10 +176,19 @@ background: white;
           <item>
            <widget class="QSlider" name="horizontalSlider">
             <property name="focusPolicy">
-             <enum>Qt::NoFocus</enum>
+             <enum>Qt::WheelFocus</enum>
+            </property>
+            <property name="maximum">
+             <number>0</number>
             </property>
             <property name="orientation">
              <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="tickPosition">
+             <enum>QSlider::NoTicks</enum>
+            </property>
+            <property name="tickInterval">
+             <number>1</number>
             </property>
            </widget>
           </item>

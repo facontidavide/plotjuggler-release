@@ -34,15 +34,15 @@ inline void ShapeShifterFactory::registerMessage(const std::string &topic_name,
                                                  const std::string &datatype,
                                                  const std::string &definition)
 {
-  RosIntrospection::ShapeShifter msg;
-  msg.morph(md5sum, datatype,definition);
 
-  if( map_.count(topic_name) == 0)
+  auto it = map_.find(topic_name);
+  if( it == map_.end() )
   {
-    map_.insert( std::make_pair(topic_name, std::move(msg) ));
-    topics_.push_back( topic_name );
+      RosIntrospection::ShapeShifter msg;
+      msg.morph(md5sum, datatype,definition);
+      map_.insert( std::make_pair(topic_name, std::move(msg) ));
+      topics_.push_back( topic_name );
   }
-
 }
 
 inline nonstd::optional<RosIntrospection::ShapeShifter*> ShapeShifterFactory::getMessage(const std::string &topic_name)

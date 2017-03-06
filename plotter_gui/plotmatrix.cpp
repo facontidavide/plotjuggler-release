@@ -16,9 +16,7 @@ PlotMatrix::PlotMatrix(QString name, PlotDataMap *datamap, QWidget *parent ):
 {
     _num_rows = 0;
     _num_cols = 0;
-
     _layout = new QGridLayout( this );
-
     _horizontal_link = true;
     updateLayout();
 }

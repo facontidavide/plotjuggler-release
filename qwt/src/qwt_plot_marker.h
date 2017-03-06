@@ -106,7 +106,7 @@ public:
     void setSpacing( int );
     int spacing() const;
 
-    virtual void draw( QPainter *p,
+    virtual void draw( QPainter *,
         const QwtScaleMap &xMap, const QwtScaleMap &yMap,
         const QRectF & ) const;
 
@@ -116,6 +116,9 @@ public:
 
 protected:
     virtual void drawLines( QPainter *, 
+        const QRectF &, const QPointF & ) const;
+
+    virtual void drawSymbol( QPainter *,
         const QRectF &, const QPointF & ) const;
 
     virtual void drawLabel( QPainter *, 

@@ -77,6 +77,9 @@ void QNodeDialog::on_pushButtonConnect_pressed()
       showNoMasterMessage();
       return;
     }
+    else{
+      this->close();
+    }
   }
   else{
     std::string ros_master_uri = ui->lineEditMaster->text().toStdString();
