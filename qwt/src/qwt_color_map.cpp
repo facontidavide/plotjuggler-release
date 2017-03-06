@@ -329,7 +329,6 @@ uint QwtColorMap::colorIndex( int numColors,
    The color table is needed for rendering indexed images in combination
    with using colorIndex().
 
-   \param interval Range for the values
    \return A color table, that can be used for a QImage
 */
 QVector<QRgb> QwtColorMap::colorTable256() const
@@ -344,6 +343,15 @@ QVector<QRgb> QwtColorMap::colorTable256() const
     return table;
 }
 
+/*!
+   Build and return a color map of arbitrary number of colors
+
+   The color table is needed for rendering indexed images in combination
+   with using colorIndex().
+
+   \param numColors Number of colors
+   \return A color table
+*/
 QVector<QRgb> QwtColorMap::colorTable( int numColors ) const
 {
     QVector<QRgb> table( numColors );
@@ -1003,8 +1011,6 @@ public:
    saturation by 255 to 255. Hue to 0 and alpha to 255. 
 
    So the default setting interpolates the value coordinate only.
-
-   \param format Format of the color map
 
    \sa setHueInterval(), setSaturation(), setValue(), setValue()
 */
