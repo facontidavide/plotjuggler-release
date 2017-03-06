@@ -343,20 +343,24 @@ void QwtPlotZoomer::zoom( const QRectF &rect )
 */
 void QwtPlotZoomer::zoom( int offset )
 {
+    int newIndex;
+
     if ( offset == 0 )
-        d_data->zoomRectIndex = 0;
+    {
+        newIndex = 0;
+    }
     else
     {
-        int newIndex = d_data->zoomRectIndex + offset;
-        newIndex = qMax( 0, newIndex );
-        newIndex = qMin( int( d_data->zoomStack.count() ) - 1, newIndex );
-
-        d_data->zoomRectIndex = uint( newIndex );
+        newIndex = d_data->zoomRectIndex + offset;
+        newIndex = qBound( 0, newIndex, d_data->zoomStack.count() - 1 );
     }
 
-    rescale();
-
-    Q_EMIT zoomed( zoomRect() );
+    if ( newIndex != static_cast<int>( d_data->zoomRectIndex ) )
+    {
+        d_data->zoomRectIndex = newIndex;
+        rescale();
+        Q_EMIT zoomed( zoomRect() );
+    }
 }
 
 /*!

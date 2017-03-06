@@ -32,7 +32,7 @@ public:
 
     virtual QObject* getObject() override { return this; }
 
-    virtual bool isDebugPlugin() override { true; }
+    virtual bool isDebugPlugin() override { return true; }
 
 private:
 
