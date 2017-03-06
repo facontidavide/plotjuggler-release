@@ -159,7 +159,6 @@ class QwtRasterData::PrivateData
 {
 public:
     QwtRasterData::Attributes attributes;
-    QwtInterval intervals[3];
 };  
 
 //! Constructor
@@ -196,30 +195,6 @@ void QwtRasterData::setAttribute( Attribute attribute, bool on )
 bool QwtRasterData::testAttribute( Attribute attribute ) const
 {
     return d_data->attributes & attribute;
-}
-
-/*!
-   Set the bounding interval for the x, y or z coordinates.
-
-   \param axis Axis
-   \param interval Bounding interval
-
-   \sa interval()
-*/
-void QwtRasterData::setInterval( Qt::Axis axis, const QwtInterval &interval )
-{
-    if ( axis >= 0 && axis <= 2 )
-        d_data->intervals[axis] = interval;
-}
-
-/*!
-   \return Bounding interval for an axis
-   \sa setInterval
-*/
-const QwtInterval &QwtRasterData::interval( Qt::Axis axis) const
-{
-    const int index = qBound( 0, static_cast<int>( axis ), 2 );
-    return d_data->intervals[index];
 }
 
 /*!

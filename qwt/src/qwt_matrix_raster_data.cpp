@@ -25,6 +25,7 @@ public:
         return values.data()[ row * numColumns + col ];
     }
 
+    QwtInterval intervals[3];
     QwtMatrixRasterData::ResampleMode resampleMode;
 
     QVector<double> values;
@@ -87,8 +88,23 @@ QwtMatrixRasterData::ResampleMode QwtMatrixRasterData::resampleMode() const
 void QwtMatrixRasterData::setInterval( 
     Qt::Axis axis, const QwtInterval &interval )
 {
-    QwtRasterData::setInterval( axis, interval );
-    update();
+    if ( axis >= 0 && axis <= 2 )
+    {
+        d_data->intervals[axis] = interval;
+        update();
+    }
+}
+
+/*!
+   \return Bounding interval for an axis
+   \sa setInterval
+*/
+QwtInterval QwtMatrixRasterData::interval( Qt::Axis axis ) const
+{
+    if ( axis >= 0 && axis <= 2 )
+        return d_data->intervals[ axis ];
+
+    return QwtInterval();
 }
 
 /*!
