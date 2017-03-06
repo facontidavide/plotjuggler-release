@@ -69,8 +69,6 @@ private slots:
 
     void onRedoInvoked();
 
-    void on_horizontalSlider_sliderMoved(int position);
-
     void on_tabbedAreaDestroyed(QObject*object);
 
     void onFloatingWindowDestroyed(QObject*object);
@@ -98,6 +96,8 @@ private slots:
     void on_actionExit_triggered();
 
     void on_actionQuick_Help_triggered();
+
+    void on_horizontalSlider_valueChanged(int value);
 
 private:
     Ui::MainWindow *ui;
