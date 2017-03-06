@@ -2,6 +2,7 @@
 #define DATASTREAM_ROS_TOPIC_H
 
 #include <QtPlugin>
+#include <QAction>
 #include <thread>
 #include <topic_tools/shape_shifter.h>
 #include "PlotJuggler/datastreamer_base.h"
@@ -34,6 +35,8 @@ public:
 
     virtual QObject* getObject() override { return this; }
 
+    virtual void setMenu(QMenu* menu) override;
+
 private:
 
     void topicCallback(const topic_tools::ShapeShifter::ConstPtr& msg, const std::string &topic_name);
@@ -43,11 +46,9 @@ private:
     PlotDataMap _plot_data;
 
     bool _enabled;
-
     bool _running;
 
     std::thread _thread;
-
     std::mutex _mutex;
 
     std::map<std::string, RosIntrospection::ROSTypeList> _ros_type_map;
@@ -55,18 +56,20 @@ private:
     void extractInitialSamples();
 
     double _initial_time;
-
     bool _use_header_timestamp;
-
     bool _normalize_time;
 
     ros::NodeHandlePtr _node;
-
     std::vector<ros::Subscriber> _subscribers;
-
     RosIntrospection::SubstitutionRuleMap _rules;
 
     int _received_msg_count;
+
+    QAction* _action_saveIntoRosbag;
+
+private slots:
+
+    void saveIntoRosbag();
 };
 
 #endif // DATALOAD_CSV_H
