@@ -8,14 +8,14 @@
  *****************************************************************************/
 
 #include "qwt_spline_curve_fitter.h"
-#include "qwt_spline_pleasing.h"
+#include "qwt_spline_local.h"
 #include "qwt_spline_parametrization.h"
 
 //! Constructor
 QwtSplineCurveFitter::QwtSplineCurveFitter():
     QwtCurveFitter( QwtCurveFitter::Path )
 {
-    d_spline = new QwtSplinePleasing();
+    d_spline = new QwtSplineLocal( QwtSplineLocal::Cardinal );
     d_spline->setParametrization( QwtSplineParametrization::ParameterUniform );
 }
 
@@ -34,7 +34,7 @@ QwtSplineCurveFitter::~QwtSplineCurveFitter()
   \param spline Spline
   \sa spline()
 */
-void QwtSplineCurveFitter::setSpline( QwtSplineApproximation *spline )
+void QwtSplineCurveFitter::setSpline( QwtSpline *spline )
 {
     if ( d_spline == spline )
         return;
@@ -47,7 +47,7 @@ void QwtSplineCurveFitter::setSpline( QwtSplineApproximation *spline )
   \return Spline
   \sa setSpline()
 */
-const QwtSplineApproximation *QwtSplineCurveFitter::spline() const
+const QwtSpline *QwtSplineCurveFitter::spline() const
 {
     return d_spline;
 }
@@ -56,7 +56,7 @@ const QwtSplineApproximation *QwtSplineCurveFitter::spline() const
   \return Spline
   \sa setSpline()
 */
-QwtSplineApproximation *QwtSplineCurveFitter::spline() 
+QwtSpline *QwtSplineCurveFitter::spline() 
 {
     return d_spline;
 }

@@ -42,11 +42,12 @@ add_executable(PlotJuggler ${PLOTTER_SRC} ${RES_SRC} ${UI_SRC})
 
 
 target_link_libraries(PlotJuggler
-    ${Qt5Core_QTMAIN_LIBRARIES}
-    ${Qt5Widgets_LIBRARIES}
-    ${Qt5PrintSupport_LIBRARIES}
-    ${Qt5Xml_LIBRARIES}
-    ${Qt5Concurrent_LIBRARIES}
+    Qt5::Core
+    Qt5::Widgets
+    Qt5::PrintSupport
+    Qt5::Xml
+    Qt5::Concurrent
+    Qt5::Svg
     colorwidgets
     qwt_static
     )

@@ -13,14 +13,52 @@
 #include "qwt_global.h"
 #include "qwt_spline.h"
 
+/*!
+  \brief A spline with C1 continuity
+
+  QwtSplineLocal offers several standard algorithms for interpolating
+  a curve with polynomials having C1 continuity at the control points.
+  All algorithms are local in a sense, that changing one control point
+  only few polynomials.
+ */
 class QWT_EXPORT QwtSplineLocal: public QwtSplineC1
 {
 public:
+    /*!
+        \brief Spline interpolation type
+
+        All type of spline interpolations are lightweight algorithms
+        calculating the slopes at a point by looking 1 or 2 points back
+        and ahead.
+     */
     enum Type
     {
+        /*!
+          A cardinal spline
+
+          The cardinal spline interpolation is a very cheap calculation with 
+          a locality of 1.
+         */
         Cardinal,
-        ParabolicBlending, // a.k.a cubic Bessel interpolation
+
+        /*!
+          Parabolic blending is a cheap calculation with a locality of 1. Sometimes
+          it is also called Cubic Bessel interpolation.
+         */
+        ParabolicBlending, 
+
+        /*!
+          The algorithm of H.Akima is a calculation with a locality of 2. 
+         */
         Akima,
+
+        /*!
+          Piecewise Cubic Hermite Interpolating Polynomial (PCHIP) is an algorithm
+          that is popular because of being offered by MATLAB.
+
+          It preserves the shape of the data and respects monotonicity. It has a
+          locality of 1.
+         */
         PChip 
     };
 

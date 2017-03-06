@@ -227,6 +227,12 @@ border: 1px solid rgb(160, 160, 160);</string>
      </item>
      <item>
       <widget class="QListWidget" name="listWidget">
+       <property name="toolTip">
+        <string/>
+       </property>
+       <property name="toolTipDuration">
+        <number>-1</number>
+       </property>
        <property name="dragEnabled">
         <bool>true</bool>
        </property>
@@ -244,6 +250,12 @@ border: 1px solid rgb(160, 160, 160);</string>
        </property>
        <property name="text">
         <string>Tip: select multiple curves using left mouse + CTRL or SHIFT</string>
+       </property>
+       <property name="scaledContents">
+        <bool>false</bool>
+       </property>
+       <property name="wordWrap">
+        <bool>true</bool>
        </property>
       </widget>
      </item>
