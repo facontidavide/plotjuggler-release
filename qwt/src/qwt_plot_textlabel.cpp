@@ -216,19 +216,18 @@ void QwtPlotTextLabel::draw( QPainter *painter,
         pixmapRect.setRight( qCeil( rect.right() ) + pw );
         pixmapRect.setBottom( qCeil( rect.bottom() ) + pw );
         
-#define QWT_HIGH_DPI 1
-
-#if QT_VERSION >= 0x050100 && QWT_HIGH_DPI
-        const qreal pixelRatio = painter->device()->devicePixelRatio();
+#if QT_VERSION >= 0x050000
+        const qreal pixelRatio = QwtPainter::devicePixelRatio( painter->device() );
         const QSize scaledSize = pixmapRect.size() * pixelRatio;
 #else
         const QSize scaledSize = pixmapRect.size();
 #endif
+
         if ( d_data->pixmap.isNull() || 
             ( scaledSize != d_data->pixmap.size() )  )
         {
             d_data->pixmap = QPixmap( scaledSize );
-#if QT_VERSION >= 0x050100 && QWT_HIGH_DPI
+#if QT_VERSION >= 0x050000 
             d_data->pixmap.setDevicePixelRatio( pixelRatio );
 #endif
             d_data->pixmap.fill( Qt::transparent );
