@@ -252,15 +252,25 @@ static SplineStore qwtSplinePathPleasing( const QPolygonF &points,
     return store;
 }
 
+/*!
+  \brief Constructor
+
+  The default setting is a non closing spline with uniform parametrization.
+  ( QwtSplineParametrization::ParameterUniform ).
+
+  \sa QwtSpline::setParametrization(), QwtSpline::setBoundaryType()
+ */
 QwtSplinePleasing::QwtSplinePleasing()
 {
     setParametrization( QwtSplineParametrization::ParameterUniform );
 }
 
+//! Destructor
 QwtSplinePleasing::~QwtSplinePleasing()
 {
 }
 
+//! \return 2
 uint QwtSplinePleasing::locality() const
 {
     return 2;
@@ -281,7 +291,7 @@ QPainterPath QwtSplinePleasing::painterPath( const QPolygonF &points ) const
     if ( size <= 2 )
         return QwtSplineG1::painterPath( points );
 
-    const bool isClosing = ( boundaryType() == QwtSplineApproximation::ClosedPolygon );
+    const bool isClosing = ( boundaryType() == QwtSpline::ClosedPolygon );
 
     using namespace QwtSplinePleasingP;
 
@@ -303,6 +313,15 @@ QPainterPath QwtSplinePleasing::painterPath( const QPolygonF &points ) const
     return store.path;
 }
 
+/*! 
+  \brief Interpolate a curve with Bezier curves
+    
+  Interpolates a polygon piecewise with cubic Bezier curves
+  and returns the 2 control points of each curve as QLineF.
+
+  \param points Control points
+  \return Control points of the interpolating Bezier curves
+ */
 QVector<QLineF> QwtSplinePleasing::bezierControlLines( 
     const QPolygonF &points ) const
 {
@@ -310,7 +329,7 @@ QVector<QLineF> QwtSplinePleasing::bezierControlLines(
     if ( size <= 2 )
         return QVector<QLineF>();
 
-    const bool isClosing = ( boundaryType() == QwtSplineApproximation::ClosedPolygon );
+    const bool isClosing = ( boundaryType() == QwtSpline::ClosedPolygon );
 
     using namespace QwtSplinePleasingP;
 
@@ -328,4 +347,3 @@ QVector<QLineF> QwtSplinePleasing::bezierControlLines(
 
     return store.controlPoints;
 }
-

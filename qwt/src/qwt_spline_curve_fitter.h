@@ -12,16 +12,15 @@
 
 #include "qwt_curve_fitter.h"
 
-class QwtSplineApproximation;
+class QwtSpline;
 
 /*!
   \brief A curve fitter using a spline interpolation
 
-  The default setting for the spline is QwtSplinePleasing
-  - a cardinal spline using a chordal parametrization with some
-  extra rules for narrow angles.
+  The default setting for the spline is a cardinal spline with
+  uniform parametrization.
 
-  \sa QwtSpline
+  \sa QwtSpline, QwtSplineLocal
 */
 class QWT_EXPORT QwtSplineCurveFitter: public QwtCurveFitter
 {
@@ -29,16 +28,16 @@ public:
     QwtSplineCurveFitter();
     virtual ~QwtSplineCurveFitter();
 
-    void setSpline( QwtSplineApproximation * );
+    void setSpline( QwtSpline * );
 
-    const QwtSplineApproximation *spline() const;
-    QwtSplineApproximation *spline();
+    const QwtSpline *spline() const;
+    QwtSpline *spline();
 
     virtual QPolygonF fitCurve( const QPolygonF & ) const;
     virtual QPainterPath fitCurvePath( const QPolygonF & ) const;
 
 private:
-    class QwtSplineApproximation *d_spline;
+    QwtSpline *d_spline;
 };
 
 #endif
