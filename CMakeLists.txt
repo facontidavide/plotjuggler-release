@@ -7,28 +7,32 @@ if( CATKIN_DEVEL_PREFIX OR catkin_FOUND OR CATKIN_BUILD_BINARY_PACKAGE)
 endif()
 
 SET(PLOTJUGGLER_VERSION_MAJOR 0)
-SET(PLOTJUGGLER_VERSION_MINOR 10)
-SET(PLOTJUGGLER_VERSION_PATCH 2)
+SET(PLOTJUGGLER_VERSION_MINOR 12)
+SET(PLOTJUGGLER_VERSION_PATCH 1)
 
 add_definitions(
     -DPJ_MAJOR_VERSION=${PLOTJUGGLER_VERSION_MAJOR}
     -DPJ_MINOR_VERSION=${PLOTJUGGLER_VERSION_MINOR}
     -DPJ_PATCH_VERSION=${PLOTJUGGLER_VERSION_PATCH} )
 
-find_package(Qt5 REQUIRED COMPONENTS Core Widgets PrintSupport Concurrent Xml)
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+set(CMAKE_AUTOMOC ON)
+SET(CMAKE_AUTOUIC ON)
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+
+find_package(Qt5 REQUIRED COMPONENTS Core Widgets PrintSupport Concurrent Xml Svg )
+
 
 if (NOT CMAKE_BUILD_TYPE)
     message(STATUS "No build type selected, default to RelWithDebInfo")
     set(CMAKE_BUILD_TYPE "RelWithDebInfo")
 endif()
 
-#NOTE: if you have catkin install, but you don't want ROS to be used, commend the following line
-#find_package(catkin QUIET)
-
 if(COMPILING_WITH_CATKIN)
-    message("--------------------------------------------------------------------")
-    message("PlotJuggler is being built using CATKIN. ROS plugin will be compiled")
-    message("--------------------------------------------------------------------")
+    message("---------------------------------------------------------------------")
+    message("PlotJuggler is being built using CATKIN. ROS plugins will be compiled")
+    message("---------------------------------------------------------------------")
 
     find_package(catkin REQUIRED COMPONENTS
         rosbag
@@ -44,28 +48,31 @@ if(COMPILING_WITH_CATKIN)
         CATKIN_DEPENDS ros_type_introspection
         DEPENDS
         )
+
+    INCLUDE_DIRECTORIES( ${catkin_INCLUDE_DIRS} )
 endif()
 
 
-set(CMAKE_AUTOMOC ON)
-SET(CMAKE_AUTOUIC ON)
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
-
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
 IF (NOT WIN32)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  -fPIC")
 ENDIF()
 
-include_directories(
-    ${Qt5Widgets_INCLUDE_DIRS}
-    ${Qt5Concurrent_INCLUDE_DIRS}
-    ${Qt5PrintSupport_INCLUDE_DIRS}
-    ${Qt5Xml_INCLUDE_DIRS}
-    #${Qt5OpenGl_INCLUDE_DIRS}
+IF (CMAKE_VERSION LESS 2.8.9)
+    include_directories(
+        ${Qt5Core_INCLUDE_DIRS}
+        ${Qt5Gui_INCLUDE_DIRS}
+        ${Qt5Widgets_INCLUDE_DIRS}
+        ${Qt5Concurrent_INCLUDE_DIRS}
+        ${Qt5PrintSupport_INCLUDE_DIRS}
+        ${Qt5Xml_INCLUDE_DIRS}
+        ${Qt5Svg_INCLUDE_DIRS}
     )
+ENDIF()
 
-include_directories( ./qwt/src ./include ./color_widgets/include )
+include_directories( ./qwt/src
+    ./include
+    ./color_widgets/include )
 
 
 if(COMPILING_WITH_CATKIN)
@@ -111,7 +118,7 @@ SET(CPACK_PACKAGE_VERSION_PATCH ${PLOTJUGGLER_VERSION_PATCH} )
 SET(CPACK_PACKAGE_VERSION "${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}")
 
 SET(CPACK_PACKAGE_NAME "plotjuggler${CPACK_DEBIAN_PACKAGE_ARCHITECTURE}")
-SET(CPACK_DEBIAN_PACKAGE_DEPENDS "qt5-default")
+SET(CPACK_DEBIAN_PACKAGE_DEPENDS "qt5-default, libqt5svg5-dev")
 set(CPACK_PACKAGE_INSTALL_DIRECTORY "PlotJuggler")
 
 INCLUDE(CPack)

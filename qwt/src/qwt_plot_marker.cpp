@@ -137,23 +137,8 @@ void QwtPlotMarker::draw( QPainter *painter,
     const QPointF pos( xMap.transform( d_data->xValue ), 
         yMap.transform( d_data->yValue ) );
 
-    // draw lines
-
     drawLines( painter, canvasRect, pos );
-
-    // draw symbol
-    if ( d_data->symbol &&
-        ( d_data->symbol->style() != QwtSymbol::NoSymbol ) )
-    {
-        const QSizeF sz = d_data->symbol->size();
-
-        const QRectF clipRect = canvasRect.adjusted( 
-            -sz.width(), -sz.height(), sz.width(), sz.height() );
-
-        if ( clipRect.contains( pos ) )
-            d_data->symbol->drawSymbol( painter, pos );
-    }
-
+    drawSymbol( painter, canvasRect, pos );
     drawLabel( painter, canvasRect, pos );
 }
 
@@ -164,7 +149,7 @@ void QwtPlotMarker::draw( QPainter *painter,
   \param canvasRect Contents rectangle of the canvas in painter coordinates
   \param pos Position of the marker, translated into widget coordinates
 
-  \sa drawLabel(), QwtSymbol::drawSymbol()
+  \sa drawLabel(), drawSymbol()
 */
 void QwtPlotMarker::drawLines( QPainter *painter,
     const QRectF &canvasRect, const QPointF &pos ) const
@@ -198,13 +183,42 @@ void QwtPlotMarker::drawLines( QPainter *painter,
 }
 
 /*!
-  Align and draw the text label of the marker
+  Draw the symbol of the marker
 
   \param painter Painter
   \param canvasRect Contents rectangle of the canvas in painter coordinates
   \param pos Position of the marker, translated into widget coordinates
 
   \sa drawLabel(), QwtSymbol::drawSymbol()
+*/
+void QwtPlotMarker::drawSymbol( QPainter *painter,
+    const QRectF &canvasRect, const QPointF &pos ) const
+{
+    if ( d_data->symbol == NULL )
+        return;
+
+    const QwtSymbol &symbol = *d_data->symbol;
+
+    if ( symbol.style() != QwtSymbol::NoSymbol )
+    {
+        const QSizeF sz = symbol.size();
+    
+        const QRectF clipRect = canvasRect.adjusted(
+            -sz.width(), -sz.height(), sz.width(), sz.height() );
+    
+        if ( clipRect.contains( pos ) )
+            symbol.drawSymbol( painter, pos );
+    }
+}
+
+/*!
+  Align and draw the text label of the marker
+
+  \param painter Painter
+  \param canvasRect Contents rectangle of the canvas in painter coordinates
+  \param pos Position of the marker, translated into widget coordinates
+
+  \sa drawLabel(), drawSymbol()
 */
 void QwtPlotMarker::drawLabel( QPainter *painter,
     const QRectF &canvasRect, const QPointF &pos ) const
