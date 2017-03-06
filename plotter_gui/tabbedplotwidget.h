@@ -43,6 +43,8 @@ private slots:
 
     void on_renameCurrentTab();
 
+    void on_savePlotsToFile();
+
     void on_pushAddColumn_pressed();
 
     void on_pushVerticalResize_pressed();
@@ -73,6 +75,8 @@ private:
     Ui::TabbedPlotWidget *ui;
 
     QAction* _action_renameTab;
+    QAction* _action_savePlots;
+
     QMenu* _tab_menu;
 
     PlotDataMap *_mapped_data;
