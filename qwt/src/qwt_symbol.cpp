@@ -17,7 +17,7 @@
 #include <qpaintengine.h>
 #include <qmath.h>
 #ifndef QWT_NO_SVG
-#include <qsvgrenderer.h>
+#include <QtSvg/QSvgRenderer>
 #endif
 
 namespace QwtTriangle

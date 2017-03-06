@@ -10,7 +10,6 @@
 #include "qwt_plot.h"
 #include "qwt_scale_div.h"
 #include "qwt_plot_magnifier.h"
-#include <qevent.h>
 
 class QwtPlotMagnifier::PrivateData
 {

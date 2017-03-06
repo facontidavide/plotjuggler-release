@@ -2,6 +2,7 @@
 #define DATA_STREAMER_TEMPLATE_H
 
 #include <QtPlugin>
+#include <QMenu>
 #include <mutex>
 #include "PlotJuggler/plotdata.h"
 
@@ -9,6 +10,7 @@
 class DataStreamer{
 
 public:
+    DataStreamer(): _menu(NULL){}
 
     virtual PlotDataMap& getDataMap() = 0;
 
@@ -28,6 +30,10 @@ public:
 
     virtual QObject* getObject() = 0;
 
+    virtual void setMenu(QMenu* menu) { _menu = menu; }
+
+protected:
+    QMenu* _menu;
 };
 
 QT_BEGIN_NAMESPACE
