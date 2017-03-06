@@ -30,7 +30,7 @@ namespace color_widgets {
 /**
  * Color preview that opens a color dialog
  */
-class QCP_EXPORT ColorSelector : public ColorPreview
+class  ColorSelector : public ColorPreview
 {
     Q_OBJECT
     Q_ENUMS(UpdateMode)

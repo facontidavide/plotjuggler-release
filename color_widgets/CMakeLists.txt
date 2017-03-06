@@ -1,8 +1,6 @@
 
+SET( COLOR_WIDGETS_SRC
 
-include_directories( ./include )
-
-SET( CW_SRC
     include/color_names.hpp
     include/color_palette.hpp
     include/color_utils.hpp
@@ -18,7 +16,6 @@ SET( CW_SRC
     src/swatch.cpp
     )
 
-add_library(colorwidgets STATIC ${CW_SRC})
+add_library(colorwidgets STATIC ${COLOR_WIDGETS_SRC})
 
-target_link_libraries(colorwidgets
-    ${Qt5Widgets_LIBRARIES} )
+target_link_libraries(colorwidgets Qt5::Widgets )
