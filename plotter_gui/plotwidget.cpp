@@ -18,11 +18,9 @@
 #include <memory>
 #include <qwt_text.h>
 #include <QActionGroup>
-
+#include <QFileDialog>
+#include "qwt_plot_renderer.h"
 #include <PlotJuggler/random_color.h>
-
-//#include <qwt_plot_opengl_canvas.h>
-//#include <qwt_plot_glcanvas.h>
 
 
 PlotWidget::PlotWidget(const PlotDataMap *datamap, QWidget *parent):
@@ -44,10 +42,7 @@ PlotWidget::PlotWidget(const PlotDataMap *datamap, QWidget *parent):
     this->sizePolicy().setHorizontalPolicy( QSizePolicy::Expanding);
     this->sizePolicy().setVerticalPolicy( QSizePolicy::Expanding);
 
-    //QwtPlotOpenGLCanvas *canvas = new QwtPlotOpenGLCanvas(this);
-    //QwtPlotGLCanvas *canvas = new QwtPlotGLCanvas(this);
     QwtPlotCanvas *canvas = new QwtPlotCanvas(this);
-
 
     canvas->setFrameStyle( QFrame::NoFrame );
     canvas->setPaintAttribute( QwtPlotCanvas::BackingStore, true );
@@ -116,7 +111,6 @@ void PlotWidget::buildActions()
     _action_changeColors->setStatusTip(tr("Change the color of the curves"));
     connect(_action_changeColors, SIGNAL(triggered()), this, SLOT(on_changeColor_triggered()));
 
-
     QIcon iconPoints;
     iconPoints.addFile(QStringLiteral(":/icons/resources/line_chart_32px.png"), QSize(26, 26), QIcon::Normal, QIcon::Off);
     _action_showPoints = new QAction(tr("&Show lines and points"), this);
@@ -151,6 +145,12 @@ void PlotWidget::buildActions()
     _action_2ndDerivativeTransform = new QAction(tr("&2nd Derivative"), this);
     _action_2ndDerivativeTransform->setCheckable( true );
     connect(_action_2ndDerivativeTransform, SIGNAL(triggered(bool)), this, SLOT(on_2ndDerivativeTransform_triggered(bool)));
+
+    QIcon iconSave;
+    iconSave.addFile(QStringLiteral(":/icons/resources/filesave@2x.png"), QSize(26, 26), QIcon::Normal, QIcon::Off);
+    _action_saveToFile = new  QAction(tr("&Save plot to file"), this);
+    _action_saveToFile->setIcon(iconSave);
+    connect(_action_saveToFile, SIGNAL(triggered()), this, SLOT(on_savePlotToFile()));
 
     auto transform_group = new QActionGroup(this);
 
@@ -220,11 +220,11 @@ bool PlotWidget::addCurve(const QString &name, bool do_replot)
         curve->setPaintAttribute( QwtPlotCurve::ClipPolygons, true );
         curve->setPaintAttribute( QwtPlotCurve::FilterPointsAggressive, true );
 
-		if( _current_transform != PlotDataQwt::noTransform)
-		{
-			plot_qwt->setTransform( _current_transform );
-			plot_qwt->updateData(true);
-		}
+        if( _current_transform != PlotDataQwt::noTransform)
+        {
+            plot_qwt->setTransform( _current_transform );
+            plot_qwt->updateData(true);
+        }
 
         curve->setData( plot_qwt );
 
@@ -241,9 +241,9 @@ bool PlotWidget::addCurve(const QString &name, bool do_replot)
             color = randomColorHint();
             data->setColorHint(color);
         }
-        curve->setPen( color,  0.7 );
+        curve->setPen( color,  0.8 );
         curve->setRenderHint( QwtPlotItem::RenderAntialiased, true );
-	    
+
         curve->attach( this );
         _curve_list.insert( std::make_pair(name, curve));
     }
@@ -528,7 +528,7 @@ void PlotWidget::reloadPlotData()
         std::shared_ptr<QwtPlotCurve>& curve_data = curve_it.second;
         const std::string curve_name = curve_it.first.toStdString();
 
-       // PlotDataQwt* old_plotqwt = static_cast<PlotDataQwt*>( curve_data->data() );
+        // PlotDataQwt* old_plotqwt = static_cast<PlotDataQwt*>( curve_data->data() );
 
         auto it = _mapped_data->numeric.find( curve_name );
         if( it!= _mapped_data->numeric.end())
@@ -563,7 +563,7 @@ PlotData::RangeTime PlotWidget::maximumRangeX() const
     double right  = 0;
 
     if( _curve_list.size() == 0){
-      return PlotData::RangeTime( {0,0} );
+        return PlotData::RangeTime( {0,0} );
     }
 
     bool first = true;
@@ -849,6 +849,20 @@ void PlotWidget::on_2ndDerivativeTransform_triggered(bool checked)
     emit undoableChange();
 }
 
+void PlotWidget::on_savePlotToFile()
+{
+    QString fileName;
+    fileName = QFileDialog::getSaveFileName(this, tr("File to export"), QString(),"Compatible formats (*.jpg *.jpeg *.pdf *.svg *.png)");
+
+    if ( !fileName.isEmpty() )
+    {
+        QwtPlotRenderer rend;
+        rend.renderDocument(this,fileName, QSizeF(200,150), 150);
+    }
+}
+
+
+
 void PlotWidget::canvasContextMenuTriggered(const QPoint &pos)
 {
     QMenu menu(this);
@@ -864,6 +878,8 @@ void PlotWidget::canvasContextMenuTriggered(const QPoint &pos)
     menu.addAction( _action_noTransform );
     menu.addAction( _action_1stDerivativeTransform );
     menu.addAction( _action_2ndDerivativeTransform );
+    menu.addSeparator();
+    menu.addAction( _action_saveToFile );
 
     _action_removeCurve->setEnabled( ! _curve_list.empty() );
     _action_removeAllCurves->setEnabled( ! _curve_list.empty() );
@@ -919,7 +935,7 @@ bool PlotWidget::eventFilter(QObject *obj, QEvent *event)
         QMouseEvent *mouse_event = static_cast<QMouseEvent*>(event);
 
         if( mouse_event->button() == Qt::LeftButton &&
-            (mouse_event->modifiers() & Qt::ShiftModifier) )
+                (mouse_event->modifiers() & Qt::ShiftModifier) )
         {
             left_and_shift_pressed = true;
             const QPoint point = mouse_event->pos();

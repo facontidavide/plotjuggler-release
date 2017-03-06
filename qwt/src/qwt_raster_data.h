@@ -53,7 +53,8 @@ public:
     {
         /*!
            The bounding rectangle of the data is spanned by
-           the interval(Qt::XAxis) and interval(Qt::YAxis)
+           the interval(Qt::XAxis) and interval(Qt::YAxis).
+
            WithoutGaps indicates, that the data has no gaps
            ( unknown values ) in this area and the result of
            value() does not need to be checked for NaN values.
@@ -90,8 +91,11 @@ public:
     void setAttribute( Attribute, bool on = true );
     bool testAttribute( Attribute ) const;
 
-    virtual void setInterval( Qt::Axis, const QwtInterval & );
-    const QwtInterval &interval(Qt::Axis) const;
+    /*!
+       \return Bounding interval for an axis
+       \sa setInterval
+     */
+    virtual QwtInterval interval( Qt::Axis ) const = 0;
 
     virtual QRectF pixelHint( const QRectF & ) const;
 

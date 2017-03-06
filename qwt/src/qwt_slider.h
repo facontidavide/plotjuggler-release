@@ -114,7 +114,6 @@ protected:
 
     virtual bool event( QEvent * );
 
-
     virtual void scaleChange();
 
     QRect sliderRect() const;

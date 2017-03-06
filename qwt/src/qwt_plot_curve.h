@@ -74,6 +74,9 @@ public:
         */
         Lines,
 
+
+        LinesAndDots,
+
         /*!
            Draw vertical or horizontal sticks ( depending on the 
            orientation() ) from a baseline which is defined by setBaseline().
@@ -94,8 +97,6 @@ public:
            painting a point.
         */
         Dots,
-
-        LinesAndDots,
 
         /*!
            Styles >= QwtPlotCurve::UserCurve are reserved for derived
