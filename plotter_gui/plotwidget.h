@@ -82,6 +82,8 @@ public slots:
     void on_1stDerivativeTransform_triggered(bool checked);
     void on_2ndDerivativeTransform_triggered(bool checked);
 
+    void on_savePlotToFile();
+
     void removeCurve(const QString& name);
 
     void activateLegent(bool activate);
@@ -108,6 +110,7 @@ private:
     QAction *_action_noTransform;
     QAction *_action_1stDerivativeTransform;
     QAction *_action_2ndDerivativeTransform;
+    QAction *_action_saveToFile;
 
     PlotZoomer* _zoomer;
     PlotMagnifier* _magnifier;
