@@ -3,6 +3,8 @@
 #include <QAction>
 #include <QInputDialog>
 #include <QMouseEvent>
+#include <QFileDialog>
+#include "qwt_plot_renderer.h"
 #include "tabbedplotwidget.h"
 #include "ui_tabbedplotwidget.h"
 
@@ -14,10 +16,10 @@ TabbedPlotWidget::TabbedPlotWidget(QMainWindow *main_window, PlotDataMap *mapped
     _mapped_data = mapped_data;
 
     if( main_window == parent){
-       _parent_type = QString("main_window");
+        _parent_type = QString("main_window");
     }
     else{
-      _parent_type = QString("floating_window");
+        _parent_type = QString("floating_window");
     }
     ui->setupUi(this);
 
@@ -26,11 +28,18 @@ TabbedPlotWidget::TabbedPlotWidget(QMainWindow *main_window, PlotDataMap *mapped
     ui->tabWidget->tabBar()->installEventFilter( this );
 
     _action_renameTab = new QAction(tr("Rename tab"), this);
-
     connect( _action_renameTab, SIGNAL(triggered()), this, SLOT(on_renameCurrentTab()) );
+
+    QIcon iconSave;
+    iconSave.addFile(QStringLiteral(":/icons/resources/filesave@2x.png"), QSize(26, 26), QIcon::Normal, QIcon::Off);
+    _action_savePlots = new  QAction(tr("&Save plots to file"), this);
+    _action_savePlots->setIcon(iconSave);
+    connect(_action_savePlots, SIGNAL(triggered()), this, SLOT(on_savePlotsToFile()));
 
     _tab_menu = new QMenu(this);
     _tab_menu->addAction( _action_renameTab );
+    _tab_menu->addSeparator();
+    _tab_menu->addAction( _action_savePlots );
     _tab_menu->addSeparator();
 
     connect( this, SIGNAL(destroyed(QObject*)),             main_window, SLOT(on_tabbedAreaDestroyed(QObject*)) );
@@ -175,6 +184,39 @@ void TabbedPlotWidget::on_renameCurrentTab()
     if (ok) {
         ui->tabWidget->setTabText (idx, newName);
         currentTab()->setName( newName );
+    }
+}
+
+void TabbedPlotWidget::on_savePlotsToFile()
+{
+    int idx = ui->tabWidget->tabBar()->currentIndex();
+    PlotMatrix* matrix = static_cast<PlotMatrix*>( ui->tabWidget->widget(idx) );
+
+    QString fileName;
+    fileName = QFileDialog::getSaveFileName(this, tr("File to export"), QString(),
+                                            "Compatible formats (*.jpg *.jpeg *.pdf *.svg *.png)");
+
+    QPixmap pixmap (1500,1000);
+    QPainter * painter = new QPainter(&pixmap);
+
+
+    if ( !fileName.isEmpty() )
+    {
+        QwtPlotRenderer rend;
+
+        int delta_X = 1500 /  matrix->colsCount();
+        int delta_Y = 1000 /  matrix->rowsCount();
+
+        for (int c=0; c< matrix->colsCount(); c++)
+        {
+            for (int r=0; r< matrix->rowsCount(); r++)
+            {
+                PlotWidget* widget = matrix->plotAt(r,c);
+                QRect rect(delta_X*c, delta_Y*r, delta_X, delta_Y);
+                rend.render(widget,painter, rect);
+            }
+        }
+        pixmap.save(fileName);
     }
 }
 
