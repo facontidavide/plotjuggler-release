@@ -27,6 +27,8 @@
 #include "tabbedplotwidget.h"
 #include "selectlistdialog.h"
 #include "aboutdialog.h"
+#include <QMovie>
+#include "ui_help_dialog.h"
 
 MainWindow::MainWindow(const QCommandLineParser &commandline_parser, QWidget *parent) :
     QMainWindow(parent),
@@ -51,6 +53,8 @@ MainWindow::MainWindow(const QCommandLineParser &commandline_parser, QWidget *pa
     ui->leftLayout->addWidget( _curvelist_widget );
 
     ui->splitter->setCollapsible(0,true);
+    ui->splitter->setStretchFactor(0,2);
+    ui->splitter->setStretchFactor(1,5);
 
     connect( ui->splitter, SIGNAL(splitterMoved(int,int)), SLOT(onSplitterMoved(int,int)) );
 
@@ -161,15 +165,13 @@ void MainWindow::getMaximumRangeX(double* minX, double* maxX)
     *minX = std::numeric_limits<double>::max();
     *maxX = std::numeric_limits<double>::min();
 
-    auto plots = getAllPlots();
-
-    for ( unsigned i = 0; i< plots.size(); i++ )
+    forEachWidget( [&](PlotWidget* plot)
     {
-        auto rangeX = plots[i]->maximumRangeX();
-
+        auto rangeX = plot->maximumRangeX();
         if( *minX > rangeX.min )   *minX = rangeX.min ;
         if( *maxX < rangeX.max )   *maxX = rangeX.max;
     }
+    );
 }
 
 
@@ -179,11 +181,9 @@ void MainWindow::onTrackerTimeUpdated(double current_time)
     getMaximumRangeX( &minX, &maxX );
 
     double ratio = (current_time - minX)/(double)(maxX-minX);
-
     double min_slider = (double)ui->horizontalSlider->minimum();
     double max_slider = (double)ui->horizontalSlider->maximum();
     int slider_value = (int)((max_slider- min_slider)* ratio) ;
-
     ui->horizontalSlider->setValue(slider_value);
 
     //------------------------
@@ -323,7 +323,10 @@ void MainWindow::loadPlugins(QString directory_name)
         QObject *plugin = pluginLoader.instance();
         if (plugin)
         {
-            DataLoader *loader = qobject_cast<DataLoader *>(plugin);
+            DataLoader *loader        = qobject_cast<DataLoader *>(plugin);
+            StatePublisher *publisher = qobject_cast<StatePublisher *>(plugin);
+            DataStreamer *streamer    =  qobject_cast<DataStreamer *>(plugin);
+
             if (loader)
             {
                 qDebug() << filename << ": is a DataLoader plugin";
@@ -336,9 +339,7 @@ void MainWindow::loadPlugins(QString directory_name)
                     _data_loader.insert( std::make_pair( loader->name(), loader) );
                 }
             }
-
-            StatePublisher *publisher = qobject_cast<StatePublisher *>(plugin);
-            if (publisher)
+            else if (publisher)
             {
                 qDebug() << filename << ": is a StatePublisher plugin";
                 if( !_test_option && publisher->isDebugPlugin())
@@ -360,9 +361,7 @@ void MainWindow::loadPlugins(QString directory_name)
                             publisher->getObject(), SLOT(setEnabled(bool)) );
                 }
             }
-
-            DataStreamer *streamer =  qobject_cast<DataStreamer *>(plugin);
-            if (streamer)
+            else if (streamer)
             {
                 qDebug() << filename << ": is a DataStreamer plugin";
                 if( !_test_option && streamer->isDebugPlugin())
@@ -377,6 +376,8 @@ void MainWindow::loadPlugins(QString directory_name)
                     QAction* startStreamer = new QAction(QString("Start: ") + name, this);
                     ui->menuStreaming->setEnabled(true);
                     ui->menuStreaming->addAction(startStreamer);
+
+                    streamer->setMenu( ui->menuStreaming );
 
                     connect(startStreamer, SIGNAL(triggered()), _streamer_signal_mapper, SLOT(map()));
                     _streamer_signal_mapper->setMapping(startStreamer, name );
@@ -465,7 +466,6 @@ void MainWindow::onPlotAdded(PlotWidget* plot)
     connect( this, SIGNAL(activateTracker(bool)),  plot, SLOT( replot() ));
 
     plot->tracker()->setEnabled(  ui->pushButtonActivateTracker->isChecked() );
-
 }
 
 void MainWindow::onPlotMatrixAdded(PlotMatrix* matrix)
@@ -615,39 +615,6 @@ void MainWindow::deleteLoadedData(const QString& curve_name)
     }
 }
 
-std::vector<PlotWidget*> MainWindow::getAllPlots()
-{
-    std::vector<PlotWidget*> output;
-
-    std::vector<TabbedPlotWidget*> tabbed_plotarea;
-    tabbed_plotarea.reserve( 1+ _floating_window.size());
-
-    tabbed_plotarea.push_back( _main_tabbed_widget );
-    for (SubWindow* subwin: _floating_window){
-        tabbed_plotarea.push_back( subwin->tabbedWidget() );
-    }
-
-    for (size_t i = 0; i < tabbed_plotarea.size(); i++)
-    {
-        QTabWidget* tab_widget = tabbed_plotarea[i]->tabWidget();
-        for (int t = 0; t < tab_widget->count(); t++)
-        {
-            PlotMatrix* matrix = static_cast<PlotMatrix*>( tab_widget->widget(t) );
-            if (matrix)
-            {
-                for ( unsigned w = 0; w< matrix->plotCount(); w++ )
-                {
-                    PlotWidget *plot =  matrix->plotAt(w);
-                    if( plot )
-                    {
-                        output.push_back( plot );
-                    }
-                }
-            }
-        }
-    }
-    return output;
-}
 
 void MainWindow::onDeleteLoadedData()
 {
@@ -665,12 +632,8 @@ void MainWindow::onDeleteLoadedData()
 
     _curvelist_widget->clear();
 
-    auto plots = getAllPlots();
+    forEachWidget( [](PlotWidget* plot) { plot->detachAllCurves(); } );
 
-    for (size_t i = 0; i < plots.size(); i++)
-    {
-        plots[i]->detachAllCurves();
-    }
     ui->actionReloadData->setEnabled( false );
     ui->actionDeleteAllData->setEnabled( false );
 }
@@ -732,12 +695,12 @@ void MainWindow::onActionLoadDataFile(bool reload_from_settings)
     onActionLoadDataFileImpl(filename, false );
 }
 
-void MainWindow::importPlotDataMap(const PlotDataMap& mapped_data)
+void MainWindow::importPlotDataMap(const PlotDataMap& new_data)
 {
     // overwrite the old user_defined map
-    _mapped_plot_data.user_defined = mapped_data.user_defined;
+    _mapped_plot_data.user_defined = new_data.user_defined;
 
-    for (auto& it: mapped_data.numeric)
+    for (auto& it: new_data.numeric)
     {
         const std::string& name  = it.first;
         PlotDataPtr plot  = it.second;
@@ -751,12 +714,12 @@ void MainWindow::importPlotDataMap(const PlotDataMap& mapped_data)
             _curvelist_widget->addItem( new QListWidgetItem( qname ) );
             _mapped_plot_data.numeric.insert( std::make_pair(name, plot) );
         }
-        else{ // a plot with the same name existed already
+        else{ // a plot with the same name existed already, overwrite it
             plot_with_same_name->second = plot;
         }
     }
 
-    if( _mapped_plot_data.numeric.size() > mapped_data.numeric.size() )
+    if( _mapped_plot_data.numeric.size() > new_data.numeric.size() )
     {
         QMessageBox::StandardButton reply;
         reply = QMessageBox::question(0, tr("Warning"),
@@ -769,11 +732,10 @@ void MainWindow::importPlotDataMap(const PlotDataMap& mapped_data)
             while( repeat )
             {
                 repeat = false;
-
                 for (auto& it: _mapped_plot_data.numeric )
                 {
                     auto& name = it.first;
-                    if( mapped_data.numeric.find( name ) == mapped_data.numeric.end() )
+                    if( new_data.numeric.find( name ) == new_data.numeric.end() )
                     {
                         this->deleteLoadedData( QString( name.c_str() ) );
                         repeat = true;
@@ -783,9 +745,12 @@ void MainWindow::importPlotDataMap(const PlotDataMap& mapped_data)
             }
         }
     }
-    _undo_states.clear();
-    _redo_states.clear();
-    _undo_states.push_back(  xmlSaveState() );
+
+    forEachWidget( [](PlotWidget* plot) {
+        plot->reloadPlotData();
+    } );
+
+    onReplotRequested();
 
     updateInternalState();
 }
@@ -944,6 +909,8 @@ void MainWindow::onActionLoadStreamer(QString streamer_name)
         ui->actionDeleteAllData->setToolTip("Stop streaming to be able to delete the data");
 
         ui->pushButtonStreaming->setChecked(true);
+
+        on_streamingSpinBox_valueChanged( ui->streamingSpinBox->value() );
     }
     else{
         qDebug() << "Failed to launch the streamer";
@@ -1080,19 +1047,6 @@ void MainWindow::onUndoInvoked( )
     _disable_undo_logging = false;
 }
 
-void MainWindow::on_horizontalSlider_sliderMoved(int position)
-{
-    QSlider* slider = ui->horizontalSlider;
-    double ratio = (double)position / (double)(slider->maximum() -  slider->minimum() );
-
-    double minX, maxX;
-    getMaximumRangeX( &minX, &maxX);
-
-    double posX = (maxX-minX) * ratio + minX;
-
-    onTrackerTimeUpdated( posX );
-    emit  trackerTimeUpdated( QPointF(posX,0 ) );
-}
 
 void MainWindow::on_tabbedAreaDestroyed(QObject *object)
 {
@@ -1124,6 +1078,17 @@ void MainWindow::updateInternalState()
     std::map<QString,TabbedPlotWidget*> tabbed_map;
     tabbed_map.insert( std::make_pair( QString("Main window"), _main_tabbed_widget) );
 
+    double maxX = 0;
+
+    forEachWidget([&](PlotWidget* plot)
+    {
+        for( auto& it: plot->curveList()) {
+            maxX = std::max(maxX, (double)it.second->data()->size() );
+        }
+    } );
+
+    ui->horizontalSlider->setRange(0,maxX);
+
     for (SubWindow* subwin: _floating_window)
     {
         tabbed_map.insert( std::make_pair( subwin->windowTitle(), subwin->tabbedWidget() ) );
@@ -1139,20 +1104,8 @@ void MainWindow::updateInternalState()
         emit activateTracker( false );
 }
 
-void MainWindow::on_pushButtonAddSubwindow_pressed()
+void MainWindow::forEachWidget(std::function<void (PlotWidget*, PlotMatrix*, int,int )> operation)
 {
-    createTabbedDialog( NULL, true );
-}
-
-void MainWindow::onSwapPlots(PlotWidget *source, PlotWidget *destination)
-{
-    if( !source || !destination ) return;
-
-    PlotMatrix* src_matrix = NULL;
-    PlotMatrix* dst_matrix = NULL;
-    QPoint src_pos;
-    QPoint dst_pos;
-
     std::vector<TabbedPlotWidget*> tabbed_plotarea;
     tabbed_plotarea.reserve( 1+ _floating_window.size());
 
@@ -1174,22 +1127,47 @@ void MainWindow::onSwapPlots(PlotWidget *source, PlotWidget *destination)
                 for(unsigned col=0; col< matrix->colsCount(); col++)
                 {
                     PlotWidget* plot = matrix->plotAt(row, col);
-
-                    if( plot == source ) {
-                        src_matrix = matrix;
-                        src_pos.setX( row );
-                        src_pos.setY( col );
-                    }
-                    else if( plot == destination )
-                    {
-                        dst_matrix = matrix;
-                        dst_pos.setX( row );
-                        dst_pos.setY( col );
-                    }
+                    operation(plot, matrix, row, col);
                 }
             }
         }
     }
+}
+
+void MainWindow::forEachWidget(std::function<void (PlotWidget *)> op)
+{
+    forEachWidget( [&](PlotWidget*plot, PlotMatrix*, int,int) { op(plot); } );
+}
+
+void MainWindow::on_pushButtonAddSubwindow_pressed()
+{
+    createTabbedDialog( NULL, true );
+}
+
+void MainWindow::onSwapPlots(PlotWidget *source, PlotWidget *destination)
+{
+    if( !source || !destination ) return;
+
+    PlotMatrix* src_matrix = NULL;
+    PlotMatrix* dst_matrix = NULL;
+    QPoint src_pos;
+    QPoint dst_pos;
+
+    forEachWidget( [&](PlotWidget* plot, PlotMatrix* matrix, int row,int col)
+    {
+        if( plot == source ) {
+            src_matrix = matrix;
+            src_pos.setX( row );
+            src_pos.setY( col );
+        }
+        else if( plot == destination )
+        {
+            dst_matrix = matrix;
+            dst_pos.setX( row );
+            dst_pos.setY( col );
+        }
+    });
+
     if(src_matrix && dst_matrix)
     {
         src_matrix->gridLayout()->removeWidget( source );
@@ -1276,13 +1254,11 @@ void MainWindow::on_streamingSpinBox_valueChanged(int value)
     }
 }
 
-
 void MainWindow::on_pushButtonActivateTracker_toggled(bool checked)
 {
     emit  activateTracker( checked );
 
 }
-
 
 void MainWindow::on_actionAbout_triggered()
 {
@@ -1319,4 +1295,52 @@ void MainWindow::on_actionExit_triggered()
     if( reply == QMessageBox::Yes ) {
         this->close();
     }
+}
+
+void MainWindow::on_actionQuick_Help_triggered()
+{
+    QDialog*  dialog = new QDialog(this);
+    Ui::HelpDialog *ui = new Ui::HelpDialog;
+    ui->setupUi(dialog);
+
+    QMovie *movie_1 = new QMovie(":/doc/pj-drag-curve.gif");
+    ui->label_1->setMovie(movie_1);
+    movie_1->start();
+
+    QMovie *movie_2 = new QMovie(":/doc/pj-multiplot.gif");
+    ui->label_2->setMovie(movie_2);
+    movie_2->start();
+
+    QMovie *movie_3 = new QMovie(":/doc/pj-area-zoom.gif");
+    ui->label_3->setMovie(movie_3);
+    movie_3->start();
+
+    QMovie *movie_4 = new QMovie(":/doc/pj-wheel-zoom.gif");
+    ui->label_4->setMovie(movie_4);
+    movie_4->start();
+
+    QMovie *movie_5 = new QMovie(":/doc/pj-tracker.gif");
+    ui->label_5->setMovie(movie_5);
+    movie_5->start();
+
+    QMovie *movie_6 = new QMovie(":/doc/pj-swap-plots.gif");
+    ui->label_6->setMovie(movie_6);
+    movie_6->start();
+
+    dialog->exec();
+}
+
+void MainWindow::on_horizontalSlider_valueChanged(int position)
+{
+    //qDebug() <<position;
+    QSlider* slider = ui->horizontalSlider;
+    double ratio = (double)position / (double)(slider->maximum() -  slider->minimum() );
+
+    double minX, maxX;
+    getMaximumRangeX( &minX, &maxX);
+
+    double posX = (maxX-minX) * ratio + minX;
+
+    onTrackerTimeUpdated( posX );
+    emit  trackerTimeUpdated( QPointF(posX,0 ) );
 }
