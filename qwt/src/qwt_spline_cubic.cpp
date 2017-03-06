@@ -958,29 +958,52 @@ public:
     }
 };
 
+/*!
+  \brief Constructor
+  The default setting is a non closing natural spline with no parametrization.
+ */
 QwtSplineCubic::QwtSplineCubic()
 {
     d_data = new PrivateData;
 
     // a natural spline
 
-    setBoundaryCondition( QwtSpline::AtBeginning, QwtSplineC1::Clamped2 );
+    setBoundaryCondition( QwtSpline::AtBeginning, QwtSpline::Clamped2 );
     setBoundaryValue( QwtSpline::AtBeginning, 0.0 );
 
-    setBoundaryCondition( QwtSpline::AtEnd, QwtSplineC1::Clamped2 );
+    setBoundaryCondition( QwtSpline::AtEnd, QwtSpline::Clamped2 );
     setBoundaryValue( QwtSpline::AtEnd, 0.0 );
 }
 
+//! Destructor
 QwtSplineCubic::~QwtSplineCubic()
 {
     delete d_data;
 }
 
+/*!
+  A cubic spline is non local, where changing one point has em effect on all
+  polynomials.
+
+  \return 0
+ */
 uint QwtSplineCubic::locality() const
 {
     return 0;
 }
 
+/*!
+  \brief Find the first derivative at the control points
+
+  In opposite to the implementation QwtSplineC2::slopes the first derivates
+  are calculated directly, without calculating the second derivates first.
+
+  \param points Control nodes of the spline
+  \return Vector with the values of the 2nd derivate at the control points
+
+  \sa curvatures(), QwtSplinePolynomial::fromCurvatures()
+  \note The x coordinates need to be increasing or decreasing
+ */
 QVector<double> QwtSplineCubic::slopes( const QPolygonF &points ) const
 {
     using namespace QwtSplineCubicP;
@@ -988,8 +1011,8 @@ QVector<double> QwtSplineCubic::slopes( const QPolygonF &points ) const
     if ( points.size() <= 2 )
         return QVector<double>();
 
-    if ( ( boundaryType() == QwtSplineApproximation::PeriodicPolygon )
-        || ( boundaryType() == QwtSplineApproximation::ClosedPolygon ) )
+    if ( ( boundaryType() == QwtSpline::PeriodicPolygon )
+        || ( boundaryType() == QwtSpline::ClosedPolygon ) )
     {
         EquationSystem2<SlopeStore> eqs;
         eqs.resolve( points );
@@ -1044,6 +1067,15 @@ QVector<double> QwtSplineCubic::slopes( const QPolygonF &points ) const
     return eqs.store().slopes();
 }
 
+/*!
+  \brief Find the second derivative at the control points
+
+  \param points Control nodes of the spline
+  \return Vector with the values of the 2nd derivate at the control points
+
+  \sa slopes()
+  \note The x coordinates need to be increasing or decreasing
+ */
 QVector<double> QwtSplineCubic::curvatures( const QPolygonF &points ) const
 {
     using namespace QwtSplineCubicP;
@@ -1051,8 +1083,8 @@ QVector<double> QwtSplineCubic::curvatures( const QPolygonF &points ) const
     if ( points.size() <= 2 )
         return QVector<double>();
 
-    if ( ( boundaryType() == QwtSplineApproximation::PeriodicPolygon )
-        || ( boundaryType() == QwtSplineApproximation::ClosedPolygon ) )
+    if ( ( boundaryType() == QwtSpline::PeriodicPolygon )
+        || ( boundaryType() == QwtSpline::ClosedPolygon ) )
     {
         EquationSystem2<CurvatureStore> eqs;
         eqs.resolve( points );
@@ -1062,8 +1094,8 @@ QVector<double> QwtSplineCubic::curvatures( const QPolygonF &points ) const
 
     if ( points.size() == 3 )
     {
-        if ( boundaryCondition( QwtSpline::AtBeginning ) == QwtSplineCubic::NotAKnot 
-            || boundaryCondition( QwtSpline::AtEnd ) == QwtSplineCubic::NotAKnot )
+        if ( boundaryCondition( QwtSpline::AtBeginning ) == QwtSplineC2::NotAKnot 
+            || boundaryCondition( QwtSpline::AtEnd ) == QwtSplineC2::NotAKnot )
         {
             return QVector<double>();
         }
@@ -1093,11 +1125,15 @@ QVector<double> QwtSplineCubic::curvatures( const QPolygonF &points ) const
 
   \param points Control points
   \return Painter path, that can be rendered by QPainter
+
+  \note The implementation simply calls QwtSplineC1::painterPath()
  */
 QPainterPath QwtSplineCubic::painterPath( const QPolygonF &points ) const
 {   
-    // TODO ...
-    return QwtSplineC2::painterPath( points );
+    // as QwtSplineCubic can calcuate slopes directly we can
+    // use the implementation of QwtSplineC1 without any performance loss.
+
+    return QwtSplineC1::painterPath( points );
 }
     
 /*! 
@@ -1108,16 +1144,29 @@ QPainterPath QwtSplineCubic::painterPath( const QPolygonF &points ) const
 
   \param points Control points
   \return Control points of the interpolating Bezier curves
+
+  \note The implementation simply calls QwtSplineC1::bezierControlLines()
  */
 QVector<QLineF> QwtSplineCubic::bezierControlLines( const QPolygonF &points ) const
 {   
-    // TODO ...
-    return QwtSplineC2::bezierControlLines( points ); 
+    // as QwtSplineCubic can calcuate slopes directly we can
+    // use the implementation of QwtSplineC1 without any performance loss.
+
+    return QwtSplineC1::bezierControlLines( points ); 
 }   
 
+/*!
+  \brief Calculate the interpolating polynomials for a non parametric spline
+
+  \param points Control points
+  \return Interpolating polynomials
+
+  \note The x coordinates need to be increasing or decreasing
+  \note The implementation simply calls QwtSplineC2::polynomials(), but is 
+        intended to be replaced by a one pass calculation some day.
+ */
 QVector<QwtSplinePolynomial> QwtSplineCubic::polynomials( const QPolygonF &points ) const
 {
-    // TODO ...
     return QwtSplineC2::polynomials( points );
 }
 

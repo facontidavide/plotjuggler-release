@@ -705,6 +705,8 @@ void QwtSlider::resizeEvent( QResizeEvent *event )
 /*!
    Qt event handler
    \param event Event
+
+   \return true, if event was recognized and processed
 */
 bool QwtSlider::event( QEvent *event )
 {
