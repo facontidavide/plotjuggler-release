@@ -2,6 +2,18 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.12.0 (2017-03-06)
+-------------------
+* Create .appveyor.yml
+* added the ability to save rosbags from streaming
+* bug fixes
+* might fix compilation problem in recent cmake (3.x)
+* improvement of the horizontal slider
+* save plots to file
+* qwt updated to trunk
+* catch the rosbag exception
+* Contributors: Davide Faconti
+
 0.11.0 (2017-02-23)
 -------------------
 * should fix the reloading issue

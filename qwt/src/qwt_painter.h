@@ -118,6 +118,7 @@ public:
         const QRectF &rect, const QWidget *widget );
 
     static QPixmap backingStore( QWidget *, const QSize & );
+    static qreal devicePixelRatio( const QPaintDevice * );
 
 private:
     static bool d_polylineSplitting;
