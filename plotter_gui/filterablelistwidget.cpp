@@ -54,7 +54,7 @@ void FilterableListWidget::addItem(QTableWidgetItem *item)
     int row = count();
     table()->setRowCount(row+1);
     table()->setItem(row, 0, item);
-    table()->setItem(row, 1, new QTableWidgetItem( QString::number(row)) );
+    table()->setItem(row, 1, new QTableWidgetItem("-") );
     on_lineEdit_textChanged( ui->lineEdit->text() );
     table()->resizeColumnToContents(0);
     table()->resizeColumnToContents(1);
@@ -187,7 +187,7 @@ void FilterableListWidget::on_lineEdit_textChanged(const QString &search_string)
         }
         if( !toHide ) visible_count++;
 
-    //    table()->setRowHidden(row, toHide );
+        table()->setRowHidden(row, toHide );
     }
     ui->labelNumberDisplayed->setText( QString::number( visible_count ) + QString(" of ") + QString::number( item_count ) )   ;
 }
