@@ -6,13 +6,18 @@
 #include <QSettings>
 #include <QDrag>
 #include <QMimeData>
+#include <QHeaderView>
 
 FilterableListWidget::FilterableListWidget(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::FilterableListWidget)
 {
     ui->setupUi(this);
-    ui->listWidget->viewport()->installEventFilter( this );
+    ui->tableWidget->viewport()->installEventFilter( this );
+
+   table()->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
+   table()->horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
+   table()->horizontalHeader()->resizeSection(1, 120);
 
     for( int i=0; i< ui->gridLayoutSettings->count(); i++)
     {
@@ -35,35 +40,49 @@ FilterableListWidget::~FilterableListWidget()
 
 int FilterableListWidget::count() const
 {
-    return list()->count();
+    return table()->rowCount();
 }
 
 void FilterableListWidget::clear()
 {
-    list()->clear();
+    table()->clear();
     ui->labelNumberDisplayed->setText( "0 of 0");
 }
 
-void FilterableListWidget::addItem(QListWidgetItem *item)
+void FilterableListWidget::addItem(QTableWidgetItem *item)
 {
-    list()->addItem(item);
+    int row = count();
+    table()->setRowCount(row+1);
+    table()->setItem(row, 0, item);
+    table()->setItem(row, 1, new QTableWidgetItem( QString::number(row)) );
     on_lineEdit_textChanged( ui->lineEdit->text() );
+    table()->resizeColumnToContents(0);
+    table()->resizeColumnToContents(1);
 }
 
 
-QList<QListWidgetItem *> FilterableListWidget::findItems(const QString &text) const
+QList<int>
+FilterableListWidget::findRowsByName(const QString &text) const
 {
-    return list()->findItems( text, Qt::MatchExactly);
+    QList<int> output;
+    QList<QTableWidgetItem*> item_list = table()->findItems( text, Qt::MatchExactly);
+    for(QTableWidgetItem* item : item_list)
+    {
+        if(item->column() == 0) {
+            output.push_back( item->row() );
+        }
+    }
+    return output;
 }
 
-const QListWidget *FilterableListWidget::list() const
+const QTableWidget *FilterableListWidget::table() const
 {
-    return ui->listWidget;
+    return ui->tableWidget;
 }
 
-QListWidget *FilterableListWidget::list()
+QTableWidget *FilterableListWidget::table()
 {
-    return ui->listWidget;
+    return ui->tableWidget;
 }
 
 bool FilterableListWidget::eventFilter(QObject *object, QEvent *event)
@@ -97,7 +116,7 @@ bool FilterableListWidget::eventFilter(QObject *object, QEvent *event)
             QByteArray mdata;
             QDataStream stream(&mdata, QIODevice::WriteOnly);
 
-            for(QListWidgetItem* item: list()->selectedItems()) {
+            for(QTableWidgetItem* item: table()->selectedItems()) {
                 stream << item->text();
             }
 
@@ -136,7 +155,7 @@ void FilterableListWidget::on_checkBoxCaseSensitive_toggled(bool checked)
 
 void FilterableListWidget::on_lineEdit_textChanged(const QString &search_string)
 {
-    int item_count = list()->count();
+    int item_count = count();
     int visible_count = 0;
 
     Qt::CaseSensitivity cs = Qt::CaseInsensitive;
@@ -147,9 +166,9 @@ void FilterableListWidget::on_lineEdit_textChanged(const QString &search_string)
     QRegExp regexp( search_string,  cs, QRegExp::Wildcard );
     QRegExpValidator v(regexp, 0);
 
-    for (int i=0; i< list()->count(); i++)
+    for (int row=0; row< count(); row++)
     {
-        QListWidgetItem* item = list()->item(i);
+        QTableWidgetItem* item = table()->item(row,0);
         QString name = item->text();
         int pos = 0;
         bool toHide = false;
@@ -168,7 +187,7 @@ void FilterableListWidget::on_lineEdit_textChanged(const QString &search_string)
         }
         if( !toHide ) visible_count++;
 
-        item->setHidden( toHide );
+    //    table()->setRowHidden(row, toHide );
     }
     ui->labelNumberDisplayed->setText( QString::number( visible_count ) + QString(" of ") + QString::number( item_count ) )   ;
 }
@@ -189,4 +208,12 @@ void FilterableListWidget::on_pushButtonSettings_toggled(bool checked)
             }
         }
     }
+}
+
+void FilterableListWidget::on_checkBoxHideSecondColumn_toggled(bool checked)
+{
+    if(checked)
+        table()->hideColumn(1);
+    else
+        table()->showColumn(1);
 }

@@ -852,7 +852,12 @@ void PlotWidget::on_2ndDerivativeTransform_triggered(bool checked)
 void PlotWidget::on_savePlotToFile()
 {
     QString fileName;
-    fileName = QFileDialog::getSaveFileName(this, tr("File to export"), QString(),"Compatible formats (*.jpg *.jpeg *.pdf *.svg *.png)");
+
+#ifndef QWT_NO_SVG
+    fileName = QFileDialog::getSaveFileName(this, tr("File to export"), QString(),"Compatible formats (*.jpg *.jpeg *.svg *.png)");
+#else
+    fileName = QFileDialog::getSaveFileName(this, tr("File to export"), QString(),"Compatible formats (*.jpg *.jpeg *.png)");
+#endif
 
     if ( !fileName.isEmpty() )
     {
