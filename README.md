@@ -1,3 +1,26 @@
+## plotjuggler (indigo) - 0.12.2-0
+
+The packages in the `plotjuggler` repository were released into the `indigo` distro by running `/usr/bin/bloom-release --rosdistro indigo --track indigo plotjuggler` on `Fri, 10 Mar 2017 12:12:41 -0000`
+
+The `plotjuggler` package was released.
+
+Version of package(s) in repository `plotjuggler`:
+
+- upstream repository: https://github.com/facontidavide/PlotJuggler.git
+- release repository: https://github.com/facontidavide/plotjuggler-release.git
+- rosdistro version: `0.12.1-0`
+- old version: `0.12.1-0`
+- new version: `0.12.2-0`
+
+Versions of tools used:
+
+- bloom version: `0.5.24`
+- catkin_pkg version: `0.3.1`
+- rosdep version: `0.11.5`
+- rosdistro version: `0.6.1`
+- vcstools version: `0.1.39`
+
+
 ## plotjuggler (jade) - 0.12.1-0
 
 The packages in the `plotjuggler` repository were released into the `jade` distro by running `/usr/bin/bloom-release plotjuggler --track jade --rosdistro jade` on `Mon, 06 Mar 2017 09:34:35 -0000`
