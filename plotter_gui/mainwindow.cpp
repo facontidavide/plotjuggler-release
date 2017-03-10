@@ -202,7 +202,9 @@ void MainWindow::onTrackerTimeUpdated(double current_time)
         for (int row = 0; row < _curvelist_widget->count(); row++)
         {
             int vertical_pos = table->rowViewportPosition(row);
-            if( vertical_pos < 0){   continue; }
+
+            //qDebug() << row << " " << vertical_pos;
+            if( vertical_pos < 0 || table->isRowHidden(row) ){   continue; }
             if( vertical_pos > vertical_height){ break; }
 
             const std::string name = table->item(row,0)->text().toStdString();
