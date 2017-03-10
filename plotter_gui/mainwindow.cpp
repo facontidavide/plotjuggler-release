@@ -191,13 +191,38 @@ void MainWindow::onTrackerTimeUpdated(double current_time)
     {
         it->second->updateState( &_mapped_plot_data, current_time);
     }
+    //------------------------
+
+    auto table = _curvelist_widget->table();
+
+    if( table->isColumnHidden(1) == false)
+    {
+        const int vertical_height = table->visibleRegion().boundingRect().height();
+
+        for (int row = 0; row < _curvelist_widget->count(); row++)
+        {
+            int vertical_pos = table->rowViewportPosition(row);
+            if( vertical_pos < 0){   continue; }
+            if( vertical_pos > vertical_height){ break; }
+
+            const std::string name = table->item(row,0)->text().toStdString();
+            auto it = _mapped_plot_data.numeric.find(name);
+            if( it !=  _mapped_plot_data.numeric.end())
+            {
+                auto val = it->second->getYfromX( current_time );
+                if(val){
+                    double num = val.value();
+                    table->item(row,1)->setText( QString::number( num, (num > 1e8) ? 'f': 'g') );
+                }
+            }
+        }
+    }
 }
 
 void MainWindow::onTrackerPositionUpdated(QPointF pos)
 {
     onTrackerTimeUpdated( pos.x() );
     emit  trackerTimeUpdated( QPointF(pos ) );
-
 }
 
 void MainWindow::createTabbedDialog(PlotMatrix* first_tab, bool undoable)
@@ -402,7 +427,7 @@ void MainWindow::buildData()
                << "mai" << "nessun" << "ci" << "dividera";
 
     for(auto& word: words_list)
-        _curvelist_widget->addItem( new QListWidgetItem(word) );
+        _curvelist_widget->addItem( new QTableWidgetItem(word) );
 
     foreach( const QString& name, words_list)
     {
@@ -601,8 +626,11 @@ void MainWindow::deleteLoadedData(const QString& curve_name)
         return;
     }
 
-    auto items_to_remove = _curvelist_widget->findItems( curve_name );
-    qDeleteAll( items_to_remove );
+    auto rows_to_remove = _curvelist_widget->findRowsByName( curve_name );
+    for(int row : rows_to_remove)
+    {
+        _curvelist_widget->table()->removeRow(row);
+    }
 
     emit requestRemoveCurveByName( curve_name );
 
@@ -711,7 +739,7 @@ void MainWindow::importPlotDataMap(const PlotDataMap& new_data)
         // this is a new plot
         if( plot_with_same_name == _mapped_plot_data.numeric.end() )
         {
-            _curvelist_widget->addItem( new QListWidgetItem( qname ) );
+            _curvelist_widget->addItem( new QTableWidgetItem( qname ) );
             _mapped_plot_data.numeric.insert( std::make_pair(name, plot) );
         }
         else{ // a plot with the same name existed already, overwrite it
