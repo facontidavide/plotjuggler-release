@@ -6,13 +6,19 @@
 #include <QSettings>
 #include <QDrag>
 #include <QMimeData>
+#include <QHeaderView>
+#include <QFontDatabase>
 
 FilterableListWidget::FilterableListWidget(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::FilterableListWidget)
 {
     ui->setupUi(this);
-    ui->listWidget->viewport()->installEventFilter( this );
+    ui->tableWidget->viewport()->installEventFilter( this );
+
+   table()->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
+   table()->horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
+   table()->horizontalHeader()->resizeSection(1, 120);
 
     for( int i=0; i< ui->gridLayoutSettings->count(); i++)
     {
@@ -33,37 +39,59 @@ FilterableListWidget::~FilterableListWidget()
     delete ui;
 }
 
-int FilterableListWidget::count() const
+int FilterableListWidget::rowCount() const
 {
-    return list()->count();
+    return table()->rowCount();
 }
 
 void FilterableListWidget::clear()
 {
-    list()->clear();
+    table()->clear();
     ui->labelNumberDisplayed->setText( "0 of 0");
 }
 
-void FilterableListWidget::addItem(QListWidgetItem *item)
+void FilterableListWidget::addItem(QTableWidgetItem *item)
 {
-    list()->addItem(item);
+    int row = rowCount();
+    table()->setRowCount(row+1);
+    table()->setItem(row, 0, item);
+
+    auto val_cell = new QTableWidgetItem("-");
+    val_cell->setTextAlignment(Qt::AlignRight);
+    val_cell->setFlags( Qt::NoItemFlags | Qt::ItemIsEnabled );
+    val_cell->setFont(  QFontDatabase::systemFont(QFontDatabase::FixedFont) );
+
+    table()->setItem(row, 1, val_cell );
+}
+
+
+QList<int>
+FilterableListWidget::findRowsByName(const QString &text) const
+{
+    QList<int> output;
+    QList<QTableWidgetItem*> item_list = table()->findItems( text, Qt::MatchExactly);
+    for(QTableWidgetItem* item : item_list)
+    {
+        if(item->column() == 0) {
+            output.push_back( item->row() );
+        }
+    }
+    return output;
+}
+
+const QTableWidget *FilterableListWidget::table() const
+{
+    return ui->tableWidget;
+}
+
+QTableWidget *FilterableListWidget::table()
+{
+    return ui->tableWidget;
+}
+
+void FilterableListWidget::updateFilter()
+{
     on_lineEdit_textChanged( ui->lineEdit->text() );
-}
-
-
-QList<QListWidgetItem *> FilterableListWidget::findItems(const QString &text) const
-{
-    return list()->findItems( text, Qt::MatchExactly);
-}
-
-const QListWidget *FilterableListWidget::list() const
-{
-    return ui->listWidget;
-}
-
-QListWidget *FilterableListWidget::list()
-{
-    return ui->listWidget;
 }
 
 bool FilterableListWidget::eventFilter(QObject *object, QEvent *event)
@@ -97,7 +125,7 @@ bool FilterableListWidget::eventFilter(QObject *object, QEvent *event)
             QByteArray mdata;
             QDataStream stream(&mdata, QIODevice::WriteOnly);
 
-            for(QListWidgetItem* item: list()->selectedItems()) {
+            for(QTableWidgetItem* item: table()->selectedItems()) {
                 stream << item->text();
             }
 
@@ -136,8 +164,9 @@ void FilterableListWidget::on_checkBoxCaseSensitive_toggled(bool checked)
 
 void FilterableListWidget::on_lineEdit_textChanged(const QString &search_string)
 {
-    int item_count = list()->count();
+    int item_count = rowCount();
     int visible_count = 0;
+    bool updated = false;
 
     Qt::CaseSensitivity cs = Qt::CaseInsensitive;
     if( ui->checkBoxCaseSensitive->isChecked())
@@ -147,9 +176,9 @@ void FilterableListWidget::on_lineEdit_textChanged(const QString &search_string)
     QRegExp regexp( search_string,  cs, QRegExp::Wildcard );
     QRegExpValidator v(regexp, 0);
 
-    for (int i=0; i< list()->count(); i++)
+    for (int row=0; row< rowCount(); row++)
     {
-        QListWidgetItem* item = list()->item(i);
+        QTableWidgetItem* item = table()->item(row,0);
         QString name = item->text();
         int pos = 0;
         bool toHide = false;
@@ -168,9 +197,15 @@ void FilterableListWidget::on_lineEdit_textChanged(const QString &search_string)
         }
         if( !toHide ) visible_count++;
 
-        item->setHidden( toHide );
+        if( toHide != table()->isRowHidden(row) ) updated = true;
+
+        table()->setRowHidden(row, toHide );
     }
-    ui->labelNumberDisplayed->setText( QString::number( visible_count ) + QString(" of ") + QString::number( item_count ) )   ;
+    ui->labelNumberDisplayed->setText( QString::number( visible_count ) + QString(" of ") + QString::number( item_count ) );
+
+    if(updated){
+        emit hiddenItemsChanged();
+    }
 }
 
 void FilterableListWidget::on_pushButtonSettings_toggled(bool checked)
@@ -188,5 +223,17 @@ void FilterableListWidget::on_pushButtonSettings_toggled(bool checked)
 
             }
         }
+    }
+}
+
+void FilterableListWidget::on_checkBoxHideSecondColumn_toggled(bool checked)
+{
+    if(checked){
+        table()->hideColumn(1);
+        emit hiddenItemsChanged();
+    }
+    else{
+        table()->showColumn(1);
+        emit hiddenItemsChanged();
     }
 }
