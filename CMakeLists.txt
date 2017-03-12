@@ -7,8 +7,8 @@ if( CATKIN_DEVEL_PREFIX OR catkin_FOUND OR CATKIN_BUILD_BINARY_PACKAGE)
 endif()
 
 SET(PLOTJUGGLER_VERSION_MAJOR 0)
-SET(PLOTJUGGLER_VERSION_MINOR 12)
-SET(PLOTJUGGLER_VERSION_PATCH 1)
+SET(PLOTJUGGLER_VERSION_MINOR 13)
+SET(PLOTJUGGLER_VERSION_PATCH 0)
 
 add_definitions(
     -DPJ_MAJOR_VERSION=${PLOTJUGGLER_VERSION_MAJOR}
@@ -21,8 +21,13 @@ SET(CMAKE_AUTOUIC ON)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
-find_package(Qt5 REQUIRED COMPONENTS Core Widgets PrintSupport Concurrent Xml Svg )
+find_package(Qt5 REQUIRED COMPONENTS Core Widgets PrintSupport Concurrent Xml )
+#find_package(Qt5Svg )
 
+if( NOT Qt5Svg_FOUND)
+    message(STATUS "Can't find Qt5Svg in your system. Have you tried [sudo apt-get install libqt5svg5-dev] ?")
+    add_definitions( -DQWT_NO_SVG )
+endif()
 
 if (NOT CMAKE_BUILD_TYPE)
     message(STATUS "No build type selected, default to RelWithDebInfo")
