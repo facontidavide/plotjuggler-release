@@ -23,6 +23,26 @@
 #include <PlotJuggler/random_color.h>
 
 
+void PlotWidget::setDefaultRangeX()
+{
+    if( _mapped_data->numeric.size() > 0)
+    {
+        double min = std::numeric_limits<double>::max();
+        double max = std::numeric_limits<double>::min();
+        for (auto it: _mapped_data->numeric )
+        {
+            const PlotDataPtr& data = it.second;
+            if( data->size() > 0){
+                double A = data->at(0).x;
+                double B = data->at( data->size() -1 ).x;
+                if( A < min) min = A;
+                if( B > max) max = B;
+            }
+        }
+        this->setAxisScale( xBottom, min, max);
+    }
+}
+
 PlotWidget::PlotWidget(const PlotDataMap *datamap, QWidget *parent):
     QwtPlot(parent),
     _zoomer( 0 ),
@@ -89,6 +109,9 @@ PlotWidget::PlotWidget(const PlotDataMap *datamap, QWidget *parent):
 
     this->canvas()->setMouseTracking(true);
     this->canvas()->installEventFilter(this);
+
+
+    setDefaultRangeX();
 }
 
 void PlotWidget::buildActions()
@@ -539,6 +562,10 @@ void PlotWidget::reloadPlotData()
             curve_data->setData( new_plotqwt );
         }
     }
+
+    if( _curve_list.size() == 0){
+        setDefaultRangeX();
+    }
 }
 
 void PlotWidget::activateLegent(bool activate)
@@ -852,7 +879,12 @@ void PlotWidget::on_2ndDerivativeTransform_triggered(bool checked)
 void PlotWidget::on_savePlotToFile()
 {
     QString fileName;
-    fileName = QFileDialog::getSaveFileName(this, tr("File to export"), QString(),"Compatible formats (*.jpg *.jpeg *.pdf *.svg *.png)");
+
+#ifndef QWT_NO_SVG
+    fileName = QFileDialog::getSaveFileName(this, tr("File to export"), QString(),"Compatible formats (*.jpg *.jpeg *.svg *.png)");
+#else
+    fileName = QFileDialog::getSaveFileName(this, tr("File to export"), QString(),"Compatible formats (*.jpg *.jpeg *.png)");
+#endif
 
     if ( !fileName.isEmpty() )
     {
