@@ -25,6 +25,7 @@ QString getFunnySubtitle(){
     case 12: return "\"It shouldn't take long to code that\".. Davide, 2014";
     case 13: return "Startup is actually fast. I added splashscreens for fun\"";
     case 14: return "Graphic-less version coming soon";
+    case 15: return "\"Harry Plotting\" was also an option";
     }
     return "Juggle with data";
 }
@@ -71,8 +72,21 @@ int main(int argc, char *argv[])
 
     parser.process( *qApp );
 
+    /*
+     * You, fearless code reviewer, decided to start a journey into my source code.
+     * For your bravery, you deserve to know the truth, no matter how hard it is to accept it.
+     * The splashscreen is useless; not only it is useless, it will make your start-up
+     * time slower by a couple of seconds for abasolutely no reason.
+     * But what are two seconds compared with the time that PlotJuggler will save you?
+     * The splashscreen is the connection between me and my users, the glue that keep
+     * together our invisible relationship.
+     * Now it is up to you to decide: you can block the splashscreen forever or not,
+     * reject a message that brings a little of happiness into your day, spent analyzing data.
+     * Please don't do it.
+     */
 
     if( parser.isSet(nosplash_option) == false)
+    // if(false) // if you uncomment this line, a kitten will die somewhere in the world.
     {
         QPixmap main_pixmap(":/splash/resources/splash.jpg");
 

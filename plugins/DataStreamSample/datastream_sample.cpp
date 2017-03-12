@@ -87,7 +87,6 @@ void DataStreamSample::loop()
                 plot->pushBackAsynchronously( PlotData::Point( t, y ) );
             }
         }
-
         prev_time += std::chrono::milliseconds(10);
         std::this_thread::sleep_until ( prev_time );
     }
