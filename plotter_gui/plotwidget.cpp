@@ -23,6 +23,26 @@
 #include <PlotJuggler/random_color.h>
 
 
+void PlotWidget::setDefaultRangeX()
+{
+    if( _mapped_data->numeric.size() > 0)
+    {
+        double min = std::numeric_limits<double>::max();
+        double max = std::numeric_limits<double>::min();
+        for (auto it: _mapped_data->numeric )
+        {
+            const PlotDataPtr& data = it.second;
+            if( data->size() > 0){
+                double A = data->at(0).x;
+                double B = data->at( data->size() -1 ).x;
+                if( A < min) min = A;
+                if( B > max) max = B;
+            }
+        }
+        this->setAxisScale( xBottom, min, max);
+    }
+}
+
 PlotWidget::PlotWidget(const PlotDataMap *datamap, QWidget *parent):
     QwtPlot(parent),
     _zoomer( 0 ),
@@ -89,6 +109,9 @@ PlotWidget::PlotWidget(const PlotDataMap *datamap, QWidget *parent):
 
     this->canvas()->setMouseTracking(true);
     this->canvas()->installEventFilter(this);
+
+
+    setDefaultRangeX();
 }
 
 void PlotWidget::buildActions()
@@ -538,6 +561,10 @@ void PlotWidget::reloadPlotData()
             new_plotqwt->updateData(true);
             curve_data->setData( new_plotqwt );
         }
+    }
+
+    if( _curve_list.size() == 0){
+        setDefaultRangeX();
     }
 }
 
