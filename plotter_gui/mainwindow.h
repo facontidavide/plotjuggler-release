@@ -99,6 +99,8 @@ private slots:
 
     void on_horizontalSlider_valueChanged(int value);
 
+    void updateLeftTableValues();
+
 private:
     Ui::MainWindow *ui;
 
@@ -148,6 +150,8 @@ private:
     QElapsedTimer _undo_timer;
     bool _disable_undo_logging;
     bool _test_option;
+
+    double _tracker_time;
 
     QString _loaded_datafile;
 
