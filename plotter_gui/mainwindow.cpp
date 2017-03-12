@@ -28,6 +28,7 @@
 #include "selectlistdialog.h"
 #include "aboutdialog.h"
 #include <QMovie>
+#include <QScrollBar>
 #include "ui_help_dialog.h"
 
 MainWindow::MainWindow(const QCommandLineParser &commandline_parser, QWidget *parent) :
@@ -46,6 +47,14 @@ MainWindow::MainWindow(const QCommandLineParser &commandline_parser, QWidget *pa
     _streamer_signal_mapper = new QSignalMapper(this);
 
     ui->setupUi(this);
+
+    connect( _curvelist_widget->table()->verticalScrollBar(), SIGNAL(sliderMoved(int)),
+             this, SLOT(updateLeftTableValues()) );
+
+    connect( _curvelist_widget, SIGNAL(hiddenItemsChanged()),
+             this, SLOT(updateLeftTableValues()) );
+
+    connect(this, SIGNAL(trackerTimeUpdated(QPointF)), this, SLOT(updateLeftTableValues()) );
 
     _main_tabbed_widget = new TabbedPlotWidget( this,  &_mapped_plot_data, this);
 
@@ -175,6 +184,64 @@ void MainWindow::getMaximumRangeX(double* minX, double* maxX)
 }
 
 
+void MainWindow::updateLeftTableValues()
+{
+    auto table = _curvelist_widget->table();
+
+    if( table->isColumnHidden(1) == false)
+    {
+        const int vertical_height = table->visibleRegion().boundingRect().height();
+
+        for (int row = 0; row < _curvelist_widget->rowCount(); row++)
+        {
+            int vertical_pos = table->rowViewportPosition(row);
+            if( vertical_pos < 0 || table->isRowHidden(row) ){   continue; }
+            if( vertical_pos > vertical_height){ break; }
+
+            const std::string name = table->item(row,0)->text().toStdString();
+            auto it = _mapped_plot_data.numeric.find(name);
+            if( it !=  _mapped_plot_data.numeric.end())
+            {
+                nonstd::optional<PlotData::TimeType> value;
+                PlotDataPtr data = it->second;
+
+                double num = 0.0;
+                bool valid = false;
+
+                if( _tracker_time < std::numeric_limits<double>::max())
+                {
+                    auto value = data->getYfromX( _tracker_time );
+                    if(value){
+                        valid = true;
+                        num = value.value();
+                    }
+                }
+                else{
+                   if( data->size() > 0) {
+                       valid = true;
+                       num = (data->at( data->size()-1 )).y;
+                   }
+                }
+                if( valid)
+                {
+                    QString num_text = QString::number( num, 'f', 3);
+                    if(num_text.contains('.'))
+                    {
+                        int idx = num_text.length() -1;
+                        while( num_text[idx] == '0' )
+                        {
+                            num_text[idx] = ' ';
+                            idx--;
+                        }
+                        if(  num_text[idx] == '.') num_text[idx] = ' ';
+                    }
+                    table->item(row,1)->setText(num_text + ' ');
+                }
+            }
+        }
+    }
+}
+
 void MainWindow::onTrackerTimeUpdated(double current_time)
 {
     double minX, maxX;
@@ -196,8 +263,8 @@ void MainWindow::onTrackerTimeUpdated(double current_time)
 void MainWindow::onTrackerPositionUpdated(QPointF pos)
 {
     onTrackerTimeUpdated( pos.x() );
+    _tracker_time = pos.x();
     emit  trackerTimeUpdated( QPointF(pos ) );
-
 }
 
 void MainWindow::createTabbedDialog(PlotMatrix* first_tab, bool undoable)
@@ -402,7 +469,7 @@ void MainWindow::buildData()
                << "mai" << "nessun" << "ci" << "dividera";
 
     for(auto& word: words_list)
-        _curvelist_widget->addItem( new QListWidgetItem(word) );
+        _curvelist_widget->addItem( new QTableWidgetItem(word) );
 
     foreach( const QString& name, words_list)
     {
@@ -423,6 +490,12 @@ void MainWindow::buildData()
         _mapped_plot_data.numeric.insert( std::make_pair( name.toStdString(), plot) );
     }
     ui->horizontalSlider->setRange(0, SIZE  );
+
+    _curvelist_widget->updateFilter();
+
+    forEachWidget( [](PlotWidget* plot) {
+        plot->reloadPlotData();
+    } );
 }
 
 
@@ -601,14 +674,17 @@ void MainWindow::deleteLoadedData(const QString& curve_name)
         return;
     }
 
-    auto items_to_remove = _curvelist_widget->findItems( curve_name );
-    qDeleteAll( items_to_remove );
+    auto rows_to_remove = _curvelist_widget->findRowsByName( curve_name );
+    for(int row : rows_to_remove)
+    {
+        _curvelist_widget->table()->removeRow(row);
+    }
 
     emit requestRemoveCurveByName( curve_name );
 
     _mapped_plot_data.numeric.erase( plot_curve );
 
-    if( _curvelist_widget->count() == 0)
+    if( _curvelist_widget->rowCount() == 0)
     {
         ui->actionReloadData->setEnabled( false );
         ui->actionDeleteAllData->setEnabled( false );
@@ -711,7 +787,7 @@ void MainWindow::importPlotDataMap(const PlotDataMap& new_data)
         // this is a new plot
         if( plot_with_same_name == _mapped_plot_data.numeric.end() )
         {
-            _curvelist_widget->addItem( new QListWidgetItem( qname ) );
+            _curvelist_widget->addItem( new QTableWidgetItem( qname ) );
             _mapped_plot_data.numeric.insert( std::make_pair(name, plot) );
         }
         else{ // a plot with the same name existed already, overwrite it
@@ -846,6 +922,7 @@ void MainWindow::onActionLoadDataFileImpl(QString filename, bool reuse_last_time
                              tr("Cannot read files with extension %1.\n No plugin can handle that!\n")
                              .arg(filename) );
     }
+    _curvelist_widget->updateFilter();
 }
 
 void MainWindow::onActionReloadSameDataFile()
@@ -1236,6 +1313,13 @@ void MainWindow::onReplotRequested()
         _replot_timer->setSingleShot(true);
         _replot_timer->stop( );
         _replot_timer->start( 20 ); // 50 Hz at most
+
+        for (auto it: _mapped_plot_data.numeric)
+        {
+            it.second->flushAsyncBuffer();
+        }
+        _tracker_time = std::numeric_limits<double>::max();
+        updateLeftTableValues();
     }
 }
 
@@ -1257,7 +1341,6 @@ void MainWindow::on_streamingSpinBox_valueChanged(int value)
 void MainWindow::on_pushButtonActivateTracker_toggled(bool checked)
 {
     emit  activateTracker( checked );
-
 }
 
 void MainWindow::on_actionAbout_triggered()
@@ -1342,5 +1425,6 @@ void MainWindow::on_horizontalSlider_valueChanged(int position)
     double posX = (maxX-minX) * ratio + minX;
 
     onTrackerTimeUpdated( posX );
+    _tracker_time = posX;
     emit  trackerTimeUpdated( QPointF(posX,0 ) );
 }
