@@ -130,6 +130,7 @@ private:
     QTime _fps_timeStamp;
     bool _show_line_and_points;
 
+    void setDefaultRangeX();
 };
 
 #endif
