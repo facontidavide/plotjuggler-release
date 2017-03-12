@@ -7,26 +7,25 @@
 QString getFunnySubtitle(){
 
     qsrand(time(NULL));
-    int n = qrand() % 24;
+    int n = qrand() % 20;
     switch(n)
     {
     case 0: return "The best excuse to buy a second monitor";
     case 1: return "Now with 100% more splashscreens";
     case 2: return "Because command line tools suck";
     case 3: return "Time-series at your fingertips";
-    case 4: return "You might have used Kst2";
+    case 4: return "Changing the world, one plot at a time";
     case 5: return "Have you starred me on Github?";
     case 6: return "Insert [useless message] here";
     case 7: return "Data, data everywhere";
     case 8: return "Just add data and mix vigorously";
     case 9: return "Just Plot It!";
-    case 10: return "More than you can plot";
+    case 10: return "I didn't find a better name...";
     case 11: return "Happy Plotting, or get your money back";
-    case 12: return "\"It won't take me much to code that\".. Davide, 2014";
-    case 13: return "Don't use MATLAB for that!";
-    case 14: return "Startup is actually fast. I added splashscreens for fun\"";
-    case 15: return "I didn't find a better name...";
-    case 16: return "Changing the world, one plot at a time";
+    case 12: return "\"It shouldn't take long to code that\".. Davide, 2014";
+    case 13: return "Startup is actually fast. I added splashscreens for fun\"";
+    case 14: return "Graphic-less version coming soon";
+    case 15: return "\"Harry Plotting\" was also an option";
     }
     return "Juggle with data";
 }
@@ -73,8 +72,21 @@ int main(int argc, char *argv[])
 
     parser.process( *qApp );
 
+    /*
+     * You, fearless code reviewer, decided to start a journey into my source code.
+     * For your bravery, you deserve to know the truth, no matter how hard it is to accept it.
+     * The splashscreen is useless; not only it is useless, it will make your start-up
+     * time slower by a couple of seconds for abasolutely no reason.
+     * But what are two seconds compared with the time that PlotJuggler will save you?
+     * The splashscreen is the connection between me and my users, the glue that keep
+     * together our invisible relationship.
+     * Now it is up to you to decide: you can block the splashscreen forever or not,
+     * reject a message that brings a little of happiness into your day, spent analyzing data.
+     * Please don't do it.
+     */
 
     if( parser.isSet(nosplash_option) == false)
+    // if(false) // if you uncomment this line, a kitten will die somewhere in the world.
     {
         QPixmap main_pixmap(":/splash/resources/splash.jpg");
 
