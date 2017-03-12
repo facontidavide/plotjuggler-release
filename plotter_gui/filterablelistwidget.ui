@@ -219,7 +219,7 @@ border: 0.5px solid rgb(150, 150, 150);</string>
        <item row="1" column="1">
         <widget class="QCheckBox" name="checkBoxHideSecondColumn">
          <property name="text">
-          <string>Hide second column (data)</string>
+          <string>Hide second column</string>
          </property>
         </widget>
        </item>
@@ -254,7 +254,7 @@ border: 0.5px solid rgb(150, 150, 150);</string>
         <enum>QAbstractItemView::ExtendedSelection</enum>
        </property>
        <property name="selectionBehavior">
-        <enum>QAbstractItemView::SelectRows</enum>
+        <enum>QAbstractItemView::SelectItems</enum>
        </property>
        <property name="showGrid">
         <bool>false</bool>
@@ -275,13 +275,13 @@ border: 0.5px solid rgb(150, 150, 150);</string>
         <bool>false</bool>
        </attribute>
        <attribute name="horizontalHeaderDefaultSectionSize">
-        <number>80</number>
+        <number>100</number>
        </attribute>
        <attribute name="horizontalHeaderHighlightSections">
         <bool>true</bool>
        </attribute>
        <attribute name="horizontalHeaderMinimumSectionSize">
-        <number>60</number>
+        <number>80</number>
        </attribute>
        <attribute name="horizontalHeaderStretchLastSection">
         <bool>false</bool>
