@@ -31,6 +31,9 @@
   <property name="windowTitle">
    <string/>
   </property>
+  <property name="styleSheet">
+   <string notr="true"/>
+  </property>
   <layout class="QVBoxLayout" name="verticalLayout_2">
    <item>
     <layout class="QVBoxLayout" name="verticalLayout">
@@ -54,8 +57,8 @@
           <enum>Qt::ClickFocus</enum>
          </property>
          <property name="styleSheet">
-          <string notr="true">border-radius: 3px;
-border: 1px solid rgb(160, 160, 160);</string>
+          <string notr="true">border-radius: 4px;
+border: 0.5px solid rgb(150, 150, 150);</string>
          </property>
          <property name="inputMask">
           <string notr="true" extracomment="Search"/>
@@ -213,6 +216,13 @@ border: 1px solid rgb(160, 160, 160);</string>
          </property>
         </spacer>
        </item>
+       <item row="1" column="1">
+        <widget class="QCheckBox" name="checkBoxHideSecondColumn">
+         <property name="text">
+          <string>Hide second column</string>
+         </property>
+        </widget>
+       </item>
       </layout>
      </item>
      <item>
@@ -226,12 +236,16 @@ border: 1px solid rgb(160, 160, 160);</string>
       </widget>
      </item>
      <item>
-      <widget class="QListWidget" name="listWidget">
+      <widget class="QTableWidget" name="tableWidget">
        <property name="toolTip">
         <string/>
        </property>
        <property name="toolTipDuration">
         <number>-1</number>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">border-radius: 4px;
+border: 0.5px solid rgb(150, 150, 150);</string>
        </property>
        <property name="dragEnabled">
         <bool>true</bool>
@@ -239,24 +253,53 @@ border: 1px solid rgb(160, 160, 160);</string>
        <property name="selectionMode">
         <enum>QAbstractItemView::ExtendedSelection</enum>
        </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLabel" name="label">
-       <property name="font">
-        <font>
-         <pointsize>8</pointsize>
-        </font>
+       <property name="selectionBehavior">
+        <enum>QAbstractItemView::SelectItems</enum>
        </property>
-       <property name="text">
-        <string>Tip: select multiple curves using left mouse + CTRL or SHIFT</string>
-       </property>
-       <property name="scaledContents">
+       <property name="showGrid">
         <bool>false</bool>
        </property>
-       <property name="wordWrap">
-        <bool>true</bool>
+       <property name="gridStyle">
+        <enum>Qt::NoPen</enum>
        </property>
+       <property name="wordWrap">
+        <bool>false</bool>
+       </property>
+       <property name="cornerButtonEnabled">
+        <bool>false</bool>
+       </property>
+       <property name="columnCount">
+        <number>2</number>
+       </property>
+       <attribute name="horizontalHeaderVisible">
+        <bool>false</bool>
+       </attribute>
+       <attribute name="horizontalHeaderDefaultSectionSize">
+        <number>100</number>
+       </attribute>
+       <attribute name="horizontalHeaderHighlightSections">
+        <bool>true</bool>
+       </attribute>
+       <attribute name="horizontalHeaderMinimumSectionSize">
+        <number>80</number>
+       </attribute>
+       <attribute name="horizontalHeaderStretchLastSection">
+        <bool>false</bool>
+       </attribute>
+       <attribute name="verticalHeaderVisible">
+        <bool>false</bool>
+       </attribute>
+       <attribute name="verticalHeaderDefaultSectionSize">
+        <number>16</number>
+       </attribute>
+       <attribute name="verticalHeaderMinimumSectionSize">
+        <number>16</number>
+       </attribute>
+       <attribute name="verticalHeaderStretchLastSection">
+        <bool>false</bool>
+       </attribute>
+       <column/>
+       <column/>
       </widget>
      </item>
     </layout>

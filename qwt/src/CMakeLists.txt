@@ -1,7 +1,5 @@
 
-#add_definitions( -DQWT_NO_SVG )
 #add_definitions( -DUSE_OPENGL )
-
 
 include_directories( ./  )
 
@@ -202,10 +200,17 @@ set( QWT_SRC
 
 add_library(qwt_static STATIC ${QWT_SRC})
 
+if( Qt5Svg_FOUND)
 target_link_libraries(qwt_static
-    #  GL
     ${Qt5Widgets_LIBRARIES}
     ${Qt5PrintSupport_LIBRARIES}
     ${Qt5Concurrent_LIBRARIES}
     ${Qt5Svg_LIBRARIES}
     )
+else()
+    target_link_libraries(qwt_static
+        ${Qt5Widgets_LIBRARIES}
+        ${Qt5PrintSupport_LIBRARIES}
+        ${Qt5Concurrent_LIBRARIES}
+        )
+endif()

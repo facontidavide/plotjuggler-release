@@ -2,6 +2,21 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.13.0 (2017-03-12)
+-------------------
+* default range X for empty plots
+* better formatting
+* improving 2nd column visualization
+* Contributors: Davide Faconti
+
+0.12.2 (2017-03-10)
+-------------------
+* Left curve list will display current value from vertical tracker
+* new splashscreen phrases
+* Temporarily disabling Qt5Svg
+* Contributors: Davide Faconti
+
+
 0.12.0 (2017-03-06)
 -------------------
 * Create .appveyor.yml
