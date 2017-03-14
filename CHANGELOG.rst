@@ -2,6 +2,11 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.13.1 (2017-03-14)
+-------------------
+* bug fix
+* Contributors: Davide Faconti
+
 0.13.0 (2017-03-12)
 -------------------
 * default range X for empty plots
