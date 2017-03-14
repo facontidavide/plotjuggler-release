@@ -19,6 +19,7 @@
 #include <qwt_text.h>
 #include <QActionGroup>
 #include <QFileDialog>
+#include <QtXml/QDomElement>
 #include "qwt_plot_renderer.h"
 #include <PlotJuggler/random_color.h>
 
@@ -43,7 +44,7 @@ void PlotWidget::setDefaultRangeX()
     }
 }
 
-PlotWidget::PlotWidget(const PlotDataMap *datamap, QWidget *parent):
+PlotWidget::PlotWidget(PlotDataMap *datamap, QWidget *parent):
     QwtPlot(parent),
     _zoomer( 0 ),
     _magnifier(0 ),
@@ -53,7 +54,7 @@ PlotWidget::PlotWidget(const PlotDataMap *datamap, QWidget *parent):
     _grid( 0 ),
     _mapped_data( datamap ),
     _show_line_and_points(false),
-    _current_transform( PlotDataQwt::noTransform )
+    _current_transform( TimeseriesQwt::noTransform )
 {
     this->setAcceptDrops( true );
     this->setMinimumWidth( 100 );
@@ -109,7 +110,6 @@ PlotWidget::PlotWidget(const PlotDataMap *datamap, QWidget *parent):
 
     this->canvas()->setMouseTracking(true);
     this->canvas()->installEventFilter(this);
-
 
     setDefaultRangeX();
 }
@@ -169,6 +169,10 @@ void PlotWidget::buildActions()
     _action_2ndDerivativeTransform->setCheckable( true );
     connect(_action_2ndDerivativeTransform, SIGNAL(triggered(bool)), this, SLOT(on_2ndDerivativeTransform_triggered(bool)));
 
+    _action_phaseXY = new QAction(tr("&XY plot"), this);
+    _action_phaseXY->setCheckable( true );
+    connect(_action_phaseXY, SIGNAL(triggered(bool)), this, SLOT(on_convertToXY_triggered(bool)));
+
     QIcon iconSave;
     iconSave.addFile(QStringLiteral(":/icons/resources/filesave@2x.png"), QSize(26, 26), QIcon::Normal, QIcon::Off);
     _action_saveToFile = new  QAction(tr("&Save plot to file"), this);
@@ -180,9 +184,7 @@ void PlotWidget::buildActions()
     transform_group->addAction(_action_noTransform);
     transform_group->addAction(_action_1stDerivativeTransform);
     transform_group->addAction(_action_2ndDerivativeTransform);
-
-    //  menu.addAction(_action_firstDerivativeTransform);
-    //  menu.addAction(_action_secondDerivativeTransform);
+    transform_group->addAction(_action_phaseXY);
 }
 
 void PlotWidget::buildLegend()
@@ -238,15 +240,16 @@ bool PlotWidget::addCurve(const QString &name, bool do_replot)
     {
         auto curve = std::shared_ptr< QwtPlotCurve >( new QwtPlotCurve(name) );
 
-        PlotDataQwt* plot_qwt = new PlotDataQwt( data );
+        TimeseriesQwt* plot_qwt = new TimeseriesQwt( data );
 
         curve->setPaintAttribute( QwtPlotCurve::ClipPolygons, true );
         curve->setPaintAttribute( QwtPlotCurve::FilterPointsAggressive, true );
 
-        if( _current_transform != PlotDataQwt::noTransform)
+        plot_qwt->setAlternativeAxisX( _axisX );
+
+        if( _current_transform != TimeseriesQwt::noTransform)
         {
             plot_qwt->setTransform( _current_transform );
-            plot_qwt->updateData(true);
         }
 
         curve->setData( plot_qwt );
@@ -269,6 +272,18 @@ bool PlotWidget::addCurve(const QString &name, bool do_replot)
 
         curve->attach( this );
         _curve_list.insert( std::make_pair(name, curve));
+
+        auto marker = new QwtPlotMarker;
+        _point_marker.insert( std::make_pair(name, marker) );
+        marker->attach( this );
+        marker->setVisible( isXYPlot() );
+
+        QwtSymbol *sym = new QwtSymbol(
+                    QwtSymbol::Diamond,
+                    Qt::red, color,
+                    QSize(10,10));
+
+        marker->setSymbol(sym);
     }
 
     auto rangeX = maximumRangeX();
@@ -294,6 +309,9 @@ void PlotWidget::removeCurve(const QString &name)
         curve->detach();
         replot();
         _curve_list.erase( it );
+
+        _point_marker[name]->detach();
+        _point_marker.erase( name );
     }
 }
 
@@ -351,7 +369,7 @@ void PlotWidget::dropEvent(QDropEvent *event)
         QByteArray encoded = mimeData->data( format );
         QDataStream stream(&encoded, QIODevice::ReadOnly);
 
-        if( format.contains( "curveslist") )
+        if( format.contains( "curveslist/add_curve") )
         {
             bool plot_added = false;
             while (!stream.atEnd())
@@ -365,7 +383,13 @@ void PlotWidget::dropEvent(QDropEvent *event)
                 emit undoableChange();
             }
         }
-        if( format.contains( "plot_area") )
+        else if( format.contains( "curveslist/new_X_axis") )
+        {
+            QString curve_name;
+            stream >> curve_name;
+            changeAxisX(curve_name);
+        }
+        else if( format.contains( "plot_area") )
         {
             QString source_name;
             stream >> source_name;
@@ -377,8 +401,11 @@ void PlotWidget::dropEvent(QDropEvent *event)
 
 void PlotWidget::detachAllCurves()
 {
-    this->detachItems(QwtPlotItem::Rtti_PlotCurve, false);
+    for(auto it: _curve_list)   { it.second->detach(); }
+    for(auto it: _point_marker) { it.second->detach(); }
+
     _curve_list.erase(_curve_list.begin(), _curve_list.end());
+    _point_marker.erase(_point_marker.begin(), _point_marker.end());
     replot();
 }
 
@@ -408,16 +435,23 @@ QDomElement PlotWidget::xmlSaveState( QDomDocument &doc) const
     }
 
     QDomElement transform  = doc.createElement("transform");
-    if( _current_transform == PlotDataQwt::firstDerivative )
+
+    switch(_current_transform)
     {
-        transform.setAttribute("value", "firstDerivative" );
-    }
-    else if ( _current_transform == PlotDataQwt::secondDerivative )
-    {
-        transform.setAttribute("value", "secondDerivative" );
-    }
-    else{
-        transform.setAttribute("value", "noTransform" );
+    case TimeseriesQwt::firstDerivative:
+        transform.setAttribute("value", "firstDerivative" ); break;
+
+    case TimeseriesQwt::secondDerivative:
+        transform.setAttribute("value", "secondDerivative" ); break;
+
+    case TimeseriesQwt::noTransform:
+        transform.setAttribute("value", "noTransform" ); break;
+
+    case TimeseriesQwt::XYPlot:{
+        transform.setAttribute("value", "XYPlot" );
+        transform.setAttribute("axisX",  _axisX->name().c_str() );
+    }break;
+
     }
     plot_el.appendChild(transform);
 
@@ -426,6 +460,8 @@ QDomElement PlotWidget::xmlSaveState( QDomDocument &doc) const
 
 bool PlotWidget::xmlLoadState(QDomElement &plot_widget, QMessageBox::StandardButton* answer)
 {
+    this->blockSignals(true);
+
     QDomElement curve;
 
     std::set<QString> added_curve_names;
@@ -483,6 +519,7 @@ bool PlotWidget::xmlLoadState(QDomElement &plot_widget, QMessageBox::StandardBut
             }
         }
     }
+
     //-----------------------------------------
     QDomElement transform = plot_widget.firstChildElement( "transform" );
     if( !transform.isNull()  )
@@ -500,6 +537,12 @@ bool PlotWidget::xmlLoadState(QDomElement &plot_widget, QMessageBox::StandardBut
         {
             _action_noTransform->trigger();
         }
+        else if(trans_value == "XYPlot")
+        {
+            if( transform.hasAttribute("axisX") ){
+                changeAxisX( transform.attribute("axisX") );
+            }
+        }
     }
     //-----------------------------------------
     QDomElement rectangle = plot_widget.firstChildElement( "range" );
@@ -509,10 +552,10 @@ bool PlotWidget::xmlLoadState(QDomElement &plot_widget, QMessageBox::StandardBut
         rect.setTop( rectangle.attribute("top").toDouble());
         rect.setLeft( rectangle.attribute("left").toDouble());
         rect.setRight( rectangle.attribute("right").toDouble());
-
         this->setScale( rect, false);
     }
 
+    this->blockSignals(false);
     return true;
 }
 
@@ -529,36 +572,47 @@ QRectF PlotWidget::currentBoundingRect() const
     return rect;
 }
 
-CurveTracker *PlotWidget::tracker()
-{
-    return _tracker;
-}
-
 void PlotWidget::setScale(QRectF rect, bool emit_signal)
 {
     this->setAxisScale( yLeft, rect.bottom(), rect.top());
     this->setAxisScale( xBottom, rect.left(), rect.right());
+    this->updateAxes();
 
-    if( emit_signal) {
-        emit rectChanged(this, rect);
+    if( emit_signal )
+    {
+        if( isXYPlot()) {
+            emit undoableChange();
+        }
+        else{
+            emit rectChanged(this, rect);
+        }
     }
 }
 
 void PlotWidget::reloadPlotData()
 {
+    if( _axisX )
+    {
+        auto it = _mapped_data->numeric.find( _axisX->name() );
+        if( it != _mapped_data->numeric.end() ){
+            _axisX = it->second;
+        }
+        else{
+            _axisX.reset();
+        }
+    }
+
     for (auto& curve_it: _curve_list)
     {
         std::shared_ptr<QwtPlotCurve>& curve_data = curve_it.second;
         const std::string curve_name = curve_it.first.toStdString();
 
-        // PlotDataQwt* old_plotqwt = static_cast<PlotDataQwt*>( curve_data->data() );
-
         auto it = _mapped_data->numeric.find( curve_name );
         if( it!= _mapped_data->numeric.end())
         {
-            PlotDataQwt* new_plotqwt = new PlotDataQwt( it->second );
+            TimeseriesQwt* new_plotqwt = new TimeseriesQwt( it->second );
             new_plotqwt->setTransform( _current_transform );
-            new_plotqwt->updateData(true);
+            new_plotqwt->setAlternativeAxisX( _axisX );
             curve_data->setData( new_plotqwt );
         }
     }
@@ -583,41 +637,60 @@ void PlotWidget::activateGrid(bool activate)
     _grid->attach(this);
 }
 
+void PlotWidget::activateTracker(bool activate)
+{
+    _tracker->setEnabled( activate && isXYPlot() == false);
+}
+
+void PlotWidget::setTrackerPosition(QPointF point)
+{
+    if( isXYPlot()){
+        double time = point.x();
+        for (auto it: _curve_list)
+        {
+            QString name = it.first;
+            TimeseriesQwt* series = static_cast<TimeseriesQwt*>( it.second->data() );
+            auto pointXY = series->sampleFromTime(time);
+            if( pointXY ){
+                _point_marker[name]->setValue( pointXY.value() );
+            }
+        }
+    }
+    else{
+        _tracker->setPosition( point );
+    }
+}
+
 
 PlotData::RangeTime PlotWidget::maximumRangeX() const
 {
-    double left   = 0;
-    double right  = 0;
+    double left   = std::numeric_limits<double>::max();
+    double right  = std::numeric_limits<double>::min();
 
-    if( _curve_list.size() == 0){
-        return PlotData::RangeTime( {0,0} );
-    }
-
-    bool first = true;
     for(auto it = _curve_list.begin(); it != _curve_list.end(); ++it)
     {
-        PlotDataQwt* plot = static_cast<PlotDataQwt*>( it->second->data() );
-        plot->updateData(false);
-        auto range_X = plot->getRangeX();
+        TimeseriesQwt* series = static_cast<TimeseriesQwt*>( it->second->data() );
+        series->updateData(false);
+        auto range_X = series->getRangeX();
 
         if( !range_X ) continue;
 
-        if( first ){
-            first = false;
-            left  = range_X->min;
-            right = range_X->max;
-        }
-        else{
-            if( left  > range_X->min )    left  = range_X->min;
-            if( right < range_X->max )    right = range_X->max;
-        }
+        if( left  > range_X->min )    left  = range_X->min;
+        if( right < range_X->max )    right = range_X->max;
     }
 
-    if( fabs(right - left) <= std::numeric_limits<double>::epsilon() )
-    {
-        right += 0.1;
-        left  -= 0.1;
+    if( left > right ){
+        left  = 0;
+        right = 0;
     }
+
+    double margin = 0.1;
+    if( fabs(right - left) > std::numeric_limits<double>::epsilon() )
+    {
+        margin = isXYPlot() ? ((right-left) * 0.025) : 0.0;
+    }
+    right += margin;
+    left  -= margin;
 
     _magnifier->setAxisLimits( xBottom, left, right);
     return PlotData::RangeTime( {left,right} );
@@ -626,20 +699,19 @@ PlotData::RangeTime PlotWidget::maximumRangeX() const
 //TODO report failure for empty dataset
 PlotData::RangeValue  PlotWidget::maximumRangeY( PlotData::RangeTime range_X) const
 {
-    double top    = 0;
-    double bottom = 0;
+    double top    = std::numeric_limits<double>::min();
+    double bottom = std::numeric_limits<double>::max();
 
-    bool first = true;
     for(auto it = _curve_list.begin(); it != _curve_list.end(); ++it)
     {
-        PlotDataQwt* plot = static_cast<PlotDataQwt*>( it->second->data() );
-        plot->updateData(false);
+        TimeseriesQwt* series = static_cast<TimeseriesQwt*>( it->second->data() );
+        series->updateData(false);
 
-        const auto max_range_X = plot->getRangeX();
+        const auto max_range_X = series->getRangeX();
         if( !max_range_X ) continue;
 
-        int X0 = plot->data()->getIndexFromX(std::max(max_range_X->min, range_X.min));
-        int X1 = plot->data()->getIndexFromX(std::min(max_range_X->max, range_X.max));
+        int X0 = series->data()->getIndexFromX(std::max(max_range_X->min, range_X.min));
+        int X1 = series->data()->getIndexFromX(std::min(max_range_X->max, range_X.max));
 
         if( X0<0 || X1 <0)
         {
@@ -647,36 +719,29 @@ PlotData::RangeValue  PlotWidget::maximumRangeY( PlotData::RangeTime range_X) co
             continue;
         }
         else{
-            auto range_Y = plot->getRangeY(X0, X1);
+            auto range_Y = series->getRangeY(X0, X1);
             if( !range_Y )
             {
                 qDebug() << " invalid range_Y in PlotWidget::maximumRangeY";
                 continue;
             }
-
-            if( first ){
-                first = true;
-                top    = range_Y->max;
-                bottom = range_Y->min;
-                first = false;
-            }
-            else{
-                if( top <    range_Y->max )    top    = range_Y->max;
-                if( bottom > range_Y->min )    bottom = range_Y->min;
-            }
+            if( top <    range_Y->max )    top    = range_Y->max;
+            if( bottom > range_Y->min )    bottom = range_Y->min;
         }
     }
 
-    if( fabs(top - bottom) <= std::numeric_limits<double>::epsilon() )
+    if( bottom > top ){
+        bottom  = 0;
+        top = 0;
+    }
+
+    double margin = 0.1;
+    if( top - bottom > std::numeric_limits<double>::epsilon() )
     {
-        top    += 0.1;
-        bottom -= 0.1;
+        margin = (top-bottom) * 0.025;
     }
-    else{
-        auto margin = (top-bottom) * 0.05;
-        top    += margin;
-        bottom -= margin;
-    }
+    top    += margin;
+    bottom -= margin;
 
     _magnifier->setAxisLimits( yLeft, bottom, top);
     return PlotData::RangeValue({ bottom,  top});
@@ -689,14 +754,10 @@ void PlotWidget::replot()
     if( _zoomer )
         _zoomer->setZoomBase( false );
 
-    /* if(_tracker ) {
-        _tracker->refreshPosition( );
-    }*/
-
     for(auto it = _curve_list.begin(); it != _curve_list.end(); ++it)
     {
-        PlotDataQwt* plot = static_cast<PlotDataQwt*>( it->second->data() );
-        plot->updateData(false);
+        TimeseriesQwt* series = static_cast<TimeseriesQwt*>( it->second->data() );
+        series->updateData(false);
     }
 
     QwtPlot::replot();
@@ -771,7 +832,13 @@ void PlotWidget::on_showPoints_triggered(bool checked)
 
 void PlotWidget::on_externallyResized(const QRectF& rect)
 {
-    emit rectChanged( this, rect);
+    if( _current_transform != TimeseriesQwt::XYPlot)
+    {
+        emit rectChanged(this, rect);
+    }
+    else{
+        emit undoableChange();
+    }
 }
 
 
@@ -812,31 +879,30 @@ void PlotWidget::on_zoomOutVertical_triggered(bool emit_signal)
 
 void PlotWidget::on_noTransform_triggered(bool checked )
 {
-    if(_current_transform ==  PlotDataQwt::noTransform) return;
+    if(_current_transform ==  TimeseriesQwt::noTransform) return;
 
-    for(auto it = _curve_list.begin(); it != _curve_list.end(); ++it)
+    for (auto it :_curve_list)
     {
-        PlotDataQwt* plot = static_cast<PlotDataQwt*>( it->second->data() );
-        plot->setTransform( PlotDataQwt::noTransform );
-        plot->updateData(true);
+        TimeseriesQwt* series = static_cast<TimeseriesQwt*>( it.second->data() );
+        series->setTransform( TimeseriesQwt::noTransform );
+        _point_marker[ it.first ]->setVisible(false);
     }
-    this->setTitle("");
-    _current_transform = ( PlotDataQwt::noTransform );
+    this->setFooter("");
+    _current_transform = ( TimeseriesQwt::noTransform );
 
-    on_zoomOutVertical_triggered(false);
+    zoomOut(true);
     replot();
-    emit undoableChange();
 }
 
 void PlotWidget::on_1stDerivativeTransform_triggered(bool checked)
 {
-    if(_current_transform ==  PlotDataQwt::firstDerivative) return;
+    if(_current_transform ==  TimeseriesQwt::firstDerivative) return;
 
-    for(auto it = _curve_list.begin(); it != _curve_list.end(); ++it)
+    for (auto it :_curve_list)
     {
-        PlotDataQwt* plot = static_cast<PlotDataQwt*>( it->second->data() );
-        plot->setTransform( PlotDataQwt::firstDerivative );
-        plot->updateData(true);
+        TimeseriesQwt* series = static_cast<TimeseriesQwt*>( it.second->data() );
+        series->setTransform( TimeseriesQwt::firstDerivative );
+        _point_marker[ it.first ]->setVisible(false);
     }
 
     QFont font_title;
@@ -844,23 +910,22 @@ void PlotWidget::on_1stDerivativeTransform_triggered(bool checked)
     QwtText text("1st derivative");
     text.setFont(font_title);
 
-    this->setTitle(text);
-    _current_transform = ( PlotDataQwt::firstDerivative );
+    this->setFooter(text);
+    _current_transform = ( TimeseriesQwt::firstDerivative );
 
-    on_zoomOutVertical_triggered(false);
+    zoomOut(true);
     replot();
-    emit undoableChange();
 }
 
 void PlotWidget::on_2ndDerivativeTransform_triggered(bool checked)
 {
-    if(_current_transform ==  PlotDataQwt::secondDerivative) return;
+    if(_current_transform ==  TimeseriesQwt::secondDerivative) return;
 
-    for(auto it = _curve_list.begin(); it != _curve_list.end(); ++it)
+    for (auto it :_curve_list)
     {
-        PlotDataQwt* plot = static_cast<PlotDataQwt*>( it->second->data() );
-        plot->setTransform( PlotDataQwt::secondDerivative );
-        plot->updateData(true);
+        TimeseriesQwt* series = static_cast<TimeseriesQwt*>( it.second->data() );
+        series->setTransform( TimeseriesQwt::secondDerivative );
+        _point_marker[ it.first ]->setVisible(false);
     }
 
     QFont font_title;
@@ -868,12 +933,59 @@ void PlotWidget::on_2ndDerivativeTransform_triggered(bool checked)
     QwtText text("2nd derivative");
     text.setFont(font_title);
 
-    this->setTitle(text);
-    _current_transform = ( PlotDataQwt::secondDerivative );
+    this->setFooter(text);
+    _current_transform = ( TimeseriesQwt::secondDerivative );
 
-    on_zoomOutVertical_triggered(false);
+    zoomOut(true);
     replot();
-    emit undoableChange();
+}
+
+bool PlotWidget::isXYPlot() const
+{
+    return (_current_transform == TimeseriesQwt::XYPlot);
+}
+
+void PlotWidget::changeAxisX(QString curve_name)
+{
+    qDebug() << "changeAxisX " << curve_name;
+    _axisX = _mapped_data->numeric[ curve_name.toStdString() ];
+    _action_phaseXY->trigger();
+}
+
+
+void PlotWidget::on_convertToXY_triggered(bool)
+{
+    if( !_axisX )
+    {
+        QMessageBox::warning(0, tr("Warning"),
+                             tr("To show a XY plot, you must first provide an alternative X axis.\n"
+                                "You can do this drag'n dropping a curve using the RIGHT mouse button "
+                                "instead of the left mouse button.") );
+        return;
+    }
+
+    _tracker->setEnabled(false);
+
+    qDebug() << "on_convertToXY_triggered ";
+    _current_transform = TimeseriesQwt::XYPlot;
+
+    for (auto it :_curve_list)
+    {
+        TimeseriesQwt* series = static_cast<TimeseriesQwt*>( it.second->data() );
+        series->setAlternativeAxisX( _axisX );
+        series->setTransform( TimeseriesQwt::XYPlot );
+        _point_marker[ it.first ]->setVisible(true);
+    }
+
+    QFont font_footer;
+    font_footer.setPointSize(10);
+    QwtText text( _axisX->name().c_str() );
+    text.setFont(font_footer);
+
+    this->setFooter( text );
+
+    zoomOut(true);
+    replot();
 }
 
 void PlotWidget::on_savePlotToFile()
@@ -894,7 +1006,6 @@ void PlotWidget::on_savePlotToFile()
 }
 
 
-
 void PlotWidget::canvasContextMenuTriggered(const QPoint &pos)
 {
     QMenu menu(this);
@@ -910,6 +1021,7 @@ void PlotWidget::canvasContextMenuTriggered(const QPoint &pos)
     menu.addAction( _action_noTransform );
     menu.addAction( _action_1stDerivativeTransform );
     menu.addAction( _action_2ndDerivativeTransform );
+    menu.addAction( _action_phaseXY );
     menu.addSeparator();
     menu.addAction( _action_saveToFile );
 
@@ -920,110 +1032,111 @@ void PlotWidget::canvasContextMenuTriggered(const QPoint &pos)
     menu.exec( canvas()->mapToGlobal(pos) );
 }
 
-void PlotWidget::mousePressEvent(QMouseEvent *event)
-{
-    if( event->button() == Qt::LeftButton)
-    {
-        if (event->modifiers() & Qt::ControlModifier )
-        {
-            QDrag *drag = new QDrag(this);
-            QMimeData *mimeData = new QMimeData;
-
-            QByteArray data;
-            QDataStream dataStream(&data, QIODevice::WriteOnly);
-
-            dataStream << this->windowTitle();
-
-            mimeData->setData("plot_area", data );
-            drag->setMimeData(mimeData);
-            drag->exec();
-        }
-        else if( event->modifiers() == Qt::NoModifier)
-        {
-            QApplication::setOverrideCursor(QCursor(QPixmap(":/icons/resources/zoom_in_32px.png")));
-        }
-    }
-
-    if( event->button() == Qt::MiddleButton && event->modifiers() == Qt::NoModifier)
-    {
-        QApplication::setOverrideCursor(QCursor(QPixmap(":/icons/resources/move.png")));
-    }
-
-    QwtPlot::mousePressEvent(event);
-}
-
-void PlotWidget::mouseReleaseEvent(QMouseEvent *event )
-{
-    QApplication::restoreOverrideCursor();
-    QwtPlot::mouseReleaseEvent(event);
-}
-
 bool PlotWidget::eventFilter(QObject *obj, QEvent *event)
 {
-    static bool left_and_shift_pressed = false;
-
-    if ( event->type() == QEvent::MouseButtonPress)
+    switch( event->type() )
     {
-        QMouseEvent *mouse_event = static_cast<QMouseEvent*>(event);
 
-        if( mouse_event->button() == Qt::LeftButton &&
-                (mouse_event->modifiers() & Qt::ShiftModifier) )
-        {
-            left_and_shift_pressed = true;
-            const QPoint point = mouse_event->pos();
-            QPointF pointF ( invTransform( xBottom, point.x()),
-                             invTransform( yLeft, point.y()) );
-            emit trackerMoved(pointF);
-        }
-    }
-    else if ( event->type() == QEvent::MouseButtonRelease)
+    case QEvent::MouseButtonPress:
     {
-        QApplication::restoreOverrideCursor();
         QMouseEvent *mouse_event = static_cast<QMouseEvent*>(event);
 
         if( mouse_event->button() == Qt::LeftButton )
         {
-            left_and_shift_pressed = false;
+            if( mouse_event->modifiers() == Qt::ShiftModifier) // vertical tracker
+            {
+                const QPoint point = mouse_event->pos();
+                QPointF pointF ( invTransform( xBottom, point.x()),
+                                 invTransform( yLeft, point.y()) );
+                emit trackerMoved(pointF);
+            }
+            if( mouse_event->modifiers() == Qt::ControlModifier) // panner
+            {
+                QApplication::setOverrideCursor(QCursor(QPixmap(":/icons/resources/move.png")));
+            }
+            else if(mouse_event->modifiers() == Qt::NoModifier )
+            {
+                QApplication::setOverrideCursor(QCursor(QPixmap(":/icons/resources/zoom_in_32px.png")));
+            }
         }
-    }
-    else if ( event->type() == QEvent::MouseMove )
+        else if( mouse_event->button() == Qt::RightButton )
+        {
+            if( mouse_event->modifiers() == Qt::NoModifier) // show menu
+            {
+                canvasContextMenuTriggered( mouse_event->pos() );
+            }
+            else if( mouse_event->modifiers() == Qt::ControlModifier) // Start swapping two plots
+            {
+
+                QDrag *drag = new QDrag(this);
+                QMimeData *mimeData = new QMimeData;
+
+                QByteArray data;
+                QDataStream dataStream(&data, QIODevice::WriteOnly);
+
+                dataStream << this->windowTitle();
+
+                mimeData->setData("plot_area", data );
+                drag->setMimeData(mimeData);
+                drag->exec();
+            }
+        }
+    }break;
+    //---------------------------------
+    case QEvent::MouseMove:
     {
-        // special processing for mouse move
         QMouseEvent *mouse_event = static_cast<QMouseEvent*>(event);
 
-        if ( left_and_shift_pressed && mouse_event->modifiers() & Qt::ShiftModifier )
+        if ( mouse_event->buttons() == Qt::LeftButton &&
+             mouse_event->modifiers() == Qt::ShiftModifier )
         {
             const QPoint point = mouse_event->pos();
             QPointF pointF ( invTransform( xBottom, point.x()),
                              invTransform( yLeft, point.y()) );
-
             emit trackerMoved(pointF);
         }
-    }
-    else if ( obj == this->canvas() && event->type() == QEvent::Paint )
+    }break;
+    //---------------------------------
+    case QEvent::MouseButtonRelease :
     {
-        if ( !_fps_timeStamp.isValid() )
+        QApplication::restoreOverrideCursor();
+    }break;
+    //---------------------------------
+    case QEvent::KeyPress:
+    {
+//        QKeyEvent *key_event = static_cast<QKeyEvent*>(event);
+//        qDebug() << key_event->key();
+     }break;
+    //---------------------------------
+    case QEvent::Paint :
+    {
+        if ( obj == this->canvas())
         {
-            _fps_timeStamp.start();
-            _fps_counter = 0;
-        }
-        else{
-            _fps_counter++;
-
-            const double elapsed = _fps_timeStamp.elapsed() / 1000.0;
-            if ( elapsed >= 1 )
+            if ( !_fps_timeStamp.isValid() )
             {
-                QFont font_title;
-                font_title.setPointSize(9);
-                QwtText fps;
-                fps.setText( QString::number( qRound( _fps_counter / elapsed ) ) );
-                fps.setFont(font_title);
-                //qDebug() << _fps_counter / elapsed ;
-                _fps_counter = 0;
                 _fps_timeStamp.start();
+                _fps_counter = 0;
+            }
+            else{
+                _fps_counter++;
+
+                const double elapsed = _fps_timeStamp.elapsed() / 1000.0;
+                if ( elapsed >= 1 )
+                {
+                    QFont font_title;
+                    font_title.setPointSize(9);
+                    QwtText fps;
+                    fps.setText( QString::number( qRound( _fps_counter / elapsed ) ) );
+                    fps.setFont(font_title);
+                    //qDebug() << _fps_counter / elapsed ;
+                    _fps_counter = 0;
+                    _fps_timeStamp.start();
+                }
             }
         }
-    }
+    }break;
+
+    } //end switch
 
     return QwtPlot::eventFilter( obj, event );
 }
