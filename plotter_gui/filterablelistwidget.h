@@ -36,8 +36,9 @@ public:
 
     void updateFilter();
 
-private slots:
+    virtual void keyPressEvent(QKeyEvent * event) override;
 
+private slots:
 
     void on_radioContains_toggled(bool checked);
 
@@ -51,17 +52,22 @@ private slots:
 
     void on_checkBoxHideSecondColumn_toggled(bool checked);
 
+    void removeSelectedCurves();
+
 private:
 
     Ui::FilterableListWidget *ui;
 
     QPoint _drag_start_pos;
+    bool _newX_modifier;
 
     bool eventFilter(QObject *object, QEvent *event);
 
 signals:
 
     void hiddenItemsChanged();
+
+    void deleteCurve(QString curve_name);
 
 };
 

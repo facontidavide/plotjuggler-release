@@ -2,6 +2,17 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.14.0 (2017-03-15)
+-------------------
+* improved usability
+* adding XY plots (#26)
+* improving plot magnifier
+* changed key combination
+* file extension of saved images fixed
+* bug fixes
+* adding the ability to delete curves
+* Contributors: Davide Faconti
+
 0.13.1 (2017-03-14)
 -------------------
 * bug fix
