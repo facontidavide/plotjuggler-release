@@ -116,3 +116,9 @@ void PlotMagnifier::widgetWheelEvent(QWheelEvent *event)
     _mouse_position = invTransform(event->pos());
     QwtPlotMagnifier::widgetWheelEvent(event);
 }
+
+void PlotMagnifier::widgetMousePressEvent(QMouseEvent *event)
+{
+    _mouse_position = invTransform(event->pos());
+    QwtPlotMagnifier::widgetMousePressEvent(event);
+}
