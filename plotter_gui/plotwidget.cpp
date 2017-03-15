@@ -99,10 +99,8 @@ PlotWidget::PlotWidget(PlotDataMap *datamap, QWidget *parent):
     connect(_magnifier, SIGNAL(rescaled(const QRectF&)), this, SLOT(on_externallyResized(const QRectF&)) );
     connect(_magnifier, SIGNAL(rescaled(const QRectF&)), this, SLOT(replot()) );
 
-    _panner->setMouseButton(  Qt::MiddleButton, Qt::NoModifier);
+    _panner->setMouseButton(  Qt::LeftButton, Qt::ControlModifier);
 
-    this->canvas()->setContextMenuPolicy( Qt::ContextMenuPolicy::CustomContextMenu );
-    connect( canvas, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(canvasContextMenuTriggered(QPoint)) );
     //-------------------------
 
     buildActions();
