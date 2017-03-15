@@ -192,16 +192,20 @@ void TabbedPlotWidget::on_savePlotsToFile()
     int idx = ui->tabWidget->tabBar()->currentIndex();
     PlotMatrix* matrix = static_cast<PlotMatrix*>( ui->tabWidget->widget(idx) );
 
-    QString fileName;
+    QFileDialog saveDialog;
+    saveDialog.setAcceptMode(QFileDialog::AcceptSave);
+    saveDialog.setDefaultSuffix("png");
+
 #ifndef QWT_NO_SVG
-    fileName = QFileDialog::getSaveFileName(this, tr("File to export"), QString(),"Compatible formats (*.jpg *.jpeg *.svg *.png)");
+    saveDialog.setNameFilter("Compatible formats (*.jpg *.jpeg *.svg *.png)");
 #else
-    fileName = QFileDialog::getSaveFileName(this, tr("File to export"), QString(),"Compatible formats (*.jpg *.jpeg *.png)");
+    saveDialog.setNameFilter("Compatible formats (*.jpg *.jpeg *.png)");
 #endif
+    saveDialog.exec();
+    QString fileName = saveDialog.selectedFiles().first();
 
     QPixmap pixmap (1500,1000);
     QPainter * painter = new QPainter(&pixmap);
-
 
     if ( !fileName.isEmpty() )
     {
