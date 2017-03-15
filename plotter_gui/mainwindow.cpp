@@ -172,23 +172,6 @@ void MainWindow::onRedoInvoked()
     _disable_undo_logging = false;
 }
 
-void MainWindow::getMaximumRangeX(double* minX, double* maxX)
-{
-    *minX = std::numeric_limits<double>::max();
-    *maxX = std::numeric_limits<double>::min();
-
-    forEachWidget( [&](PlotWidget* plot)
-    {
-        if( plot->isXYPlot() == false)
-        {
-            auto rangeX = plot->maximumRangeX();
-            if( *minX > rangeX.min )   *minX = rangeX.min ;
-            if( *maxX < rangeX.max )   *maxX = rangeX.max;
-        }
-    }
-    );
-}
-
 
 void MainWindow::updateLeftTableValues()
 {
@@ -250,21 +233,22 @@ void MainWindow::updateLeftTableValues()
 
 void MainWindow::onTrackerTimeUpdated(double current_time)
 {
-    double minX, maxX;
-    getMaximumRangeX( &minX, &maxX );
+    if( current_time < _min_slider_time ) current_time = _min_slider_time;
+    if( current_time > _max_slider_time ) current_time = _max_slider_time;
 
-    double ratio = (current_time - minX)/(double)(maxX-minX);
+    double ratio = (current_time - _min_slider_time)/(double)(_max_slider_time-_min_slider_time);
     double min_slider = (double)ui->horizontalSlider->minimum();
     double max_slider = (double)ui->horizontalSlider->maximum();
     int slider_value = (int)((max_slider- min_slider)* ratio) ;
+
     ui->horizontalSlider->setValue(slider_value);
 
     //------------------------
-    for ( auto it = _state_publisher.begin(); it != _state_publisher.end(); it++)
+    for ( auto it: _state_publisher)
     {
-        it->second->updateState( &_mapped_plot_data, current_time);
+        it.second->updateState( &_mapped_plot_data, current_time);
     }
-    ui->displayTime->setText( QString::number(current_time, 'g', 3));
+    ui->displayTime->setText( QString::number(current_time, 'f', 3));
 }
 
 void MainWindow::onTrackerPositionUpdated(QPointF pos)
@@ -274,7 +258,7 @@ void MainWindow::onTrackerPositionUpdated(QPointF pos)
     emit  trackerTimeUpdated( QPointF(pos ) );
 }
 
-void MainWindow::createTabbedDialog(PlotMatrix* first_tab, bool undoable)
+void MainWindow::createTabbedDialog(PlotMatrix* first_tab)
 {
     SubWindow* window = new SubWindow(&_mapped_plot_data, this );
     Qt::WindowFlags flags = window->windowFlags();
@@ -319,7 +303,7 @@ void MainWindow::createTabbedDialog(PlotMatrix* first_tab, bool undoable)
     window->activateWindow();
     window->raise();
 
-    if( undoable ) onUndoableChange();
+    if (this->signalsBlocked() == false) onUndoableChange();
 }
 
 
@@ -516,7 +500,7 @@ void MainWindow::buildData()
     _curvelist_widget->addItem( new QTableWidgetItem(cos_plot->name().c_str()) );
     //--------------------------------------
 
-    ui->horizontalSlider->setRange(0, SIZE  );
+    updateTimeSlider();
 
     _curvelist_widget->updateFilter();
 
@@ -594,6 +578,7 @@ QDomDocument MainWindow::xmlSaveState() const
 
 bool MainWindow::xmlLoadState(QDomDocument state_document)
 {
+    this->blockSignals(true);
 
     QDomElement root = state_document.namedItem("root").toElement();
     if ( root.isNull() ) {
@@ -618,7 +603,7 @@ bool MainWindow::xmlLoadState(QDomDocument state_document)
     // add windows if needed
     while( _floating_window.size() < num_floating )
     {
-        createTabbedDialog( NULL, false );
+        createTabbedDialog( NULL );
     }
 
     while( _floating_window.size() > num_floating ){
@@ -642,6 +627,7 @@ bool MainWindow::xmlLoadState(QDomDocument state_document)
             _floating_window[index++]->tabbedWidget()->xmlLoadState( tabbed_area );
         }
     }
+    this->blockSignals(false);
     return true;
 }
 
@@ -1167,7 +1153,7 @@ void MainWindow::onFloatingWindowDestroyed(QObject *object)
 
 void MainWindow::onCreateFloatingWindow(PlotMatrix* first_tab)
 {
-    createTabbedDialog( first_tab, true );
+    createTabbedDialog( first_tab );
 }
 
 
@@ -1176,16 +1162,7 @@ void MainWindow::updateInternalState()
     std::map<QString,TabbedPlotWidget*> tabbed_map;
     tabbed_map.insert( std::make_pair( QString("Main window"), _main_tabbed_widget) );
 
-    double maxX = 0;
-
-    forEachWidget([&](PlotWidget* plot)
-    {
-        for( auto& it: plot->curveList()) {
-            maxX = std::max(maxX, (double)it.second->data()->size() );
-        }
-    } );
-
-    ui->horizontalSlider->setRange(0,maxX);
+    updateTimeSlider();
 
     for (SubWindow* subwin: _floating_window)
     {
@@ -1237,9 +1214,37 @@ void MainWindow::forEachWidget(std::function<void (PlotWidget *)> op)
     forEachWidget( [&](PlotWidget*plot, PlotMatrix*, int,int) { op(plot); } );
 }
 
+void MainWindow::updateTimeSlider()
+{
+    int max_steps = 10;
+    _min_slider_time = std::numeric_limits<double>::max();
+    _max_slider_time = std::numeric_limits<double>::min();
+
+    for (auto it: _mapped_plot_data.numeric )
+    {
+        PlotDataPtr data = it.second;
+        if(data->size() >=1)
+        {
+            const double min = data->at(0).x;
+            const double max = data->at( data->size() -1).x;
+            if( _min_slider_time > min) _min_slider_time = min;
+            if( _max_slider_time < max) _max_slider_time = max;
+            if( max_steps < data->size()) max_steps = data->size();
+        }
+    }
+    if( _max_slider_time <= _min_slider_time)
+    {
+       _min_slider_time = 0.0;
+       _max_slider_time = 1.0;
+    }
+
+    ui->horizontalSlider->setRange(0,max_steps);
+
+}
+
 void MainWindow::on_pushButtonAddSubwindow_pressed()
 {
-    createTabbedDialog( NULL, true );
+    createTabbedDialog( NULL );
 }
 
 void MainWindow::onSwapPlots(PlotWidget *source, PlotWidget *destination)
@@ -1341,20 +1346,21 @@ void MainWindow::onReplotRequested()
         }
         _tracker_time = std::numeric_limits<double>::max();
         updateLeftTableValues();
+        updateTimeSlider();
     }
 }
 
 void MainWindow::on_streamingSpinBox_valueChanged(int value)
 {
-    for (auto it = _mapped_plot_data.numeric.begin(); it != _mapped_plot_data.numeric.end(); it++ )
+    for (auto it : _mapped_plot_data.numeric )
     {
-        auto& plot = it->second;
+        PlotDataPtr plot = it.second;
         plot->setMaximumRangeX( value );
     }
 
-    for (auto it = _mapped_plot_data.user_defined.begin(); it != _mapped_plot_data.user_defined.end(); it++ )
+    for (auto it: _mapped_plot_data.user_defined)
     {
-        auto& plot = it->second;
+        PlotDataAnyPtr plot = it.second;
         plot->setMaximumRangeX( value );
     }
 }
@@ -1439,11 +1445,7 @@ void MainWindow::on_horizontalSlider_valueChanged(int position)
     //qDebug() <<position;
     QSlider* slider = ui->horizontalSlider;
     double ratio = (double)position / (double)(slider->maximum() -  slider->minimum() );
-
-    double minX, maxX;
-    getMaximumRangeX( &minX, &maxX);
-
-    double posX = (maxX-minX) * ratio + minX;
+    double posX = (_max_slider_time-_min_slider_time) * ratio + _min_slider_time;
 
     onTrackerTimeUpdated( posX );
     _tracker_time = posX;
