@@ -127,7 +127,7 @@ private:
 
     void forEachWidget(std::function<void(PlotWidget*)> op);
 
-    void getMaximumRangeX(double* minX, double* maxX);
+    void updateTimeSlider();
 
     void buildData();
 
@@ -161,13 +161,17 @@ private:
 
     double _tracker_time;
 
+    double _min_slider_time;
+
+    double _max_slider_time;
+
     QString _loaded_datafile;
 
     std::string _last_load_configuration;
 
     QSignalMapper *_streamer_signal_mapper;
 
-    void createTabbedDialog(PlotMatrix *first_tab, bool undoable);
+    void createTabbedDialog(PlotMatrix *first_tab);
 
     void importPlotDataMap(const PlotDataMap &new_data);
 
