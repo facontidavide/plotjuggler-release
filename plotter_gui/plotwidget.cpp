@@ -127,10 +127,10 @@ void PlotWidget::buildActions()
 
     QIcon iconColors;
     iconColors.addFile(QStringLiteral(":/icons/resources/office_chart_lines.png"), QSize(26, 26), QIcon::Normal, QIcon::Off);
-    _action_changeColors = new QAction(tr("&Change colors"), this);
-    _action_changeColors->setIcon(iconColors);
-    _action_changeColors->setStatusTip(tr("Change the color of the curves"));
-    connect(_action_changeColors, SIGNAL(triggered()), this, SLOT(on_changeColor_triggered()));
+    _action_changeColorsDialog = new QAction(tr("&Change colors"), this);
+    _action_changeColorsDialog->setIcon(iconColors);
+    _action_changeColorsDialog->setStatusTip(tr("Change the color of the curves"));
+    connect(_action_changeColorsDialog, SIGNAL(triggered()), this, SLOT(on_changeColorsDialog_triggered()));
 
     QIcon iconPoints;
     iconPoints.addFile(QStringLiteral(":/icons/resources/line_chart_32px.png"), QSize(26, 26), QIcon::Normal, QIcon::Off);
@@ -311,6 +311,16 @@ void PlotWidget::removeCurve(const QString &name)
         _point_marker[name]->detach();
         _point_marker.erase( name );
     }
+    if( _axisX && _axisX->name() == name.toStdString())
+    {
+        _axisX = PlotDataPtr();
+        for(auto it : _curve_list)
+        {
+            TimeseriesQwt* series = static_cast<TimeseriesQwt*>( it.second->data() );
+            series->setAlternativeAxisX(_axisX);
+        }
+        _action_noTransform->trigger();
+    }
 }
 
 bool PlotWidget::isEmpty() const
@@ -404,6 +414,7 @@ void PlotWidget::detachAllCurves()
 
     _curve_list.erase(_curve_list.begin(), _curve_list.end());
     _point_marker.erase(_point_marker.begin(), _point_marker.end());
+    emit _tracker->setPosition( _tracker->actualPosition() );
     replot();
 }
 
@@ -446,8 +457,15 @@ QDomElement PlotWidget::xmlSaveState( QDomDocument &doc) const
         transform.setAttribute("value", "noTransform" ); break;
 
     case TimeseriesQwt::XYPlot:{
-        transform.setAttribute("value", "XYPlot" );
-        transform.setAttribute("axisX",  _axisX->name().c_str() );
+
+        if( _axisX ){
+            transform.setAttribute("value", "XYPlot" );
+            transform.setAttribute("axisX",  _axisX->name().c_str() );
+        }
+        else{
+            transform.setAttribute("value", "noTransform" );
+            transform.setAttribute("axisX",  "" );
+        }
     }break;
 
     }
@@ -458,8 +476,6 @@ QDomElement PlotWidget::xmlSaveState( QDomDocument &doc) const
 
 bool PlotWidget::xmlLoadState(QDomElement &plot_widget, QMessageBox::StandardButton* answer)
 {
-    this->blockSignals(true);
-
     QDomElement curve;
 
     std::set<QString> added_curve_names;
@@ -537,12 +553,15 @@ bool PlotWidget::xmlLoadState(QDomElement &plot_widget, QMessageBox::StandardBut
         }
         else if(trans_value == "XYPlot")
         {
-            if( transform.hasAttribute("axisX") ){
-                changeAxisX( transform.attribute("axisX") );
+            QString axisX_name = transform.attribute("axisX");
+            if( axisX_name.size()>0)
+            {
+                changeAxisX( axisX_name );
             }
         }
     }
     //-----------------------------------------
+
     QDomElement rectangle = plot_widget.firstChildElement( "range" );
     if( !rectangle.isNull()){
         QRectF rect;
@@ -553,7 +572,6 @@ bool PlotWidget::xmlLoadState(QDomElement &plot_widget, QMessageBox::StandardBut
         this->setScale( rect, false);
     }
 
-    this->blockSignals(false);
     return true;
 }
 
@@ -596,7 +614,7 @@ void PlotWidget::reloadPlotData()
             _axisX = it->second;
         }
         else{
-            _axisX.reset();
+            _axisX = PlotDataPtr();
         }
     }
 
@@ -779,7 +797,7 @@ void PlotWidget::launchRemoveCurveDialog()
     }
 }
 
-void PlotWidget::on_changeColor_triggered()
+void PlotWidget::on_changeColorsDialog_triggered()
 {
     std::map<QString,QColor> color_by_name;
 
@@ -790,24 +808,31 @@ void PlotWidget::on_changeColor_triggered()
         color_by_name.insert(std::make_pair( curve_name, curve->pen().color() ));
     }
 
-    CurveColorPick* dialog = new CurveColorPick(&color_by_name, this);
+    CurveColorPick* dialog = new CurveColorPick(color_by_name, this);
+
+    connect( dialog, SIGNAL(changeColor(QString,QColor)),
+             this, SLOT(on_changeColor(QString,QColor)),
+             Qt::DirectConnection);
+
     dialog->exec();
 
-    bool modified = false;
-
-    for(auto it = _curve_list.begin(); it != _curve_list.end(); ++it)
+    if( dialog->anyColorModified() )
     {
-        const QString& curve_name = it->first;
+        emit undoableChange();
+    }
+}
+
+void PlotWidget::on_changeColor(QString curve_name, QColor new_color)
+{
+    auto it = _curve_list.find(curve_name);
+    if( it != _curve_list.end())
+    {
         auto curve = it->second;
-        QColor new_color = color_by_name[curve_name];
         if( curve->pen().color() != new_color)
         {
-            curve->setPen( color_by_name[curve_name], 1.0 );
-            modified = true;
+            curve->setPen( new_color, 1.0 );
         }
-    }
-    if( modified){
-        emit undoableChange();
+        replot();
     }
 }
 
@@ -946,8 +971,15 @@ bool PlotWidget::isXYPlot() const
 void PlotWidget::changeAxisX(QString curve_name)
 {
     qDebug() << "changeAxisX " << curve_name;
-    _axisX = _mapped_data->numeric[ curve_name.toStdString() ];
-    _action_phaseXY->trigger();
+    auto it = _mapped_data->numeric.find( curve_name.toStdString() );
+    if( it != _mapped_data->numeric.end())
+    {
+        _axisX = it->second;
+        _action_phaseXY->trigger();
+    }
+    else{
+        // do nothing (?)
+    }
 }
 
 
@@ -1010,7 +1042,7 @@ void PlotWidget::canvasContextMenuTriggered(const QPoint &pos)
     menu.addAction(_action_removeCurve);
     menu.addAction(_action_removeAllCurves);
     menu.addSeparator();
-    menu.addAction(_action_changeColors);
+    menu.addAction(_action_changeColorsDialog);
     menu.addAction(_action_showPoints);
     menu.addSeparator();
     menu.addAction(_action_zoomOutHorizontally);
@@ -1025,7 +1057,7 @@ void PlotWidget::canvasContextMenuTriggered(const QPoint &pos)
 
     _action_removeCurve->setEnabled( ! _curve_list.empty() );
     _action_removeAllCurves->setEnabled( ! _curve_list.empty() );
-    _action_changeColors->setEnabled(  ! _curve_list.empty() );
+    _action_changeColorsDialog->setEnabled(  ! _curve_list.empty() );
 
     menu.exec( canvas()->mapToGlobal(pos) );
 }
