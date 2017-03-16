@@ -100,7 +100,8 @@ public slots:
 private slots:
     void launchRemoveCurveDialog();
     void canvasContextMenuTriggered(const QPoint &pos);
-    void on_changeColor_triggered();
+    void on_changeColorsDialog_triggered();
+    void on_changeColor(QString curve_name, QColor new_color);
     void on_showPoints_triggered(bool checked);
     void on_externallyResized(const QRectF &new_rect);
 
@@ -111,7 +112,7 @@ private:
 
     QAction *_action_removeCurve;
     QAction *_action_removeAllCurves;
-    QAction *_action_changeColors;
+    QAction *_action_changeColorsDialog;
     QAction *_action_showPoints;
     QAction *_action_zoomOutHorizontally;
     QAction *_action_zoomOutVertically;

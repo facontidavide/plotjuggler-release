@@ -30,11 +30,11 @@ public:
 
     QList<int> findRowsByName(const QString& text) const;
 
-    const QTableWidget *table() const;
-
-    QTableWidget *table();
+    void removeRow(int row);
 
     void updateFilter();
+
+    const QTableWidget * getTtable() const;
 
     virtual void keyPressEvent(QKeyEvent * event) override;
 
@@ -54,7 +54,11 @@ private slots:
 
     void removeSelectedCurves();
 
+
 private:
+
+
+    QTableWidget *table();
 
     Ui::FilterableListWidget *ui;
 
