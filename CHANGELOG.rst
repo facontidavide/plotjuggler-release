@@ -2,6 +2,14 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.14.2 (2017-03-16)
+-------------------
+* improve CurveColorPick
+* bugs fixed
+* crash fixed
+* Prevent compiler warning if compiling under ROS (#29)
+* Contributors: Davide Faconti, Tim Clephas
+
 0.14.1 (2017-03-15)
 -------------------
 * improved the time slider
