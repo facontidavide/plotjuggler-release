@@ -44,12 +44,12 @@ FilterableListWidget::~FilterableListWidget()
 
 int FilterableListWidget::rowCount() const
 {
-    return table()->rowCount();
+    return getTtable()->rowCount();
 }
 
 void FilterableListWidget::clear()
 {
-    table()->clear();
+    table()->setRowCount(0);
     ui->labelNumberDisplayed->setText( "0 of 0");
 }
 
@@ -72,7 +72,7 @@ QList<int>
 FilterableListWidget::findRowsByName(const QString &text) const
 {
     QList<int> output;
-    QList<QTableWidgetItem*> item_list = table()->findItems( text, Qt::MatchExactly);
+    QList<QTableWidgetItem*> item_list = getTtable()->findItems( text, Qt::MatchExactly);
     for(QTableWidgetItem* item : item_list)
     {
         if(item->column() == 0) {
@@ -82,7 +82,7 @@ FilterableListWidget::findRowsByName(const QString &text) const
     return output;
 }
 
-const QTableWidget *FilterableListWidget::table() const
+const QTableWidget *FilterableListWidget::getTtable() const
 {
     return ui->tableWidget;
 }
@@ -292,4 +292,9 @@ void FilterableListWidget::removeSelectedCurves()
         }
     }
     updateFilter();
+}
+
+void FilterableListWidget::removeRow(int row)
+{
+    table()->removeRow(row);
 }
