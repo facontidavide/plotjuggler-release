@@ -48,7 +48,7 @@ MainWindow::MainWindow(const QCommandLineParser &commandline_parser, QWidget *pa
 
     ui->setupUi(this);
 
-    connect( _curvelist_widget->table()->verticalScrollBar(), SIGNAL(sliderMoved(int)),
+    connect( _curvelist_widget->getTtable()->verticalScrollBar(), SIGNAL(sliderMoved(int)),
              this, SLOT(updateLeftTableValues()) );
 
     connect( _curvelist_widget, SIGNAL(hiddenItemsChanged()),
@@ -175,7 +175,7 @@ void MainWindow::onRedoInvoked()
 
 void MainWindow::updateLeftTableValues()
 {
-    auto table = _curvelist_widget->table();
+    const auto& table = _curvelist_widget->getTtable();
 
     if( table->isColumnHidden(1) == false)
     {
@@ -578,7 +578,7 @@ QDomDocument MainWindow::xmlSaveState() const
 
 bool MainWindow::xmlLoadState(QDomDocument state_document)
 {
-    this->blockSignals(true);
+    const bool isBlocked = this->blockSignals(true);
 
     QDomElement root = state_document.namedItem("root").toElement();
     if ( root.isNull() ) {
@@ -627,7 +627,7 @@ bool MainWindow::xmlLoadState(QDomDocument state_document)
             _floating_window[index++]->tabbedWidget()->xmlLoadState( tabbed_area );
         }
     }
-    this->blockSignals(false);
+    this->blockSignals(isBlocked);
     return true;
 }
 
@@ -681,15 +681,16 @@ void MainWindow::deleteLoadedData(const QString& curve_name)
         return;
     }
 
+    _mapped_plot_data.numeric.erase( plot_curve );
+
     auto rows_to_remove = _curvelist_widget->findRowsByName( curve_name );
     for(int row : rows_to_remove)
     {
-        _curvelist_widget->table()->removeRow(row);
+        _curvelist_widget->removeRow(row);
     }
 
     emit requestRemoveCurveByName( curve_name );
 
-    _mapped_plot_data.numeric.erase( plot_curve );
 
     if( _curvelist_widget->rowCount() == 0)
     {
@@ -719,6 +720,7 @@ void MainWindow::onDeleteLoadedData()
 
     ui->actionReloadData->setEnabled( false );
     ui->actionDeleteAllData->setEnabled( false );
+
 }
 
 void MainWindow::onActionLoadDataFile(bool reload_from_settings)
