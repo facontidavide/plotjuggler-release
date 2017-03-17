@@ -2,6 +2,11 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.15.0 (2017-03-17)
+-------------------
+* Multiple problems fixed with streaming interface nd XY plots
+* Contributors: Davide Faconti
+
 0.14.2 (2017-03-16)
 -------------------
 * improve CurveColorPick
