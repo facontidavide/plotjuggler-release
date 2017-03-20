@@ -9,7 +9,10 @@
 #include "ui_tabbedplotwidget.h"
 
 
-TabbedPlotWidget::TabbedPlotWidget(QMainWindow *main_window, PlotDataMap *mapped_data, QMainWindow *parent ) :
+TabbedPlotWidget::TabbedPlotWidget(QMainWindow *main_window,
+                                   PlotMatrix *first_tab,
+                                   PlotDataMap *mapped_data,
+                                   QMainWindow *parent ) :
     QWidget(parent),
     ui(new Ui::TabbedPlotWidget)
 {
@@ -47,7 +50,7 @@ TabbedPlotWidget::TabbedPlotWidget(QMainWindow *main_window, PlotDataMap *mapped
     connect( this, SIGNAL(matrixAdded(PlotMatrix*)),        main_window, SLOT(onPlotMatrixAdded(PlotMatrix*)) );
     connect( this, SIGNAL(undoableChangeHappened()),        main_window, SLOT(onUndoableChange()) );
 
-    this->addTab();
+    this->addTab(first_tab);
 }
 
 void TabbedPlotWidget::setSiblingsList(const std::map<QString, TabbedPlotWidget *> &other_tabbed_widgets)
@@ -151,9 +154,12 @@ bool TabbedPlotWidget::xmlLoadState(QDomElement &tabbed_area)
 
     QDomElement current_plotmatrix =  tabbed_area.firstChildElement( "currentPlotMatrix" );
     int current_index = current_plotmatrix.attribute( "index" ).toInt();
-    ui->tabWidget->setCurrentIndex( current_index );
 
-    currentTab()->replot();
+    if(current_index>=0 && current_index < ui->tabWidget->count())
+    {
+        ui->tabWidget->setCurrentIndex( current_index );
+        currentTab()->replot();
+    }
     return true;
 }
 
