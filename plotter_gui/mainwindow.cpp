@@ -59,7 +59,7 @@ MainWindow::MainWindow(const QCommandLineParser &commandline_parser, QWidget *pa
 
     connect(this, SIGNAL(trackerTimeUpdated(QPointF)), this, SLOT(updateLeftTableValues()) );
 
-    _main_tabbed_widget = new TabbedPlotWidget( this,  &_mapped_plot_data, this);
+    _main_tabbed_widget = new TabbedPlotWidget( this, NULL, &_mapped_plot_data, this);
 
     ui->centralLayout->insertWidget(0, _main_tabbed_widget);
     ui->leftLayout->addWidget( _curvelist_widget );
@@ -260,7 +260,7 @@ void MainWindow::onTrackerPositionUpdated(QPointF pos)
 
 void MainWindow::createTabbedDialog(PlotMatrix* first_tab)
 {
-    SubWindow* window = new SubWindow(&_mapped_plot_data, this );
+    SubWindow* window = new SubWindow(first_tab, &_mapped_plot_data, this );
     Qt::WindowFlags flags = window->windowFlags();
     window->setWindowFlags( flags | Qt::SubWindow );
 
@@ -292,9 +292,6 @@ void MainWindow::createTabbedDialog(PlotMatrix* first_tab)
     connect( window, SIGNAL(closeRequestedByUser()), this,  SLOT(onUndoableChange()) );
 
     _floating_window.push_back( window );
-
-    // TabbedPlotWidget *tabbed_widget = new TabbedPlotWidget( &_mapped_plot_data, window);
-    //_tabbed_plotarea.push_back( tabbed_widget );
 
     window->tabbedWidget()->setStreamingMode( ui->pushButtonStreaming->isChecked() );
 
