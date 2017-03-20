@@ -19,6 +19,7 @@ public:
     typedef struct{} MainWindowArea;
 
     explicit TabbedPlotWidget(QMainWindow *main_window,
+                              PlotMatrix *first_tab,
                               PlotDataMap *mapped_data,
                               QMainWindow *parent );
 
