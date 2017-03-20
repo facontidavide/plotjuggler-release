@@ -1086,7 +1086,7 @@ bool PlotWidget::eventFilter(QObject *obj, QEvent *event)
             }
             else if(mouse_event->modifiers() == Qt::NoModifier )
             {
-                QApplication::setOverrideCursor(QCursor(QPixmap(":/icons/resources/zoom_in_32px.png")));
+                // delegate to _zoomer
             }
         }
         else if( mouse_event->button() == Qt::RightButton )
