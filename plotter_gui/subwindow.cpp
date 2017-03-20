@@ -1,10 +1,10 @@
 #include "subwindow.h"
 #include <QDebug>
 
-SubWindow::SubWindow(PlotDataMap *mapped_data, QMainWindow *parent_window) :
+SubWindow::SubWindow(PlotMatrix *first_tab, PlotDataMap *mapped_data, QMainWindow *parent_window) :
   QMainWindow(parent_window)
 {
-    tabbed_widget_ = new TabbedPlotWidget(parent_window, mapped_data, 0 );
+    tabbed_widget_ = new TabbedPlotWidget(parent_window, first_tab, mapped_data, 0 );
     this->setCentralWidget( tabbed_widget_ );
 }
 
