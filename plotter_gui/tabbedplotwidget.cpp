@@ -9,7 +9,10 @@
 #include "ui_tabbedplotwidget.h"
 
 
-TabbedPlotWidget::TabbedPlotWidget(QMainWindow *main_window, PlotDataMap *mapped_data, QMainWindow *parent ) :
+TabbedPlotWidget::TabbedPlotWidget(QMainWindow *main_window,
+                                   PlotMatrix *first_tab,
+                                   PlotDataMap *mapped_data,
+                                   QMainWindow *parent ) :
     QWidget(parent),
     ui(new Ui::TabbedPlotWidget)
 {
@@ -47,7 +50,7 @@ TabbedPlotWidget::TabbedPlotWidget(QMainWindow *main_window, PlotDataMap *mapped
     connect( this, SIGNAL(matrixAdded(PlotMatrix*)),        main_window, SLOT(onPlotMatrixAdded(PlotMatrix*)) );
     connect( this, SIGNAL(undoableChangeHappened()),        main_window, SLOT(onUndoableChange()) );
 
-    this->addTab();
+    this->addTab(first_tab);
 }
 
 void TabbedPlotWidget::setSiblingsList(const std::map<QString, TabbedPlotWidget *> &other_tabbed_widgets)
@@ -151,9 +154,12 @@ bool TabbedPlotWidget::xmlLoadState(QDomElement &tabbed_area)
 
     QDomElement current_plotmatrix =  tabbed_area.firstChildElement( "currentPlotMatrix" );
     int current_index = current_plotmatrix.attribute( "index" ).toInt();
-    ui->tabWidget->setCurrentIndex( current_index );
 
-    currentTab()->replot();
+    if(current_index>=0 && current_index < ui->tabWidget->count())
+    {
+        ui->tabWidget->setCurrentIndex( current_index );
+        currentTab()->replot();
+    }
     return true;
 }
 
@@ -192,16 +198,20 @@ void TabbedPlotWidget::on_savePlotsToFile()
     int idx = ui->tabWidget->tabBar()->currentIndex();
     PlotMatrix* matrix = static_cast<PlotMatrix*>( ui->tabWidget->widget(idx) );
 
-    QString fileName;
+    QFileDialog saveDialog;
+    saveDialog.setAcceptMode(QFileDialog::AcceptSave);
+    saveDialog.setDefaultSuffix("png");
+
 #ifndef QWT_NO_SVG
-    fileName = QFileDialog::getSaveFileName(this, tr("File to export"), QString(),"Compatible formats (*.jpg *.jpeg *.svg *.png)");
+    saveDialog.setNameFilter("Compatible formats (*.jpg *.jpeg *.svg *.png)");
 #else
-    fileName = QFileDialog::getSaveFileName(this, tr("File to export"), QString(),"Compatible formats (*.jpg *.jpeg *.png)");
+    saveDialog.setNameFilter("Compatible formats (*.jpg *.jpeg *.png)");
 #endif
+    saveDialog.exec();
+    QString fileName = saveDialog.selectedFiles().first();
 
     QPixmap pixmap (1500,1000);
     QPainter * painter = new QPainter(&pixmap);
-
 
     if ( !fileName.isEmpty() )
     {
