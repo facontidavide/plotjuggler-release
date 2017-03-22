@@ -424,10 +424,10 @@ QDomElement PlotWidget::xmlSaveState( QDomDocument &doc) const
 
     QDomElement range_el = doc.createElement("range");
     QRectF rect = this->currentBoundingRect();
-    range_el.setAttribute("bottom", QString::number(rect.bottom()) );
-    range_el.setAttribute("top", QString::number(rect.top()) );
-    range_el.setAttribute("left", QString::number(rect.left()) );
-    range_el.setAttribute("right", QString::number(rect.right()) );
+    range_el.setAttribute("bottom", QString::number(rect.bottom(), 'f', 6) );
+    range_el.setAttribute("top", QString::number(rect.top(), 'f', 6));
+    range_el.setAttribute("left", QString::number(rect.left(), 'f', 6));
+    range_el.setAttribute("right", QString::number(rect.right() ,'f', 6));
     plot_el.appendChild(range_el);
 
     for(auto it=_curve_list.begin(); it != _curve_list.end(); ++it)

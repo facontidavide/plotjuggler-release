@@ -8,7 +8,7 @@ endif()
 
 SET(PLOTJUGGLER_VERSION_MAJOR 0)
 SET(PLOTJUGGLER_VERSION_MINOR 15)
-SET(PLOTJUGGLER_VERSION_PATCH 1)
+SET(PLOTJUGGLER_VERSION_PATCH 2)
 
 add_definitions(
     -DPJ_MAJOR_VERSION=${PLOTJUGGLER_VERSION_MAJOR}
@@ -51,7 +51,7 @@ if(COMPILING_WITH_CATKIN)
     catkin_package(
         INCLUDE_DIRS include
         CATKIN_DEPENDS ros_type_introspection
-        DEPENDS
+        DEPENDS binutils
         )
 
     INCLUDE_DIRECTORIES( ${catkin_INCLUDE_DIRS} )
@@ -91,6 +91,7 @@ else()
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 endif()
 
+add_subdirectory(backward-cpp)
 
 add_subdirectory( color_widgets )
 add_subdirectory( qwt/src )
