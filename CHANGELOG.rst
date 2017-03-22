@@ -2,6 +2,13 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.15.2 (2017-03-22)
+-------------------
+* multiple fixes
+* backward-cpp added
+* show coordinates when the left mouse is clicked (but not moved)
+* Contributors: Davide Faconti
+
 0.15.1 (2017-03-20)
 -------------------
 * adding some deadband to the zoomer

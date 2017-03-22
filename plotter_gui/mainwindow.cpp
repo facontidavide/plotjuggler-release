@@ -368,6 +368,11 @@ void MainWindow::loadPlugins(QString directory_name)
 
     foreach (QString filename, pluginsDir.entryList(QDir::Files))
     {
+        QFileInfo fileinfo(filename);
+        if( fileinfo.suffix() != "so" && fileinfo.suffix() != "dll"){
+            continue;
+        }
+
         if( loaded_plugins.find( filename ) != loaded_plugins.end())
         {
             continue;
