@@ -29,7 +29,6 @@ DataStreamROS::DataStreamROS():
     _initial_time = std::numeric_limits<double>::max();
 
     _use_header_timestamp = true;
-    _normalize_time = true;
 }
 
 PlotDataMap& DataStreamROS::getDataMap()
@@ -102,20 +101,13 @@ void DataStreamROS::topicCallback(const topic_tools::ShapeShifter::ConstPtr& msg
         auto plot_pair = _plot_data.user_defined.find( md5sum );
         if( plot_pair == _plot_data.user_defined.end() )
         {
-            PlotDataAnyPtr temp(new PlotDataAny());
+            PlotDataAnyPtr temp(new PlotDataAny(topic_name.c_str()));
             auto res = _plot_data.user_defined.insert( std::make_pair( topic_name, temp ) );
             plot_pair = res.first;
         }
         PlotDataAnyPtr& user_defined_data = plot_pair->second;
         user_defined_data->pushBack( PlotDataAny::Point(msg_time, nonstd::any(std::move(buffer)) ));
     }
-
-    if( _normalize_time )
-    {
-        _initial_time = std::min( _initial_time, msg_time );
-        msg_time -= _initial_time;
-    }
-
 
     PlotData::asyncPushMutex().lock();
     for(auto& it: flat_container.renamed_value )
@@ -260,7 +252,7 @@ bool DataStreamROS::start()
     if( dialog.checkBoxUseRenamingRules()->isChecked() ){
         _rules = RuleEditing::getRenamingRules();
     }
-    _normalize_time       = dialog.checkBoxNormalizeTime()->isChecked();
+
     _use_header_timestamp = dialog.checkBoxUseHeaderStamp()->isChecked();
     //-------------------------
 
