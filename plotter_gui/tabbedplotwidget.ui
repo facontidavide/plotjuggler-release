@@ -404,7 +404,7 @@ background: white;
            </property>
            <property name="icon">
             <iconset resource="resource.qrc">
-             <normaloff>:/icons/resources/splitbutton_vertical@2x.png</normaloff>:/icons/resources/splitbutton_vertical@2x.png</iconset>
+             <normaloff>:/icons/resources/splitbutton_horizontal@2x.png</normaloff>:/icons/resources/splitbutton_horizontal@2x.png</iconset>
            </property>
            <property name="iconSize">
             <size>
