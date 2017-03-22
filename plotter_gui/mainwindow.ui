@@ -3,7 +3,7 @@
  <class>MainWindow</class>
  <widget class="QMainWindow" name="MainWindow">
   <property name="windowModality">
-   <enum>Qt::WindowModal</enum>
+   <enum>Qt::NonModal</enum>
   </property>
   <property name="geometry">
    <rect>
@@ -173,6 +173,31 @@ background: white;
             </property>
             <property name="flat">
              <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLineEdit" name="displayTime">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>60</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>80</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
             </property>
            </widget>
           </item>

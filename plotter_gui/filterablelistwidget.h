@@ -30,14 +30,15 @@ public:
 
     QList<int> findRowsByName(const QString& text) const;
 
-    const QTableWidget *table() const;
-
-    QTableWidget *table();
+    void removeRow(int row);
 
     void updateFilter();
 
-private slots:
+    const QTableWidget * getTtable() const;
 
+    virtual void keyPressEvent(QKeyEvent * event) override;
+
+private slots:
 
     void on_radioContains_toggled(bool checked);
 
@@ -51,17 +52,26 @@ private slots:
 
     void on_checkBoxHideSecondColumn_toggled(bool checked);
 
+    void removeSelectedCurves();
+
+
 private:
+
+
+    QTableWidget *table();
 
     Ui::FilterableListWidget *ui;
 
     QPoint _drag_start_pos;
+    bool _newX_modifier;
 
     bool eventFilter(QObject *object, QEvent *event);
 
 signals:
 
     void hiddenItemsChanged();
+
+    void deleteCurve(QString curve_name);
 
 };
 

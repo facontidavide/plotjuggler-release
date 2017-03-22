@@ -20,6 +20,7 @@ protected:
     virtual void rescale( double factor ) override;
 
     virtual void widgetWheelEvent( QWheelEvent *event ) override;
+    virtual void widgetMousePressEvent( QMouseEvent* event ) override;
 
     double _lower_bounds[QwtPlot::axisCnt];
     double _upper_bounds[QwtPlot::axisCnt];

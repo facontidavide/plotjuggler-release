@@ -3,20 +3,18 @@
 #include <QColorDialog>
 
 
-CurveColorPick::CurveColorPick(std::map<QString, QColor>* mapped_colors, QWidget *parent) :
+CurveColorPick::CurveColorPick(const std::map<QString, QColor> &mapped_colors, QWidget *parent) :
     QDialog(parent),
-    ui(new Ui::CurveColorPick)
+    ui(new Ui::CurveColorPick),
+    _any_modified(false),
+    _mapped_colors(mapped_colors)
 {
-    _colors_ptr = mapped_colors;
-    _prev_colors = *mapped_colors;
-
     ui->setupUi(this);
 
-    std::map<QString, QColor>::iterator it;
-    for(it = mapped_colors->begin(); it != mapped_colors->end(); ++it)
+    for(auto it : _mapped_colors)
     {
-        QListWidgetItem* item = new QListWidgetItem( it->first );
-        item->setForeground( it->second );
+        QListWidgetItem* item = new QListWidgetItem( it.first );
+        item->setForeground( it.second );
         ui->listWidget->addItem( item );
     }
 
@@ -39,6 +37,11 @@ CurveColorPick::~CurveColorPick()
     delete ui;
 }
 
+bool CurveColorPick::anyColorModified() const
+{
+    return _any_modified;
+}
+
 void CurveColorPick::on_pushButtonClose_clicked()
 {
     this->accept();
@@ -47,21 +50,12 @@ void CurveColorPick::on_pushButtonClose_clicked()
 void CurveColorPick::on_pushButtonApply_clicked()
 {
     QListWidgetItem *item = ui->listWidget->currentItem();
-    item->setForeground( color_preview->color() );
-
-    (*_colors_ptr)[ item->text() ] = color_preview->color();
-}
-
-void CurveColorPick::on_pushButtonReset_clicked()
-{
-    QListWidgetItem *item = ui->listWidget->currentItem();
-    QString name = item->text();
-
-    QColor previous = _prev_colors[ name ];
-
-    (*_colors_ptr)[ name ] = previous;
-    item->setForeground( previous );
-    color_wheel->setColor( previous );
+    if( color_preview->color() != item->foreground().color())
+    {
+        _any_modified = true;
+        item->setForeground( color_preview->color() );
+        emit changeColor( item->text(), color_preview->color() );
+    }
 }
 
 void CurveColorPick::on_listWidget_itemClicked(QListWidgetItem *item)
@@ -69,16 +63,3 @@ void CurveColorPick::on_listWidget_itemClicked(QListWidgetItem *item)
     color_wheel->setColor( item->foreground().color() );
 }
 
-void CurveColorPick::on_pushButtonResetAll_clicked()
-{
-    for(int i = 0; i < ui->listWidget->count(); ++i)
-    {
-        QListWidgetItem* item = ui->listWidget->item(i);
-        QString name = item->text();
-
-        QColor previous = _prev_colors[ name ];
-
-        (*_colors_ptr)[ name ] = previous;
-        item->setForeground( previous );
-    }
-}
