@@ -4,6 +4,7 @@ Main developer:
 Contributors:
    Arturo Martín-de-Nicolás
    Dorian Scholz 
+   Eddy Scott
    Marcel Soler
    Kartik Mohta
    Mikael Arguedas
