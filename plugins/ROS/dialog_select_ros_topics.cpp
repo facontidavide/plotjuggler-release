@@ -58,7 +58,6 @@ DialogSelectRosTopics::DialogSelectRosTopics(const std::vector<std::pair<QString
     ui->listRosTopics->sortByColumn(0, Qt::AscendingOrder);
 
     ui->checkBoxEnableRules->setChecked(     settings.value("DialogSelectRosTopics.enableRules", true ).toBool());
-    ui->checkBoxNormalizeTime->setChecked(   settings.value("DialogSelectRosTopics.normalizeTime", true ).toBool());
     ui->checkBoxUseHeaderStamp->setChecked(  settings.value("DialogSelectRosTopics.useHeaderStamp", true ).toBool());
     restoreGeometry(settings.value("DialogSelectRosTopics.geometry").toByteArray());
 }
@@ -73,10 +72,6 @@ QStringList DialogSelectRosTopics::getSelectedItems()
     return _topic_list;
 }
 
-QCheckBox* DialogSelectRosTopics::checkBoxNormalizeTime()
-{
-    return ui->checkBoxNormalizeTime;
-}
 
 QCheckBox *DialogSelectRosTopics::checkBoxUseHeaderStamp()
 {
@@ -102,11 +97,9 @@ void DialogSelectRosTopics::on_buttonBox_accepted()
     }
     QSettings settings( "IcarusTechnology", "PlotJuggler");
     settings.setValue("DialogSelectRosTopics.enableRules",    ui->checkBoxEnableRules->isChecked() );
-    settings.setValue("DialogSelectRosTopics.normalizeTime",  ui->checkBoxNormalizeTime->isChecked() );
     settings.setValue("DialogSelectRosTopics.useHeaderStamp", ui->checkBoxUseHeaderStamp->isChecked() );
     settings.setValue("DialogSelectRosTopics.geometry", saveGeometry());
     settings.setValue("DialogSelectRosTopics.selectedItems", selected_topics );
-
 }
 
 void DialogSelectRosTopics::on_listRosTopics_itemSelectionChanged()

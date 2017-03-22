@@ -26,8 +26,6 @@ public:
 
     QStringList getSelectedItems();
 
-    QCheckBox *checkBoxNormalizeTime();
-
     QCheckBox* checkBoxUseHeaderStamp();
 
     QCheckBox *checkBoxUseRenamingRules();

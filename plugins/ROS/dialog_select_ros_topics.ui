@@ -49,16 +49,6 @@
     </widget>
    </item>
    <item>
-    <widget class="QCheckBox" name="checkBoxNormalizeTime">
-     <property name="text">
-      <string>Normalize times using the fist element of the series</string>
-     </property>
-     <property name="checked">
-      <bool>true</bool>
-     </property>
-    </widget>
-   </item>
-   <item>
     <widget class="QCheckBox" name="checkBoxUseHeaderStamp">
      <property name="text">
       <string>If present, use the timestamp in the field [header.stamp]</string>
