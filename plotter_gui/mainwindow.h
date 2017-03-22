@@ -35,7 +35,7 @@ public slots:
 
 private slots:
 
-    void onTrackerTimeUpdated(double current_time );
+    void onTrackerTimeUpdated(double absolute_time );
 
     void onTrackerPositionUpdated(QPointF pos );
 
@@ -103,6 +103,8 @@ private slots:
 
     void deleteLoadedData(const QString &curve_name);
 
+    void on_actionRemoveTimeOffset_toggled(bool arg1);
+
 private:
     Ui::MainWindow *ui;
 
@@ -118,8 +120,6 @@ private:
     void createActions();
 
     FilterableListWidget* _curvelist_widget;
-
-   // std::vector<PlotMatrix*> _plot_matrix_list;
 
     void updateInternalState();
 
@@ -179,6 +179,7 @@ protected:
 
     void dragEnterEvent(QDragEnterEvent *event) ;
 
+    double _time_offset;
 
     QTimer *_replot_timer;
 signals:
@@ -186,7 +187,7 @@ signals:
 
     void activateStreamingMode( bool active);
 
-    void trackerTimeUpdated(QPointF point);
+    void trackerTimeUpdated(double abs_point);
 
     void activateTracker(bool active);
 

@@ -41,10 +41,8 @@ DataStreamSample::DataStreamSample():
             param.D =  qrand()/(double)RAND_MAX *2 -1;
         }
 
-        PlotDataPtr plot( new PlotData() );
         const std::string name_str = name.toStdString();
-
-        plot->setName( name_str );
+        PlotDataPtr plot( new PlotData(name_str.c_str()) );
 
         _plot_data.numeric.insert( std::make_pair( name_str, plot) );
         _parameters.insert( std::make_pair( name_str, param) );
