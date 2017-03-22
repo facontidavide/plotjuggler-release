@@ -8,6 +8,9 @@
 #include <QMimeData>
 #include <QHeaderView>
 #include <QFontDatabase>
+#include <QMessageBox>
+#include <QApplication>
+#include <QPainter>
 
 FilterableListWidget::FilterableListWidget(QWidget *parent) :
     QWidget(parent),
@@ -41,12 +44,12 @@ FilterableListWidget::~FilterableListWidget()
 
 int FilterableListWidget::rowCount() const
 {
-    return table()->rowCount();
+    return getTtable()->rowCount();
 }
 
 void FilterableListWidget::clear()
 {
-    table()->clear();
+    table()->setRowCount(0);
     ui->labelNumberDisplayed->setText( "0 of 0");
 }
 
@@ -69,7 +72,7 @@ QList<int>
 FilterableListWidget::findRowsByName(const QString &text) const
 {
     QList<int> output;
-    QList<QTableWidgetItem*> item_list = table()->findItems( text, Qt::MatchExactly);
+    QList<QTableWidgetItem*> item_list = getTtable()->findItems( text, Qt::MatchExactly);
     for(QTableWidgetItem* item : item_list)
     {
         if(item->column() == 0) {
@@ -79,7 +82,7 @@ FilterableListWidget::findRowsByName(const QString &text) const
     return output;
 }
 
-const QTableWidget *FilterableListWidget::table() const
+const QTableWidget *FilterableListWidget::getTtable() const
 {
     return ui->tableWidget;
 }
@@ -94,21 +97,27 @@ void FilterableListWidget::updateFilter()
     on_lineEdit_textChanged( ui->lineEdit->text() );
 }
 
+void FilterableListWidget::keyPressEvent(QKeyEvent *event)
+{
+    if( event->key() == Qt::Key_Delete){
+        removeSelectedCurves();
+    }
+}
+
 bool FilterableListWidget::eventFilter(QObject *object, QEvent *event)
 {
-   // qDebug() <<event->type();
     if(event->type() == QEvent::MouseButtonPress)
     {
         QMouseEvent *mouse_event = static_cast<QMouseEvent*>(event);
         if(mouse_event->button() == Qt::LeftButton )
         {
-            if(mouse_event->modifiers() == Qt::ControlModifier)
-            {
-                //TODO
-            }
-            else{
-                _drag_start_pos = mouse_event->pos();
-            }
+            _newX_modifier = false;
+            _drag_start_pos = mouse_event->pos();
+        }
+        else if(mouse_event->button() == Qt::RightButton )
+        {
+            _newX_modifier = true;
+            _drag_start_pos = mouse_event->pos();
         }
     }
     else if(event->type() == QEvent::MouseMove)
@@ -116,20 +125,48 @@ bool FilterableListWidget::eventFilter(QObject *object, QEvent *event)
         QMouseEvent *mouse_event = static_cast<QMouseEvent*>(event);
         double distance_from_click = (mouse_event->pos() - _drag_start_pos).manhattanLength();
 
-        if ((mouse_event->buttons() == Qt::LeftButton) &&
+        if ((mouse_event->buttons() == Qt::LeftButton || mouse_event->buttons() == Qt::RightButton) &&
              distance_from_click >= QApplication::startDragDistance())
         {
             QDrag *drag = new QDrag(this);
             QMimeData *mimeData = new QMimeData;
-            const QString mimeType("curveslist/copy");
+
             QByteArray mdata;
             QDataStream stream(&mdata, QIODevice::WriteOnly);
 
             for(QTableWidgetItem* item: table()->selectedItems()) {
                 stream << item->text();
             }
+            if( _newX_modifier )
+            {
+                if( table()->selectedItems().size() == 1)
+                {
+                    mimeData->setData("curveslist/new_X_axis", mdata);
 
-            mimeData->setData(mimeType, mdata);
+                    QPixmap cursor( QSize(160,30) );
+                    cursor.fill();
+
+                    QPainter painter;
+                    painter.begin( &cursor);
+                    painter.setPen(QColor(22, 22, 22));
+
+                    QString text("set as new X axis");
+                    painter.setFont( QFont("Arial", 14 ) );
+
+                    painter.drawText( QRect(0, 0, 160, 30), Qt::AlignHCenter | Qt::AlignVCenter, text );
+                    painter.end();
+
+                    drag->setDragCursor(cursor, Qt::MoveAction);
+                }
+                else{
+                    //abort
+                    QWidget::eventFilter(object,event);
+                }
+            }
+            else{
+                mimeData->setData("curveslist/add_curve", mdata);
+            }
+
             drag->setMimeData(mimeData);
             drag->exec(Qt::CopyAction | Qt::MoveAction);
         }
@@ -143,7 +180,7 @@ void FilterableListWidget::on_radioContains_toggled(bool checked)
     if(checked)
     {
         ui->radioRegExp->setChecked( false);
-        on_lineEdit_textChanged( ui->lineEdit->text() );
+        updateFilter();
     }
 }
 
@@ -152,13 +189,13 @@ void FilterableListWidget::on_radioRegExp_toggled(bool checked)
     if(checked)
     {
         ui->radioContains->setChecked( false);
-        on_lineEdit_textChanged( ui->lineEdit->text() );
+        updateFilter();
     }
 }
 
 void FilterableListWidget::on_checkBoxCaseSensitive_toggled(bool checked)
 {
-    on_lineEdit_textChanged( ui->lineEdit->text() );
+    updateFilter();
 }
 
 
@@ -236,4 +273,28 @@ void FilterableListWidget::on_checkBoxHideSecondColumn_toggled(bool checked)
         table()->showColumn(1);
         emit hiddenItemsChanged();
     }
+}
+
+void FilterableListWidget::removeSelectedCurves()
+{
+    QMessageBox::StandardButton reply;
+    reply = QMessageBox::question(0, tr("Warning"),
+                                  tr("Do you really want to remove these data?\n"),
+                                  QMessageBox::Yes | QMessageBox::No,
+                                  QMessageBox::No );
+
+    if( reply == QMessageBox::Yes ) {
+
+        while( table()->selectedItems().size() > 0 )
+        {
+            QTableWidgetItem* item = table()->selectedItems().first();
+            emit deleteCurve( item->text() );
+        }
+    }
+    updateFilter();
+}
+
+void FilterableListWidget::removeRow(int row)
+{
+    table()->removeRow(row);
 }
