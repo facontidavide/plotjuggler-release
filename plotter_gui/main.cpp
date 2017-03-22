@@ -7,7 +7,7 @@
 QString getFunnySubtitle(){
 
     qsrand(time(NULL));
-    int n = qrand() % 20;
+    int n = qrand() % 22;
     switch(n)
     {
     case 0: return "The best excuse to buy a second monitor";
@@ -17,15 +17,15 @@ QString getFunnySubtitle(){
     case 4: return "Changing the world, one plot at a time";
     case 5: return "Have you starred me on Github?";
     case 6: return "Insert [useless message] here";
-    case 7: return "Data, data everywhere";
-    case 8: return "Just add data and mix vigorously";
+    case 7: return "\"Harry Plotter\" was also an option";
+    case 8: return "Add data and mix vigorously";
     case 9: return "Just Plot It!";
     case 10: return "I didn't find a better name...";
     case 11: return "Happy Plotting, or get your money back";
     case 12: return "\"It shouldn't take long to code that\".. Davide, 2014";
-    case 13: return "Startup is actually fast. I added splashscreens for fun\"";
+    case 13: return "Startup is actually fast. I added splashscreens for fun";
     case 14: return "Graphic-less version coming soon";
-    case 15: return "\"Harry Plotting\" was also an option";
+    case 15: return "Visualize data responsibly";
     }
     return "Juggle with data";
 }

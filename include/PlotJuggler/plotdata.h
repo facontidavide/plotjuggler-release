@@ -50,6 +50,8 @@ public:
 
   PlotDataGeneric();
 
+  PlotDataGeneric(const char* name);
+
   virtual ~PlotDataGeneric() {}
 
   void setName(const std::string& name) { _name = name; }
@@ -77,6 +79,8 @@ public:
 
   void setMaximumRangeX(Time max_range);
 
+  static std::mutex& asyncPushMutex() { return _mutex; }
+
 protected:
 
   std::string _name;
@@ -90,7 +94,7 @@ protected:
 private:
 
   Time _max_range_X;
-  std::mutex _mutex;
+  static std::mutex _mutex;
 };
 
 
@@ -109,14 +113,25 @@ typedef struct{
 
 //-----------------------------------
 
+template < typename Time, typename Value>
+std::mutex PlotDataGeneric<Time, Value>::_mutex;
 
 
 template < typename Time, typename Value>
-inline PlotDataGeneric <Time, Value>::PlotDataGeneric():
+inline PlotDataGeneric<Time, Value>::PlotDataGeneric():
   _max_range_X( std::numeric_limits<Time>::max() )
   , _color_hint(Qt::black)
 {
-  static_assert( std::is_arithmetic<Time>::value ,"Only numbers can be used as time");
+    static_assert( std::is_arithmetic<Time>::value ,"Only numbers can be used as time");
+}
+
+template<typename Time, typename Value>
+inline PlotDataGeneric<Time, Value>::PlotDataGeneric(const char *name):
+    _max_range_X( std::numeric_limits<Time>::max() )
+    , _color_hint(Qt::black)
+    , _name(name)
+{
+    static_assert( std::is_arithmetic<Time>::value ,"Only numbers can be used as time");
 }
 
 template < typename Time, typename Value>
@@ -129,7 +144,6 @@ inline void PlotDataGeneric<Time, Value>::pushBack(Point point)
 template < typename Time, typename Value>
 inline void PlotDataGeneric<Time, Value>::pushBackAsynchronously(Point point)
 {
-  std::lock_guard<std::mutex> lock(_mutex);
   _pushed_points.push_back( point );
   while(_pushed_points.size() > ASYNC_BUFFER_CAPACITY) _pushed_points.pop_front();
 }
@@ -137,8 +151,7 @@ inline void PlotDataGeneric<Time, Value>::pushBackAsynchronously(Point point)
 template < typename Time, typename Value>
 inline bool PlotDataGeneric<Time, Value>::flushAsyncBuffer()
 {
-  std::lock_guard<std::mutex> lock(_mutex);
-
+ // std::lock_guard<std::mutex> lock(_mutex);
   if( _pushed_points.empty() ) return false;
 
   while( !_pushed_points.empty() )
