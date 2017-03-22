@@ -7,7 +7,8 @@
 TimeseriesQwt::TimeseriesQwt(PlotDataPtr base):
     _plot_data(base),
     _subsample(1),
-    _transform( noTransform )
+    _transform( noTransform ),
+    _time_offset(0)
 {
     updateData();
 }
@@ -50,7 +51,8 @@ void TimeseriesQwt::updateData()
             _cached_transformed_curve.resize(_plot_data->size());
             for (size_t i=0; i< _plot_data->size(); i++ )
             {
-                const auto& p = _plot_data->at( i );
+                auto p = _plot_data->at( i );
+                p.x -= _time_offset;
                 _cached_transformed_curve[i] = QPointF(p.x, p.y) ;
 
                 if(min_y > p.y) min_y =(p.y);
@@ -75,7 +77,8 @@ void TimeseriesQwt::updateData()
                 const auto& p1 = _plot_data->at( i+1 );
                 const auto delta = p1.x - p0.x;
                 const auto vel = (p1.y - p0.y) /delta;
-                const QPointF p( (p1.x + p0.x)*0.5, vel);
+                QPointF p( (p1.x + p0.x)*0.5, vel);
+                p.setX( p.x() - _time_offset);
                 _cached_transformed_curve[i] = p;
 
                 if(min_y > p.y()) min_y =(p.y());
@@ -101,7 +104,8 @@ void TimeseriesQwt::updateData()
                 const auto& p2 = _plot_data->at( i+2 );
                 const auto delta = (p2.x - p0.x) *0.5;
                 const auto acc = ( p2.y - 2.0* p1.y + p0.y)/(delta*delta);
-                const QPointF p( (p2.x + p0.x)*0.5, acc );
+                QPointF p( (p2.x + p0.x)*0.5, acc );
+                p.setX( p.x() - _time_offset);
                 _cached_transformed_curve[i] = p;
 
                 if(min_y > p.y()) min_y =(p.y());
@@ -156,18 +160,18 @@ void TimeseriesQwt::updateData()
     _bounding_box.setRight(max_x);
 }
 
-PlotData::RangeTimeOpt TimeseriesQwt::getRangeX()
+PlotData::RangeTimeOpt TimeseriesQwt::getVisualizationRangeX()
 {   
     // std::lock_guard<std::mutex> lock(_mutex);
     if( this->size() < 2 )
-        return  PlotData::RangeTimeOpt() ;
+        return  PlotData::RangeTimeOpt();
     else{
         return PlotData::RangeTimeOpt( { _bounding_box.left(), _bounding_box.right() } );
     }
 }
 
 
-PlotData::RangeValueOpt TimeseriesQwt::getRangeY(int first_index, int last_index)
+PlotData::RangeValueOpt TimeseriesQwt::getVisualizationRangeY(int first_index, int last_index)
 {
     if( first_index < 0 || last_index < 0 || first_index > last_index)
     {
@@ -175,7 +179,7 @@ PlotData::RangeValueOpt TimeseriesQwt::getRangeY(int first_index, int last_index
     }
 
     if( (_transform == XYPlot && _alternative_X_axis) ||
-        ( first_index==0 && last_index == size() -1) )
+            ( first_index==0 && last_index == size() -1) )
     {
         return PlotData::RangeValueOpt( { _bounding_box.bottom(), _bounding_box.top() } );
     }
@@ -229,4 +233,10 @@ void TimeseriesQwt::setTransform(TimeseriesQwt::Transform trans)
         _transform = trans;
         updateData();
     }
+}
+
+double TimeseriesQwt::setTimeOffset(double offset)
+{
+    _time_offset = offset;
+    updateData();
 }

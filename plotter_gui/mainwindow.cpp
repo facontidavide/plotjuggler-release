@@ -57,7 +57,7 @@ MainWindow::MainWindow(const QCommandLineParser &commandline_parser, QWidget *pa
     connect(_curvelist_widget, SIGNAL(deleteCurve(QString)),
             this, SLOT(deleteLoadedData(QString)) );
 
-    connect(this, SIGNAL(trackerTimeUpdated(QPointF)), this, SLOT(updateLeftTableValues()) );
+    connect(this, SIGNAL(trackerTimeUpdated(double)), this, SLOT(updateLeftTableValues()) );
 
     _main_tabbed_widget = new TabbedPlotWidget( this, NULL, &_mapped_plot_data, this);
 
@@ -231,12 +231,13 @@ void MainWindow::updateLeftTableValues()
     }
 }
 
-void MainWindow::onTrackerTimeUpdated(double current_time)
+void MainWindow::onTrackerTimeUpdated(double absolute_time)
 {
-    if( current_time < _min_slider_time ) current_time = _min_slider_time;
-    if( current_time > _max_slider_time ) current_time = _max_slider_time;
+    double relative_time = absolute_time - _time_offset;
+    if( relative_time < _min_slider_time ) relative_time = _min_slider_time;
+    if( relative_time > _max_slider_time ) relative_time = _max_slider_time;
 
-    double ratio = (current_time - _min_slider_time)/(double)(_max_slider_time-_min_slider_time);
+    double ratio = (relative_time - _min_slider_time)/(_max_slider_time-_min_slider_time);
     double min_slider = (double)ui->horizontalSlider->minimum();
     double max_slider = (double)ui->horizontalSlider->maximum();
     int slider_value = (int)((max_slider- min_slider)* ratio) ;
@@ -246,16 +247,17 @@ void MainWindow::onTrackerTimeUpdated(double current_time)
     //------------------------
     for ( auto it: _state_publisher)
     {
-        it.second->updateState( &_mapped_plot_data, current_time);
+        it.second->updateState( &_mapped_plot_data, absolute_time);
     }
-    ui->displayTime->setText( QString::number(current_time, 'f', 3));
+    ui->displayTime->setText( QString::number(relative_time, 'f', 3));
 }
 
-void MainWindow::onTrackerPositionUpdated(QPointF pos)
+void MainWindow::onTrackerPositionUpdated(QPointF relative_pos)
 {
-    onTrackerTimeUpdated( pos.x() );
-    _tracker_time = pos.x();
-    emit  trackerTimeUpdated( QPointF(pos ) );
+    _tracker_time = relative_pos.x() + _time_offset;
+    onTrackerTimeUpdated( _tracker_time );
+
+    emit  trackerTimeUpdated( _tracker_time );
 }
 
 void MainWindow::createTabbedDialog(PlotMatrix* first_tab)
@@ -539,12 +541,13 @@ void MainWindow::onPlotAdded(PlotWidget* plot)
 
     connect( this, SIGNAL(requestRemoveCurveByName(const QString&)), plot, SLOT(removeCurve(const QString&))) ;
 
-    connect( this, SIGNAL(trackerTimeUpdated(QPointF)), plot, SLOT(setTrackerPosition(QPointF)));
-    connect( this, SIGNAL(trackerTimeUpdated(QPointF)), plot, SLOT( replot() ));
+    connect( this, SIGNAL(trackerTimeUpdated(double)), plot, SLOT(setTrackerPosition(double)));
+    connect( this, SIGNAL(trackerTimeUpdated(double)), plot, SLOT( replot() ));
 
     connect( this, SIGNAL(activateTracker(bool)),  plot, SLOT(activateTracker(bool)) );
     connect( this, SIGNAL(activateTracker(bool)),  plot, SLOT( replot() ));
 
+    plot->on_changeTimeOffset( _time_offset );
     plot->activateTracker( ui->pushButtonActivateTracker->isChecked() );
 }
 
@@ -574,6 +577,10 @@ QDomDocument MainWindow::xmlSaveState() const
     }
 
     doc.appendChild(root);
+
+    QDomElement relative_time = doc.createElement( "use_relative_time_offset" );
+    relative_time.setAttribute("enabled", ui->actionRemoveTimeOffset->isChecked() );
+    root.appendChild( relative_time );
 
     return doc;
 }
@@ -629,6 +636,15 @@ bool MainWindow::xmlLoadState(QDomDocument state_document)
             _floating_window[index++]->tabbedWidget()->xmlLoadState( tabbed_area );
         }
     }
+
+    QDomElement relative_time = root.firstChildElement( "use_relative_time_offset" );
+    if( !relative_time.isNull())
+    {
+        bool enabled = (relative_time.attribute("enabled") == QString("1"));
+        ui->actionRemoveTimeOffset->setChecked(enabled);
+        on_actionRemoveTimeOffset_toggled(enabled);
+    }
+
     this->blockSignals(isBlocked);
     return true;
 }
@@ -1241,9 +1257,12 @@ void MainWindow::updateTimeSlider()
        _min_slider_time = 0.0;
        _max_slider_time = 1.0;
     }
+    else{
+        _min_slider_time -= _time_offset;
+        _max_slider_time -= _time_offset;
+    }
 
     ui->horizontalSlider->setRange(0,max_steps);
-
 }
 
 void MainWindow::on_pushButtonAddSubwindow_pressed()
@@ -1379,7 +1398,7 @@ void MainWindow::onReplotRequested()
         forEachWidget( [&](PlotWidget* plot)
         {
             if( plot->isXYPlot()){
-                plot->setTrackerPosition( QPointF( _max_slider_time, 0.0));
+                plot->setTrackerPosition( _max_slider_time + _time_offset);
             }
         } );
     }
@@ -1482,7 +1501,37 @@ void MainWindow::on_horizontalSlider_valueChanged(int position)
     double ratio = (double)position / (double)(slider->maximum() -  slider->minimum() );
     double posX = (_max_slider_time-_min_slider_time) * ratio + _min_slider_time;
 
-    onTrackerTimeUpdated( posX );
-    _tracker_time = posX;
-    emit trackerTimeUpdated( QPointF(posX,0 ) );
+    _tracker_time = posX + _time_offset;
+    onTrackerTimeUpdated( _tracker_time );
+
+    emit trackerTimeUpdated( _tracker_time );
+}
+
+void MainWindow::on_actionRemoveTimeOffset_toggled(bool )
+{
+    bool checked = ui->actionRemoveTimeOffset->isChecked();
+
+    if( ! checked){
+        _time_offset = 0;
+    }
+    else{
+        double min_time = std::numeric_limits<double>::max();
+        for (auto it: _mapped_plot_data.numeric )
+        {
+            PlotDataPtr data = it.second;
+            if(data->size() >=1)
+            {
+                const double min = data->at(0).x;
+                if( min_time > min) min_time = min;
+            }
+        }
+        _time_offset = min_time;
+    }
+    updateTimeSlider();
+
+    forEachWidget( [&](PlotWidget* plot) {
+        plot->on_changeTimeOffset( _time_offset );
+    } );
+
+    if (this->signalsBlocked() == false)  onUndoableChange();
 }
