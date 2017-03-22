@@ -48,13 +48,10 @@ public:
 
   typedef Value   ValueType;
 
-  PlotDataGeneric();
-
   PlotDataGeneric(const char* name);
 
   virtual ~PlotDataGeneric() {}
 
-  void setName(const std::string& name) { _name = name; }
   std::string name() const { return _name; }
 
   virtual size_t size() const;
@@ -117,13 +114,13 @@ template < typename Time, typename Value>
 std::mutex PlotDataGeneric<Time, Value>::_mutex;
 
 
-template < typename Time, typename Value>
-inline PlotDataGeneric<Time, Value>::PlotDataGeneric():
-  _max_range_X( std::numeric_limits<Time>::max() )
-  , _color_hint(Qt::black)
-{
-    static_assert( std::is_arithmetic<Time>::value ,"Only numbers can be used as time");
-}
+//template < typename Time, typename Value>
+//inline PlotDataGeneric<Time, Value>::PlotDataGeneric():
+//  _max_range_X( std::numeric_limits<Time>::max() )
+//  , _color_hint(Qt::black)
+//{
+//    static_assert( std::is_arithmetic<Time>::value ,"Only numbers can be used as time");
+//}
 
 template<typename Time, typename Value>
 inline PlotDataGeneric<Time, Value>::PlotDataGeneric(const char *name):

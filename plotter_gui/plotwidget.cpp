@@ -54,7 +54,8 @@ PlotWidget::PlotWidget(PlotDataMap *datamap, QWidget *parent):
     _grid( 0 ),
     _mapped_data( datamap ),
     _show_line_and_points(false),
-    _current_transform( TimeseriesQwt::noTransform )
+    _current_transform( TimeseriesQwt::noTransform ),
+    _time_offset(0.0)
 {
     this->setAcceptDrops( true );
     this->setMinimumWidth( 100 );
@@ -239,6 +240,7 @@ bool PlotWidget::addCurve(const QString &name, bool do_replot)
         auto curve = std::shared_ptr< QwtPlotCurve >( new QwtPlotCurve(name) );
 
         TimeseriesQwt* plot_qwt = new TimeseriesQwt( data );
+        plot_qwt->setTimeOffset( _time_offset );
 
         curve->setPaintAttribute( QwtPlotCurve::ClipPolygons, true );
         curve->setPaintAttribute( QwtPlotCurve::FilterPointsAggressive, true );
@@ -284,8 +286,8 @@ bool PlotWidget::addCurve(const QString &name, bool do_replot)
         marker->setSymbol(sym);
     }
 
-    auto rangeX = maximumRangeX();
-    auto rangeY = maximumRangeY(rangeX);
+    auto rangeX = getMaximumRangeX();
+    auto rangeY = getMaximumRangeY(rangeX, false);
 
     this->setAxisScale(xBottom, rangeX.min, rangeX.max );
     this->setAxisScale(yLeft,   rangeY.min, rangeY.max );
@@ -627,6 +629,7 @@ void PlotWidget::reloadPlotData()
         if( it!= _mapped_data->numeric.end())
         {
             TimeseriesQwt* new_plotqwt = new TimeseriesQwt( it->second );
+            new_plotqwt->setTimeOffset( _time_offset );
             new_plotqwt->setTransform( _current_transform );
             new_plotqwt->setAlternativeAxisX( _axisX );
             curve_data->setData( new_plotqwt );
@@ -658,35 +661,47 @@ void PlotWidget::activateTracker(bool activate)
     _tracker->setEnabled( activate && isXYPlot() == false);
 }
 
-void PlotWidget::setTrackerPosition(QPointF point)
+void PlotWidget::setTrackerPosition(double abs_time)
 {
     if( isXYPlot()){
-        double time = point.x();
         for (auto it: _curve_list)
         {
             QString name = it.first;
             TimeseriesQwt* series = static_cast<TimeseriesQwt*>( it.second->data() );
-            auto pointXY = series->sampleFromTime(time);
+            auto pointXY = series->sampleFromTime(abs_time);
             if( pointXY ){
                 _point_marker[name]->setValue( pointXY.value() );
             }
         }
     }
     else{
-        _tracker->setPosition( point );
+        double relative_time = abs_time - _time_offset;
+        _tracker->setPosition( QPointF( relative_time , 0.0) );
     }
 }
 
+void PlotWidget::on_changeTimeOffset(double offset)
+{
+    _time_offset = offset;
+    for (auto it: _curve_list)
+    {
+        TimeseriesQwt* series = static_cast<TimeseriesQwt*>( it.second->data() );
+        series->setTimeOffset(offset);
+    }
+    zoomOut(false);
+    replot();
+}
 
-PlotData::RangeTime PlotWidget::maximumRangeX() const
+
+PlotData::RangeTime PlotWidget::getMaximumRangeX() const
 {
     double left   = std::numeric_limits<double>::max();
     double right  = std::numeric_limits<double>::min();
 
-    for(auto it = _curve_list.begin(); it != _curve_list.end(); ++it)
+    for (auto it: _curve_list)
     {
-        TimeseriesQwt* series = static_cast<TimeseriesQwt*>( it->second->data() );
-        auto range_X = series->getRangeX();
+        TimeseriesQwt* series = static_cast<TimeseriesQwt*>( it.second->data() );
+        auto range_X = series->getVisualizationRangeX();
 
         if( !range_X ) continue;
 
@@ -704,15 +719,15 @@ PlotData::RangeTime PlotWidget::maximumRangeX() const
     {
         margin = isXYPlot() ? ((right-left) * 0.025) : 0.0;
     }
-    right += margin;
-    left  -= margin;
+    right = right + margin;
+    left  = left  - margin;
 
     _magnifier->setAxisLimits( xBottom, left, right);
     return PlotData::RangeTime( {left,right} );
 }
 
 //TODO report failure for empty dataset
-PlotData::RangeValue  PlotWidget::maximumRangeY( PlotData::RangeTime range_X) const
+PlotData::RangeValue  PlotWidget::getMaximumRangeY( PlotData::RangeTime range_X, bool absolute_time) const
 {
     double top    = std::numeric_limits<double>::min();
     double bottom = std::numeric_limits<double>::max();
@@ -721,11 +736,20 @@ PlotData::RangeValue  PlotWidget::maximumRangeY( PlotData::RangeTime range_X) co
     {
         TimeseriesQwt* series = static_cast<TimeseriesQwt*>( it->second->data() );
 
-        const auto max_range_X = series->getRangeX();
+        const auto max_range_X = series->getVisualizationRangeX();
         if( !max_range_X ) continue;
 
-        int X0 = series->data()->getIndexFromX(std::max(max_range_X->min, range_X.min));
-        int X1 = series->data()->getIndexFromX(std::min(max_range_X->max, range_X.max));
+        double left  = std::max(max_range_X->min, range_X.min);
+        double right = std::min(max_range_X->max, range_X.max);
+
+        if( !absolute_time )
+        {
+            left += _time_offset;
+            right += _time_offset;
+        }
+
+        int X0 = series->data()->getIndexFromX(left);
+        int X1 = series->data()->getIndexFromX(right);
 
         if( X0<0 || X1 <0)
         {
@@ -733,7 +757,7 @@ PlotData::RangeValue  PlotWidget::maximumRangeY( PlotData::RangeTime range_X) co
             continue;
         }
         else{
-            auto range_Y = series->getRangeY(X0, X1);
+            auto range_Y = series->getVisualizationRangeY(X0, X1);
             if( !range_Y )
             {
                 qDebug() << " invalid range_Y in PlotWidget::maximumRangeY";
@@ -868,12 +892,12 @@ void PlotWidget::on_externallyResized(const QRectF& rect)
 void PlotWidget::zoomOut(bool emit_signal)
 {
     QRectF rect;
-    auto rangeX = maximumRangeX();
+    auto rangeX = getMaximumRangeX();
 
     rect.setLeft( rangeX.min );
     rect.setRight( rangeX.max );
 
-    auto rangeY = maximumRangeY( rangeX );
+    auto rangeY = getMaximumRangeY( rangeX, false );
 
     rect.setBottom( rangeY.min );
     rect.setTop( rangeY.max );
@@ -883,7 +907,7 @@ void PlotWidget::zoomOut(bool emit_signal)
 void PlotWidget::on_zoomOutHorizontal_triggered(bool emit_signal)
 {
     QRectF act = currentBoundingRect();
-    auto rangeX = maximumRangeX();
+    auto rangeX = getMaximumRangeX();
 
     act.setLeft( rangeX.min );
     act.setRight( rangeX.max );
@@ -893,7 +917,7 @@ void PlotWidget::on_zoomOutHorizontal_triggered(bool emit_signal)
 void PlotWidget::on_zoomOutVertical_triggered(bool emit_signal)
 {
     QRectF act = currentBoundingRect();
-    auto rangeY = maximumRangeY( {act.left(), act.right()} );
+    auto rangeY = getMaximumRangeY( {act.left(), act.right()}, false );
 
     act.setBottom( rangeY.min );
     act.setTop( rangeY.max );

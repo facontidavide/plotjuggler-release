@@ -25,6 +25,7 @@ class PlotWidget : public QwtPlot
     Q_OBJECT
 
 public:
+
     PlotWidget(PlotDataMap* datamap, QWidget *parent=0);
     virtual ~PlotWidget();
 
@@ -40,9 +41,9 @@ public:
 
     QRectF currentBoundingRect() const;
 
-    PlotData::RangeTime maximumRangeX() const;
+    PlotData::RangeTime getMaximumRangeX() const;
 
-    PlotData::RangeValue maximumRangeY( PlotData::RangeTime range_X ) const;
+    PlotData::RangeValue getMaximumRangeY( PlotData::RangeTime range_X, bool absolute_time ) const;
 
     void setScale( QRectF rect, bool emit_signal );
 
@@ -97,7 +98,9 @@ public slots:
 
     void activateTracker(bool activate);
 
-    void setTrackerPosition(QPointF point);
+    void setTrackerPosition(double abs_time);
+
+    void on_changeTimeOffset(double offset);
 
 private slots:
     void launchRemoveCurveDialog();
@@ -145,6 +148,8 @@ private:
     void setDefaultRangeX();
 
     PlotDataPtr _axisX;
+
+    double _time_offset;
 };
 
 #endif

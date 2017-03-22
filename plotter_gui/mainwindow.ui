@@ -186,13 +186,13 @@ background: white;
             </property>
             <property name="minimumSize">
              <size>
-              <width>60</width>
+              <width>80</width>
               <height>0</height>
              </size>
             </property>
             <property name="maximumSize">
              <size>
-              <width>80</width>
+              <width>120</width>
               <height>16777215</height>
              </size>
             </property>
@@ -356,9 +356,16 @@ background: white;
     <addaction name="actionQuick_Help"/>
     <addaction name="actionAbout"/>
    </widget>
+   <widget class="QMenu" name="menuVisualization">
+    <property name="title">
+     <string>Visualization</string>
+    </property>
+    <addaction name="actionRemoveTimeOffset"/>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuStreaming"/>
    <addaction name="menuPublishers"/>
+   <addaction name="menuVisualization"/>
    <addaction name="menuHelp"/>
   </widget>
   <action name="actionLoadData">
@@ -423,6 +430,14 @@ background: white;
    </property>
    <property name="shortcut">
     <string>F1</string>
+   </property>
+  </action>
+  <action name="actionRemoveTimeOffset">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Remove time offset</string>
    </property>
   </action>
  </widget>
