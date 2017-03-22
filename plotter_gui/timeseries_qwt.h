@@ -6,8 +6,6 @@
 #include <qwt_plot_marker.h>
 #include "PlotJuggler/plotdata.h"
 
-
-
 class TimeseriesQwt: public QwtSeriesData<QPointF>
 {
 public:
@@ -28,9 +26,9 @@ public:
 
     void updateData();
 
-    PlotData::RangeTimeOpt getRangeX();
+    PlotData::RangeTimeOpt getVisualizationRangeX();
 
-    PlotData::RangeValueOpt getRangeY(int first_index, int last_index );
+    PlotData::RangeValueOpt getVisualizationRangeY(int first_index, int last_index );
 
     void setAlternativeAxisX( PlotDataPtr new_x_data);
 
@@ -47,6 +45,12 @@ public:
 
     Transform transform() const { return _transform; }
 
+    double timeOffset() const { return _time_offset; }
+
+public slots:
+
+    double setTimeOffset(double offset);
+
 private:
     PlotDataPtr _plot_data;
 
@@ -59,6 +63,8 @@ private:
     PlotDataPtr _alternative_X_axis;
 
     QRectF _bounding_box;
+
+    double _time_offset;
 };
 
 

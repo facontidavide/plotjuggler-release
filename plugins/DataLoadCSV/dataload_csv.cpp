@@ -145,8 +145,7 @@ PlotDataMap DataLoadCSV::readDataFromFile(const std::string &file_name,
                     QString& qname = ( ordered_names[i].second );
                     std::string name = qname.toStdString();
 
-                    PlotDataPtr plot( new PlotData );
-                    plot->setName( name );
+                    PlotDataPtr plot( new PlotData(name.c_str()) );
                     plot_data.numeric.insert( std::make_pair( name, plot ) );
 
                     valid_field_names.push_back( qname );
