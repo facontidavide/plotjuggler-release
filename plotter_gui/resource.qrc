@@ -35,12 +35,12 @@
         <file>resources/filesave@2x.png</file>
         <file>resources/zoom@2x.png</file>
         <file>resources/run_small@2x.png</file>
-        <file>resources/splitbutton_horizontal@2x.png</file>
-        <file>resources/splitbutton_vertical@2x.png</file>
         <file>resources/iconoverlay_add@2x.png</file>
-        <file>resources/clean_pane_small@2x.png</file>
         <file>resources/columns.png</file>
         <file>resources/rows.png</file>
+        <file>resources/clean_pane_small@2x.png</file>
+        <file>resources/splitbutton_vertical@2x.png</file>
+        <file>resources/splitbutton_horizontal@2x.png</file>
     </qresource>
     <qresource prefix="/splash">
         <file>resources/splash.jpg</file>
