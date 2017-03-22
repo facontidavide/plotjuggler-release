@@ -36,9 +36,10 @@ SET( PLOTTER_SRC
     mainwindow.h
     ../common/selectlistdialog.h
     ../include/PlotJuggler/plotdata.h
+    ${BACKWARD_SRC}
     )
 
-add_executable(PlotJuggler ${PLOTTER_SRC} ${RES_SRC} ${UI_SRC})
+add_executable(PlotJuggler ${PLOTTER_SRC} ${RES_SRC} ${UI_SRC} )
 
 if( Qt5Svg_FOUND)
     target_link_libraries(PlotJuggler
@@ -49,7 +50,8 @@ if( Qt5Svg_FOUND)
         Qt5::Concurrent
         Qt5::Svg
         colorwidgets
-        qwt_static )
+        qwt_static
+        ${BACKWARD_LIBS} )
 else()
     target_link_libraries(PlotJuggler
         Qt5::Core
@@ -58,9 +60,9 @@ else()
         Qt5::Xml
         Qt5::Concurrent
         colorwidgets
-        qwt_static )
+        qwt_static
+        ${BACKWARD_LIBS})
 endif()
-
 
 if(COMPILING_WITH_CATKIN)
     install(TARGETS PlotJuggler
