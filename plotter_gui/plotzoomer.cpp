@@ -15,14 +15,15 @@ PlotZoomer::PlotZoomer(QWidget *canvas, bool doReplot):
 void PlotZoomer::widgetMousePressEvent(QMouseEvent *me)
 {
     _mouse_pressed = false;
-    this->setTrackerMode(AlwaysOff);
     auto patterns = this->mousePattern();
     for (QwtEventPattern::MousePattern& pattern: patterns)
     {
         if( this->mouseMatch(pattern, me) ){
             _mouse_pressed = true;
+            this->setTrackerMode(AlwaysOn);
             _initial_pos = me->pos();
         }
+        break;
     }
     QwtPlotPicker::widgetMousePressEvent( me );
 }
@@ -33,24 +34,30 @@ void PlotZoomer::widgetMouseMoveEvent(QMouseEvent *me)
 
     if( _mouse_pressed )
     {
-        QRect rect( me->pos(), _initial_pos );
-        QRectF zoomRect = invTransform( rect.normalized() );
+        auto patterns = this->mousePattern();
+        for (QwtEventPattern::MousePattern& pattern: patterns)
+        {
+            QRect rect( me->pos(), _initial_pos );
+            QRectF zoomRect = invTransform( rect.normalized() );
 
-        if( zoomRect.width()  > minZoomSize().width() &&
-            zoomRect.height() > minZoomSize().height()    )
-        {
-            if( !_zoom_enabled)
+            if( zoomRect.width()  > minZoomSize().width() &&
+                zoomRect.height() > minZoomSize().height()    )
             {
-                _zoom_enabled = true;
-                this->setRubberBand( RectRubberBand );
-                QApplication::setOverrideCursor(zoom_cursor);
+                if( !_zoom_enabled)
+                {
+                    _zoom_enabled = true;
+                    this->setRubberBand( RectRubberBand );
+                    this->setTrackerMode(AlwaysOff);
+                    QApplication::setOverrideCursor(zoom_cursor);
+                }
             }
-        }
-        else if( _zoom_enabled)
-        {
-           _zoom_enabled = false;
-           this->setRubberBand( NoRubberBand );
-           QApplication::restoreOverrideCursor();
+            else if( _zoom_enabled)
+            {
+               _zoom_enabled = false;
+               this->setRubberBand( NoRubberBand );
+               QApplication::restoreOverrideCursor();
+            }
+            break;
         }
     }
     QwtPlotPicker::widgetMouseMoveEvent( me );
@@ -60,12 +67,14 @@ void PlotZoomer::widgetMouseReleaseEvent(QMouseEvent *me)
 {
     _mouse_pressed = false;
     _zoom_enabled = false;
-    QApplication::restoreOverrideCursor();
     QwtPlotPicker::widgetMouseReleaseEvent( me );
+    this->setTrackerMode(AlwaysOff);
 }
 
 bool PlotZoomer::accept(QPolygon &pa) const
 {
+    QApplication::restoreOverrideCursor();
+
     if ( pa.count() < 2 )
         return false;
 
