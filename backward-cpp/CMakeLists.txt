@@ -1,41 +1,44 @@
-#
-# CMakeLists.txt
-# Copyright 2013 Google Inc. All Rights Reserved.
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
 
-cmake_minimum_required(VERSION 2.8.12)
-project(backward CXX)
 
-include(BackwardConfig.cmake)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
 
-set(CMAKE_CXX_STANDARD_REQUIRED True)
-set(CMAKE_CXX_STANDARD 11)
+include(FindPackageHandleStandardArgs)
 
-###############################################################################
-# COMPILER FLAGS
-###############################################################################
+find_path(LIBBFD_INCLUDE_DIR bfd.h
+  /opt/local/include
+  /usr/local/include
+  /usr/include
+)
 
-if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" OR CMAKE_COMPILER_IS_GNUCXX)
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic-errors")
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
-endif()
+set(LIBBFD_NAMES bfd)
+
+find_library(LIBBFD_LIBRARY
+  NAMES ${LIBBFD_NAMES}
+  PATHS /usr/lib /usr/local/lib /opt/local/lib
+)
+
+if (LIBBFD_INCLUDE_DIR AND LIBBFD_LIBRARY)
+   set(LIBBFD_FOUND TRUE)
+   set( LIBBFD_LIBRARIES ${LIBBFD_LIBRARY} )
+else (LIBBFD_INCLUDE_DIR AND LIBBFD_LIBRARY)
+   set(LIBBFD_FOUND FALSE)
+   set(LIBBFD_LIBRARIES)
+endif (LIBBFD_INCLUDE_DIR AND LIBBFD_LIBRARY)
+
+if (LIBBFD_FOUND)
+      message(STATUS "Found BFD: ${LIBBFD_LIBRARY}")
+      find_file(BACKWARD_SRC backward.cpp PATHS ${CMAKE_CURRENT_LIST_DIR})
+      find_path(BACKWARD_INCLUDE_DIR backward.hpp PATHS ${CMAKE_CURRENT_LIST_DIR})
+      set(BACKWARD_LIBS dl bfd PARENT_SCOPE )
+
+else (LIBBFD_FOUND)
+      message(STATUS "Could NOT find Bfd library named ${LIBBFD_NAMES}.")
+endif (LIBBFD_FOUND)
+
+mark_as_advanced(
+  LIBBFD_LIBRARY
+  LIBBFD_INCLUDE_DIR
+)
 
 
 
