@@ -40,8 +40,6 @@ private slots:
 
     void on_pushButtonEditRules_pressed();
 
-    void on_checkBoxNormalizeTime_toggled(bool checked);
-
 private:
 
     QStringList _topic_list;
