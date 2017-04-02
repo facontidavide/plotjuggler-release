@@ -26,8 +26,6 @@ public:
 
     QStringList getSelectedItems();
 
-    QCheckBox *checkBoxNormalizeTime();
-
     QCheckBox* checkBoxUseHeaderStamp();
 
     QCheckBox *checkBoxUseRenamingRules();
@@ -41,8 +39,6 @@ private slots:
     void on_checkBoxEnableRules_toggled(bool checked);
 
     void on_pushButtonEditRules_pressed();
-
-    void on_checkBoxNormalizeTime_toggled(bool checked);
 
 private:
 
