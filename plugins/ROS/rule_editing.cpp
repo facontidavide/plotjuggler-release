@@ -6,13 +6,25 @@
 #include <QTimer>
 #include <QMessageBox>
 
-const char* DEFAULT =
+const char* DEFAULT_RULES =
         "<SubstitutionRules>\n"
         "\n"
         "<RosType name=\"sensor_msgs/JointState\">\n"
-        "  <rule pattern=\"position.#\" alias=\"name.#\" substitution=\"@.pos\" />\n"
-        "  <rule pattern=\"velocity.#\" alias=\"name.#\" substitution=\"@.vel\" />\n"
-        "  <rule pattern=\"effort.#\"   alias=\"name.#\" substitution=\"@.eff\" />\n"
+        "  <rule pattern=\"position.#\" alias=\"name.#\" substitution=\"@/pos\" />\n"
+        "  <rule pattern=\"velocity.#\" alias=\"name.#\" substitution=\"@/vel\" />\n"
+        "  <rule pattern=\"effort.#\"   alias=\"name.#\" substitution=\"@/eff\" />\n"
+        "</RosType>\n"
+        "\n"
+        "<RosType name=\"tf/tfMessage\">"
+        "  <rule pattern=\"transforms.#/header\"                alias=\"transforms.#/child_frame_id\"  substitution=\"@/header\" />\n"
+        "  <rule pattern=\"transforms.#/transform/rotation\"    alias=\"transforms.#/child_frame_id\"  substitution=\"@/rotation\" />\n"
+        "  <rule pattern=\"transforms.#/transform/translation\" alias=\"transforms.#/child_frame_id\"  substitution=\"@/translation\" />\n"
+        "</RosType>\n"
+        "\n"
+        "<RosType name=\"tf2_msgs/TFMessage\">"
+        "  <rule pattern=\"transforms.#/header\"                alias=\"transforms.#/child_frame_id\"  substitution=\"@/header\" />\n"
+        "  <rule pattern=\"transforms.#/transform/rotation\"    alias=\"transforms.#/child_frame_id\"  substitution=\"@/rotation\" />\n"
+        "  <rule pattern=\"transforms.#/transform/translation\" alias=\"transforms.#/child_frame_id\"  substitution=\"@/translation\" />\n"
         "</RosType>\n"
         "\n"
         "</SubstitutionRules>\n"
@@ -230,7 +242,7 @@ void RuleEditing::on_pushButtonReset_pressed()
                                   QMessageBox::No );
     if( reply == QMessageBox::Yes )
     {
-        ui->textEdit->setPlainText( DEFAULT );
+        ui->textEdit->setPlainText( DEFAULT_RULES );
     }
 }
 
@@ -242,7 +254,7 @@ QString RuleEditing::getRenamingXML()
         return settings.value("RuleEditing.text").toString();
     }
     else{
-        return DEFAULT;
+        return DEFAULT_RULES;
     }
 }
 

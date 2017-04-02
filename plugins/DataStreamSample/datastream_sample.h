@@ -48,11 +48,12 @@ private:
     std::thread _thread;
 
     bool _running;
-    double _simulated_time;
+
 
     std::map<std::string,Parameters> _parameters;
 
 
+    void pushSingleCycle();
 };
 
 #endif // DATALOAD_CSV_H

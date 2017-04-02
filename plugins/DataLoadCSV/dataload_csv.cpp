@@ -58,11 +58,11 @@ int DataLoadCSV::parseHeader(QFile *file,
 
             if( value_prefix.contains("vectors3d") )
             {
-                ordered_names[i].second =  prefix + "." + replace_name + ".x";
+                ordered_names[i].second =  prefix + "/" + replace_name + "/x";
                 i++;
-                ordered_names[i].second =  prefix + "." + replace_name + ".y";
+                ordered_names[i].second =  prefix + "/" + replace_name + "/y";
                 i++;
-                ordered_names[i].second =  prefix + "." + replace_name + ".z";
+                ordered_names[i].second =  prefix + "/" + replace_name + "/z";
             }
             else
             {
@@ -71,10 +71,10 @@ int DataLoadCSV::parseHeader(QFile *file,
                 {
                     QString name = ordered_names[i].second;
                     QString suffix = name.right( name.size() - value_prefix.size());
-                    ordered_names[i].second = prefix + "." + replace_name;
+                    ordered_names[i].second = prefix + "/" + replace_name;
                     if( suffix.size() > 0)
                     {
-                        ordered_names[i].second.append( "." + suffix );
+                        ordered_names[i].second.append( "/" + suffix );
                     }
                     i++;
                 }
