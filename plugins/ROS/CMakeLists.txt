@@ -80,6 +80,24 @@ add_dependencies(RosTopicPublisher
     ${catkin_EXPORTED_TARGETS}
     )
 
+#############
+SET( ROSOUT_SRC
+    RosoutPublisher/rosout_publisher.cpp
+    RosoutPublisher/rosout_publisher.h
+    RosoutPublisher/logs_table_model.cpp
+    RosoutPublisher/logwidget.cpp
+    RosoutPublisher/modelfilter.cpp
+    )
+
+QT5_WRAP_UI ( ROSOUT_UI RosoutPublisher/logwidget.ui )
+
+add_library( RosoutPublisher SHARED ${ROSOUT_SRC}  ${ROSOUT_UI})
+target_link_libraries( RosoutPublisher  ${catkin_LIBRARIES} commonROS )
+
+add_dependencies(RosoutPublisher
+    ${${PROJECT_NAME}_EXPORTED_TARGETS}
+    ${catkin_EXPORTED_TARGETS}
+    )
 
 #############
 ## Install ##
