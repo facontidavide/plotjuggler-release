@@ -131,9 +131,13 @@ PlotDataMap DataLoadROS::readDataFromFile(const std::string& file_name,
         // this single line takes almost the entire time of the loop
         msg.write(stream);
 
-        SString topic_name( topic.data(),  topic.size() );
+        SString topicname_SS( topic.data(),  topic.size() );
 
-        buildRosFlatType(type_map[ datatype ], datatype, topic_name, buffer.data(), &flat_container);
+        // WORKAROUND. There are some problems related to renaming when the character / is
+        // used as prefix. We will remove that here.
+        if( topicname_SS.at(0) == '/' ) topicname_SS = SString( topic.data() +1,  topic.size()-1 );
+
+        buildRosFlatType(type_map[ datatype ], datatype, topicname_SS, buffer.data(), &flat_container);
         applyNameTransform( _rules[datatype], &flat_container );
 
         // apply time offsets
@@ -152,10 +156,6 @@ PlotDataMap DataLoadROS::readDataFromFile(const std::string& file_name,
                 msg_time = msg.getTime().toSec();
             }
         }
-        if( dialog->checkBoxNormalizeTime()->isChecked() )
-        {
-            msg_time -= first_time.toSec();
-        }
 
         for(const auto& it: flat_container.renamed_value )
         {
@@ -164,7 +164,7 @@ PlotDataMap DataLoadROS::readDataFromFile(const std::string& file_name,
             auto plot_pair = plot_map.numeric.find( field_name );
             if( plot_pair == plot_map.numeric.end() )
             {
-                PlotDataPtr temp(new PlotData());
+                PlotDataPtr temp(new PlotData(field_name.c_str()));
                 auto res = plot_map.numeric.insert( std::make_pair(field_name, temp ) );
                 plot_pair = res.first;
             }
@@ -180,7 +180,7 @@ PlotDataMap DataLoadROS::readDataFromFile(const std::string& file_name,
 
             if( plot_pair == plot_map.user_defined.end() )
             {
-                PlotDataAnyPtr temp(new PlotDataAny());
+                PlotDataAnyPtr temp(new PlotDataAny(topic.c_str()));
                 auto res = plot_map.user_defined.insert( std::make_pair( topic, temp ) );
                 plot_pair = res.first;
             }
