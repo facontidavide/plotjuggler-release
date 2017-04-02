@@ -35,9 +35,9 @@ public slots:
 
 private slots:
 
-    void onTrackerTimeUpdated(double current_time );
+    void onTrackerTimeUpdated(double absolute_time );
 
-    void onTrackerPositionUpdated(QPointF pos );
+    void onTrackerMovedFromWidget(QPointF pos );
 
     void onSplitterMoved(int, int);
 
@@ -59,8 +59,6 @@ private slots:
 
     void onActionReloadDataFileFromSettings();
 
-    void onActionReloadSameDataFile();
-
     void onActionReloadRecentLayout();
 
     void onActionLoadStreamer(QString streamer_name);
@@ -81,13 +79,11 @@ private slots:
 
     void on_pushButtonStreaming_toggled(bool checked);
 
-    void onReplotRequested();
+    void updateDataAndReplot();
 
     void on_streamingSpinBox_valueChanged(int value);
 
     void onDeleteLoadedData();
-
-    void on_pushButtonActivateTracker_toggled(bool checked);
 
     void on_actionAbout_triggered();
 
@@ -101,7 +97,17 @@ private slots:
 
     void updateLeftTableValues();
 
-    void deleteLoadedData(const QString &curve_name);
+    void deleteDataOfSingleCurve(const QString &curve_name);
+
+    void on_checkBoxRemoveTimeOffset_toggled(bool checked);
+
+    void on_pushButtonOptions_toggled(bool checked);
+
+    void on_checkBoxUseDateTime_toggled(bool checked);
+
+    void on_pushButtonActivateGrid_toggled(bool checked);
+
+    void on_actionClearBuffer_triggered();
 
 private:
     Ui::MainWindow *ui;
@@ -119,9 +125,7 @@ private:
 
     FilterableListWidget* _curvelist_widget;
 
-   // std::vector<PlotMatrix*> _plot_matrix_list;
-
-    void updateInternalState();
+    void onLayoutChanged();
 
     void forEachWidget(std::function<void(PlotWidget*, PlotMatrix*, int, int)> op);
 
@@ -129,7 +133,7 @@ private:
 
     void updateTimeSlider();
 
-    void buildData();
+    void buildDummyData();
 
     PlotDataMap    _mapped_plot_data;
 
@@ -175,10 +179,14 @@ private:
 
     void importPlotDataMap(const PlotDataMap &new_data);
 
+    bool isStreamingActive() const { return _streaming_active; }
+
+    bool _streaming_active;
+    double _time_offset_during_streaming;
+
 protected:
 
-    void dragEnterEvent(QDragEnterEvent *event) ;
-
+    double _time_offset;
 
     QTimer *_replot_timer;
 signals:
@@ -186,7 +194,7 @@ signals:
 
     void activateStreamingMode( bool active);
 
-    void trackerTimeUpdated(QPointF point);
+    void trackerTimeUpdated(double abs_point);
 
     void activateTracker(bool active);
 
