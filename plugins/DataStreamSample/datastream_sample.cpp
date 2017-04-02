@@ -10,7 +10,6 @@
 #include <math.h>
 
 DataStreamSample::DataStreamSample():
-    _simulated_time(0),
     _enabled(false)
 {
     QStringList  words_list;
@@ -47,12 +46,12 @@ DataStreamSample::DataStreamSample():
         _plot_data.numeric.insert( std::make_pair( name_str, plot) );
         _parameters.insert( std::make_pair( name_str, param) );
     }
-
 }
 
 bool DataStreamSample::start()
 {
     _running = true;
+    pushSingleCycle();
     _thread = std::thread([this](){ this->loop();} );
     return true;
 }
@@ -72,33 +71,36 @@ DataStreamSample::~DataStreamSample()
     shutdown();
 }
 
+void DataStreamSample::pushSingleCycle()
+{
+    using namespace std::chrono;
+    static std::chrono::high_resolution_clock::time_point initial_time = high_resolution_clock::now();
+    const double offset = duration_cast< duration<double>>( initial_time.time_since_epoch() ).count() ;
 
+    auto now =  high_resolution_clock::now();
+    for (auto& it: _plot_data.numeric )
+    {
+        auto par = _parameters[it.first];
+
+        auto& plot = it.second;
+        const double t = duration_cast< duration<double>>( now - initial_time ).count() ;
+        double y =  par.A*sin(par.B*t + par.C) + par.D*t*0.05;
+
+        // IMPORTANT: don't use pushBack(), it may cause a segfault
+        plot->pushBackAsynchronously( PlotData::Point( t + offset, y ) );
+    }
+}
 
 void DataStreamSample::loop()
 {
-    static auto prev_time = std::chrono::high_resolution_clock::now();
-
     _running = true;
     while( _running )
     {
-        _simulated_time += 0.01;
-
         PlotData::asyncPushMutex().lock();
-        for (auto& it: _plot_data.numeric )
-        {
-            auto par = _parameters[it.first];
-
-            auto& plot = it.second;
-            const double t = _simulated_time;
-            double y =  par.A*sin(par.B*t + par.C) + par.D*t*0.05;
-
-            if( _enabled ){
-                // IMPORTANT: don't use pushBack(), it may cause a segfault
-                plot->pushBackAsynchronously( PlotData::Point( t, y ) );
-            }
+        if( _enabled ){
+            pushSingleCycle();
         }
         PlotData::asyncPushMutex().unlock();
-        prev_time += std::chrono::milliseconds(10);
-        std::this_thread::sleep_until ( prev_time );
+        std::this_thread::sleep_for ( std::chrono::milliseconds(10) );
     }
 }

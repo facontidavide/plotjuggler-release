@@ -20,6 +20,7 @@ DialogSelectRosTopics::DialogSelectRosTopics(const std::vector<std::pair<QString
     QDialog(parent),
     ui(new Ui::dialogSelectRosTopics)
 {
+
     auto flags = this->windowFlags();
     this->setWindowFlags( flags | Qt::WindowStaysOnTopHint);
 
@@ -37,6 +38,9 @@ DialogSelectRosTopics::DialogSelectRosTopics(const std::vector<std::pair<QString
     ui->listRosTopics->setHorizontalHeaderLabels(labels);
     ui->listRosTopics->verticalHeader()->setVisible(false);
 
+    auto prev_selection_mode = ui->listRosTopics->selectionMode();
+    ui->listRosTopics->setSelectionMode(QAbstractItemView::MultiSelection);
+
     for (int row=0; row< topic_list.size(); row++)
     {
         QString topic_name(topic_list[row].first );
@@ -51,6 +55,7 @@ DialogSelectRosTopics::DialogSelectRosTopics(const std::vector<std::pair<QString
             ui->listRosTopics->selectRow(row);
         }
     }
+    ui->listRosTopics->setSelectionMode(prev_selection_mode);
 
     ui->listRosTopics->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
     ui->listRosTopics->horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
@@ -85,10 +90,10 @@ QCheckBox* DialogSelectRosTopics::checkBoxUseRenamingRules()
 
 void DialogSelectRosTopics::on_buttonBox_accepted()
 {
-    QModelIndexList indexes = ui->listRosTopics->selectionModel()->selectedIndexes();
+    QModelIndexList selected_indexes = ui->listRosTopics->selectionModel()->selectedIndexes();
     QString selected_topics;
 
-    foreach(QModelIndex index, indexes)
+    foreach(QModelIndex index, selected_indexes)
     {
         if(index.column() == 0){
             _topic_list.push_back( index.data(Qt::DisplayRole).toString() );
@@ -121,12 +126,6 @@ void DialogSelectRosTopics::on_pushButtonEditRules_pressed()
     rule_editing->exec();
 }
 
-
-void DialogSelectRosTopics::on_checkBoxNormalizeTime_toggled(bool checked)
-{
-
-}
-
 nonstd::optional<double> FlatContainedContainHeaderStamp(const RosIntrospection::ROSTypeFlat &flat_container)
 {
     const char* ID = ".header.stamp";
@@ -147,7 +146,6 @@ nonstd::optional<double> FlatContainedContainHeaderStamp(const RosIntrospection:
             return flat_container.renamed_value[first_index].second;
         }
     }
-
 
     for(int i=0; i< renamed_count; i++ )
     {

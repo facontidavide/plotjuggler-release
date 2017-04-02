@@ -37,7 +37,7 @@ private slots:
 
     void onTrackerTimeUpdated(double absolute_time );
 
-    void onTrackerPositionUpdated(QPointF pos );
+    void onTrackerMovedFromWidget(QPointF pos );
 
     void onSplitterMoved(int, int);
 
@@ -59,8 +59,6 @@ private slots:
 
     void onActionReloadDataFileFromSettings();
 
-    void onActionReloadSameDataFile();
-
     void onActionReloadRecentLayout();
 
     void onActionLoadStreamer(QString streamer_name);
@@ -81,13 +79,11 @@ private slots:
 
     void on_pushButtonStreaming_toggled(bool checked);
 
-    void onReplotRequested();
+    void updateDataAndReplot();
 
     void on_streamingSpinBox_valueChanged(int value);
 
     void onDeleteLoadedData();
-
-    void on_pushButtonActivateTracker_toggled(bool checked);
 
     void on_actionAbout_triggered();
 
@@ -101,9 +97,17 @@ private slots:
 
     void updateLeftTableValues();
 
-    void deleteLoadedData(const QString &curve_name);
+    void deleteDataOfSingleCurve(const QString &curve_name);
 
-    void on_actionRemoveTimeOffset_toggled(bool arg1);
+    void on_checkBoxRemoveTimeOffset_toggled(bool checked);
+
+    void on_pushButtonOptions_toggled(bool checked);
+
+    void on_checkBoxUseDateTime_toggled(bool checked);
+
+    void on_pushButtonActivateGrid_toggled(bool checked);
+
+    void on_actionClearBuffer_triggered();
 
 private:
     Ui::MainWindow *ui;
@@ -121,7 +125,7 @@ private:
 
     FilterableListWidget* _curvelist_widget;
 
-    void updateInternalState();
+    void onLayoutChanged();
 
     void forEachWidget(std::function<void(PlotWidget*, PlotMatrix*, int, int)> op);
 
@@ -129,7 +133,7 @@ private:
 
     void updateTimeSlider();
 
-    void buildData();
+    void buildDummyData();
 
     PlotDataMap    _mapped_plot_data;
 
@@ -175,9 +179,12 @@ private:
 
     void importPlotDataMap(const PlotDataMap &new_data);
 
-protected:
+    bool isStreamingActive() const { return _streaming_active; }
 
-    void dragEnterEvent(QDragEnterEvent *event) ;
+    bool _streaming_active;
+    double _time_offset_during_streaming;
+
+protected:
 
     double _time_offset;
 

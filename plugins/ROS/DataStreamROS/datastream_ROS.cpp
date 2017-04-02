@@ -38,8 +38,6 @@ PlotDataMap& DataStreamROS::getDataMap()
 
 void DataStreamROS::topicCallback(const topic_tools::ShapeShifter::ConstPtr& msg, const std::string &topic_name)
 {
-    std::lock_guard<std::mutex> lock(_mutex);
-
     if( !_running ||  !_enabled){
         return;
     }
@@ -62,7 +60,7 @@ void DataStreamROS::topicCallback(const topic_tools::ShapeShifter::ConstPtr& msg
     const RosIntrospection::ROSTypeList& type_map = it->second;
 
     //------------------------------------
-    std::vector<uint8_t> buffer(msg->size()); // "64 KB ought to be enough for anybody"
+    std::vector<uint8_t> buffer(msg->size());
 
     // it is more efficient to recycle ROSTypeFlat
     static ROSTypeFlat flat_container;
@@ -70,9 +68,12 @@ void DataStreamROS::topicCallback(const topic_tools::ShapeShifter::ConstPtr& msg
     ros::serialization::OStream stream(buffer.data(), buffer.size());
     msg->write(stream);
 
-    SString topicname( topic_name.data(), topic_name.length() );
+    SString topicname_SS( topic_name.data(), topic_name.length() );
+    // WORKAROUND. There are some problems related to renaming when the character / is
+    // used as prefix. We will remove that here.
+    if( topicname_SS.at(0) == '/' ) topicname_SS = SString( topic_name.data() +1,  topic_name.size()-1 );
 
-    buildRosFlatType( type_map, datatype, topicname, buffer.data(), &flat_container);
+    buildRosFlatType( type_map, datatype, topicname_SS, buffer.data(), &flat_container);
     applyNameTransform( _rules[datatype], &flat_container );
 
     SString header_stamp_field( topic_name );
@@ -114,8 +115,14 @@ void DataStreamROS::topicCallback(const topic_tools::ShapeShifter::ConstPtr& msg
     {
         std::string field_name ( it.first.data(), it.first.size());
         double value = it.second;
-        auto plot = _plot_data.numeric[field_name];
-        plot->pushBackAsynchronously( PlotData::Point(msg_time, value));
+        auto plot_it = _plot_data.numeric.find(field_name);
+        if( plot_it == _plot_data.numeric.end())
+        {
+            auto res =   _plot_data.numeric.insert(
+                        std::make_pair( field_name, std::make_shared<PlotData>(field_name.c_str()) ));
+            plot_it = res.first;
+        }
+        plot_it->second->pushBackAsynchronously( PlotData::Point(msg_time, value));
     }
     PlotData::asyncPushMutex().unlock();
 }
@@ -166,6 +173,12 @@ void DataStreamROS::saveIntoRosbag()
     saveDialog.setAcceptMode(QFileDialog::AcceptSave);
     saveDialog.setDefaultSuffix("bag");
     saveDialog.exec();
+
+    if(saveDialog.result() != QDialog::Accepted || saveDialog.selectedFiles().empty())
+    {
+        return;
+    }
+
     QString fileName = saveDialog.selectedFiles().first();
 
     if( fileName.size() > 0)
