@@ -136,7 +136,7 @@ void TimeseriesQwt::updateData()
                 QMessageBox::warning(0, QString("Warning"),
                                      QString("The creation of the XY plot failed because at least two "
                                              "timeseries don't share the same time axis.") );
-                throw std::runtime_error("back to no Transform");
+                return;
             }
             else{
                 _cached_transformed_curve.resize(N);
@@ -235,7 +235,7 @@ void TimeseriesQwt::setTransform(TimeseriesQwt::Transform trans)
     }
 }
 
-double TimeseriesQwt::setTimeOffset(double offset)
+void TimeseriesQwt::setTimeOffset(double offset)
 {
     _time_offset = offset;
     updateData();

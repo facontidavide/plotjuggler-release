@@ -7,10 +7,10 @@ AboutDialog::AboutDialog(QWidget *parent) :
 {
   ui->setupUi(this);
 
-  QString version = QString("Version: ") +
-      QString::number(PJ_MAJOR_VERSION) + QString(".") +
-      QString::number(PJ_MINOR_VERSION) + QString(".") +
-      QString::number(PJ_PATCH_VERSION);
+  QString version = QString("Version: %d.%s.%d")
+          .arg(PJ_MAJOR_VERSION)
+          .arg(PJ_MINOR_VERSION)
+          .arg(PJ_PATCH_VERSION);
 
   ui->label_version->setText(version);
 
