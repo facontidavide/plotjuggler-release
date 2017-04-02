@@ -49,7 +49,6 @@ private:
     bool _running;
 
     std::thread _thread;
-    std::mutex _mutex;
 
     std::map<std::string, RosIntrospection::ROSTypeList> _ros_type_map;
 
