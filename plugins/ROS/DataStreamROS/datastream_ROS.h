@@ -49,7 +49,6 @@ private:
     bool _running;
 
     std::thread _thread;
-    std::mutex _mutex;
 
     std::map<std::string, RosIntrospection::ROSTypeList> _ros_type_map;
 
@@ -57,7 +56,6 @@ private:
 
     double _initial_time;
     bool _use_header_timestamp;
-    bool _normalize_time;
 
     ros::NodeHandlePtr _node;
     std::vector<ros::Subscriber> _subscribers;

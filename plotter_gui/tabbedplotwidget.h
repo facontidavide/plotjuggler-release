@@ -70,8 +70,6 @@ private slots:
 
     void on_pushButtonShowLabel_toggled(bool checked);
 
-    void on_pushButtonShowGrid_toggled(bool checked);
-
 private:
     Ui::TabbedPlotWidget *ui;
 
