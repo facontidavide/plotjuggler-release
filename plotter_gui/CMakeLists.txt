@@ -36,10 +36,9 @@ SET( PLOTTER_SRC
     mainwindow.h
     ../common/selectlistdialog.h
     ../include/PlotJuggler/plotdata.h
-    ${BACKWARD_SRC}
     )
 
-add_executable(PlotJuggler ${PLOTTER_SRC} ${RES_SRC} ${UI_SRC} )
+add_executable(PlotJuggler ${PLOTTER_SRC} ${RES_SRC} ${UI_SRC} ${BACKWARD_SRC})
 
 if( Qt5Svg_FOUND)
     target_link_libraries(PlotJuggler
