@@ -3,6 +3,33 @@ Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
+0.17.0 (2017-04-02)
+-------------------
+* more renaming rules and samples
+* feature request #31
+* fix QFileDialog (save)
+* fixing a nasty bug in save plot to file
+* Add dummy returns to function that required it (#36)
+* trying to fix some issues with the streamer time offset
+* fixing a crash in the plugin
+* saving more application settings with QSettings
+* cleanups
+* new plugin: rosout
+* several bugs fixed
+* removed unused plugin
+* Update README.md
+* cleanups
+* added data samples
+* move wais to filter the listWidget
+* visualization improvements
+* Contributors: Davide Faconti, v-lopez
+
+0.16.0 (2017-03-22)
+-------------------
+* removed the normalization of time in ROS plugins
+* relative time seems to work properly
+* Contributors: Davide Faconti
+
 0.15.3 (2017-03-22)
 -------------------
 * multiple fixes
