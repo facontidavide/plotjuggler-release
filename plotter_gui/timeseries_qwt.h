@@ -49,7 +49,7 @@ public:
 
 public slots:
 
-    double setTimeOffset(double offset);
+    void setTimeOffset(double offset);
 
 private:
     PlotDataPtr _plot_data;
