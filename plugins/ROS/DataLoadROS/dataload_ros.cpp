@@ -131,9 +131,13 @@ PlotDataMap DataLoadROS::readDataFromFile(const std::string& file_name,
         // this single line takes almost the entire time of the loop
         msg.write(stream);
 
-        SString topic_name( topic.data(),  topic.size() );
+        SString topicname_SS( topic.data(),  topic.size() );
 
-        buildRosFlatType(type_map[ datatype ], datatype, topic_name, buffer.data(), &flat_container);
+        // WORKAROUND. There are some problems related to renaming when the character / is
+        // used as prefix. We will remove that here.
+        if( topicname_SS.at(0) == '/' ) topicname_SS = SString( topic.data() +1,  topic.size()-1 );
+
+        buildRosFlatType(type_map[ datatype ], datatype, topicname_SS, buffer.data(), &flat_container);
         applyNameTransform( _rules[datatype], &flat_container );
 
         // apply time offsets

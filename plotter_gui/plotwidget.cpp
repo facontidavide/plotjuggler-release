@@ -204,7 +204,7 @@ void PlotWidget::buildLegend()
     _legend->setBackgroundMode( QwtPlotLegendItem::BackgroundMode::LegendBackground   );
 
     _legend->setBorderRadius( 6 );
-    _legend->setMargin( 5 );
+    _legend->setMargin( 1 );
     _legend->setSpacing( 0 );
     _legend->setItemMargin( 0 );
 
@@ -313,7 +313,7 @@ void PlotWidget::removeCurve(const QString &name)
         _point_marker[name]->detach();
         _point_marker.erase( name );
     }
-    if( _axisX && _axisX->name() == name.toStdString())
+    if( isXYPlot() && _axisX->name() == name.toStdString())
     {
         _axisX = PlotDataPtr();
         for(auto it : _curve_list)
@@ -341,7 +341,7 @@ void PlotWidget::dragEnterEvent(QDragEnterEvent *event)
 
     const QMimeData *mimeData = event->mimeData();
     QStringList mimeFormats = mimeData->formats();
-    foreach(QString format, mimeFormats)
+    for(const QString& format: mimeFormats)
     {
         QByteArray encoded = mimeData->data( format );
         QDataStream stream(&encoded, QIODevice::ReadOnly);
@@ -374,7 +374,7 @@ void PlotWidget::dropEvent(QDropEvent *event)
     const QMimeData *mimeData = event->mimeData();
     QStringList mimeFormats = mimeData->formats();
 
-    foreach(QString format, mimeFormats)
+    for(const QString& format: mimeFormats)
     {
         QByteArray encoded = mimeData->data( format );
         QDataStream stream(&encoded, QIODevice::ReadOnly);
@@ -413,6 +413,12 @@ void PlotWidget::detachAllCurves()
 {
     for(auto it: _curve_list)   { it.second->detach(); }
     for(auto it: _point_marker) { it.second->detach(); }
+
+    if( isXYPlot() )
+    {
+        _axisX = PlotDataPtr();
+        _action_noTransform->trigger();
+    }
 
     _curve_list.erase(_curve_list.begin(), _curve_list.end());
     _point_marker.erase(_point_marker.begin(), _point_marker.end());
@@ -482,6 +488,18 @@ bool PlotWidget::xmlLoadState(QDomElement &plot_widget, QMessageBox::StandardBut
 
     std::set<QString> added_curve_names;
 
+    QDomElement transform = plot_widget.firstChildElement( "transform" );
+    if( !transform.isNull()    )
+    {
+        if( transform.attribute("value") == "XYPlot")
+        {
+            QString axisX_name = transform.attribute("axisX");
+            if( axisX_name.size()>0){
+                changeAxisX( axisX_name );
+            }
+        }
+    }
+
     for (  curve = plot_widget.firstChildElement( "curve" )  ;
            !curve.isNull();
            curve = curve.nextSiblingElement( "curve" ) )
@@ -537,7 +555,7 @@ bool PlotWidget::xmlLoadState(QDomElement &plot_widget, QMessageBox::StandardBut
     }
 
     //-----------------------------------------
-    QDomElement transform = plot_widget.firstChildElement( "transform" );
+
     if( !transform.isNull()  )
     {
         QString trans_value = transform.attribute("value");
@@ -553,14 +571,14 @@ bool PlotWidget::xmlLoadState(QDomElement &plot_widget, QMessageBox::StandardBut
         {
             _action_noTransform->trigger();
         }
-        else if(trans_value == "XYPlot")
-        {
-            QString axisX_name = transform.attribute("axisX");
-            if( axisX_name.size()>0)
-            {
-                changeAxisX( axisX_name );
-            }
-        }
+//        else if(trans_value == "XYPlot")
+//        {
+//            QString axisX_name = transform.attribute("axisX");
+//            if( axisX_name.size()>0)
+//            {
+//                changeAxisX( axisX_name );
+//            }
+//        }
     }
     //-----------------------------------------
 
@@ -609,7 +627,7 @@ void PlotWidget::setScale(QRectF rect, bool emit_signal)
 
 void PlotWidget::reloadPlotData()
 {
-    if( _axisX )
+    if( isXYPlot() )
     {
         auto it = _mapped_data->numeric.find( _axisX->name() );
         if( it != _mapped_data->numeric.end() ){
@@ -626,12 +644,12 @@ void PlotWidget::reloadPlotData()
         const std::string curve_name = curve_it.first.toStdString();
 
         auto it = _mapped_data->numeric.find( curve_name );
-        if( it!= _mapped_data->numeric.end())
+        if( it != _mapped_data->numeric.end())
         {
             TimeseriesQwt* new_plotqwt = new TimeseriesQwt( it->second );
             new_plotqwt->setTimeOffset( _time_offset );
-            new_plotqwt->setTransform( _current_transform );
             new_plotqwt->setAlternativeAxisX( _axisX );
+            new_plotqwt->setTransform( _current_transform );
             curve_data->setData( new_plotqwt );
         }
     }
@@ -658,7 +676,7 @@ void PlotWidget::activateGrid(bool activate)
 
 void PlotWidget::activateTracker(bool activate)
 {
-    _tracker->setEnabled( activate && isXYPlot() == false);
+    _tracker->setEnabled( activate && !isXYPlot());
 }
 
 void PlotWidget::setTrackerPosition(double abs_time)
@@ -926,6 +944,7 @@ void PlotWidget::on_zoomOutVertical_triggered(bool emit_signal)
 
 void PlotWidget::on_noTransform_triggered(bool checked )
 {
+    activateTracker(true);
     if(_current_transform ==  TimeseriesQwt::noTransform) return;
 
     for (auto it :_curve_list)
@@ -943,6 +962,7 @@ void PlotWidget::on_noTransform_triggered(bool checked )
 
 void PlotWidget::on_1stDerivativeTransform_triggered(bool checked)
 {
+    activateTracker(true);
     if(_current_transform ==  TimeseriesQwt::firstDerivative) return;
 
     for (auto it :_curve_list)
@@ -966,6 +986,7 @@ void PlotWidget::on_1stDerivativeTransform_triggered(bool checked)
 
 void PlotWidget::on_2ndDerivativeTransform_triggered(bool checked)
 {
+    activateTracker(true);
     if(_current_transform ==  TimeseriesQwt::secondDerivative) return;
 
     for (auto it :_curve_list)
@@ -989,26 +1010,13 @@ void PlotWidget::on_2ndDerivativeTransform_triggered(bool checked)
 
 bool PlotWidget::isXYPlot() const
 {
-    return (_current_transform == TimeseriesQwt::XYPlot);
-}
-
-void PlotWidget::changeAxisX(QString curve_name)
-{
-    qDebug() << "changeAxisX " << curve_name;
-    auto it = _mapped_data->numeric.find( curve_name.toStdString() );
-    if( it != _mapped_data->numeric.end())
-    {
-        _axisX = it->second;
-        _action_phaseXY->trigger();
-    }
-    else{
-        // do nothing (?)
-    }
+    return (_current_transform == TimeseriesQwt::XYPlot && _axisX);
 }
 
 
 void PlotWidget::on_convertToXY_triggered(bool)
 {
+    activateTracker(true);
     if( !_axisX )
     {
         QMessageBox::warning(0, tr("Warning"),
@@ -1020,7 +1028,6 @@ void PlotWidget::on_convertToXY_triggered(bool)
 
     _tracker->setEnabled(false);
 
-    qDebug() << "on_convertToXY_triggered ";
     _current_transform = TimeseriesQwt::XYPlot;
 
     for (auto it :_curve_list)
@@ -1042,20 +1049,47 @@ void PlotWidget::on_convertToXY_triggered(bool)
     replot();
 }
 
+void PlotWidget::changeAxisX(QString curve_name)
+{
+    auto it = _mapped_data->numeric.find( curve_name.toStdString() );
+    if( it != _mapped_data->numeric.end())
+    {
+        _axisX = it->second;
+        _action_phaseXY->trigger();
+    }
+    else{
+        // do nothing (?)
+    }
+}
+
 void PlotWidget::on_savePlotToFile()
 {
     QString fileName;
 
-#ifndef QWT_NO_SVG
-    fileName = QFileDialog::getSaveFileName(this, tr("File to export"), QString(),"Compatible formats (*.jpg *.jpeg *.svg *.png)");
-#else
-    fileName = QFileDialog::getSaveFileName(this, tr("File to export"), QString(),"Compatible formats (*.jpg *.jpeg *.png)");
-#endif
+    QFileDialog saveDialog;
+    saveDialog.setAcceptMode(QFileDialog::AcceptSave);
+    saveDialog.setDefaultSuffix("png");
 
-    if ( !fileName.isEmpty() )
+#ifndef QWT_NO_SVG
+    saveDialog.setNameFilter("Compatible formats (*.jpg *.jpeg *.svg *.png)");
+#else
+    saveDialog.setNameFilter("Compatible formats (*.jpg *.jpeg *.png)");
+#endif
+    saveDialog.exec();
+
+    if(saveDialog.result() == QDialog::Accepted && !saveDialog.selectedFiles().empty())
     {
-        QwtPlotRenderer rend;
-        rend.renderDocument(this,fileName, QSizeF(200,150), 150);
+        fileName = saveDialog.selectedFiles().first();
+
+        QPixmap pixmap (1200,900);
+        QPainter * painter = new QPainter(&pixmap);
+
+        if ( !fileName.isEmpty() )
+        {
+            QwtPlotRenderer rend;
+            rend.render(this, painter, QRect(0, 0, pixmap.width(), pixmap.height()));
+            pixmap.save(fileName);
+        }
     }
 }
 
