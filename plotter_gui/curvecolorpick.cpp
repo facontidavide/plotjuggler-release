@@ -28,7 +28,8 @@ CurveColorPick::CurveColorPick(const std::map<QString, QColor> &mapped_colors, Q
     color_preview->setMinimumWidth(150);
     color_preview->setMinimumHeight(100);
 
-    connect(color_wheel, SIGNAL(colorChanged(QColor)), color_preview, SLOT(setColor(QColor)) );
+    connect(color_wheel,   &color_widgets::ColorWheel::colorChanged,
+            color_preview, &color_widgets::ColorPreview::setColor );
 
 }
 

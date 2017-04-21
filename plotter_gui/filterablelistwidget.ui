@@ -285,10 +285,6 @@ border: 0.5px solid rgb(150, 150, 150);</string>
          </layout>
         </item>
        </layout>
-       <zorder>horizontalLayoutWidget</zorder>
-       <zorder>horizontalLayoutWidget</zorder>
-       <zorder>verticalLayoutWidget</zorder>
-       <zorder>verticalLayoutWidget_2</zorder>
       </widget>
      </item>
      <item>
