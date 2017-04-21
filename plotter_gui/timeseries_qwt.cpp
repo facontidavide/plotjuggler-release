@@ -15,6 +15,11 @@ TimeseriesQwt::TimeseriesQwt(PlotDataPtr base):
 
 QPointF TimeseriesQwt::sample(size_t i) const
 {
+    if(_transform == noTransform)
+    {
+        auto p = _plot_data->at(i);
+        return QPointF(p.x - _time_offset, p.y);
+    }
     return _cached_transformed_curve[i];
 }
 
@@ -23,12 +28,13 @@ QRectF TimeseriesQwt::boundingRect() const
     return _bounding_box;
 }
 
-
 size_t TimeseriesQwt::size() const
 {
+    if(_transform == noTransform){
+        return _plot_data->size();
+    }
     return _cached_transformed_curve.size();
 }
-
 
 void TimeseriesQwt::setSubsampleFactor()
 {
@@ -48,12 +54,13 @@ void TimeseriesQwt::updateData()
     {
         if(_transform == noTransform)
         {
-            _cached_transformed_curve.resize(_plot_data->size());
+            _cached_transformed_curve.resize( 0 );
+            _cached_transformed_curve.shrink_to_fit();
+
             for (size_t i=0; i< _plot_data->size(); i++ )
             {
                 auto p = _plot_data->at( i );
                 p.x -= _time_offset;
-                _cached_transformed_curve[i] = QPointF(p.x, p.y) ;
 
                 if(min_y > p.y) min_y =(p.y);
                 else if(max_y    < p.y) max_y =(p.y);
