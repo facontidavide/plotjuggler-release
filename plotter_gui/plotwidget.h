@@ -26,7 +26,7 @@ class PlotWidget : public QwtPlot
 
 public:
 
-    PlotWidget(PlotDataMap* datamap, QWidget *parent=0);
+    PlotWidget(PlotDataMap& datamap, QWidget *parent=0);
     virtual ~PlotWidget();
 
     bool addCurve(const QString&  name, bool do_replot );
@@ -96,7 +96,9 @@ public slots:
 
     void activateGrid(bool activate);
 
-    void activateTracker(bool activate);
+    void configureTracker(CurveTracker::Parameter val);
+
+    void enableTracker(bool enable);
 
     void setTrackerPosition(double abs_time);
 
@@ -135,7 +137,7 @@ private:
     QwtPlotLegendItem* _legend;
     QwtPlotGrid* _grid;
 
-    PlotDataMap* _mapped_data;
+    PlotDataMap& _mapped_data;
     TimeseriesQwt::Transform _current_transform;
 
     void buildActions();
