@@ -10,6 +10,20 @@
 #include <rosgraph_msgs/Log.h>
 #include "logwidget.hpp"
 
+class RosoutWindow: public QMainWindow
+{
+    Q_OBJECT
+public:
+    RosoutWindow():QMainWindow() {}
+    ~ RosoutWindow(){}
+
+    void closeEvent ( QCloseEvent* ) override{
+        emit closed();
+    }
+signals:
+    void closed();
+};
+
 
 class  RosoutPublisher: public QObject, StatePublisher
 {
@@ -25,11 +39,13 @@ public:
     virtual ~RosoutPublisher();
 
     virtual bool enabled() const override { return enabled_; }
-    virtual QObject* getObject() override { return this; }
-
 
 public slots:
     virtual void setEnabled(bool enabled) override;
+
+private slots:
+
+    void onWindowClosed();
 
 private:
 
@@ -42,9 +58,11 @@ private:
     std::vector<const PlotDataAny *> findRosoutTimeseries(PlotDataMap *datamap);
     void syncWithTableModel(const std::vector<const PlotDataAny *> &logs_timeseries);
 
-    QMainWindow* _log_window;
+    RosoutWindow* _log_window;
 signals:
     void timeRangeChanged(TimePoint time_min, TimePoint time_max);
 };
+
+
 
 #endif // ROSOUT_PUBLISHER_ROS_H

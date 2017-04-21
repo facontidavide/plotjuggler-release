@@ -231,4 +231,11 @@ TimePoint LogsTableModel::timestamp(int index) const
     return TimePoint() + since_epoch;
 }
 
+void LogsTableModel::clear() {
+    this->beginRemoveRows( QModelIndex(), 0 , _logs.size() -1);
+    this->endRemoveRows();
+    _logs.clear();
+    _count = 0;
+}
+
 

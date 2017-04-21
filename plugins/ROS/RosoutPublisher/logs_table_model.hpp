@@ -51,6 +51,8 @@ public:
 
   int size() const { return _logs.size(); }
 
+  void clear();
+
 private:
 
   std::set<QString> _source_list;
@@ -69,7 +71,6 @@ private:
   boost::circular_buffer<LogItem> _logs;
 
   size_t _count;
-
 
   enum{ MAX_CAPACITY = 20000 }; // max capacity of the circular buffer
 
