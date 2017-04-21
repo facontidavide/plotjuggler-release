@@ -13,7 +13,7 @@ To understand what PlotJuggler can do for you, take a look to the following vide
 
 [PlotJuggler: a desktop application to plot time series](https://vimeo.com/174120477) 
 
-![PlotJuggler](/PlotJuggler.gif)
+![PlotJuggler](docs/images/PlotJuggler.gif)
 
 # How to build
 
