@@ -14,6 +14,8 @@
 #include "filterablelistwidget.h"
 #include "tabbedplotwidget.h"
 #include "subwindow.h"
+#include "realslider.h"
+#include "utils.h"
 #include "PlotJuggler/dataloader_base.h"
 #include "PlotJuggler/statepublisher_base.h"
 #include "PlotJuggler/datastreamer_base.h"
@@ -21,6 +23,7 @@
 namespace Ui {
 class MainWindow;
 }
+
 
 class MainWindow : public QMainWindow
 {
@@ -77,7 +80,7 @@ private slots:
 
     void onSwapPlots(PlotWidget* source, PlotWidget* destination);
 
-    void on_pushButtonStreaming_toggled(bool checked);
+    void on_pushButtonStreaming_toggled(bool streaming);
 
     void updateDataAndReplot();
 
@@ -93,23 +96,26 @@ private slots:
 
     void on_actionQuick_Help_triggered();
 
-    void on_horizontalSlider_valueChanged(int value);
+    void onTimeSlider_valueChanged(double value);
 
     void updateLeftTableValues();
 
     void deleteDataOfSingleCurve(const QString &curve_name);
 
-    void on_checkBoxRemoveTimeOffset_toggled(bool checked);
+    void on_pushButtonRemoveTimeOffset_toggled(bool checked);
 
     void on_pushButtonOptions_toggled(bool checked);
-
-    void on_checkBoxUseDateTime_toggled(bool checked);
 
     void on_pushButtonActivateGrid_toggled(bool checked);
 
     void on_actionClearBuffer_triggered();
 
+    void on_pushButtonUseDateTime_toggled(bool checked);
+
+    void on_pushButtonTimeTracker_pressed();
+
 private:
+
     Ui::MainWindow *ui;
 
     TabbedPlotWidget *      _main_tabbed_widget;
@@ -126,6 +132,8 @@ private:
     FilterableListWidget* _curvelist_widget;
 
     void onLayoutChanged();
+
+    void updatedDisplayTime();
 
     void forEachWidget(std::function<void(PlotWidget*, PlotMatrix*, int, int)> op);
 
@@ -165,10 +173,6 @@ private:
 
     double _tracker_time;
 
-    double _min_slider_time;
-
-    double _max_slider_time;
-
     QString _loaded_datafile;
 
     std::string _last_load_configuration;
@@ -177,24 +181,21 @@ private:
 
     void createTabbedDialog(PlotMatrix *first_tab);
 
-    void importPlotDataMap(const PlotDataMap &new_data);
+    void importPlotDataMap(const PlotDataMap &new_data, bool delete_older);
 
-    bool isStreamingActive() const { return _streaming_active; }
+    bool isStreamingActive() const ;
 
-    bool _streaming_active;
-    double _time_offset_during_streaming;
+    CurveTracker::Parameter _tracker_param;
 
 protected:
 
-    double _time_offset;
+    MonitoredValue _time_offset;
 
     QTimer *_replot_timer;
 signals:
     void requestRemoveCurveByName(const QString& name);
 
     void activateStreamingMode( bool active);
-
-    void trackerTimeUpdated(double abs_point);
 
     void activateTracker(bool active);
 
