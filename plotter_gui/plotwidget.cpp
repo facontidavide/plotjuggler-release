@@ -26,11 +26,11 @@
 
 void PlotWidget::setDefaultRangeX()
 {
-    if( _mapped_data->numeric.size() > 0)
+    if( _mapped_data.numeric.size() > 0)
     {
         double min = std::numeric_limits<double>::max();
         double max = std::numeric_limits<double>::min();
-        for (auto it: _mapped_data->numeric )
+        for (auto it: _mapped_data.numeric )
         {
             const PlotDataPtr& data = it.second;
             if( data->size() > 0){
@@ -40,11 +40,11 @@ void PlotWidget::setDefaultRangeX()
                 if( B > max) max = B;
             }
         }
-        this->setAxisScale( xBottom, min, max);
+        this->setAxisScale( xBottom, min - _time_offset, max - _time_offset);
     }
 }
 
-PlotWidget::PlotWidget(PlotDataMap *datamap, QWidget *parent):
+PlotWidget::PlotWidget(PlotDataMap &datamap, QWidget *parent):
     QwtPlot(parent),
     _zoomer( 0 ),
     _magnifier(0 ),
@@ -90,15 +90,15 @@ PlotWidget::PlotWidget(PlotDataMap *datamap, QWidget *parent):
     _zoomer->setRubberBandPen( QColor( Qt::red , 1, Qt::DotLine) );
     _zoomer->setTrackerPen( QColor( Qt::green, 1, Qt::DotLine ) );
     _zoomer->setMousePattern( QwtEventPattern::MouseSelect1, Qt::LeftButton, Qt::NoModifier );
-    connect(_zoomer, SIGNAL(zoomed(const QRectF&)), this, SLOT(on_externallyResized(const QRectF&)) );
+    connect(_zoomer,  &PlotZoomer::zoomed, this, &PlotWidget::on_externallyResized );
 
     _magnifier->setAxisEnabled(xTop, false);
     _magnifier->setAxisEnabled(yRight, false);
 
     // disable right button. keep mouse wheel
     _magnifier->setMouseButton( Qt::NoButton );
-    connect(_magnifier, SIGNAL(rescaled(const QRectF&)), this, SLOT(on_externallyResized(const QRectF&)) );
-    connect(_magnifier, SIGNAL(rescaled(const QRectF&)), this, SLOT(replot()) );
+    connect(_magnifier, &PlotMagnifier::rescaled, this, &PlotWidget::on_externallyResized );
+    connect(_magnifier, &PlotMagnifier::rescaled, this, &PlotWidget::replot );
 
     _panner->setMouseButton(  Qt::LeftButton, Qt::ControlModifier);
 
@@ -117,21 +117,21 @@ void PlotWidget::buildActions()
 {
     _action_removeCurve = new QAction(tr("&Remove curves"), this);
     _action_removeCurve->setStatusTip(tr("Remove one or more curves from this plot"));
-    connect(_action_removeCurve, SIGNAL(triggered()), this, SLOT(launchRemoveCurveDialog()));
+    connect(_action_removeCurve, &QAction::triggered, this, &PlotWidget::launchRemoveCurveDialog);
 
     QIcon iconDelete;
     iconDelete.addFile(QStringLiteral(":/icons/resources/checkboxalt.png"), QSize(26, 26), QIcon::Normal, QIcon::Off);
     _action_removeAllCurves = new QAction(tr("&Remove all curves"), this);
     _action_removeAllCurves->setIcon(iconDelete);
-    connect(_action_removeAllCurves, SIGNAL(triggered()), this, SLOT(detachAllCurves()));
-    connect(_action_removeAllCurves, SIGNAL(triggered()), this, SIGNAL(undoableChange()) );
+    connect(_action_removeAllCurves, &QAction::triggered, this, &PlotWidget::detachAllCurves);
+    connect(_action_removeAllCurves, &QAction::triggered, this, &PlotWidget::undoableChange );
 
     QIcon iconColors;
     iconColors.addFile(QStringLiteral(":/icons/resources/office_chart_lines.png"), QSize(26, 26), QIcon::Normal, QIcon::Off);
     _action_changeColorsDialog = new QAction(tr("&Change colors"), this);
     _action_changeColorsDialog->setIcon(iconColors);
     _action_changeColorsDialog->setStatusTip(tr("Change the color of the curves"));
-    connect(_action_changeColorsDialog, SIGNAL(triggered()), this, SLOT(on_changeColorsDialog_triggered()));
+    connect(_action_changeColorsDialog, &QAction::triggered, this, &PlotWidget::on_changeColorsDialog_triggered);
 
     QIcon iconPoints;
     iconPoints.addFile(QStringLiteral(":/icons/resources/line_chart_32px.png"), QSize(26, 26), QIcon::Normal, QIcon::Off);
@@ -139,44 +139,44 @@ void PlotWidget::buildActions()
     _action_showPoints->setIcon(iconPoints);
     _action_showPoints->setCheckable( true );
     _action_showPoints->setChecked( false );
-    connect(_action_showPoints, SIGNAL(triggered(bool)), this, SLOT(on_showPoints_triggered(bool)));
+    connect(_action_showPoints, &QAction::triggered, this, &PlotWidget::on_showPoints_triggered);
 
     QIcon iconZoomH;
     iconZoomH.addFile(QStringLiteral(":/icons/resources/resize_horizontal.png"), QSize(26, 26), QIcon::Normal, QIcon::Off);
     _action_zoomOutHorizontally = new QAction(tr("&Zoom Out Horizontally"), this);
     _action_zoomOutHorizontally->setIcon(iconZoomH);
-    connect(_action_zoomOutHorizontally, SIGNAL(triggered()), this, SLOT(on_zoomOutHorizontal_triggered()));
-    connect(_action_zoomOutHorizontally, SIGNAL(triggered()), this, SIGNAL(undoableChange()) );
+    connect(_action_zoomOutHorizontally, &QAction::triggered, this, &PlotWidget::on_zoomOutHorizontal_triggered);
+    connect(_action_zoomOutHorizontally, &QAction::triggered, this, &PlotWidget::undoableChange );
 
     QIcon iconZoomV;
     iconZoomV.addFile(QStringLiteral(":/icons/resources/resize_vertical.png"), QSize(26, 26), QIcon::Normal, QIcon::Off);
     _action_zoomOutVertically = new QAction(tr("&Zoom Out Vertically"), this);
     _action_zoomOutVertically->setIcon(iconZoomV);
-    connect(_action_zoomOutVertically, SIGNAL(triggered()), this, SLOT(on_zoomOutVertical_triggered()));
-    connect(_action_zoomOutVertically, SIGNAL(triggered()), this, SIGNAL(undoableChange()) );
+    connect(_action_zoomOutVertically, &QAction::triggered, this, &PlotWidget::on_zoomOutVertical_triggered);
+    connect(_action_zoomOutVertically, &QAction::triggered, this, &PlotWidget::undoableChange );
 
     _action_noTransform = new QAction(tr("&NO Transform"), this);
     _action_noTransform->setCheckable( true );
     _action_noTransform->setChecked( true );
-    connect(_action_noTransform, SIGNAL(triggered(bool)), this, SLOT(on_noTransform_triggered(bool)));
+    connect(_action_noTransform, &QAction::triggered, this, &PlotWidget::on_noTransform_triggered);
 
     _action_1stDerivativeTransform = new QAction(tr("&1st derivative"), this);
     _action_1stDerivativeTransform->setCheckable( true );
-    connect(_action_1stDerivativeTransform, SIGNAL(triggered(bool)), this, SLOT(on_1stDerivativeTransform_triggered(bool)));
+    connect(_action_1stDerivativeTransform, &QAction::triggered, this, &PlotWidget::on_1stDerivativeTransform_triggered);
 
     _action_2ndDerivativeTransform = new QAction(tr("&2nd Derivative"), this);
     _action_2ndDerivativeTransform->setCheckable( true );
-    connect(_action_2ndDerivativeTransform, SIGNAL(triggered(bool)), this, SLOT(on_2ndDerivativeTransform_triggered(bool)));
+    connect(_action_2ndDerivativeTransform, &QAction::triggered, this, &PlotWidget::on_2ndDerivativeTransform_triggered);
 
     _action_phaseXY = new QAction(tr("&XY plot"), this);
     _action_phaseXY->setCheckable( true );
-    connect(_action_phaseXY, SIGNAL(triggered(bool)), this, SLOT(on_convertToXY_triggered(bool)));
+    connect(_action_phaseXY, &QAction::triggered, this, &PlotWidget::on_convertToXY_triggered);
 
     QIcon iconSave;
     iconSave.addFile(QStringLiteral(":/icons/resources/filesave@2x.png"), QSize(26, 26), QIcon::Normal, QIcon::Off);
     _action_saveToFile = new  QAction(tr("&Save plot to file"), this);
     _action_saveToFile->setIcon(iconSave);
-    connect(_action_saveToFile, SIGNAL(triggered()), this, SLOT(on_savePlotToFile()));
+    connect(_action_saveToFile, &QAction::triggered, this, &PlotWidget::on_savePlotToFile);
 
     auto transform_group = new QActionGroup(this);
 
@@ -223,8 +223,8 @@ PlotWidget::~PlotWidget()
 
 bool PlotWidget::addCurve(const QString &name, bool do_replot)
 {
-    auto it = _mapped_data->numeric.find( name.toStdString() );
-    if( it == _mapped_data->numeric.end())
+    auto it = _mapped_data.numeric.find( name.toStdString() );
+    if( it == _mapped_data.numeric.end())
     {
         return false;
     }
@@ -510,7 +510,7 @@ bool PlotWidget::xmlLoadState(QDomElement &plot_widget, QMessageBox::StandardBut
         int B = curve.attribute("B").toInt();
         QColor color(R,G,B);
 
-        if(  _mapped_data->numeric.find(curve_name.toStdString()) != _mapped_data->numeric.end() )
+        if(  _mapped_data.numeric.find(curve_name.toStdString()) != _mapped_data.numeric.end() )
         {
             addCurve(curve_name, false);
             _curve_list[curve_name]->setPen( color, 1.0);
@@ -629,8 +629,8 @@ void PlotWidget::reloadPlotData()
 {
     if( isXYPlot() )
     {
-        auto it = _mapped_data->numeric.find( _axisX->name() );
-        if( it != _mapped_data->numeric.end() ){
+        auto it = _mapped_data.numeric.find( _axisX->name() );
+        if( it != _mapped_data.numeric.end() ){
             _axisX = it->second;
         }
         else{
@@ -643,8 +643,8 @@ void PlotWidget::reloadPlotData()
         std::shared_ptr<QwtPlotCurve>& curve_data = curve_it.second;
         const std::string curve_name = curve_it.first.toStdString();
 
-        auto it = _mapped_data->numeric.find( curve_name );
-        if( it != _mapped_data->numeric.end())
+        auto it = _mapped_data.numeric.find( curve_name );
+        if( it != _mapped_data.numeric.end())
         {
             TimeseriesQwt* new_plotqwt = new TimeseriesQwt( it->second );
             new_plotqwt->setTimeOffset( _time_offset );
@@ -674,9 +674,14 @@ void PlotWidget::activateGrid(bool activate)
     _grid->attach(this);
 }
 
-void PlotWidget::activateTracker(bool activate)
+void PlotWidget::configureTracker(CurveTracker::Parameter val)
 {
-    _tracker->setEnabled( activate && !isXYPlot());
+    _tracker->setParameter( val );
+}
+
+void PlotWidget::enableTracker(bool enable)
+{
+    _tracker->setEnabled( enable && !isXYPlot() );
 }
 
 void PlotWidget::setTrackerPosition(double abs_time)
@@ -707,7 +712,6 @@ void PlotWidget::on_changeTimeOffset(double offset)
         series->setTimeOffset(offset);
     }
     zoomOut(false);
-    replot();
 }
 
 
@@ -852,8 +856,7 @@ void PlotWidget::on_changeColorsDialog_triggered()
 
     CurveColorPick* dialog = new CurveColorPick(color_by_name, this);
 
-    connect( dialog, SIGNAL(changeColor(QString,QColor)),
-             this, SLOT(on_changeColor(QString,QColor)),
+    connect( dialog, &CurveColorPick::changeColor, this, &PlotWidget::on_changeColor,
              Qt::DirectConnection);
 
     dialog->exec();
@@ -909,6 +912,13 @@ void PlotWidget::on_externallyResized(const QRectF& rect)
 
 void PlotWidget::zoomOut(bool emit_signal)
 {
+    if( _curve_list.size() == 0)
+    {
+        QRectF rect(0, 1, 1, -1);
+        this->setScale(rect, false);
+        return;
+    }
+
     QRectF rect;
     auto rangeX = getMaximumRangeX();
 
@@ -944,7 +954,7 @@ void PlotWidget::on_zoomOutVertical_triggered(bool emit_signal)
 
 void PlotWidget::on_noTransform_triggered(bool checked )
 {
-    activateTracker(true);
+    enableTracker(true);
     if(_current_transform ==  TimeseriesQwt::noTransform) return;
 
     for (auto it :_curve_list)
@@ -962,7 +972,7 @@ void PlotWidget::on_noTransform_triggered(bool checked )
 
 void PlotWidget::on_1stDerivativeTransform_triggered(bool checked)
 {
-    activateTracker(true);
+    enableTracker(true);
     if(_current_transform ==  TimeseriesQwt::firstDerivative) return;
 
     for (auto it :_curve_list)
@@ -986,7 +996,7 @@ void PlotWidget::on_1stDerivativeTransform_triggered(bool checked)
 
 void PlotWidget::on_2ndDerivativeTransform_triggered(bool checked)
 {
-    activateTracker(true);
+    enableTracker(true);
     if(_current_transform ==  TimeseriesQwt::secondDerivative) return;
 
     for (auto it :_curve_list)
@@ -1016,7 +1026,8 @@ bool PlotWidget::isXYPlot() const
 
 void PlotWidget::on_convertToXY_triggered(bool)
 {
-    activateTracker(true);
+    enableTracker(false);
+
     if( !_axisX )
     {
         QMessageBox::warning(0, tr("Warning"),
@@ -1025,8 +1036,6 @@ void PlotWidget::on_convertToXY_triggered(bool)
                                 "instead of the left mouse button.") );
         return;
     }
-
-    _tracker->setEnabled(false);
 
     _current_transform = TimeseriesQwt::XYPlot;
 
@@ -1051,8 +1060,8 @@ void PlotWidget::on_convertToXY_triggered(bool)
 
 void PlotWidget::changeAxisX(QString curve_name)
 {
-    auto it = _mapped_data->numeric.find( curve_name.toStdString() );
-    if( it != _mapped_data->numeric.end())
+    auto it = _mapped_data.numeric.find( curve_name.toStdString() );
+    if( it != _mapped_data.numeric.end())
     {
         _axisX = it->second;
         _action_phaseXY->trigger();
@@ -1131,7 +1140,7 @@ bool PlotWidget::eventFilter(QObject *obj, QEvent *event)
 
         if( mouse_event->button() == Qt::LeftButton )
         {
-            if( mouse_event->modifiers() == Qt::ShiftModifier) // vertical tracker
+            if( mouse_event->modifiers() == Qt::ShiftModifier) // time tracker
             {
                 const QPoint point = mouse_event->pos();
                 QPointF pointF ( invTransform( xBottom, point.x()),

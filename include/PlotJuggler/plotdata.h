@@ -60,7 +60,7 @@ public:
 
   nonstd::optional<Value> getYfromX(Time x ) const;
 
-  Point at(size_t index) const;
+  const Point& at(size_t index) const;
 
   void clear();
 
@@ -81,9 +81,7 @@ public:
 protected:
 
   std::string _name;
-  std::deque<Time>  _x_points;
-  std::deque<Value> _y_points;
-
+  std::deque<Point> _points;
   std::deque<Point> _pushed_points;
 
   QColor _color_hint;
@@ -134,8 +132,7 @@ inline PlotDataGeneric<Time, Value>::PlotDataGeneric(const char *name):
 template < typename Time, typename Value>
 inline void PlotDataGeneric<Time, Value>::pushBack(Point point)
 {
-  _x_points.push_back( point.x );
-  _y_points.push_back( point.y );
+  _points.push_back( point );
 }
 
 template < typename Time, typename Value>
@@ -154,16 +151,14 @@ inline bool PlotDataGeneric<Time, Value>::flushAsyncBuffer()
   while( !_pushed_points.empty() )
   {
       const Point& point = _pushed_points.front();
-      _x_points.push_back( point.x );
-      _y_points.push_back( point.y );
+      _points.push_back( point );
       _pushed_points.pop_front();
   }
 
-  while( _x_points.size()>2 &&
-         _x_points.back() - _x_points.front() > _max_range_X)
+  while( _points.size()>2 &&
+         _points.back().x - _points.front().x > _max_range_X)
   {
-      _x_points.pop_front();
-      _y_points.pop_front();
+      _points.pop_front();
   }
   return true;
 }
@@ -172,13 +167,16 @@ inline bool PlotDataGeneric<Time, Value>::flushAsyncBuffer()
 template < typename Time, typename Value>
 inline int PlotDataGeneric<Time, Value>::getIndexFromX(Time x ) const
 {
-  if( _x_points.size() == 0 ){
+  if( _points.size() == 0 ){
     return -1;
   }
-  auto lower = std::lower_bound(_x_points.begin(), _x_points.end(), x );
-  auto index = std::distance( _x_points.begin(), lower);
+  auto lower = std::lower_bound(_points.begin(), _points.end(), Point(x,0),
+                                [](const Point &a, const Point &b)
+                                { return a.x < b.x; } );
 
-  if( index >= _x_points.size() || index <0 )
+  auto index = std::distance( _points.begin(), lower);
+
+  if( index >= _points.size() || index <0 )
   {
     return -1;
   }
@@ -189,41 +187,32 @@ inline int PlotDataGeneric<Time, Value>::getIndexFromX(Time x ) const
 template < typename Time, typename Value>
 inline nonstd::optional<Value> PlotDataGeneric<Time, Value>::getYfromX(Time x) const
 {
-  auto lower = std::lower_bound(_x_points.begin(), _x_points.end(), x );
-  auto index = std::distance( _x_points.begin(), lower);
-
-  if( index >= _x_points.size() || index < 0 )
+  int index = getIndexFromX( x );
+  if( index == -1 )
   {
     return nonstd::optional<Value>();
   }
-  return _y_points.at(index);
+  return _points.at(index).y;
 }
 
 template < typename Time, typename Value>
-inline typename PlotDataGeneric<Time, Value>::Point
+inline const typename PlotDataGeneric<Time, Value>::Point&
 PlotDataGeneric<Time, Value>::at(size_t index) const
 {
-  try{
-    return { _x_points[index],  _y_points[index]  };
-  }
-  catch(...)
-  {
-    return { _x_points.back(),  _y_points.back() };
-    }
+    return _points[index];
 }
 
 template<typename Time, typename Value>
 void PlotDataGeneric<Time, Value>::clear()
 {
-    _x_points.clear();
-    _y_points.clear();
+    _points.clear();
 }
 
 
 template < typename Time, typename Value>
 inline size_t PlotDataGeneric<Time, Value>::size() const
 {
-  return _x_points.size();
+  return _points.size();
 }
 
 template < typename Time, typename Value>
