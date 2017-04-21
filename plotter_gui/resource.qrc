@@ -10,7 +10,6 @@
         <file>resources/line_chart_48px.png</file>
         <file>resources/line_chart_64px.png</file>
         <file>resources/line_chart_tracker.png</file>
-        <file>resources/Line_tracker.png</file>
         <file>resources/link.png</file>
         <file>resources/list_alt_32px.png</file>
         <file>resources/loader.gif</file>
@@ -41,6 +40,9 @@
         <file>resources/clean_pane_small@2x.png</file>
         <file>resources/splitbutton_vertical@2x.png</file>
         <file>resources/splitbutton_horizontal@2x.png</file>
+        <file>resources/line_tracker_1.png</file>
+        <file>resources/line_tracker_a.png</file>
+        <file>resources/line_tracker.png</file>
     </qresource>
     <qresource prefix="/splash">
         <file>resources/splash.jpg</file>
