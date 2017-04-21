@@ -135,7 +135,7 @@ RuleEditing::RuleEditing(QWidget *parent) :
 
     ui->textEdit->setFont(fixedFont);
 
-    connect(&_timer, SIGNAL(timeout()), this, SLOT(on_timer()));
+    connect(&_timer, &QTimer::timeout, this, &RuleEditing::on_timer );
 }
 
 RuleEditing::~RuleEditing()
