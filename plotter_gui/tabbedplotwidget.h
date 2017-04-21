@@ -19,8 +19,8 @@ public:
     typedef struct{} MainWindowArea;
 
     explicit TabbedPlotWidget(QMainWindow *main_window,
-                              PlotMatrix *first_tab,
-                              PlotDataMap *mapped_data,
+                              PlotMatrix* first_tab,
+                              PlotDataMap &mapped_data,
                               QMainWindow *parent );
 
     void setSiblingsList( const std::map<QString,TabbedPlotWidget*>& other_tabbed_widgets );
@@ -78,7 +78,7 @@ private:
 
     QMenu* _tab_menu;
 
-    PlotDataMap *_mapped_data;
+    PlotDataMap& _mapped_data;
 
     bool _horizontal_link;
 

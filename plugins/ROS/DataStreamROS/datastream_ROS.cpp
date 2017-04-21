@@ -320,7 +320,7 @@ DataStreamROS::~DataStreamROS()
     shutdown();
 }
 
-void DataStreamROS::setMenu(QMenu *menu)
+void DataStreamROS::setParentMenu(QMenu *menu)
 {
     _menu = menu;
 
@@ -332,7 +332,7 @@ void DataStreamROS::setMenu(QMenu *menu)
     _menu->addAction( _action_saveIntoRosbag );
     _menu->addSeparator();
 
-    connect( _action_saveIntoRosbag, SIGNAL(triggered()), this, SLOT(saveIntoRosbag()) );
+    connect( _action_saveIntoRosbag, &QAction::triggered, this, &DataStreamROS::saveIntoRosbag );
 }
 
 
