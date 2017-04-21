@@ -9,7 +9,7 @@
 
 static int widget_uid = 0;
 
-PlotMatrix::PlotMatrix(QString name, PlotDataMap *datamap, QWidget *parent ):
+PlotMatrix::PlotMatrix(QString name, PlotDataMap& datamap, QWidget *parent ):
     QFrame( parent ),
     _mapped_data(datamap),
     _name(name)
@@ -28,8 +28,8 @@ PlotWidget* PlotMatrix::addPlotWidget(unsigned row, unsigned col)
 
     plot->setWindowTitle(QString("PlotWidget ") + QString::number(widget_uid++));
 
-    connect( plot, SIGNAL(rectChanged(PlotWidget*,QRectF)),
-             this, SLOT(on_singlePlotScaleChanged(PlotWidget*,QRectF)));
+    connect( plot, &PlotWidget::rectChanged,
+             this, &PlotMatrix::on_singlePlotScaleChanged);
 
     plot->setAttribute(Qt::WA_DeleteOnClose);
 

@@ -10,13 +10,13 @@
 
 
 TabbedPlotWidget::TabbedPlotWidget(QMainWindow *main_window,
-                                   PlotMatrix *first_tab,
-                                   PlotDataMap *mapped_data,
+                                   PlotMatrix  *first_tab,
+                                   PlotDataMap &mapped_data,
                                    QMainWindow *parent ) :
     QWidget(parent),
+    _mapped_data(mapped_data),
     ui(new Ui::TabbedPlotWidget)
 {
-    _mapped_data = mapped_data;
 
     if( main_window == parent){
         _parent_type = QString("main_window");
@@ -31,13 +31,13 @@ TabbedPlotWidget::TabbedPlotWidget(QMainWindow *main_window,
     ui->tabWidget->tabBar()->installEventFilter( this );
 
     _action_renameTab = new QAction(tr("Rename tab"), this);
-    connect( _action_renameTab, SIGNAL(triggered()), this, SLOT(on_renameCurrentTab()) );
+    connect( _action_renameTab, &QAction::triggered, this, &TabbedPlotWidget::on_renameCurrentTab);
 
     QIcon iconSave;
     iconSave.addFile(QStringLiteral(":/icons/resources/filesave@2x.png"), QSize(26, 26), QIcon::Normal, QIcon::Off);
     _action_savePlots = new  QAction(tr("&Save plots to file"), this);
     _action_savePlots->setIcon(iconSave);
-    connect(_action_savePlots, SIGNAL(triggered()), this, SLOT(on_savePlotsToFile()));
+    connect(_action_savePlots, &QAction::triggered, this, &TabbedPlotWidget::on_savePlotsToFile);
 
     _tab_menu = new QMenu(this);
     _tab_menu->addAction( _action_renameTab );
@@ -416,7 +416,7 @@ bool TabbedPlotWidget::eventFilter(QObject *obj, QEvent *event)
                 action_new_window->setIcon( icon);
                 submenu->addSeparator();
 
-                connect( action_new_window, SIGNAL(triggered()), this, SLOT(on_moveTabIntoNewWindow() ));
+                connect( action_new_window, &QAction::triggered, this, &TabbedPlotWidget::on_moveTabIntoNewWindow );
 
                 //-----------------------------------
                 for ( it = _other_siblings.begin(); it != _other_siblings.end(); it++)
@@ -431,8 +431,7 @@ bool TabbedPlotWidget::eventFilter(QObject *obj, QEvent *event)
                     }
                 }
 
-                connect(signalMapper, SIGNAL(mapped(const QString &)),
-                        this, SLOT(on_requestTabMovement(const QString &)));
+                connect(signalMapper, SIGNAL(mapped(QString)), this, SLOT(on_requestTabMovement(QString)) );
 
                 //-------------------------------
                 _tab_menu->exec( mouse_event->globalPos() );

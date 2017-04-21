@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <qwt_plot_canvas.h>
 #include <QDomDocument>
+#include <QDesktopServices>
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QStringRef>
@@ -29,7 +30,8 @@
 #include "aboutdialog.h"
 #include <QMovie>
 #include <QScrollBar>
-#include "ui_help_dialog.h"
+
+QIcon trackerIconA, trackerIconB, trackerIconC;
 
 MainWindow::MainWindow(const QCommandLineParser &commandline_parser, QWidget *parent) :
     QMainWindow(parent),
@@ -38,7 +40,7 @@ MainWindow::MainWindow(const QCommandLineParser &commandline_parser, QWidget *pa
     _redo_shortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Z), this),
     _current_streamer(nullptr),
     _disable_undo_logging(false),
-    _streaming_active(false)
+    _tracker_param( CurveTracker::VALUE )
 {
     QLocale::setDefault(QLocale::c()); // set as default
 
@@ -49,18 +51,19 @@ MainWindow::MainWindow(const QCommandLineParser &commandline_parser, QWidget *pa
 
     ui->setupUi(this);
 
-    connect( _curvelist_widget->getTable()->verticalScrollBar(), SIGNAL(sliderMoved(int)),
-             this, SLOT(updateLeftTableValues()) );
+    connect( _curvelist_widget->getTable()->verticalScrollBar(), &QScrollBar::sliderMoved,
+             this, &MainWindow::updateLeftTableValues );
 
-    connect( _curvelist_widget, SIGNAL(hiddenItemsChanged()),
-             this, SLOT(updateLeftTableValues()) );
+    connect( _curvelist_widget, &FilterableListWidget::hiddenItemsChanged,
+             this, &MainWindow::updateLeftTableValues );
 
-    connect(_curvelist_widget, SIGNAL(deleteCurve(QString)),
-            this, SLOT(deleteDataOfSingleCurve(QString)) );
+    connect(_curvelist_widget, &FilterableListWidget::deleteCurve,
+            this, &MainWindow::deleteDataOfSingleCurve );
 
-    connect(this, SIGNAL(trackerTimeUpdated(double)), this, SLOT(updateLeftTableValues()) );
+    connect( ui->timeSlider, &RealSlider::realValueChanged,
+             this, &MainWindow::onTimeSlider_valueChanged );
 
-    _main_tabbed_widget = new TabbedPlotWidget( this, NULL, &_mapped_plot_data, this);
+    _main_tabbed_widget = new TabbedPlotWidget( this, NULL, _mapped_plot_data, this);
 
     ui->centralLayout->insertWidget(0, _main_tabbed_widget);
     ui->leftLayout->addWidget( _curvelist_widget );
@@ -82,7 +85,7 @@ MainWindow::MainWindow(const QCommandLineParser &commandline_parser, QWidget *pa
     onUndoableChange();
 
     _replot_timer = new QTimer(this);
-    connect(_replot_timer, SIGNAL(timeout()), this, SLOT(updateDataAndReplot()));
+    connect(_replot_timer, &QTimer::timeout, this, &MainWindow::updateDataAndReplot);
 
     ui->menuFile->setToolTipsVisible(true);
     ui->horizontalSpacer->changeSize(0,0, QSizePolicy::Fixed, QSizePolicy::Fixed);
@@ -126,9 +129,16 @@ MainWindow::MainWindow(const QCommandLineParser &commandline_parser, QWidget *pa
     ui->streamingSpinBox->setValue(streaming_buffer_value);
 
     bool datetime_display  = settings.value("MainWindow.dateTimeDisplay", false).toBool();
-    ui->checkBoxUseDateTime->setChecked( datetime_display );
+    ui->pushButtonUseDateTime->setChecked( datetime_display );
 
     ui->widgetOptions->setVisible( ui->pushButtonOptions->isChecked() );
+    ui->line->setVisible( ui->pushButtonOptions->isChecked() );
+
+    trackerIconA.addFile(QStringLiteral(":/icons/resources/line_tracker.png"), QSize(36, 36), QIcon::Normal, QIcon::Off);
+    trackerIconB.addFile(QStringLiteral(":/icons/resources/line_tracker_1.png"), QSize(36, 36), QIcon::Normal, QIcon::Off);
+    trackerIconC.addFile(QStringLiteral(":/icons/resources/line_tracker_a.png"), QSize(36, 36), QIcon::Normal, QIcon::Off);
+
+    ui->pushButtonTimeTracker->setIcon(trackerIconB);
 }
 
 MainWindow::~MainWindow()
@@ -142,7 +152,7 @@ MainWindow::~MainWindow()
     settings.setValue("MainWindow.geometry", saveGeometry());
     settings.setValue("MainWindow.activateGrid", ui->pushButtonActivateGrid->isChecked() );
     settings.setValue("MainWindow.streamingBufferValue", ui->streamingSpinBox->value() );
-    settings.setValue("MainWindow.dateTimeDisplay",ui->checkBoxUseDateTime->isChecked() );
+    settings.setValue("MainWindow.dateTimeDisplay",ui->pushButtonUseDateTime->isChecked() );
 
     delete ui;
 }
@@ -160,12 +170,10 @@ void MainWindow::onUndoableChange()
             _undo_states.pop_back();
     }
 
-    if( isStreamingActive() == false)
-    {
-        while( _undo_states.size() >= 100 ) _undo_states.pop_front();
-        _undo_states.push_back( xmlSaveState() );
-        _redo_states.clear();
-    }
+    while( _undo_states.size() >= 100 ) _undo_states.pop_front();
+    _undo_states.push_back( xmlSaveState() );
+    _redo_states.clear();
+    //  qDebug() << "undo " << _undo_states.size();
 }
 
 
@@ -196,7 +204,7 @@ void MainWindow::updateLeftTableValues()
         for (int row = 0; row < _curvelist_widget->rowCount(); row++)
         {
             int vertical_pos = table->rowViewportPosition(row);
-            if( vertical_pos < 0 || table->isRowHidden(row) ){   continue; }
+            if( vertical_pos < 0 || table->isRowHidden(row) ){ continue; }
             if( vertical_pos > vertical_height){ break; }
 
             const std::string name = table->item(row,0)->text().toStdString();
@@ -243,39 +251,44 @@ void MainWindow::updateLeftTableValues()
     }
 }
 
+
+void MainWindow::onTrackerMovedFromWidget(QPointF relative_pos)
+{
+    _tracker_time = relative_pos.x() + _time_offset.get();
+
+    auto prev = ui->timeSlider->blockSignals(true);
+    ui->timeSlider->setRealValue( relative_pos.x() );
+    ui->timeSlider->blockSignals(prev);
+
+    onTrackerTimeUpdated( _tracker_time );
+}
+
+void MainWindow::onTimeSlider_valueChanged(double relative_time)
+{
+    _tracker_time = relative_time + _time_offset.get();
+    onTrackerTimeUpdated( _tracker_time );
+}
+
 void MainWindow::onTrackerTimeUpdated(double absolute_time)
 {
-    double relative_time = absolute_time - _time_offset;
-    if( relative_time < _min_slider_time ) relative_time = _min_slider_time;
-    if( relative_time > _max_slider_time ) relative_time = _max_slider_time;
+    updatedDisplayTime();
+    updateLeftTableValues();
 
-    double ratio = (relative_time - _min_slider_time)/(_max_slider_time-_min_slider_time);
-    double min_slider = (double)ui->horizontalSlider->minimum();
-    double max_slider = (double)ui->horizontalSlider->maximum();
-    int slider_value = (int)((max_slider- min_slider)* ratio) ;
-
-    ui->horizontalSlider->setValue(slider_value);
-    on_checkBoxUseDateTime_toggled( ui->checkBoxUseDateTime->isChecked() );
-
-    //------------------------
     for ( auto it: _state_publisher)
     {
         it.second->updateState( &_mapped_plot_data, absolute_time);
     }
-    //------------------------
-}
 
-void MainWindow::onTrackerMovedFromWidget(QPointF relative_pos)
-{
-    _tracker_time = relative_pos.x() + _time_offset;
-    onTrackerTimeUpdated( _tracker_time );
-
-    emit  trackerTimeUpdated( _tracker_time );
+    forEachWidget( [&](PlotWidget* plot)
+    {
+        plot->setTrackerPosition( _tracker_time );
+        plot->replot();
+    } );
 }
 
 void MainWindow::createTabbedDialog(PlotMatrix* first_tab)
 {
-    SubWindow* window = new SubWindow(first_tab, &_mapped_plot_data, this );
+    SubWindow* window = new SubWindow(first_tab, _mapped_plot_data, this );
     Qt::WindowFlags flags = window->windowFlags();
     window->setWindowFlags( flags | Qt::SubWindow );
 
@@ -324,17 +337,17 @@ void MainWindow::createActions()
     _undo_shortcut.setContext(Qt::ApplicationShortcut);
     _redo_shortcut.setContext(Qt::ApplicationShortcut);
 
-    connect( &_undo_shortcut, SIGNAL(activated()), this, SLOT(onUndoInvoked()) );
-    connect( &_redo_shortcut, SIGNAL(activated()), this, SLOT(onRedoInvoked()) );
+    connect( &_undo_shortcut, &QShortcut::activated, this, &MainWindow::onUndoInvoked );
+    connect( &_redo_shortcut, &QShortcut::activated, this, &MainWindow::onRedoInvoked );
 
     //---------------------------------------------
 
-    connect( ui->actionSaveLayout,SIGNAL(triggered()),        this, SLOT(onActionSaveLayout()) );
-    connect(ui->actionLoadLayout,SIGNAL(triggered()),         this, SLOT(onActionLoadLayout()) );
-    connect(ui->actionLoadData,SIGNAL(triggered()),           this, SLOT(onActionLoadDataFile()) );
-    connect(ui->actionLoadRecentDatafile,SIGNAL(triggered()), this, SLOT(onActionReloadDataFileFromSettings()) );
-    connect(ui->actionLoadRecentLayout,SIGNAL(triggered()),   this, SLOT(onActionReloadRecentLayout()) );
-    connect(ui->actionDeleteAllData,SIGNAL(triggered()),      this, SLOT(onDeleteLoadedData()) );
+    connect( ui->actionSaveLayout, &QAction::triggered,        this, &MainWindow::onActionSaveLayout );
+    connect(ui->actionLoadLayout, &QAction::triggered,         this, &MainWindow::onActionLoadLayout );
+    connect(ui->actionLoadData, &QAction::triggered,           this, &MainWindow::onActionLoadDataFile );
+    connect(ui->actionLoadRecentDatafile, &QAction::triggered, this, &MainWindow::onActionReloadDataFileFromSettings );
+    connect(ui->actionLoadRecentLayout, &QAction::triggered,   this, &MainWindow::onActionReloadRecentLayout );
+    connect(ui->actionDeleteAllData, &QAction::triggered,      this, &MainWindow::onDeleteLoadedData );
 
     //---------------------------------------------
 
@@ -411,14 +424,16 @@ void MainWindow::loadPlugins(QString directory_name)
                     loaded_plugins.insert( publisher->name() );
                     _state_publisher.insert( std::make_pair(publisher->name(), publisher) );
 
+                    publisher->setParentMenu( ui->menuPublishers );
+
                     QAction* activatePublisher = new QAction( publisher->name() , this);
                     activatePublisher->setCheckable(true);
                     activatePublisher->setChecked(false);
                     ui->menuPublishers->setEnabled(true);
                     ui->menuPublishers->addAction(activatePublisher);
 
-                    connect(activatePublisher, SIGNAL( toggled(bool)),
-                            publisher->getObject(), SLOT(setEnabled(bool)) );
+                    connect(activatePublisher, &QAction::toggled,
+                           [=](bool enable) { publisher->setEnabled( enable ); } );
                 }
             }
             else if (streamer)
@@ -437,9 +452,10 @@ void MainWindow::loadPlugins(QString directory_name)
                     ui->menuStreaming->setEnabled(true);
                     ui->menuStreaming->addAction(startStreamer);
 
-                    streamer->setMenu( ui->menuStreaming );
+                    streamer->setParentMenu( ui->menuStreaming );
 
-                    connect(startStreamer, SIGNAL(triggered()), _streamer_signal_mapper, SLOT(map()));
+                    connect(startStreamer, SIGNAL(triggered()),
+                            _streamer_signal_mapper, SLOT(map()) );
                     _streamer_signal_mapper->setMapping(startStreamer, name );
                 }
             }
@@ -533,24 +549,31 @@ void MainWindow::resizeEvent(QResizeEvent *)
 
 void MainWindow::onPlotAdded(PlotWidget* plot)
 {
-    connect( plot, SIGNAL(undoableChange()),       this, SLOT(onUndoableChange()) );
-    connect( plot, SIGNAL(trackerMoved(QPointF)),  this, SLOT(onTrackerMovedFromWidget(QPointF)));
-    connect( plot, SIGNAL(swapWidgetsRequested(PlotWidget*,PlotWidget*)), this, SLOT(onSwapPlots(PlotWidget*,PlotWidget*)) );
+    connect( plot, &PlotWidget::undoableChange,
+             this, &MainWindow::onUndoableChange );
 
-    connect( this, SIGNAL(requestRemoveCurveByName(const QString&)), plot, SLOT(removeCurve(const QString&))) ;
+    connect( plot, &PlotWidget::trackerMoved,
+             this, &MainWindow::onTrackerMovedFromWidget);
 
-    connect( this, SIGNAL(trackerTimeUpdated(double)), plot, SLOT(setTrackerPosition(double)));
-    connect( this, SIGNAL(trackerTimeUpdated(double)), plot, SLOT( replot() ));
+    connect( plot, &PlotWidget::swapWidgetsRequested,
+             this, &MainWindow::onSwapPlots);
 
-    plot->on_changeTimeOffset( _time_offset );
+    connect( this, &MainWindow::requestRemoveCurveByName,
+             plot, &PlotWidget::removeCurve) ;
+
+    connect( &_time_offset, SIGNAL( valueChanged(double)),
+             plot, SLOT(on_changeTimeOffset(double)) );
+
+    plot->on_changeTimeOffset( _time_offset.get() );
     plot->activateGrid( ui->pushButtonActivateGrid->isChecked() );
-    plot->activateTracker( isStreamingActive() == false);
+    plot->enableTracker( !isStreamingActive() );
+    plot->configureTracker( _tracker_param );
 }
 
 void MainWindow::onPlotMatrixAdded(PlotMatrix* matrix)
 {
-    connect( matrix, SIGNAL(plotAdded(PlotWidget*)), this, SLOT( onPlotAdded(PlotWidget*)));
-    connect( matrix, SIGNAL(undoableChange()),       this, SLOT( onUndoableChange()) );
+    connect( matrix, &PlotMatrix::plotAdded,      this, &MainWindow:: onPlotAdded);
+    connect( matrix, &PlotMatrix::undoableChange, this, &MainWindow:: onUndoableChange );
 }
 
 QDomDocument MainWindow::xmlSaveState() const
@@ -575,7 +598,7 @@ QDomDocument MainWindow::xmlSaveState() const
     doc.appendChild(root);
 
     QDomElement relative_time = doc.createElement( "use_relative_time_offset" );
-    relative_time.setAttribute("enabled", ui->checkBoxRemoveTimeOffset->isChecked() );
+    relative_time.setAttribute("enabled", ui->pushButtonRemoveTimeOffset->isChecked() );
     root.appendChild( relative_time );
 
     return doc;
@@ -583,8 +606,6 @@ QDomDocument MainWindow::xmlSaveState() const
 
 bool MainWindow::xmlLoadState(QDomDocument state_document)
 {
-    const bool isBlocked = this->blockSignals(true);
-
     QDomElement root = state_document.namedItem("root").toElement();
     if ( root.isNull() ) {
         qWarning() << "No <root> element found at the top-level of the XML file!";
@@ -637,11 +658,10 @@ bool MainWindow::xmlLoadState(QDomDocument state_document)
     if( !relative_time.isNull())
     {
         bool remove_offset = (relative_time.attribute("enabled") == QString("1"));
-        ui->checkBoxRemoveTimeOffset->setChecked(remove_offset);
-        updateTimeSlider();
+        ui->pushButtonRemoveTimeOffset->setChecked(remove_offset);
     }
     onLayoutChanged();
-    this->blockSignals(isBlocked);
+
     return true;
 }
 
@@ -790,7 +810,7 @@ void MainWindow::onActionLoadDataFile(bool reload_from_settings)
     onActionLoadDataFileImpl(filename, false );
 }
 
-void MainWindow::importPlotDataMap(const PlotDataMap& new_data)
+void MainWindow::importPlotDataMap(const PlotDataMap& new_data, bool delete_older)
 {
     // overwrite the old user_defined map
     _mapped_plot_data.user_defined = new_data.user_defined;
@@ -799,14 +819,12 @@ void MainWindow::importPlotDataMap(const PlotDataMap& new_data)
     {
         const std::string& name  = it.first;
         PlotDataPtr plot  = it.second;
-
-        QString qname = QString::fromStdString(name);
         auto plot_with_same_name = _mapped_plot_data.numeric.find(name);
 
         // this is a new plot
         if( plot_with_same_name == _mapped_plot_data.numeric.end() )
         {
-            _curvelist_widget->addItem( new QTableWidgetItem( qname ) );
+            _curvelist_widget->addItem( new QTableWidgetItem( name.c_str() ) );
             _mapped_plot_data.numeric.insert( std::make_pair(name, plot) );
         }
         else{ // a plot with the same name existed already, overwrite it
@@ -814,7 +832,7 @@ void MainWindow::importPlotDataMap(const PlotDataMap& new_data)
         }
     }
 
-    if( _mapped_plot_data.numeric.size() > new_data.numeric.size() )
+    if( delete_older && _mapped_plot_data.numeric.size() > new_data.numeric.size() )
     {
         QMessageBox::StandardButton reply;
         reply = QMessageBox::question(0, tr("Warning"),
@@ -823,22 +841,18 @@ void MainWindow::importPlotDataMap(const PlotDataMap& new_data)
                                       QMessageBox::Yes );
         if( reply == QMessageBox::Yes )
         {
-            _loaded_datafile = QString();
+            std::vector<std::string> data_to_remove;
 
-            bool repeat = true;
-            while( repeat )
+            for (auto& it: _mapped_plot_data.numeric )
             {
-                repeat = false;
-                for (auto& it: _mapped_plot_data.numeric )
-                {
-                    auto& name = it.first;
-                    if( new_data.numeric.find( name ) == new_data.numeric.end() )
-                    {
-                        this->deleteDataOfSingleCurve( QString( name.c_str() ) );
-                        repeat = true;
-                        break;
-                    }
+                auto& name = it.first;
+                if( new_data.numeric.find( name ) == new_data.numeric.end() ){
+                    data_to_remove.push_back(name);
                 }
+            }
+            for (auto& to_remove: data_to_remove )
+            {
+                this->deleteDataOfSingleCurve( QString( to_remove.c_str() ) );
             }
         }
     }
@@ -848,6 +862,11 @@ void MainWindow::importPlotDataMap(const PlotDataMap& new_data)
     } );
 
     updateTimeSlider();
+}
+
+bool MainWindow::isStreamingActive() const
+{
+    return ui->pushButtonStreaming->isChecked();
 }
 
 void MainWindow::onActionLoadDataFileImpl(QString filename, bool reuse_last_timeindex )
@@ -933,7 +952,7 @@ void MainWindow::onActionLoadDataFileImpl(QString filename, bool reuse_last_time
         _last_load_configuration = timeindex_name;
 
         // remap to different type
-        importPlotDataMap(mapped_data);
+        importPlotDataMap(mapped_data, true);
     }
     else{
         QMessageBox::warning(this, tr("Error"),
@@ -989,7 +1008,8 @@ void MainWindow::onActionLoadStreamer(QString streamer_name)
     if( _current_streamer && _current_streamer->start() )
     {
         _current_streamer->enableStreaming( false );
-        importPlotDataMap( _current_streamer->getDataMap() );
+        importPlotDataMap( _current_streamer->getDataMap(), true );
+        _loaded_datafile = QString();
 
         for(auto& action: ui->menuStreaming->actions()) {
             action->setEnabled(false);
@@ -1240,34 +1260,29 @@ void MainWindow::updateTimeSlider()
     {
         min_time = 0.0;
         max_time = 0.0;
-        max_steps = 0;
+        max_steps = 1;
     }
     //----------------------------------
     // Update Time offset
-    bool remove_offset = ui->checkBoxRemoveTimeOffset->isChecked();
-
-    if( remove_offset )
+    //if( update_timeoffset)
     {
-        if( isStreamingActive() ){
-            _time_offset = _time_offset_during_streaming;
+        bool remove_offset = ui->pushButtonRemoveTimeOffset->isChecked();
+
+        if( remove_offset )
+        {
+            if( isStreamingActive() == false){
+                _time_offset.set( min_time );
+            }
         }
-        else {
-            _time_offset = min_time;
+        else{
+            _time_offset.set( 0.0 );
         }
     }
-    else{
-        _time_offset = 0.0;
-    }
-    forEachWidget( [&](PlotWidget* plot) {
-        plot->on_changeTimeOffset( _time_offset );
-    } );
 
     //----------------------------------
-    // Update horizontal slider
-    _min_slider_time = min_time - _time_offset;
-    _max_slider_time = max_time - _time_offset;
-
-    ui->horizontalSlider->setRange(0,max_steps);
+    ui->timeSlider->setLimits(min_time - _time_offset.get(),
+                              max_time - _time_offset.get(),
+                              max_steps);
 }
 
 void MainWindow::on_pushButtonAddSubwindow_pressed()
@@ -1315,38 +1330,41 @@ void MainWindow::onSwapPlots(PlotWidget *source, PlotWidget *destination)
     onUndoableChange();
 }
 
-void MainWindow::on_pushButtonStreaming_toggled(bool checked)
+void MainWindow::on_pushButtonStreaming_toggled(bool streaming)
 {
     if( !_current_streamer )
     {
-        checked = false;
+        streaming = false;
+    }
+    else{
+        _current_streamer->enableStreaming( streaming ) ;
     }
 
-    if( checked )
+    if( streaming )
     {
         ui->horizontalSpacer->changeSize(1,1, QSizePolicy::Expanding, QSizePolicy::Fixed);
         ui->pushButtonStreaming->setText("Streaming ON");
     }
     else{
+        _replot_timer->stop( );
         ui->horizontalSpacer->changeSize(0,0, QSizePolicy::Fixed, QSizePolicy::Fixed);
         ui->pushButtonStreaming->setText("Streaming OFF");
     }
-    ui->streamingLabel->setHidden( !checked );
-    ui->streamingSpinBox->setHidden( !checked );
-    ui->horizontalSlider->setHidden( checked );
+    ui->streamingLabel->setHidden( !streaming );
+    ui->streamingSpinBox->setHidden( !streaming );
+    ui->timeSlider->setHidden( streaming );
 
     forEachWidget( [&](PlotWidget* plot)
     {
-        plot->activateTracker( !checked );
+        plot->enableTracker( !streaming );
     } );
 
-    emit activateStreamingMode( checked );
+    emit activateStreamingMode( streaming );
 
     this->repaint();
 
-    if( _current_streamer )
+    if( _current_streamer && streaming)
     {
-        _current_streamer->enableStreaming( checked ) ;
         _replot_timer->setSingleShot(true);
         _replot_timer->start( 5 );
 
@@ -1360,20 +1378,23 @@ void MainWindow::on_pushButtonStreaming_toggled(bool checked)
                 min_time  = std::min( min_time,  data->at(0).x);
             }
         }
-        _time_offset_during_streaming = min_time;
 
-        if( _time_offset_during_streaming ==  std::numeric_limits<double>::max())
+        if( min_time == std::numeric_limits<double>::max())
         {
-            _time_offset_during_streaming = 0.0;
+            using namespace std::chrono;
+            auto epoch = high_resolution_clock::now().time_since_epoch();
+            min_time = duration<double>(epoch).count();
         }
-        _time_offset = _time_offset_during_streaming;
+        _time_offset.set(min_time);
     }
-    _streaming_active = checked;
-
+    else{
+        onUndoableChange();
+    }
 }
 
 void MainWindow::updateDataAndReplot()
 {
+
     // STEP 1: sync the data (usefull for streaming
     bool data_updated = false;
     {
@@ -1381,7 +1402,7 @@ void MainWindow::updateDataAndReplot()
         for(auto it : _mapped_plot_data.numeric)
         {
             PlotDataPtr data = ( it.second );
-            if( data->flushAsyncBuffer() ) data_updated = true;
+            data_updated |=  data->flushAsyncBuffer();
         }
         PlotData::asyncPushMutex().unlock();
     }
@@ -1393,22 +1414,30 @@ void MainWindow::updateDataAndReplot()
             plot->updateCurves(true);
         } );
         updateTimeSlider();
-        updateLeftTableValues();
     }
     //--------------------------------
     // trigger again the execution of this callback if steaming == true
     if( isStreamingActive())
     {
+        static auto prev_time = std::chrono::steady_clock::now();
+        auto time_now =  std::chrono::steady_clock::now();
+        if( (time_now - prev_time) > std::chrono::seconds(2) )
+        {
+            prev_time = time_now;
+            importPlotDataMap( _current_streamer->getDataMap(), false );
+        }
+
         _replot_timer->setSingleShot(true);
         _replot_timer->stop( );
-        _replot_timer->start( 20 ); // 50 Hz at most
+        _replot_timer->start( 40 ); // 25 Hz at most
 
+        _tracker_time = ui->timeSlider->getMaximum() + _time_offset.get();
         forEachWidget( [&](PlotWidget* plot)
         {
-            if( plot->isXYPlot()){
-                plot->setTrackerPosition( _max_slider_time + _time_offset);
-            }
+            plot->setTrackerPosition( _tracker_time );
         } );
+
+        onTrackerTimeUpdated(_tracker_time);
     }
     //--------------------------------
     // zoom out and replot
@@ -1444,7 +1473,6 @@ void MainWindow::on_actionAbout_triggered()
 
 void MainWindow::on_actionStopStreaming_triggered()
 {
-    _streaming_active = false;
     ui->pushButtonStreaming->setChecked(false);
     ui->pushButtonStreaming->setEnabled(false);
     _current_streamer->shutdown();
@@ -1476,52 +1504,38 @@ void MainWindow::on_actionExit_triggered()
 
 void MainWindow::on_actionQuick_Help_triggered()
 {
-    QDialog*  dialog = new QDialog(this);
-    Ui::HelpDialog *ui = new Ui::HelpDialog;
-    ui->setupUi(dialog);
+    QUrl url_LOC("file:///"  + tr(PJ_DOCUMENTATION_DIR_LOCAL) + "/index.html", QUrl::TolerantMode);
+    QUrl url_SYS("file:///"  + tr(PJ_DOCUMENTATION_DIR_SYSTEM) + "/index.html", QUrl::TolerantMode);
 
-    QMovie *movie_1 = new QMovie(":/doc/pj-drag-curve.gif");
-    ui->label_1->setMovie(movie_1);
-    movie_1->start();
-
-    QMovie *movie_2 = new QMovie(":/doc/pj-multiplot.gif");
-    ui->label_2->setMovie(movie_2);
-    movie_2->start();
-
-    QMovie *movie_3 = new QMovie(":/doc/pj-area-zoom.gif");
-    ui->label_3->setMovie(movie_3);
-    movie_3->start();
-
-    QMovie *movie_4 = new QMovie(":/doc/pj-wheel-zoom.gif");
-    ui->label_4->setMovie(movie_4);
-    movie_4->start();
-
-    QMovie *movie_5 = new QMovie(":/doc/pj-tracker.gif");
-    ui->label_5->setMovie(movie_5);
-    movie_5->start();
-
-    QMovie *movie_6 = new QMovie(":/doc/pj-swap-plots.gif");
-    ui->label_6->setMovie(movie_6);
-    movie_6->start();
-
-    dialog->exec();
+    if( url_LOC.isValid() )
+    {
+        if(!QDesktopServices::openUrl(url_LOC))
+        {
+            QMessageBox::warning(this, "Can't find Documentation",
+                                 QString("Can't open the file %1").arg( url_LOC.path()) );
+        }
+    }
+    else if( url_LOC.path() != url_SYS.path())
+    {
+        if( url_SYS.isValid() )
+        {
+            if(!QDesktopServices::openUrl(url_SYS))
+            {
+                QMessageBox::warning(this, "Can't find Documentation",
+                                     QString("Can't open the file %1").arg( url_SYS.path()) );
+            }
+        }
+        else{
+            QMessageBox::warning(this, "Can't find Documentation", "Can't find documentation" );
+        }
+    }
 }
 
-void MainWindow::on_horizontalSlider_valueChanged(int position)
-{
-    QSlider* slider = ui->horizontalSlider;
-    double ratio = (double)position / (double)(slider->maximum() -  slider->minimum() );
-    double posX = (_max_slider_time-_min_slider_time) * ratio + _min_slider_time;
 
-    _tracker_time = posX + _time_offset;
-    onTrackerTimeUpdated( _tracker_time );
-
-    emit trackerTimeUpdated( _tracker_time );
-}
-
-void MainWindow::on_checkBoxRemoveTimeOffset_toggled(bool checked)
+void MainWindow::on_pushButtonRemoveTimeOffset_toggled(bool )
 {
     updateTimeSlider();
+    updatedDisplayTime();
     if (this->signalsBlocked() == false)  onUndoableChange();
 }
 
@@ -1531,12 +1545,12 @@ void MainWindow::on_pushButtonOptions_toggled(bool checked)
     ui->widgetOptions->setVisible( checked );
 }
 
-void MainWindow::on_checkBoxUseDateTime_toggled(bool checked)
+void MainWindow::updatedDisplayTime()
 {
-    const double relative_time = _tracker_time - _time_offset;
-    if( checked)
+    const double relative_time = _tracker_time - _time_offset.get();
+    if( ui->pushButtonUseDateTime->isChecked() )
     {
-        if( _time_offset>0 )
+        if( _time_offset.get() > 0 )
         {
             QTime time = QTime::fromMSecsSinceStartOfDay( std::round(relative_time*1000.0));
             ui->displayTime->setText( time.toString("HH:mm::ss.zzz") );
@@ -1578,6 +1592,34 @@ void MainWindow::on_actionClearBuffer_triggered()
     }
     forEachWidget( [](PlotWidget* plot) {
         plot->reloadPlotData();
+        plot->replot();
+    });
+}
+
+void MainWindow::on_pushButtonUseDateTime_toggled(bool checked)
+{
+    updatedDisplayTime();
+}
+
+void MainWindow::on_pushButtonTimeTracker_pressed()
+{
+    if( _tracker_param == CurveTracker::LINE_ONLY)
+    {
+        _tracker_param = CurveTracker::VALUE;
+        ui->pushButtonTimeTracker->setIcon( trackerIconB );
+    }
+    else if( _tracker_param == CurveTracker::VALUE)
+    {
+        _tracker_param = CurveTracker::VALUE_NAME;
+        ui->pushButtonTimeTracker->setIcon( trackerIconC );
+    }
+    else if( _tracker_param == CurveTracker::VALUE_NAME)
+    {
+        _tracker_param = CurveTracker::LINE_ONLY;
+        ui->pushButtonTimeTracker->setIcon( trackerIconA );
+    }
+    forEachWidget( [&](PlotWidget* plot) {
+        plot->configureTracker(_tracker_param);
         plot->replot();
     });
 }

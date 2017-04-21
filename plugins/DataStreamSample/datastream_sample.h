@@ -30,8 +30,6 @@ public:
 
     virtual const char* name() const override { return "DataStreamer Dummy"; }
 
-    virtual QObject* getObject() override { return this; }
-
     virtual bool isDebugPlugin() override { return true; }
 
 private:

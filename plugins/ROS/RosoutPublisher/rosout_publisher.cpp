@@ -2,7 +2,6 @@
 #include <PlotJuggler/any.hpp>
 #include "../shape_shifter_factory.hpp"
 #include "../qnodedialog.h"
-#include <QMainWindow>
 #include <QSettings>
 
 RosoutPublisher::RosoutPublisher():
@@ -16,24 +15,29 @@ RosoutPublisher::~RosoutPublisher()
 
 }
 
+
 void RosoutPublisher::setEnabled(bool to_enable)
 {
     enabled_ = to_enable;
 
     if( enabled())
     {
+        _tablemodel.clear();
         _minimum_time_usec = std::numeric_limits<int64_t>::max();
         _maximum_time_usec = std::numeric_limits<int64_t>::min();
 
-        _log_window = new QMainWindow();
+        _log_window = new RosoutWindow();
 
         auto logwidget = new rqt_console_plus::LogWidget(_tablemodel, _log_window);
         _log_window->setCentralWidget( logwidget );
         Qt::WindowFlags flags = _log_window->windowFlags();
         _log_window->setWindowFlags( flags | Qt::SubWindow );
 
-        connect( this, SIGNAL(timeRangeChanged(TimePoint,TimePoint)),
-                 logwidget, SLOT(on_timeRangeChanged(TimePoint,TimePoint)) );
+        connect( this, &RosoutPublisher::timeRangeChanged,
+                 logwidget, &rqt_console_plus::LogWidget::on_timeRangeChanged );
+
+        connect(_log_window, &RosoutWindow::closed,
+                this, &RosoutPublisher::onWindowClosed );
 
         QSettings settings( "IcarusTechnology", "PlotJuggler");
         _log_window->restoreGeometry(settings.value("RosoutPublisher.geometry").toByteArray());
@@ -41,16 +45,22 @@ void RosoutPublisher::setEnabled(bool to_enable)
         _log_window->show();
     }
     else{
-        if( _log_window ) {
-
-            QSettings settings( "IcarusTechnology", "PlotJuggler");
-            settings.setValue("RosoutPublisher.geometry", _log_window->saveGeometry());
-
-            _log_window->setAttribute(Qt::WA_DeleteOnClose, true);
+        if( _log_window )
+        {
             _log_window->close();
-            _tablemodel.removeRows(0, _tablemodel.rowCount() );
         }
     }
+}
+
+void RosoutPublisher::onWindowClosed()
+{
+    QSettings settings( "IcarusTechnology", "PlotJuggler");
+    settings.setValue("RosoutPublisher.geometry", _log_window->saveGeometry());
+
+    _tablemodel.clear();
+    _log_window->deleteLater();
+    _log_window = nullptr;
+    enabled_ = false;
 }
 
 
@@ -133,9 +143,8 @@ void RosoutPublisher::updateState(PlotDataMap *datamap, double current_time)
 
     using namespace std::chrono;
     TimePoint p_min  = TimePoint() + microseconds(_minimum_time_usec);
-    TimePoint p_max  = TimePoint() + microseconds(_maximum_time_usec);
+    //TimePoint p_max  = TimePoint() + microseconds(_maximum_time_usec);
     TimePoint p_curr = TimePoint() + microseconds( (int64_t)(current_time*1000000));
 
     emit timeRangeChanged(p_min, p_curr);
-
 }
