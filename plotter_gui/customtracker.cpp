@@ -5,6 +5,7 @@
 #include "qwt_event_pattern.h"
 #include <qwt_symbol.h>
 #include <qevent.h>
+#include <QFontDatabase>
 
 struct compareX
 {
@@ -30,6 +31,7 @@ CurveTracker::CurveTracker( QwtPlot *plot ):
     _text_marker = ( new QwtPlotMarker );
     _text_marker->attach(plot);
 
+    _visible = true;
 }
 
 QPointF CurveTracker::actualPosition() const
@@ -37,12 +39,26 @@ QPointF CurveTracker::actualPosition() const
     return _prev_trackerpoint;
 }
 
+void CurveTracker::setParameter(Parameter par)
+{
+    bool changed = _param != par;
+    _param = par;
+
+    if( changed ){
+        setPosition( _prev_trackerpoint );
+    }
+}
+
 void CurveTracker::setEnabled(bool enable)
 {
     _visible = enable;
-
     _line_marker->setVisible( enable );
     _text_marker->setVisible( enable );
+
+    for (int i = 0 ; i < _marker.size(); i++ )
+    {
+        _marker[i]->setVisible( enable );
+    }
 
 }
 
@@ -71,11 +87,12 @@ void CurveTracker::setPosition(const QPointF& position)
     {
         _marker.push_back( new QwtPlotMarker );
         _marker[i]->attach( _plot );
-        _marker[i]->setVisible( _visible );
     }
 
-    QString text_marker_info;
+
     double text_X_offset = 0;
+
+    std::multimap<double,QString> text_lines;
 
     for ( int i = 0; i < curves.size(); i++ )
     {
@@ -111,15 +128,30 @@ void CurveTracker::setPosition(const QPointF& position)
 
         _marker[i]->setValue( point );
 
-        if( rect.contains( point ) &&  _visible)
+        if( rect.contains( point ) &&  _visible )
         {
             tot_Y += point.y();
             visible_points++;
+            double val = point.y();
 
-            text_marker_info += QString( "<font color=""%1"">%2</font>" ).arg( color.name() ).arg( point.y() );
-            if(  (i+1) < curves.size() ){
-                text_marker_info += "<br>";
+            QString line;
+
+            if( _param == VALUE)
+            {
+                line = QString( "<font color=%1>%2</font>" ).arg( color.name() ).arg( val );
             }
+            else if( _param == VALUE_NAME)
+            {
+                QString value = QString::number( val, 'f', 3);
+                value.reserve(10);
+                while(value.length() < 9) value.push_front(' ');
+                value.push_front('|');
+
+                line = QString( "<font color=%1>%2 : %3</font>" )
+                        .arg( color.name() ).arg( value ).arg(curve->title().text() );
+            }
+
+            text_lines.insert( std::make_pair(val, line) );
             _marker[i]->setVisible( true );
         }
         else{
@@ -131,20 +163,36 @@ void CurveTracker::setPosition(const QPointF& position)
     QwtText mark_text;
     mark_text.setColor( Qt::black );
 
+    QString text_marker_info;
+
+    int count = 0;
+    for(auto it = text_lines.rbegin(); it != text_lines.rend(); it++)
+    {
+        text_marker_info += it->second;
+        if( count++ < text_lines.size() -1 )
+        {
+            text_marker_info += "<br>";
+        }
+    }
+
     QColor c( "#FFFFFF" );
     mark_text.setBorderPen( QPen( c, 2 ) );
-    c.setAlpha( 200 );
+    c.setAlpha( 220 );
     mark_text.setBackgroundBrush( c );
     mark_text.setText( text_marker_info );
+    mark_text.setFont(  QFontDatabase::systemFont(QFontDatabase::FixedFont) );
+    mark_text.setRenderFlags( _param == VALUE ? Qt::AlignCenter : Qt::AlignLeft);
 
     _text_marker->setLabel(mark_text);
     _text_marker->setLabelAlignment( Qt::AlignRight );
+
     _text_marker->setXValue( position.x() + text_X_offset );
 
     if(visible_points > 0){
         _text_marker->setYValue( tot_Y/visible_points );
     }
-    _text_marker->setVisible( visible_points > 0 &&  _visible);
+
+    _text_marker->setVisible( visible_points > 0 && _visible && _param != LINE_ONLY );
 
     _prev_trackerpoint = position;
 

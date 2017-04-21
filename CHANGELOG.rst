@@ -3,6 +3,18 @@ Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
+0.18.0 (2017-04-21)
+-------------------
+* added visualization policy to the TimeTracker
+* bug fix in RosoutPublisher
+* added try-catch guard to third party plugins method invokation
+* improving documentation
+* multiple fixes
+* shall periodically update the list of curves from the streamer
+* make the API of plugins more consistent and future proof
+* removed double replot during streaming (and framerate limited to 25)
+* Contributors: Davide Faconti
+
 0.17.0 (2017-04-02)
 -------------------
 * more renaming rules and samples
