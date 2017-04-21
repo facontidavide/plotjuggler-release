@@ -17,7 +17,6 @@
 #include <QHeaderView>
 #include <iostream>
 #include "logwidget.hpp"
-#include <QDomDocument>
 
 namespace rqt_console_plus {
 
@@ -44,8 +43,8 @@ LogWidget::LogWidget(LogsTableModel& tablemodel, QWidget *parent)
 
   ui.tableView->verticalHeader()->setVisible(false);
 
-  connect( &model, SIGNAL(rowsInserted(const QModelIndex&, int, int)),
-           this, SLOT(on_rowsInserted(const QModelIndex&,int,int))  );
+  connect( &model, &LogsTableModel::rowsInserted,
+           this,  &LogWidget::on_rowsInserted );
 
   proxy_model.setSeverityDebugEnabled( ui.buttonEnableDebug->isChecked() );
   proxy_model.setSeverityWarningsEnabled( ui.buttonEnableWarnings->isChecked() );
