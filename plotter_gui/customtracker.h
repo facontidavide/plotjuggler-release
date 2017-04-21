@@ -18,12 +18,19 @@ public:
 
     QPointF actualPosition() const;
 
+    typedef enum {
+        LINE_ONLY,
+        VALUE,
+        VALUE_NAME
+    }Parameter;
+
 public slots:
 
-    void setPosition(const QPointF & );
+    void setPosition(const QPointF & pos);
+
+    void setParameter(Parameter par);
 
     void setEnabled(bool enable);
-
 
 private:
     QLineF  curveLineAt( const QwtPlotCurve *, double x ) const;
@@ -36,6 +43,7 @@ private:
     QwtPlotMarker* _line_marker;
     QwtPlotMarker* _text_marker;
     QwtPlot* _plot;
+    Parameter _param;
     bool _visible;
 
 };
