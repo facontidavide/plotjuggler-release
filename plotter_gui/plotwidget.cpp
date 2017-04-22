@@ -120,21 +120,21 @@ void PlotWidget::buildActions()
     connect(_action_removeCurve, &QAction::triggered, this, &PlotWidget::launchRemoveCurveDialog);
 
     QIcon iconDelete;
-    iconDelete.addFile(QStringLiteral(":/icons/resources/checkboxalt.png"), QSize(26, 26), QIcon::Normal, QIcon::Off);
+    iconDelete.addFile(QStringLiteral(":/icons/resources/checkboxalt.png"), QSize(26, 26));
     _action_removeAllCurves = new QAction(tr("&Remove all curves"), this);
     _action_removeAllCurves->setIcon(iconDelete);
     connect(_action_removeAllCurves, &QAction::triggered, this, &PlotWidget::detachAllCurves);
     connect(_action_removeAllCurves, &QAction::triggered, this, &PlotWidget::undoableChange );
 
     QIcon iconColors;
-    iconColors.addFile(QStringLiteral(":/icons/resources/office_chart_lines.png"), QSize(26, 26), QIcon::Normal, QIcon::Off);
+    iconColors.addFile(QStringLiteral(":/icons/resources/office_chart_lines.png"), QSize(26, 26));
     _action_changeColorsDialog = new QAction(tr("&Change colors"), this);
     _action_changeColorsDialog->setIcon(iconColors);
     _action_changeColorsDialog->setStatusTip(tr("Change the color of the curves"));
     connect(_action_changeColorsDialog, &QAction::triggered, this, &PlotWidget::on_changeColorsDialog_triggered);
 
     QIcon iconPoints;
-    iconPoints.addFile(QStringLiteral(":/icons/resources/line_chart_32px.png"), QSize(26, 26), QIcon::Normal, QIcon::Off);
+    iconPoints.addFile(QStringLiteral(":/icons/resources/line_chart_32px.png"), QSize(26, 26));
     _action_showPoints = new QAction(tr("&Show lines and points"), this);
     _action_showPoints->setIcon(iconPoints);
     _action_showPoints->setCheckable( true );
@@ -142,14 +142,14 @@ void PlotWidget::buildActions()
     connect(_action_showPoints, &QAction::triggered, this, &PlotWidget::on_showPoints_triggered);
 
     QIcon iconZoomH;
-    iconZoomH.addFile(QStringLiteral(":/icons/resources/resize_horizontal.png"), QSize(26, 26), QIcon::Normal, QIcon::Off);
+    iconZoomH.addFile(QStringLiteral(":/icons/resources/resize_horizontal.png"), QSize(26, 26));
     _action_zoomOutHorizontally = new QAction(tr("&Zoom Out Horizontally"), this);
     _action_zoomOutHorizontally->setIcon(iconZoomH);
     connect(_action_zoomOutHorizontally, &QAction::triggered, this, &PlotWidget::on_zoomOutHorizontal_triggered);
     connect(_action_zoomOutHorizontally, &QAction::triggered, this, &PlotWidget::undoableChange );
 
     QIcon iconZoomV;
-    iconZoomV.addFile(QStringLiteral(":/icons/resources/resize_vertical.png"), QSize(26, 26), QIcon::Normal, QIcon::Off);
+    iconZoomV.addFile(QStringLiteral(":/icons/resources/resize_vertical.png"), QSize(26, 26));
     _action_zoomOutVertically = new QAction(tr("&Zoom Out Vertically"), this);
     _action_zoomOutVertically->setIcon(iconZoomV);
     connect(_action_zoomOutVertically, &QAction::triggered, this, &PlotWidget::on_zoomOutVertical_triggered);
@@ -173,7 +173,7 @@ void PlotWidget::buildActions()
     connect(_action_phaseXY, &QAction::triggered, this, &PlotWidget::on_convertToXY_triggered);
 
     QIcon iconSave;
-    iconSave.addFile(QStringLiteral(":/icons/resources/filesave@2x.png"), QSize(26, 26), QIcon::Normal, QIcon::Off);
+    iconSave.addFile(QStringLiteral(":/icons/resources/filesave@2x.png"), QSize(26, 26));
     _action_saveToFile = new  QAction(tr("&Save plot to file"), this);
     _action_saveToFile->setIcon(iconSave);
     connect(_action_saveToFile, &QAction::triggered, this, &PlotWidget::on_savePlotToFile);

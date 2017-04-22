@@ -20,8 +20,8 @@
    <string>PlotJuggler</string>
   </property>
   <property name="windowIcon">
-   <iconset>
-    <normaloff>:/icons/resources/Line_tracker.png</normaloff>:/icons/resources/Line_tracker.png</iconset>
+   <iconset resource="resource.qrc">
+    <normaloff>:/icons/resources/office_chart_line_stacked.png</normaloff>:/icons/resources/office_chart_line_stacked.png</iconset>
   </property>
   <property name="styleSheet">
    <string notr="true"/>
@@ -116,53 +116,6 @@ border-radius: 4px;
             </property>
             <property name="flat">
              <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="pushButtonAddSubwindow">
-            <property name="minimumSize">
-             <size>
-              <width>40</width>
-              <height>40</height>
-             </size>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>40</width>
-              <height>40</height>
-             </size>
-            </property>
-            <property name="focusPolicy">
-             <enum>Qt::NoFocus</enum>
-            </property>
-            <property name="toolTip">
-             <string>Add new subwindow</string>
-            </property>
-            <property name="whatsThis">
-             <string>Add new subwindow</string>
-            </property>
-            <property name="styleSheet">
-             <string notr="true">border: 1px solid black;
-border-radius: 6px;
-background: white;
-</string>
-            </property>
-            <property name="text">
-             <string/>
-            </property>
-            <property name="icon">
-             <iconset resource="resource.qrc">
-              <normaloff>:/icons/resources/stacks_32px.png</normaloff>:/icons/resources/stacks_32px.png</iconset>
-            </property>
-            <property name="iconSize">
-             <size>
-              <width>30</width>
-              <height>30</height>
-             </size>
-            </property>
-            <property name="flat">
-             <bool>false</bool>
             </property>
            </widget>
           </item>
@@ -461,14 +414,6 @@ background: white;
      </widget>
     </item>
    </layout>
-  </widget>
-  <widget class="QStatusBar" name="statusBar">
-   <property name="minimumSize">
-    <size>
-     <width>0</width>
-     <height>0</height>
-    </size>
-   </property>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">

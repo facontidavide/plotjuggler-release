@@ -143,9 +143,8 @@ void CurveTracker::setPosition(const QPointF& position)
             else if( _param == VALUE_NAME)
             {
                 QString value = QString::number( val, 'f', 3);
-                value.reserve(10);
-                while(value.length() < 9) value.push_front(' ');
-                value.push_front('|');
+                int whitespaces = 8 - value.length();
+                while(whitespaces-- > 0) value.prepend("&nbsp;");
 
                 line = QString( "<font color=%1>%2 : %3</font>" )
                         .arg( color.name() ).arg( value ).arg(curve->title().text() );
