@@ -13,6 +13,3 @@ when streaming is ON.
 
 ![streaming](images/pj-streaming.gif)
 
-![streaming](images/pj-streaming.png)
-
-
