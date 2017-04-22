@@ -34,7 +34,7 @@ TabbedPlotWidget::TabbedPlotWidget(QMainWindow *main_window,
     connect( _action_renameTab, &QAction::triggered, this, &TabbedPlotWidget::on_renameCurrentTab);
 
     QIcon iconSave;
-    iconSave.addFile(QStringLiteral(":/icons/resources/filesave@2x.png"), QSize(26, 26), QIcon::Normal, QIcon::Off);
+    iconSave.addFile(QStringLiteral(":/icons/resources/filesave@2x.png"), QSize(26, 26));
     _action_savePlots = new  QAction(tr("&Save plots to file"), this);
     _action_savePlots->setIcon(iconSave);
     connect(_action_savePlots, &QAction::triggered, this, &TabbedPlotWidget::on_savePlotsToFile);
@@ -411,7 +411,7 @@ bool TabbedPlotWidget::eventFilter(QObject *obj, QEvent *event)
                 QAction* action_new_window = submenu->addAction( "New Window" );
 
                 QIcon icon;
-                icon.addFile(QStringLiteral(":/icons/resources/stacks_32px.png"), QSize(16, 16), QIcon::Normal, QIcon::Off);
+                icon.addFile(QStringLiteral(":/icons/resources/stacks_32px.png"), QSize(16, 16));
 
                 action_new_window->setIcon( icon);
                 submenu->addSeparator();

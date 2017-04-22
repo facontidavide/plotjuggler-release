@@ -6,13 +6,13 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>419</width>
+    <width>280</width>
     <height>650</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
-    <width>300</width>
+    <width>280</width>
     <height>0</height>
    </size>
   </property>
@@ -24,7 +24,7 @@
   </property>
   <property name="baseSize">
    <size>
-    <width>300</width>
+    <width>280</width>
     <height>0</height>
    </size>
   </property>
@@ -210,7 +210,7 @@ border: 0.5px solid rgb(150, 150, 150);</string>
              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Show only names which contains the &lt;/p&gt;&lt;p&gt;following &lt;span style=&quot; font-weight:600;&quot;&gt;space separated&lt;/span&gt; sub-strings.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
             <property name="text">
-             <string>contains text</string>
+             <string>contains </string>
             </property>
             <property name="checked">
              <bool>true</bool>
