@@ -1,11 +1,12 @@
 #include <functional>
+#include <stdio.h>
+#include <set>
 #include <QMouseEvent>
 #include <QDebug>
 #include <numeric>
 #include <QMimeData>
 #include <QMenu>
 #include <QStringListModel>
-#include <stdio.h>
 #include <qwt_plot_canvas.h>
 #include <QDomDocument>
 #include <QDesktopServices>
@@ -16,9 +17,10 @@
 #include <QPluginLoader>
 #include <QSettings>
 #include <QWindow>
-#include <set>
 #include <QInputDialog>
 #include <QCommandLineParser>
+#include <QMovie>
+#include <QScrollBar>
 
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
@@ -28,10 +30,7 @@
 #include "tabbedplotwidget.h"
 #include "selectlistdialog.h"
 #include "aboutdialog.h"
-#include <QMovie>
-#include <QScrollBar>
 
-QIcon trackerIconA, trackerIconB, trackerIconC;
 
 MainWindow::MainWindow(const QCommandLineParser &commandline_parser, QWidget *parent) :
     QMainWindow(parent),
@@ -50,6 +49,15 @@ MainWindow::MainWindow(const QCommandLineParser &commandline_parser, QWidget *pa
     _streamer_signal_mapper = new QSignalMapper(this);
 
     ui->setupUi(this);
+
+    {
+        QIcon icon(":/icons/resources/office_chart_line_stacked.png");
+        if (!icon.isNull())
+        {
+            this->setWindowIcon(icon);
+            QApplication::setWindowIcon(icon);
+        }
+    }
 
     connect( _curvelist_widget->getTable()->verticalScrollBar(), &QScrollBar::sliderMoved,
              this, &MainWindow::updateLeftTableValues );
@@ -70,7 +78,7 @@ MainWindow::MainWindow(const QCommandLineParser &commandline_parser, QWidget *pa
 
     ui->splitter->setCollapsible(0,true);
     ui->splitter->setStretchFactor(0,2);
-    ui->splitter->setStretchFactor(1,5);
+    ui->splitter->setStretchFactor(1,6);
 
     connect( ui->splitter, SIGNAL(splitterMoved(int,int)), SLOT(onSplitterMoved(int,int)) );
 
@@ -134,26 +142,29 @@ MainWindow::MainWindow(const QCommandLineParser &commandline_parser, QWidget *pa
     ui->widgetOptions->setVisible( ui->pushButtonOptions->isChecked() );
     ui->line->setVisible( ui->pushButtonOptions->isChecked() );
 
-    trackerIconA.addFile(QStringLiteral(":/icons/resources/line_tracker.png"), QSize(36, 36), QIcon::Normal, QIcon::Off);
-    trackerIconB.addFile(QStringLiteral(":/icons/resources/line_tracker_1.png"), QSize(36, 36), QIcon::Normal, QIcon::Off);
-    trackerIconC.addFile(QStringLiteral(":/icons/resources/line_tracker_a.png"), QSize(36, 36), QIcon::Normal, QIcon::Off);
+    //----------------------------------------------------------
+    QIcon trackerIconA, trackerIconB, trackerIconC;
 
-    ui->pushButtonTimeTracker->setIcon(trackerIconB);
+    trackerIconA.addFile(QStringLiteral(":/icons/resources/line_tracker.png"), QSize(36, 36));
+    trackerIconB.addFile(QStringLiteral(":/icons/resources/line_tracker_1.png"), QSize(36, 36));
+    trackerIconC.addFile(QStringLiteral(":/icons/resources/line_tracker_a.png"), QSize(36, 36));
+
+    _tracker_button_icons[CurveTracker::LINE_ONLY]  = trackerIconA;
+    _tracker_button_icons[CurveTracker::VALUE]      = trackerIconB;
+    _tracker_button_icons[CurveTracker::VALUE_NAME] = trackerIconC;
+
+    int tracker_setting = settings.value("MainWindow.timeTrackerSetting", (int)CurveTracker::VALUE ).toInt();
+    _tracker_param = static_cast<CurveTracker::Parameter>(tracker_setting);
+
+    ui->pushButtonTimeTracker->setIcon( _tracker_button_icons[_tracker_param] );
+
+    forEachWidget( [&](PlotWidget* plot) {
+        plot->configureTracker(_tracker_param);
+    });
 }
 
 MainWindow::~MainWindow()
 {
-    if( _current_streamer )
-    {
-        _current_streamer->shutdown();
-        _current_streamer = nullptr;
-    }
-    QSettings settings( "IcarusTechnology", "PlotJuggler");
-    settings.setValue("MainWindow.geometry", saveGeometry());
-    settings.setValue("MainWindow.activateGrid", ui->pushButtonActivateGrid->isChecked() );
-    settings.setValue("MainWindow.streamingBufferValue", ui->streamingSpinBox->value() );
-    settings.setValue("MainWindow.dateTimeDisplay",ui->pushButtonUseDateTime->isChecked() );
-
     delete ui;
 }
 
@@ -1285,11 +1296,6 @@ void MainWindow::updateTimeSlider()
                               max_steps);
 }
 
-void MainWindow::on_pushButtonAddSubwindow_pressed()
-{
-    createTabbedDialog( NULL );
-}
-
 void MainWindow::onSwapPlots(PlotWidget *source, PlotWidget *destination)
 {
     if( !source || !destination ) return;
@@ -1543,6 +1549,7 @@ void MainWindow::on_pushButtonRemoveTimeOffset_toggled(bool )
 void MainWindow::on_pushButtonOptions_toggled(bool checked)
 {
     ui->widgetOptions->setVisible( checked );
+    ui->line->setVisible( checked );
 }
 
 void MainWindow::updatedDisplayTime()
@@ -1606,20 +1613,34 @@ void MainWindow::on_pushButtonTimeTracker_pressed()
     if( _tracker_param == CurveTracker::LINE_ONLY)
     {
         _tracker_param = CurveTracker::VALUE;
-        ui->pushButtonTimeTracker->setIcon( trackerIconB );
     }
     else if( _tracker_param == CurveTracker::VALUE)
     {
         _tracker_param = CurveTracker::VALUE_NAME;
-        ui->pushButtonTimeTracker->setIcon( trackerIconC );
     }
     else if( _tracker_param == CurveTracker::VALUE_NAME)
     {
         _tracker_param = CurveTracker::LINE_ONLY;
-        ui->pushButtonTimeTracker->setIcon( trackerIconA );
     }
+    ui->pushButtonTimeTracker->setIcon( _tracker_button_icons[ _tracker_param ] );
+
     forEachWidget( [&](PlotWidget* plot) {
         plot->configureTracker(_tracker_param);
         plot->replot();
     });
+}
+
+void MainWindow::closeEvent(QCloseEvent *event)
+{
+    if( _current_streamer )
+    {
+        _current_streamer->shutdown();
+        _current_streamer = nullptr;
+    }
+    QSettings settings( "IcarusTechnology", "PlotJuggler");
+    settings.setValue("MainWindow.geometry", saveGeometry());
+    settings.setValue("MainWindow.activateGrid", ui->pushButtonActivateGrid->isChecked() );
+    settings.setValue("MainWindow.streamingBufferValue", ui->streamingSpinBox->value() );
+    settings.setValue("MainWindow.dateTimeDisplay",ui->pushButtonUseDateTime->isChecked() );
+    settings.setValue("MainWindow.timeTrackerSetting", (int)_tracker_param );
 }
