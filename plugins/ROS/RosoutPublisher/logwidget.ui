@@ -15,7 +15,7 @@
   </property>
   <property name="windowIcon">
    <iconset resource="../../../plotter_gui/resource.qrc">
-    <normaloff>:/icons/resources/Line_tracker.png</normaloff>:/icons/resources/Line_tracker.png</iconset>
+    <normaloff>:/icons/resources/line_tracker.png</normaloff>:/icons/resources/line_tracker.png</iconset>
   </property>
   <property name="locale">
    <locale language="English" country="Australia"/>
