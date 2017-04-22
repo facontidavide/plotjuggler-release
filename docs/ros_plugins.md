@@ -34,6 +34,13 @@ ROS messages inside a rosbag.
 
 #Publishers
 
+
+## RosoutPublisher
+
+This plugins simply republish the topics received by DataStreamROS.
+
+This is usefull to connect PlotJuggler with other tools like RViz.
+
 ## RosoutPublisher
 
 Since PlotJuggler can only visualize time series, we need a convenient way to 
