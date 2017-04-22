@@ -326,7 +326,7 @@ void DataStreamROS::setParentMenu(QMenu *menu)
 
     _action_saveIntoRosbag = new QAction(QString("Save cached value in a rosbag"), _menu);
     QIcon iconSave;
-    iconSave.addFile(QStringLiteral(":/icons/resources/filesave@2x.png"), QSize(26, 26), QIcon::Normal, QIcon::Off);
+    iconSave.addFile(QStringLiteral(":/icons/resources/filesave@2x.png"), QSize(26, 26));
     _action_saveIntoRosbag->setIcon(iconSave);
 
     _menu->addAction( _action_saveIntoRosbag );
