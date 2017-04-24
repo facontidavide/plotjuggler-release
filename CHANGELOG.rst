@@ -2,6 +2,14 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.0.1 (2017-04-24)
+------------------
+* documentation fix
+* color widget simplified
+* Update README.md
+* default extension fixed in layout.xml
+* Contributors: Davide Faconti, Eduardo Cáceres
+
 1.0.0 (2017-4-22)
 -----------------
 * Total awesomeness
