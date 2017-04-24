@@ -702,9 +702,19 @@ void MainWindow::onActionSaveLayout()
     QString directory_path  = settings.value("MainWindow.lastLayoutDirectory",
                                              QDir::currentPath() ). toString();
 
-    QString filter("*.xml");
-    QString fileName =  QFileDialog::getSaveFileName(this, tr("Save Layout to File"),
-                                                     directory_path, filter, &filter);
+    QFileDialog saveDialog;
+    saveDialog.setAcceptMode(QFileDialog::AcceptSave);
+    saveDialog.setDefaultSuffix("xml");
+    saveDialog.setDirectory(directory_path);
+    saveDialog.exec();
+
+    if(saveDialog.result() != QDialog::Accepted || saveDialog.selectedFiles().empty())
+    {
+        return;
+    }
+
+    QString fileName = saveDialog.selectedFiles().first();
+
     if (fileName.isEmpty())
         return;
 
@@ -1510,31 +1520,20 @@ void MainWindow::on_actionExit_triggered()
 
 void MainWindow::on_actionQuick_Help_triggered()
 {
-    QUrl url_LOC("file:///"  + tr(PJ_DOCUMENTATION_DIR_LOCAL) + "/index.html", QUrl::TolerantMode);
-    QUrl url_SYS("file:///"  + tr(PJ_DOCUMENTATION_DIR_SYSTEM) + "/index.html", QUrl::TolerantMode);
+    const QString path =  tr(PJ_DOCUMENTATION_DIR) + "/index.html";
+    QFileInfo check_file(path);
 
-    if( url_LOC.isValid() )
+    QUrl url_SYS( tr("file:///")  + path, QUrl::TolerantMode);
+
+    if( check_file.exists() && url_SYS.isValid() )
     {
-        if(!QDesktopServices::openUrl(url_LOC))
+        if(QDesktopServices::openUrl(url_SYS))
         {
-            QMessageBox::warning(this, "Can't find Documentation",
-                                 QString("Can't open the file %1").arg( url_LOC.path()) );
+            return;
         }
     }
-    else if( url_LOC.path() != url_SYS.path())
-    {
-        if( url_SYS.isValid() )
-        {
-            if(!QDesktopServices::openUrl(url_SYS))
-            {
-                QMessageBox::warning(this, "Can't find Documentation",
-                                     QString("Can't open the file %1").arg( url_SYS.path()) );
-            }
-        }
-        else{
-            QMessageBox::warning(this, "Can't find Documentation", "Can't find documentation" );
-        }
-    }
+    QMessageBox::warning(this, "Can't find Documentation",
+                         QString("Can't open the file:\n\n%1\n\n Is it correctly installed in your system?").arg( url_SYS.path()) );
 }
 
 
