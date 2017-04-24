@@ -23,18 +23,19 @@ public:
 private slots:
     void on_pushButtonClose_clicked();
 
-    void on_pushButtonApply_clicked();
+    void on_pushButtonUndo_clicked();
 
     void on_listWidget_itemClicked(QListWidgetItem *item);
 
+    void on_colorChanged(QColor color);
 
 signals:
     void changeColor(QString, QColor);
 
 private:
     Ui::CurveColorPick *ui;
-    color_widgets::ColorWheel   *color_wheel;
-    color_widgets::ColorPreview *color_preview;
+    color_widgets::ColorWheel   *_color_wheel;
+    color_widgets::ColorPreview *_color_preview;
 
     const std::map<QString, QColor>& _mapped_colors;
     bool _any_modified;
