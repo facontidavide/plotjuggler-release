@@ -9,16 +9,17 @@
 #include <qwt_plot_grid.h>
 #include <qwt_symbol.h>
 #include <qwt_legend.h>
+#include <deque>
+#include <QMessageBox>
+#include <QTime>
 #include "plotmagnifier.h"
 #include "plotzoomer.h"
 #include <qwt_plot_panner.h>
 #include <QDomDocument>
 #include "timeseries_qwt.h"
 #include "customtracker.h"
+#include "axis_limits_dialog.h"
 #include <qwt_plot_legenditem.h>
-#include <deque>
-#include <QMessageBox>
-#include <QTime>
 
 class PlotWidget : public QwtPlot
 {
@@ -80,16 +81,6 @@ public slots:
 
     void on_zoomOutVertical_triggered(bool emit_signal = true);
 
-    void on_noTransform_triggered(bool checked );
-
-    void on_1stDerivativeTransform_triggered(bool checked);
-
-    void on_2ndDerivativeTransform_triggered(bool checked);
-
-    void on_convertToXY_triggered(bool checked);
-
-    void on_savePlotToFile();
-
     void removeCurve(const QString& name);
 
     void activateLegent(bool activate);
@@ -103,6 +94,20 @@ public slots:
     void setTrackerPosition(double abs_time);
 
     void on_changeTimeOffset(double offset);
+
+private slots:
+
+    void on_noTransform_triggered(bool checked );
+
+    void on_1stDerivativeTransform_triggered(bool checked);
+
+    void on_2ndDerivativeTransform_triggered(bool checked);
+
+    void on_convertToXY_triggered(bool checked);
+
+    void on_savePlotToFile();
+
+    void on_editAxisLimits_triggered();
 
 private slots:
     void launchRemoveCurveDialog();
@@ -128,6 +133,7 @@ private:
     QAction *_action_2ndDerivativeTransform;
     QAction *_action_phaseXY;
     QAction *_action_saveToFile;
+    QAction *_action_editLimits;
 
     PlotZoomer* _zoomer;
     PlotMagnifier* _magnifier;
@@ -152,6 +158,11 @@ private:
     PlotDataPtr _axisX;
 
     double _time_offset;
+
+    PlotData::RangeValue _custom_Y_limits;
+
+    AxisLimitsDialog* _axis_limits_dialog;
+
 };
 
 #endif
