@@ -129,21 +129,21 @@ void DataStreamROS::topicCallback(const topic_tools::ShapeShifter::ConstPtr& msg
 
 void DataStreamROS::extractInitialSamples()
 {
-    int wait_time = 2;
+    using namespace std::chrono;
+    milliseconds wait_time_ms(1000);
 
     QProgressDialog progress_dialog;
     progress_dialog.setLabelText( "Collecting ROS topic samples to understand data layout. ");
-    progress_dialog.setRange(0, wait_time*1000);
+    progress_dialog.setRange(0, wait_time_ms.count());
     progress_dialog.setAutoClose(true);
     progress_dialog.setAutoReset(true);
 
     progress_dialog.show();
 
-    using namespace std::chrono;
     auto start_time = system_clock::now();
 
     _enabled = true;
-    while ( system_clock::now() - start_time < seconds(wait_time) )
+    while ( system_clock::now() - start_time < (wait_time_ms) )
     {
         ros::getGlobalCallbackQueue()->callAvailable(ros::WallDuration(0.1));
         int i = duration_cast<milliseconds>(system_clock::now() - start_time).count() ;
