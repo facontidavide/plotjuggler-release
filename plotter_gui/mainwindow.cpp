@@ -50,6 +50,12 @@ MainWindow::MainWindow(const QCommandLineParser &commandline_parser, QWidget *pa
 
     ui->setupUi(this);
 
+    if( commandline_parser.isSet("buffer_size"))
+    {
+        int buffer_size = std::max(10, commandline_parser.value("buffer_size").toInt() );
+        ui->streamingSpinBox->setMaximum(buffer_size);
+    }
+
     {
         QIcon icon(":/icons/resources/office_chart_line_stacked.png");
         if (!icon.isNull())
@@ -705,6 +711,7 @@ void MainWindow::onActionSaveLayout()
     QFileDialog saveDialog;
     saveDialog.setAcceptMode(QFileDialog::AcceptSave);
     saveDialog.setDefaultSuffix("xml");
+    saveDialog.setNameFilter("XML (*.xml)");
     saveDialog.setDirectory(directory_path);
     saveDialog.exec();
 
@@ -1260,8 +1267,8 @@ void MainWindow::updateTimeSlider()
     //----------------------------------
     // find min max time
 
-    double min_time = std::numeric_limits<double>::max();
-    double max_time = std::numeric_limits<double>::min();
+    double min_time =  std::numeric_limits<double>::max();
+    double max_time = -std::numeric_limits<double>::max();
     size_t max_steps = 10;
 
     for (auto it: _mapped_plot_data.numeric )
