@@ -46,9 +46,9 @@ void TimeseriesQwt::updateData()
     if(_plot_data->size() == 0) return;
 
     double min_y =( std::numeric_limits<double>::max() );
-    double max_y =( std::numeric_limits<double>::min() );
+    double max_y =(-std::numeric_limits<double>::max() );
     double min_x =( std::numeric_limits<double>::max() );
-    double max_x =( std::numeric_limits<double>::min() );
+    double max_x =(-std::numeric_limits<double>::max() );
 
     //if(updated || force_transform)
     {
