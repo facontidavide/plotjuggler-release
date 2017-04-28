@@ -18,19 +18,21 @@ CurveColorPick::CurveColorPick(const std::map<QString, QColor> &mapped_colors, Q
         ui->listWidget->addItem( item );
     }
 
-    color_wheel = new  color_widgets::ColorWheel(this);
-    ui->verticalLayoutRight->insertWidget(0, color_wheel );
-    color_wheel->setMinimumWidth(150);
-    color_wheel->setMinimumHeight(150);
+    _color_wheel = new  color_widgets::ColorWheel(this);
+    ui->verticalLayoutRight->insertWidget(0, _color_wheel );
+    _color_wheel->setMinimumWidth(150);
+    _color_wheel->setMinimumHeight(150);
 
-    color_preview = new  color_widgets::ColorPreview(this);
-    ui->verticalLayoutRight->insertWidget(1, color_preview );
-    color_preview->setMinimumWidth(150);
-    color_preview->setMinimumHeight(100);
+    _color_preview = new  color_widgets::ColorPreview(this);
+    ui->verticalLayoutRight->insertWidget(1, _color_preview );
+    _color_preview->setMinimumWidth(150);
+    _color_preview->setMinimumHeight(100);
 
-    connect(color_wheel,   &color_widgets::ColorWheel::colorChanged,
-            color_preview, &color_widgets::ColorPreview::setColor );
+    connect(_color_wheel,   &color_widgets::ColorWheel::colorChanged,
+            _color_preview, &color_widgets::ColorPreview::setColor );
 
+    connect(_color_wheel,   &color_widgets::ColorWheel::colorChanged,
+            this, &CurveColorPick::on_colorChanged );
 }
 
 CurveColorPick::~CurveColorPick()
@@ -48,19 +50,36 @@ void CurveColorPick::on_pushButtonClose_clicked()
     this->accept();
 }
 
-void CurveColorPick::on_pushButtonApply_clicked()
+void CurveColorPick::on_pushButtonUndo_clicked()
 {
-    QListWidgetItem *item = ui->listWidget->currentItem();
-    if( color_preview->color() != item->foreground().color())
+    for(int row = 0; row < ui->listWidget->count(); row++)
     {
-        _any_modified = true;
-        item->setForeground( color_preview->color() );
-        emit changeColor( item->text(), color_preview->color() );
+        QListWidgetItem *item = ui->listWidget->item(row);
+        const QString& name = item->text();
+        const QColor& color = _mapped_colors.find(name)->second;
+
+        item->setForeground( color );
+        emit changeColor( item->text(), color );
     }
+    QListWidgetItem *item = ui->listWidget->currentItem();
+    QColor current_color = item->foreground().color();
+    _color_wheel->setColor(current_color);
+
 }
 
 void CurveColorPick::on_listWidget_itemClicked(QListWidgetItem *item)
 {
-    color_wheel->setColor( item->foreground().color() );
+    _color_wheel->setColor( item->foreground().color() );
+}
+
+void CurveColorPick::on_colorChanged(QColor color)
+{
+    QListWidgetItem *item = ui->listWidget->currentItem();
+    if( color != item->foreground().color())
+    {
+        _any_modified = true;
+        item->setForeground( color );
+        emit changeColor( item->text(), color );
+    }
 }
 

@@ -50,6 +50,12 @@ MainWindow::MainWindow(const QCommandLineParser &commandline_parser, QWidget *pa
 
     ui->setupUi(this);
 
+    if( commandline_parser.isSet("buffer_size"))
+    {
+        int buffer_size = std::max(10, commandline_parser.value("buffer_size").toInt() );
+        ui->streamingSpinBox->setMaximum(buffer_size);
+    }
+
     {
         QIcon icon(":/icons/resources/office_chart_line_stacked.png");
         if (!icon.isNull())
@@ -71,7 +77,7 @@ MainWindow::MainWindow(const QCommandLineParser &commandline_parser, QWidget *pa
     connect( ui->timeSlider, &RealSlider::realValueChanged,
              this, &MainWindow::onTimeSlider_valueChanged );
 
-    _main_tabbed_widget = new TabbedPlotWidget( this, NULL, _mapped_plot_data, this);
+    _main_tabbed_widget = new TabbedPlotWidget("Main Window", this, NULL, _mapped_plot_data, this);
 
     ui->centralLayout->insertWidget(0, _main_tabbed_widget);
     ui->leftLayout->addWidget( _curvelist_widget );
@@ -297,40 +303,25 @@ void MainWindow::onTrackerTimeUpdated(double absolute_time)
     } );
 }
 
-void MainWindow::createTabbedDialog(PlotMatrix* first_tab)
+void MainWindow::createTabbedDialog(QString suggest_win_name, PlotMatrix* first_tab)
 {
-    SubWindow* window = new SubWindow(first_tab, _mapped_plot_data, this );
-    Qt::WindowFlags flags = window->windowFlags();
-    window->setWindowFlags( flags | Qt::SubWindow );
-
-    const char prefix[] = "Window ";
-    int window_number = 1;
-
-    bool number_taken = true;
-    while( number_taken )
+    if( suggest_win_name.isEmpty())
     {
-        number_taken = false;
-        for (const auto& floating_window: _floating_window )
+        for (int i=0; i<= TabbedPlotWidget::instances().size(); i++)
         {
-            QString win_title = floating_window->windowTitle();
-            win_title.remove(0, sizeof(prefix)-1 );
-            int num = win_title.toInt();
-
-            if (num == window_number)
+            suggest_win_name = QString("Window%1").arg(i);
+            TabbedPlotWidget* tw = TabbedPlotWidget::instance(suggest_win_name);
+            if( tw == nullptr )
             {
-                number_taken = true;
-                window_number++;
                 break;
             }
         }
     }
 
-    window->setWindowTitle( QString(prefix) + QString::number(window_number));
+    SubWindow* window = new SubWindow(suggest_win_name, first_tab, _mapped_plot_data, this );
 
-    connect( window, SIGNAL(destroyed(QObject*)),    this,  SLOT(onFloatingWindowDestroyed(QObject*)) );
-    connect( window, SIGNAL(closeRequestedByUser()), this,  SLOT(onUndoableChange()) );
-
-    _floating_window.push_back( window );
+    connect( window, SIGNAL(destroyed(QObject*)),  this,  SLOT(onFloatingWindowDestroyed(QObject*)) );
+    connect( window, SIGNAL(destroyed(QObject*)),  this,  SLOT(onUndoableChange()) );
 
     window->tabbedWidget()->setStreamingMode( isStreamingActive() );
 
@@ -600,9 +591,9 @@ QDomDocument MainWindow::xmlSaveState() const
     QDomElement main_area =_main_tabbed_widget->xmlSaveState(doc);
     root.appendChild( main_area );
 
-    for (SubWindow* floating_window: _floating_window)
+    for (auto& it: TabbedPlotWidget::instances() )
     {
-        QDomElement tabbed_area = floating_window->tabbedWidget()->xmlSaveState(doc);
+        QDomElement tabbed_area = it.second->xmlSaveState(doc);
         root.appendChild( tabbed_area );
     }
 
@@ -623,46 +614,59 @@ bool MainWindow::xmlLoadState(QDomDocument state_document)
         return false;
     }
 
-    QDomElement tabbed_area;
-
     size_t num_floating = 0;
+    std::map<QString,QDomElement> tabbed_widgets_with_name;
 
-    for (  tabbed_area = root.firstChildElement(  "tabbed_widget" )  ;
-           tabbed_area.isNull() == false;
-           tabbed_area = tabbed_area.nextSiblingElement( "tabbed_widget" ) )
+    for (QDomElement tw = root.firstChildElement(  "tabbed_widget" )  ;
+         tw.isNull() == false;
+         tw = tw.nextSiblingElement( "tabbed_widget" ) )
     {
-        if( tabbed_area.attribute("parent").compare("main_window") != 0)
+        if( ! tw.hasAttribute("name") ||  ! tw.hasAttribute("parent"))
+        {
+            QMessageBox::warning(0, tr("Warning"),
+                                 tr("This Layout format can not be parsed anymore\n") );
+            return false;
+        }
+
+        if( tw.attribute("parent") != ("main_window") )
         {
             num_floating++;
         }
+        tabbed_widgets_with_name[ tw.attribute("name") ] = tw;
     }
 
-    // add windows if needed
-    while( _floating_window.size() < num_floating )
+    // add if missing
+    for(const auto& it: tabbed_widgets_with_name)
     {
-        createTabbedDialog( NULL );
+        if( TabbedPlotWidget::instance( it.first ) == nullptr)
+        {
+            createTabbedDialog( it.first, NULL );
+        }
     }
 
-    while( _floating_window.size() > num_floating ){
-        QMainWindow* window =  _floating_window.back();
-        _floating_window.pop_back();
-        window->deleteLater();
+    // remove those which don't share list of names
+    for(const auto& it: TabbedPlotWidget::instances())
+    {
+        if( tabbed_widgets_with_name.count( it.first ) == 0)
+        {
+            it.second->deleteLater();
+        }
     }
 
     //-----------------------------------------------------
-    size_t index = 0;
 
-    for (  tabbed_area = root.firstChildElement(  "tabbed_widget" )  ;
-           tabbed_area.isNull() == false;
-           tabbed_area = tabbed_area.nextSiblingElement( "tabbed_widget" ) )
+    for ( QDomElement tw = root.firstChildElement(  "tabbed_widget" )  ;
+           tw.isNull() == false;
+           tw = tw.nextSiblingElement( "tabbed_widget" ) )
     {
-        if( tabbed_area.attribute("parent").compare("main_window") == 0)
+        if( tw.attribute("parent") == ("main_window") )
         {
-            _main_tabbed_widget->xmlLoadState( tabbed_area );
+            _main_tabbed_widget->xmlLoadState( tw );
         }
         else{
-            _floating_window[index++]->tabbedWidget()->xmlLoadState( tabbed_area );
-        }
+            TabbedPlotWidget* tabwidget = TabbedPlotWidget::instance( tw.attribute("name"));
+            tabwidget->xmlLoadState( tw );
+         }
     }
 
     QDomElement relative_time = root.firstChildElement( "use_relative_time_offset" );
@@ -671,7 +675,6 @@ bool MainWindow::xmlLoadState(QDomDocument state_document)
         bool remove_offset = (relative_time.attribute("enabled") == QString("1"));
         ui->pushButtonRemoveTimeOffset->setChecked(remove_offset);
     }
-    onLayoutChanged();
 
     return true;
 }
@@ -702,9 +705,20 @@ void MainWindow::onActionSaveLayout()
     QString directory_path  = settings.value("MainWindow.lastLayoutDirectory",
                                              QDir::currentPath() ). toString();
 
-    QString filter("*.xml");
-    QString fileName =  QFileDialog::getSaveFileName(this, tr("Save Layout to File"),
-                                                     directory_path, filter, &filter);
+    QFileDialog saveDialog;
+    saveDialog.setAcceptMode(QFileDialog::AcceptSave);
+    saveDialog.setDefaultSuffix("xml");
+    saveDialog.setNameFilter("XML (*.xml)");
+    saveDialog.setDirectory(directory_path);
+    saveDialog.exec();
+
+    if(saveDialog.result() != QDialog::Accepted || saveDialog.selectedFiles().empty())
+    {
+        return;
+    }
+
+    QString fileName = saveDialog.selectedFiles().first();
+
     if (fileName.isEmpty())
         return;
 
@@ -1145,7 +1159,6 @@ void MainWindow::onActionLoadLayoutFromFile(QString filename, bool load_data)
     _undo_states.clear();
     _undo_states.push_back( domDocument );
 
-    onLayoutChanged();
 }
 
 
@@ -1163,8 +1176,6 @@ void MainWindow::onUndoInvoked( )
         state_document = _undo_states.back();
 
         xmlLoadState( state_document );
-
-        onLayoutChanged();
     }
     _disable_undo_logging = false;
 }
@@ -1172,58 +1183,30 @@ void MainWindow::onUndoInvoked( )
 
 void MainWindow::on_tabbedAreaDestroyed(QObject *object)
 {
-    onLayoutChanged();
     this->setFocus();
 }
 
 void MainWindow::onFloatingWindowDestroyed(QObject *object)
 {
-    for (size_t i=0; i< _floating_window.size(); i++)
-    {
-        if( _floating_window[i] == object)
-        {
-            _floating_window.erase( _floating_window.begin() + i);
-            break;
-        }
-    }
-    onLayoutChanged();
+//    for (size_t i=0; i< SubWindow::instances().size(); i++)
+//    {
+//        if( SubWindow::instances()[i] == object)
+//        {
+//            SubWindow::instances().erase( SubWindow::instances().begin() + i);
+//            break;
+//        }
+//    }
 }
 
 void MainWindow::onCreateFloatingWindow(PlotMatrix* first_tab)
 {
-    createTabbedDialog( first_tab );
-}
-
-
-void MainWindow::onLayoutChanged()
-{
-    std::map<QString,TabbedPlotWidget*> tabbed_map;
-    tabbed_map.insert( std::make_pair( QString("Main window"), _main_tabbed_widget) );
-
-    for (SubWindow* subwin: _floating_window)
-    {
-        tabbed_map.insert( std::make_pair( subwin->windowTitle(), subwin->tabbedWidget() ) );
-    }
-    for (auto& it: tabbed_map)
-    {
-        it.second->setSiblingsList( tabbed_map );
-    }
+    createTabbedDialog( QString(), first_tab );
 }
 
 void MainWindow::forEachWidget(std::function<void (PlotWidget*, PlotMatrix*, int,int )> operation)
 {
-    std::vector<TabbedPlotWidget*> tabbed_plotarea;
-    tabbed_plotarea.reserve( 1+ _floating_window.size());
-
-    tabbed_plotarea.push_back( _main_tabbed_widget );
-    for (SubWindow* subwin: _floating_window){
-        tabbed_plotarea.push_back( subwin->tabbedWidget() );
-    }
-
-    for(size_t w=0; w < tabbed_plotarea.size(); w++)
+    auto func = [&](QTabWidget * tabs)
     {
-        QTabWidget * tabs = tabbed_plotarea[w]->tabWidget();
-
         for (int t=0; t < tabs->count(); t++)
         {
             PlotMatrix* matrix =  static_cast<PlotMatrix*>(tabs->widget(t));
@@ -1237,6 +1220,12 @@ void MainWindow::forEachWidget(std::function<void (PlotWidget*, PlotMatrix*, int
                 }
             }
         }
+    };
+
+    func( _main_tabbed_widget->tabWidget() );
+    for(const auto& it: TabbedPlotWidget::instances())
+    {
+        func( it.second->tabWidget() );
     }
 }
 
@@ -1250,8 +1239,8 @@ void MainWindow::updateTimeSlider()
     //----------------------------------
     // find min max time
 
-    double min_time = std::numeric_limits<double>::max();
-    double max_time = std::numeric_limits<double>::min();
+    double min_time =  std::numeric_limits<double>::max();
+    double max_time = -std::numeric_limits<double>::max();
     size_t max_steps = 10;
 
     for (auto it: _mapped_plot_data.numeric )
@@ -1449,9 +1438,9 @@ void MainWindow::updateDataAndReplot()
     // zoom out and replot
     _main_tabbed_widget->currentTab()->maximumZoomOut() ;
 
-    for(SubWindow* subwin: _floating_window)
+    for(const auto& it: TabbedPlotWidget::instances())
     {
-        PlotMatrix* matrix =  subwin->tabbedWidget()->currentTab() ;
+        PlotMatrix* matrix =  it.second->currentTab() ;
         matrix->maximumZoomOut(); // includes replot
     }
 }
@@ -1510,31 +1499,20 @@ void MainWindow::on_actionExit_triggered()
 
 void MainWindow::on_actionQuick_Help_triggered()
 {
-    QUrl url_LOC("file:///"  + tr(PJ_DOCUMENTATION_DIR_LOCAL) + "/index.html", QUrl::TolerantMode);
-    QUrl url_SYS("file:///"  + tr(PJ_DOCUMENTATION_DIR_SYSTEM) + "/index.html", QUrl::TolerantMode);
+    const QString path =  tr(PJ_DOCUMENTATION_DIR) + "/index.html";
+    QFileInfo check_file(path);
 
-    if( url_LOC.isValid() )
+    QUrl url_SYS( tr("file:///")  + path, QUrl::TolerantMode);
+
+    if( check_file.exists() && url_SYS.isValid() )
     {
-        if(!QDesktopServices::openUrl(url_LOC))
+        if(QDesktopServices::openUrl(url_SYS))
         {
-            QMessageBox::warning(this, "Can't find Documentation",
-                                 QString("Can't open the file %1").arg( url_LOC.path()) );
+            return;
         }
     }
-    else if( url_LOC.path() != url_SYS.path())
-    {
-        if( url_SYS.isValid() )
-        {
-            if(!QDesktopServices::openUrl(url_SYS))
-            {
-                QMessageBox::warning(this, "Can't find Documentation",
-                                     QString("Can't open the file %1").arg( url_SYS.path()) );
-            }
-        }
-        else{
-            QMessageBox::warning(this, "Can't find Documentation", "Can't find documentation" );
-        }
-    }
+    QMessageBox::warning(this, "Can't find Documentation",
+                         QString("Can't open the file:\n\n%1\n\n Is it correctly installed in your system?").arg( url_SYS.path()) );
 }
 
 
