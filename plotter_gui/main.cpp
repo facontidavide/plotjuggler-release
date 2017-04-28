@@ -70,13 +70,18 @@ int main(int argc, char *argv[])
                                      QCoreApplication::translate("main", "file") );
     parser.addOption(config_option);
 
+    QCommandLineOption buffersize_option(QStringList() << "buffer_size",
+                                     QCoreApplication::translate("main", "Change the maximum size of the streaming buffer (minimum: 10 default: 60)"),
+                                     QCoreApplication::translate("main", "seconds") );
+    parser.addOption(buffersize_option);
+
     parser.process( *qApp );
 
     /*
      * You, fearless code reviewer, decided to start a journey into my source code.
      * For your bravery, you deserve to know the truth, no matter how hard it is to accept it.
      * The splashscreen is useless; not only it is useless, it will make your start-up
-     * time slower by a couple of seconds for abasolutely no reason.
+     * time slower by a couple of seconds for absolutely no reason.
      * But what are two seconds compared with the time that PlotJuggler will save you?
      * The splashscreen is the connection between me and my users, the glue that keep
      * together our invisible relationship.
