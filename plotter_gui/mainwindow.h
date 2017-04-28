@@ -117,10 +117,6 @@ private:
     Ui::MainWindow *ui;
 
     TabbedPlotWidget *      _main_tabbed_widget;
-    std::deque<SubWindow*> _floating_window;
-
-    //QAction* _actionUndo;
-    //QAction* _actionRedo;
 
     QShortcut _undo_shortcut;
     QShortcut _redo_shortcut;
@@ -128,8 +124,6 @@ private:
     void createActions();
 
     FilterableListWidget* _curvelist_widget;
-
-    void onLayoutChanged();
 
     void updatedDisplayTime();
 
@@ -177,7 +171,7 @@ private:
 
     QSignalMapper *_streamer_signal_mapper;
 
-    void createTabbedDialog(PlotMatrix *first_tab);
+    void createTabbedDialog(QString suggest_win_name, PlotMatrix *first_tab);
 
     void importPlotDataMap(const PlotDataMap &new_data, bool delete_older);
 
