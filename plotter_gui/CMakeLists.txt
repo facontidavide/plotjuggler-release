@@ -11,11 +11,13 @@ QT5_WRAP_UI ( UI_SRC
     curvecolorpick.ui
     filterablelistwidget.ui
     tabbedplotwidget.ui
+    axis_limits_dialog.ui
     ../common/selectlistdialog.ui
     )
 
 SET( PLOTTER_SRC
     aboutdialog.cpp
+    axis_limits_dialog.cpp
     main.cpp
     mainwindow.cpp
     plotwidget.cpp
