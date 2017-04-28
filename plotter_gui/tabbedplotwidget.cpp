@@ -8,22 +8,34 @@
 #include "tabbedplotwidget.h"
 #include "ui_tabbedplotwidget.h"
 
+std::map<QString,TabbedPlotWidget*> TabbedPlotWidget::_instances;
 
-TabbedPlotWidget::TabbedPlotWidget(QMainWindow *main_window,
+TabbedPlotWidget::TabbedPlotWidget(QString name,
+                                   QMainWindow *main_window,
                                    PlotMatrix  *first_tab,
                                    PlotDataMap &mapped_data,
                                    QMainWindow *parent ) :
     QWidget(parent),
     _mapped_data(mapped_data),
-    ui(new Ui::TabbedPlotWidget)
+    ui(new Ui::TabbedPlotWidget),
+    _name(name)
 {
 
     if( main_window == parent){
-        _parent_type = QString("main_window");
+        _parent_type = "main_window";
     }
-    else{
-        _parent_type = QString("floating_window");
+    else
+    {
+        _parent_type = "floating_window";
     }
+
+    if( TabbedPlotWidget::_instances.count(_name) > 0)
+    {
+        throw std::runtime_error("This is not supposed to happen");
+    }
+    // register this instance
+    _instances[_name] = this;
+
     ui->setupUi(this);
 
     _horizontal_link = true;
@@ -53,10 +65,10 @@ TabbedPlotWidget::TabbedPlotWidget(QMainWindow *main_window,
     this->addTab(first_tab);
 }
 
-void TabbedPlotWidget::setSiblingsList(const std::map<QString, TabbedPlotWidget *> &other_tabbed_widgets)
-{
-    _other_siblings = other_tabbed_widgets;
-}
+//void TabbedPlotWidget::setSiblingsList(const std::map<QString, TabbedPlotWidget *> &other_tabbed_widgets)
+//{
+//    _other_siblings = other_tabbed_widgets;
+//}
 
 PlotMatrix *TabbedPlotWidget::currentTab()
 {
@@ -92,6 +104,7 @@ QDomElement TabbedPlotWidget::xmlSaveState(QDomDocument &doc) const
 {
     QDomElement tabbed_area = doc.createElement( "tabbed_widget" );
 
+    tabbed_area.setAttribute("name",   _name);
     tabbed_area.setAttribute("parent", _parent_type);
 
     for(int i=0; i< ui->tabWidget->count(); i++)
@@ -172,6 +185,7 @@ void TabbedPlotWidget::setStreamingMode(bool streaming_mode)
 
 
 TabbedPlotWidget::~TabbedPlotWidget(){
+
     delete ui;
 }
 
@@ -363,7 +377,7 @@ void TabbedPlotWidget::on_buttonLinkHorizontalScale_toggled(bool checked)
 
 void TabbedPlotWidget::on_requestTabMovement(const QString & destination_name)
 {
-    TabbedPlotWidget* destination_widget = _other_siblings[destination_name];
+    TabbedPlotWidget* destination_widget = TabbedPlotWidget::_instances[destination_name];
 
     PlotMatrix* tab_to_move = currentTab();
     int index = ui->tabWidget->tabBar()->currentIndex ();
@@ -371,8 +385,6 @@ void TabbedPlotWidget::on_requestTabMovement(const QString & destination_name)
     const QString& tab_name =  this->tabWidget()->tabText(index);
 
     destination_widget->tabWidget()->addTab( tab_to_move, tab_name );
-
-    // tab_to_move->setParent( destination_widget );
 
     qDebug() << "move "<< tab_name<< " into " << destination_name;
     emit undoableChangeHappened();
@@ -419,10 +431,10 @@ bool TabbedPlotWidget::eventFilter(QObject *obj, QEvent *event)
                 connect( action_new_window, &QAction::triggered, this, &TabbedPlotWidget::on_moveTabIntoNewWindow );
 
                 //-----------------------------------
-                for ( it = _other_siblings.begin(); it != _other_siblings.end(); it++)
+                for (auto it : TabbedPlotWidget::_instances)
                 {
-                    QString name = it->first;
-                    TabbedPlotWidget* tabbed_menu = it->second;
+                    QString name = it.first;
+                    TabbedPlotWidget* tabbed_menu = it.second;
                     if( tabbed_menu != this )
                     {
                         QAction* action = submenu->addAction( name );
@@ -458,5 +470,27 @@ void TabbedPlotWidget::on_pushButtonShowLabel_toggled(bool checked)
         }
     }
     currentTab()->replot();
+}
+
+void TabbedPlotWidget::closeEvent(QCloseEvent *event)
+{
+  TabbedPlotWidget::_instances.erase(name());
+}
+
+const std::map<QString, TabbedPlotWidget *> &TabbedPlotWidget::instances()
+{
+    return TabbedPlotWidget::_instances;
+}
+
+TabbedPlotWidget* TabbedPlotWidget::instance(const QString &key)
+{
+    auto it = TabbedPlotWidget::_instances.find(key);
+    if( it == TabbedPlotWidget::_instances.end())
+    {
+        return nullptr;
+    }
+    else{
+        return it->second;
+    }
 }
 
