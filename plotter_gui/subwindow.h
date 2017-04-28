@@ -2,20 +2,22 @@
 #define SUBWINDOW_H
 
 #include <QMainWindow>
+#include <set>
 #include "tabbedplotwidget.h"
 
 class SubWindow : public QMainWindow
 {
     Q_OBJECT
 public:
-    explicit SubWindow(PlotMatrix* first_tab, PlotDataMap &mapped_data, QMainWindow *parent_window);
+    explicit SubWindow(QString name, PlotMatrix* first_tab, PlotDataMap &mapped_data, QMainWindow *parent_window);
 
     virtual ~SubWindow();
 
     TabbedPlotWidget* tabbedWidget() { return tabbed_widget_;}
 
 signals:
-    void closeRequestedByUser();
+
+    void tabAdded();
 
 protected:
     virtual void closeEvent(QCloseEvent *event) override;
