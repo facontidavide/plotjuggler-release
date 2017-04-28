@@ -2,6 +2,27 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.0.3 (2017-04-28)
+------------------
+* fixed window management
+* Contributors: Davide Faconti
+
+1.0.2 (2017-04-26)
+------------------
+* set axis Y limit is undoable now
+* added the command line option "buffer_size"
+* filter xml extension for save layout
+* added axis limits (Y)
+* Contributors: Davide Faconti
+
+1.0.1 (2017-04-24)
+------------------
+* documentation fix
+* color widget simplified
+* Update README.md
+* default extension fixed in layout.xml
+* Contributors: Davide Faconti, Eduardo Cáceres
+
 1.0.0 (2017-4-22)
 -----------------
 * Total awesomeness
