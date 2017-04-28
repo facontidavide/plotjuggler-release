@@ -5,7 +5,7 @@ ROS Indigo build (Travis): [![Build Status](https://travis-ci.org/facontidavide/
 
 [![Join the chat at https://gitter.im/PlotJuggler/Lobby](https://badges.gitter.im/PlotJuggler/Lobby.svg)](https://gitter.im/PlotJuggler/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-# PlotJuggler
+# PlotJuggler 1.0.3
 
 QT5 based application to display time series in plots. This is under heavy development. 
 
@@ -25,11 +25,11 @@ The only binary dependency that you need installed in your system is Qt5. On Ubu
 
     sudo apt-get -y install qtbase5-dev libqt5svg5-dev
     
-On Fedora
+On Fedora:
 
     sudo dnf install qt5-qtbase-devel qt5-qtsvg-devel
     
-Then compile using cmake (qmake is NOT supported).
+Then compile using cmake (qmake is NOT supported):
 
      mkdir build; cd build
      cmake ..

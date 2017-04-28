@@ -23,13 +23,14 @@
 #include "qwt_plot_renderer.h"
 #include <PlotJuggler/random_color.h>
 
+const double MAX_DOUBLE = std::numeric_limits<double>::max() / 2 ;
 
 void PlotWidget::setDefaultRangeX()
 {
     if( _mapped_data.numeric.size() > 0)
     {
-        double min = std::numeric_limits<double>::max();
-        double max = std::numeric_limits<double>::min();
+        double min =  std::numeric_limits<double>::max();
+        double max = -std::numeric_limits<double>::max();
         for (auto it: _mapped_data.numeric )
         {
             const PlotDataPtr& data = it.second;
@@ -111,6 +112,12 @@ PlotWidget::PlotWidget(PlotDataMap &datamap, QWidget *parent):
     this->canvas()->installEventFilter(this);
 
     setDefaultRangeX();
+
+    _axis_limits_dialog = new AxisLimitsDialog(this);
+
+    _custom_Y_limits.min = (-MAX_DOUBLE );
+    _custom_Y_limits.max = ( MAX_DOUBLE );
+
 }
 
 void PlotWidget::buildActions()
@@ -140,6 +147,9 @@ void PlotWidget::buildActions()
     _action_showPoints->setCheckable( true );
     _action_showPoints->setChecked( false );
     connect(_action_showPoints, &QAction::triggered, this, &PlotWidget::on_showPoints_triggered);
+
+    _action_editLimits = new  QAction(tr("&Edit Axis Limits"), this);
+    connect(_action_editLimits, &QAction::triggered, this, &PlotWidget::on_editAxisLimits_triggered);
 
     QIcon iconZoomH;
     iconZoomH.addFile(QStringLiteral(":/icons/resources/resize_horizontal.png"), QSize(26, 26));
@@ -185,6 +195,39 @@ void PlotWidget::buildActions()
     transform_group->addAction(_action_2ndDerivativeTransform);
     transform_group->addAction(_action_phaseXY);
 }
+
+
+void PlotWidget::canvasContextMenuTriggered(const QPoint &pos)
+{
+    QString edit("&Edit Axis Limits ");
+    edit.append( _axis_limits_dialog->limitsEnabled() ? tr("(ENABLED)") : tr("(disabled)") ) ;
+    _action_editLimits->setText( edit );
+
+    QMenu menu(this);
+    menu.addAction(_action_removeCurve);
+    menu.addAction(_action_removeAllCurves);
+    menu.addSeparator();
+    menu.addAction(_action_changeColorsDialog);
+    menu.addAction(_action_showPoints);
+    menu.addSeparator();
+    menu.addAction(_action_editLimits);
+    menu.addAction(_action_zoomOutHorizontally);
+    menu.addAction(_action_zoomOutVertically);
+    menu.addSeparator();
+    menu.addAction( _action_noTransform );
+    menu.addAction( _action_1stDerivativeTransform );
+    menu.addAction( _action_2ndDerivativeTransform );
+    menu.addAction( _action_phaseXY );
+    menu.addSeparator();
+    menu.addAction( _action_saveToFile );
+
+    _action_removeCurve->setEnabled( ! _curve_list.empty() );
+    _action_removeAllCurves->setEnabled( ! _curve_list.empty() );
+    _action_changeColorsDialog->setEnabled(  ! _curve_list.empty() );
+
+    menu.exec( canvas()->mapToGlobal(pos) );
+}
+
 
 void PlotWidget::buildLegend()
 {
@@ -286,11 +329,7 @@ bool PlotWidget::addCurve(const QString &name, bool do_replot)
         marker->setSymbol(sym);
     }
 
-    auto rangeX = getMaximumRangeX();
-    auto rangeY = getMaximumRangeY(rangeX, false);
-
-    this->setAxisScale(xBottom, rangeX.min, rangeX.max );
-    this->setAxisScale(yLeft,   rangeY.min, rangeY.max );
+    zoomOut(false);
 
     if( do_replot )
     {
@@ -438,6 +477,15 @@ QDomElement PlotWidget::xmlSaveState( QDomDocument &doc) const
     range_el.setAttribute("right", QString::number(rect.right() ,'f', 6));
     plot_el.appendChild(range_el);
 
+    QDomElement limitY_el = doc.createElement("limitY");
+    if( _custom_Y_limits.min > -MAX_DOUBLE){
+        limitY_el.setAttribute("min", QString::number( _custom_Y_limits.min) );
+    }
+    if( _custom_Y_limits.max < MAX_DOUBLE){
+        limitY_el.setAttribute("max", QString::number( _custom_Y_limits.max) );
+    }
+    plot_el.appendChild(limitY_el);
+
     for(auto it=_curve_list.begin(); it != _curve_list.end(); ++it)
     {
         QString name = it->first;
@@ -497,6 +545,28 @@ bool PlotWidget::xmlLoadState(QDomElement &plot_widget, QMessageBox::StandardBut
             if( axisX_name.size()>0){
                 changeAxisX( axisX_name );
             }
+        }
+    }
+
+    QDomElement limitY_el = plot_widget.firstChildElement("limitY");
+    if( !limitY_el.isNull() )
+    {
+        if( limitY_el.hasAttribute("min") ) {
+            _custom_Y_limits.min = limitY_el.attribute("min").toDouble();
+            _axis_limits_dialog->enableMin( true, _custom_Y_limits.min);
+        }
+        else{
+            _custom_Y_limits.max = -MAX_DOUBLE;
+            _axis_limits_dialog->enableMin( false, _custom_Y_limits.min);
+        }
+
+        if( limitY_el.hasAttribute("max") ) {
+            _custom_Y_limits.max = limitY_el.attribute("max").toDouble();
+            _axis_limits_dialog->enableMax( true, _custom_Y_limits.max);
+        }
+        else{
+            _custom_Y_limits.max  = MAX_DOUBLE;
+            _axis_limits_dialog->enableMax( false, _custom_Y_limits.max);
         }
     }
 
@@ -612,6 +682,7 @@ void PlotWidget::setScale(QRectF rect, bool emit_signal)
 {
     this->setAxisScale( yLeft, rect.bottom(), rect.top());
     this->setAxisScale( xBottom, rect.left(), rect.right());
+
     this->updateAxes();
 
     if( emit_signal )
@@ -717,8 +788,8 @@ void PlotWidget::on_changeTimeOffset(double offset)
 
 PlotData::RangeTime PlotWidget::getMaximumRangeX() const
 {
-    double left   = std::numeric_limits<double>::max();
-    double right  = std::numeric_limits<double>::min();
+    double left   =  std::numeric_limits<double>::max();
+    double right  = -std::numeric_limits<double>::max();
 
     for (auto it: _curve_list)
     {
@@ -744,15 +815,14 @@ PlotData::RangeTime PlotWidget::getMaximumRangeX() const
     right = right + margin;
     left  = left  - margin;
 
-    _magnifier->setAxisLimits( xBottom, left, right);
     return PlotData::RangeTime( {left,right} );
 }
 
 //TODO report failure for empty dataset
 PlotData::RangeValue  PlotWidget::getMaximumRangeY( PlotData::RangeTime range_X, bool absolute_time) const
 {
-    double top    = std::numeric_limits<double>::min();
-    double bottom = std::numeric_limits<double>::max();
+    double top    = -std::numeric_limits<double>::max();
+    double bottom =  std::numeric_limits<double>::max();
 
     for(auto it = _curve_list.begin(); it != _curve_list.end(); ++it)
     {
@@ -790,20 +860,39 @@ PlotData::RangeValue  PlotWidget::getMaximumRangeY( PlotData::RangeTime range_X,
         }
     }
 
+    double margin = 0.1;
+
     if( bottom > top ){
         bottom  = 0;
         top = 0;
     }
 
-    double margin = 0.1;
     if( top - bottom > std::numeric_limits<double>::epsilon() )
     {
         margin = (top-bottom) * 0.025;
     }
-    top    += margin;
-    bottom -= margin;
 
-    _magnifier->setAxisLimits( yLeft, bottom, top);
+    const bool lower_limit = _custom_Y_limits.min > -MAX_DOUBLE;
+    const bool upper_limit = _custom_Y_limits.max <  MAX_DOUBLE;
+
+    if(lower_limit)
+    {
+        bottom = _custom_Y_limits.min;
+        if( top < bottom ) top = bottom + margin;
+    }
+
+    if( upper_limit )
+    {
+        top = _custom_Y_limits.max;
+        if( top < bottom ) bottom = top - margin;
+    }
+
+    if( !lower_limit && !upper_limit )
+    {
+        top    += margin;
+        bottom -= margin;
+    }
+
     return PlotData::RangeValue({ bottom,  top});
 }
 
@@ -927,8 +1016,12 @@ void PlotWidget::zoomOut(bool emit_signal)
 
     auto rangeY = getMaximumRangeY( rangeX, false );
 
-    rect.setBottom( rangeY.min );
-    rect.setTop( rangeY.max );
+    rect.setBottom( rangeY.min   );
+    rect.setTop(  rangeY.max  );
+
+    _magnifier->setAxisLimits( xBottom, rect.left(),   rect.right() );
+    _magnifier->setAxisLimits( yLeft,   rect.bottom(), rect.top() );
+
     this->setScale(rect, emit_signal);
 }
 
@@ -944,12 +1037,15 @@ void PlotWidget::on_zoomOutHorizontal_triggered(bool emit_signal)
 
 void PlotWidget::on_zoomOutVertical_triggered(bool emit_signal)
 {
-    QRectF act = currentBoundingRect();
-    auto rangeY = getMaximumRangeY( {act.left(), act.right()}, false );
+    QRectF rect = currentBoundingRect();
+    auto rangeY = getMaximumRangeY( {rect.left(), rect.right()}, false );
 
-    act.setBottom( rangeY.min );
-    act.setTop( rangeY.max );
-    this->setScale(act, emit_signal);
+    rect.setBottom(  rangeY.min );
+    rect.setTop(     rangeY.max );
+
+    _magnifier->setAxisLimits( yLeft, rect.bottom(), rect.top() );
+
+    this->setScale(rect, emit_signal);
 }
 
 void PlotWidget::on_noTransform_triggered(bool checked )
@@ -1102,32 +1198,26 @@ void PlotWidget::on_savePlotToFile()
     }
 }
 
-
-void PlotWidget::canvasContextMenuTriggered(const QPoint &pos)
+void PlotWidget::on_editAxisLimits_triggered()
 {
-    QMenu menu(this);
-    menu.addAction(_action_removeCurve);
-    menu.addAction(_action_removeAllCurves);
-    menu.addSeparator();
-    menu.addAction(_action_changeColorsDialog);
-    menu.addAction(_action_showPoints);
-    menu.addSeparator();
-    menu.addAction(_action_zoomOutHorizontally);
-    menu.addAction(_action_zoomOutVertically);
-    menu.addSeparator();
-    menu.addAction( _action_noTransform );
-    menu.addAction( _action_1stDerivativeTransform );
-    menu.addAction( _action_2ndDerivativeTransform );
-    menu.addAction( _action_phaseXY );
-    menu.addSeparator();
-    menu.addAction( _action_saveToFile );
+    auto rangeX = this->getMaximumRangeX();
 
-    _action_removeCurve->setEnabled( ! _curve_list.empty() );
-    _action_removeAllCurves->setEnabled( ! _curve_list.empty() );
-    _action_changeColorsDialog->setEnabled(  ! _curve_list.empty() );
+    //temporary reset the limit during editing
+    _custom_Y_limits.min = -MAX_DOUBLE;
+    _custom_Y_limits.max =  MAX_DOUBLE;
 
-    menu.exec( canvas()->mapToGlobal(pos) );
+    auto rangeY = getMaximumRangeY(rangeX, false);
+
+    _axis_limits_dialog->setDefaultRange(rangeY);
+    _axis_limits_dialog->exec();
+
+    _custom_Y_limits = _axis_limits_dialog->rangeY();
+
+    on_zoomOutVertical_triggered(false);
+    replot();
+    emit undoableChange();
 }
+
 
 bool PlotWidget::eventFilter(QObject *obj, QEvent *event)
 {
