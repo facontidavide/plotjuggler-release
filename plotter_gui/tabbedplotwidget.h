@@ -18,12 +18,11 @@ class TabbedPlotWidget : public QWidget
 public:
     typedef struct{} MainWindowArea;
 
-    explicit TabbedPlotWidget(QMainWindow *main_window,
+    explicit TabbedPlotWidget(QString name,
+                              QMainWindow *main_window,
                               PlotMatrix* first_tab,
                               PlotDataMap &mapped_data,
                               QMainWindow *parent );
-
-    void setSiblingsList( const std::map<QString,TabbedPlotWidget*>& other_tabbed_widgets );
 
     PlotMatrix* currentTab();
 
@@ -35,6 +34,12 @@ public:
     bool xmlLoadState(QDomElement &tabbed_area);
 
     ~TabbedPlotWidget();
+
+    QString name() const { return _name; }
+
+    static const std::map<QString,TabbedPlotWidget*>& instances();
+
+    static TabbedPlotWidget *instance(const QString& key);
 
 public slots:
 
@@ -78,16 +83,21 @@ private:
 
     QMenu* _tab_menu;
 
+    const QString _name;
+
     PlotDataMap& _mapped_data;
 
     bool _horizontal_link;
 
     QString _parent_type;
 
-    std::map<QString,TabbedPlotWidget*> _other_siblings;
+    virtual void closeEvent(QCloseEvent *event) override;
 
 protected:
+
     virtual bool eventFilter(QObject *obj, QEvent *event);
+
+    static std::map<QString,TabbedPlotWidget*> _instances;
 
 signals:
     void created();
