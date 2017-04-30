@@ -48,7 +48,7 @@ DataStreamSample::DataStreamSample():
     }
 }
 
-bool DataStreamSample::start()
+bool DataStreamSample::start(QString& default_configuration)
 {
     _running = true;
     pushSingleCycle();
