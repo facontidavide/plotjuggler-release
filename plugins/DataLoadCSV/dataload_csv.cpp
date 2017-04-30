@@ -92,14 +92,14 @@ int DataLoadCSV::parseHeader(QFile *file,
     return linecount;
 }
 
-PlotDataMap DataLoadCSV::readDataFromFile(const std::string &file_name,
-                                          std::string& load_configuration )
+PlotDataMap DataLoadCSV::readDataFromFile(const QString &file_name,
+                                          QString &load_configuration )
 {
     int time_index = TIME_INDEX_NOT_DEFINED;
 
     PlotDataMap plot_data;
 
-    QFile file( file_name.c_str() );
+    QFile file( file_name );
     file.open(QFile::ReadOnly);
 
     std::vector<std::pair<bool, QString> > ordered_names;
@@ -154,7 +154,7 @@ PlotDataMap DataLoadCSV::readDataFromFile(const std::string &file_name,
 
                     if (time_index == TIME_INDEX_NOT_DEFINED)
                     {
-                        if( load_configuration.compare( qname.toStdString()) == 0 )
+                        if( load_configuration== qname )
                         {
                             time_index = valid_field_names.size() ;
                         }
@@ -183,7 +183,7 @@ PlotDataMap DataLoadCSV::readDataFromFile(const std::string &file_name,
                 }
 
                 time_index = dialog->getSelectedRowNumber().at(0) -1; // vector is supposed to have only one element
-                load_configuration = field_names.at( time_index + 1 ).toStdString() ;
+                load_configuration = field_names.at( time_index + 1 ) ;
             }
 
             first_line = false;

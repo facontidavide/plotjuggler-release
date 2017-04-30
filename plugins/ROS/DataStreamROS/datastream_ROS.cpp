@@ -227,7 +227,7 @@ void DataStreamROS::saveIntoRosbag()
 }
 
 
-bool DataStreamROS::start()
+bool DataStreamROS::start(QString& default_configuration)
 {
     _plot_data.numeric.clear();
     _plot_data.user_defined.clear();
@@ -251,7 +251,9 @@ bool DataStreamROS::start()
                                    QString(topic_info.datatype.c_str()) ) );
     }
 
-    DialogSelectRosTopics dialog(all_topics, QStringList(), 0 );
+    QStringList default_topics = default_configuration.split(' ', QString::SkipEmptyParts);
+
+    DialogSelectRosTopics dialog(all_topics, default_topics );
     int res = dialog.exec();
 
     QStringList topic_selected = dialog.getSelectedItems();
@@ -259,6 +261,12 @@ bool DataStreamROS::start()
     if( res != QDialog::Accepted || topic_selected.empty() )
     {
         return false;
+    }
+
+    default_configuration.clear();
+    for (const auto& topic :topic_selected )
+    {
+        default_configuration.append(topic).append(" ");
     }
 
     // load the rules
