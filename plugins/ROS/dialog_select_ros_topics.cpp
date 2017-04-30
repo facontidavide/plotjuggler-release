@@ -25,9 +25,14 @@ DialogSelectRosTopics::DialogSelectRosTopics(const std::vector<std::pair<QString
     this->setWindowFlags( flags | Qt::WindowStaysOnTopHint);
 
     ui->setupUi(this);
+
     QSettings settings( "IcarusTechnology", "PlotJuggler");
-    QString default_topics = settings.value("DialogSelectRosTopics.selectedItems", "" ).toString();
-    default_selected_topics = default_topics.split(' ', QString::SkipEmptyParts);
+
+    if( default_selected_topics.isEmpty())
+    {
+        QString default_topics = settings.value("DialogSelectRosTopics.selectedItems", "" ).toString();
+        default_selected_topics = default_topics.split(' ', QString::SkipEmptyParts);
+    }
 
     ui->listRosTopics->setRowCount( topic_list.size() );
 
