@@ -58,7 +58,7 @@ private slots:
 
     void onActionLoadDataFile(bool reload_from_settings = false);
 
-    void onActionLoadDataFileImpl(QString filename, bool reuse_last_timeindex = false );
+    void onActionLoadDataFileImpl(QString filename, bool reuse_last_configuration = false );
 
     void onActionReloadDataFileFromSettings();
 
@@ -167,7 +167,9 @@ private:
 
     QString _loaded_datafile;
 
-    std::string _last_load_configuration;
+    QString _last_load_configuration;
+
+    QString _last_stream_configuration;
 
     QSignalMapper *_streamer_signal_mapper;
 
