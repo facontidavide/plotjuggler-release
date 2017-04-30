@@ -15,8 +15,8 @@ public:
 
     virtual const std::vector<const char*>& compatibleFileExtensions() const = 0;
 
-    virtual PlotDataMap readDataFromFile(const std::string& file_name,
-                                         std::string& time_index ) = 0;
+    virtual PlotDataMap readDataFromFile(const QString& file_name,
+                                         QString& default_configuration ) = 0;
 
     virtual const char* name() const = 0;
 
