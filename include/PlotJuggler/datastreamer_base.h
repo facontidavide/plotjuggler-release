@@ -14,7 +14,7 @@ public:
 
     virtual PlotDataMap& getDataMap() = 0;
 
-    virtual bool start() = 0;
+    virtual bool start(QString& default_configuration) = 0;
 
     virtual void shutdown() = 0;
 
