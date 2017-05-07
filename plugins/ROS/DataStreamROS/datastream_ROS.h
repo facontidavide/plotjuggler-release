@@ -48,8 +48,6 @@ private:
 
     std::thread _thread;
 
-    std::map<std::string, RosIntrospection::ROSTypeList> _ros_type_map;
-
     void extractInitialSamples();
 
     double _initial_time;
