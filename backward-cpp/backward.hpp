@@ -608,7 +608,7 @@ template <>
 class StackTraceImpl<system_tag::linux_tag>: public StackTraceLinuxImplHolder {
 public:
 	__attribute__ ((noinline)) // TODO use some macro
-    size_t load_here(size_t depth=16) {
+    size_t load_here(size_t depth=32) {
 		load_thread_info();
 		if (depth == 0) {
 			return 0;
@@ -619,7 +619,7 @@ public:
 		skip_n_firsts(0);
 		return size();
 	}
-    size_t load_from(void* addr, size_t depth=16) {
+    size_t load_from(void* addr, size_t depth=32) {
 		load_here(depth + 8);
 
 		for (size_t i = 0; i < _stacktrace.size(); ++i) {
@@ -1946,9 +1946,9 @@ private:
 #	warning ":/ sorry, ain't know no nothing none not of your architecture!"
 #endif
 		if (error_addr) {
-            st.load_from(error_addr, 16);
+            st.load_from(error_addr, 32);
 		} else {
-            st.load_here(16);
+            st.load_here(32);
 		}
 
 		Printer printer;
