@@ -67,6 +67,7 @@ add_dependencies(DataStreamROS
 #############
 SET( PUBLISHER_SRC
     TopicPublisherROS/statepublisher_rostopic.cpp
+    TopicPublisherROS/timestamp_injector.cpp
     TopicPublisherROS/statepublisher_rostopic.h
     )
 
