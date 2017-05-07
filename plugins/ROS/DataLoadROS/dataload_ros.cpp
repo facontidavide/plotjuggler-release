@@ -24,8 +24,8 @@ const std::vector<const char*> &DataLoadROS::compatibleFileExtensions() const
     return _extensions;
 }
 
-PlotDataMap DataLoadROS::readDataFromFile(const std::string& file_name,
-                                          std::string &load_configuration  )
+PlotDataMap DataLoadROS::readDataFromFile(const QString &file_name,
+                                          QString &load_configuration  )
 {
     using namespace RosIntrospection;
 
@@ -34,7 +34,7 @@ PlotDataMap DataLoadROS::readDataFromFile(const std::string& file_name,
 
     rosbag::Bag bag;
     try{
-        bag.open( file_name, rosbag::bagmode::Read );
+        bag.open( file_name.toStdString(), rosbag::bagmode::Read );
     }
     catch( rosbag::BagException&  ex)
     {
@@ -45,11 +45,7 @@ PlotDataMap DataLoadROS::readDataFromFile(const std::string& file_name,
     }
 
     rosbag::View bag_view ( bag, ros::TIME_MIN, ros::TIME_MAX, true );
-    auto first_time = bag_view.getBeginTime();
     std::vector<const rosbag::ConnectionInfo *> connections = bag_view.getConnections();
-
-    // create a list and a type map for each topic
-    std::map<std::string,ROSTypeList> type_map;
 
     for(unsigned i=0;  i<connections.size(); i++)
     {
@@ -59,27 +55,29 @@ PlotDataMap DataLoadROS::readDataFromFile(const std::string& file_name,
         const auto&  definition =  connections[i]->msg_def;
 
         all_topics.push_back( std::make_pair(QString( topic.c_str()), QString( data_type.c_str()) ) );
-
-        auto topic_map = buildROSTypeMapFromDefinition( data_type, definition);
-        type_map.insert( std::make_pair(data_type,topic_map));
-
-        ShapeShifterFactory::getInstance().registerMessage(connections[i]->topic, md5sum, data_type, definition);
+        RosIntrospectionFactory::getInstance().registerMessage(topic, md5sum, data_type, definition);
     }
 
     int count = 0;
 
-    QStringList default_topic_names = QString(load_configuration.c_str()).split(' ');
+    //----------------------------------
+    QStringList default_topic_names = load_configuration.split(' ',QString::SkipEmptyParts);
+    load_configuration.clear();
 
     DialogSelectRosTopics* dialog = new DialogSelectRosTopics( all_topics, default_topic_names );
 
-    std::set<std::string> topic_selected;
+    std::set<QString> topic_selected;
 
     if( dialog->exec() == QDialog::Accepted)
     {
         const auto& selected_items = dialog->getSelectedItems();
-        for(auto item: selected_items)
+        for(const auto& item: selected_items)
         {
-            topic_selected.insert( item.toStdString() );
+            QString topic = item;
+            topic_selected.insert( topic );
+
+            // change the names in load_configuration
+            load_configuration.append( topic ).append(" ");
         }
         // load the rules
         if( dialog->checkBoxUseRenamingRules()->isChecked())
@@ -88,10 +86,11 @@ PlotDataMap DataLoadROS::readDataFromFile(const std::string& file_name,
         }
     }
 
+    //-----------------------------------
     rosbag::View bag_view_reduced ( true );
     bag_view_reduced.addQuery(bag, [topic_selected](rosbag::ConnectionInfo const* connection)
     {
-        return topic_selected.find( connection->topic ) != topic_selected.end();
+        return topic_selected.count( connection->topic.c_str() ) > 0;
     } );
 
     QProgressDialog progress_dialog;
@@ -137,7 +136,8 @@ PlotDataMap DataLoadROS::readDataFromFile(const std::string& file_name,
         // used as prefix. We will remove that here.
         if( topicname_SS.at(0) == '/' ) topicname_SS = SString( topic.data() +1,  topic.size()-1 );
 
-        buildRosFlatType(type_map[ datatype ], datatype, topicname_SS, buffer.data(), &flat_container);
+        auto typelist = RosIntrospectionFactory::getInstance().getRosTypeList( md5sum );
+        buildRosFlatType( *typelist, datatype, topicname_SS, buffer.data(), &flat_container);
         applyNameTransform( _rules[datatype], &flat_container );
 
         // apply time offsets
