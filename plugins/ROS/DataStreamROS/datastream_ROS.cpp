@@ -22,12 +22,12 @@
 #include "../shape_shifter_factory.hpp"
 
 DataStreamROS::DataStreamROS():
-    _action_saveIntoRosbag(nullptr)
+    _action_saveIntoRosbag(nullptr),
+    _node(nullptr)
 {
     _enabled = false;
     _running = false;
     _initial_time = std::numeric_limits<double>::max();
-
     _use_header_timestamp = true;
 }
 
@@ -47,17 +47,9 @@ void DataStreamROS::topicCallback(const topic_tools::ShapeShifter::ConstPtr& msg
     const auto&  md5sum     =  msg->getMD5Sum();
     const auto&  datatype   =  msg->getDataType();
     const auto&  definition =  msg->getMessageDefinition() ;
-    ShapeShifterFactory::getInstance().registerMessage(topic_name, md5sum, datatype, definition);
+    RosIntrospectionFactory::getInstance().registerMessage(topic_name, md5sum, datatype, definition);
 
-    // Decode this message time if it is the first time you receive it
-    auto it = _ros_type_map.find(datatype);
-    if( it == _ros_type_map.end() )
-    {
-        auto typemap = buildROSTypeMapFromDefinition( datatype,  definition);
-        auto ret = _ros_type_map.insert( std::make_pair(datatype, std::move(typemap)));
-        it = ret.first;
-    }
-    const RosIntrospection::ROSTypeList& type_map = it->second;
+    const RosIntrospection::ROSTypeList* type_map = RosIntrospectionFactory::getInstance().getRosTypeList(md5sum);
 
     //------------------------------------
     std::vector<uint8_t> buffer(msg->size());
@@ -73,7 +65,7 @@ void DataStreamROS::topicCallback(const topic_tools::ShapeShifter::ConstPtr& msg
     // used as prefix. We will remove that here.
     if( topicname_SS.at(0) == '/' ) topicname_SS = SString( topic_name.data() +1,  topic_name.size()-1 );
 
-    buildRosFlatType( type_map, datatype, topicname_SS, buffer.data(), &flat_container);
+    buildRosFlatType( *type_map, datatype, topicname_SS, buffer.data(), &flat_container);
     applyNameTransform( _rules[datatype], &flat_container );
 
     SString header_stamp_field( topic_name );
@@ -190,13 +182,13 @@ void DataStreamROS::saveIntoRosbag()
             const std::string& topicname = it.first;
             const PlotDataAnyPtr& plotdata = it.second;
 
-            auto registered_msg_type = ShapeShifterFactory::getInstance().getMessage(topicname);
+            auto registered_msg_type = RosIntrospectionFactory::getInstance().getShapeShifter(topicname);
             if(!registered_msg_type) continue;
 
             RosIntrospection::ShapeShifter msg;
-            msg.morph(registered_msg_type.value()->getMD5Sum(),
-                      registered_msg_type.value()->getDataType(),
-                      registered_msg_type.value()->getMessageDefinition());
+            msg.morph(registered_msg_type->getMD5Sum(),
+                      registered_msg_type->getDataType(),
+                      registered_msg_type->getMessageDefinition());
 
             for (int i=0; i< plotdata->size(); i++)
             {
@@ -227,17 +219,16 @@ void DataStreamROS::saveIntoRosbag()
 }
 
 
-bool DataStreamROS::start()
+bool DataStreamROS::start(QString& default_configuration)
 {
+    if( !_node )
+    {
+        _node =  RosManager::getNode();
+    }
+
     _plot_data.numeric.clear();
     _plot_data.user_defined.clear();
     _initial_time = std::numeric_limits<double>::max();
-
-    _node = getGlobalRosNode();
-    if( !_node )
-    {
-        return false;
-    }
 
     using namespace RosIntrospection;
 
@@ -251,7 +242,9 @@ bool DataStreamROS::start()
                                    QString(topic_info.datatype.c_str()) ) );
     }
 
-    DialogSelectRosTopics dialog(all_topics, QStringList(), 0 );
+    QStringList default_topics = default_configuration.split(' ', QString::SkipEmptyParts);
+
+    DialogSelectRosTopics dialog(all_topics, default_topics );
     int res = dialog.exec();
 
     QStringList topic_selected = dialog.getSelectedItems();
@@ -261,6 +254,12 @@ bool DataStreamROS::start()
         return false;
     }
 
+    default_configuration.clear();
+    for (const auto& topic :topic_selected )
+    {
+        default_configuration.append(topic).append(" ");
+    }
+
     // load the rules
     if( dialog.checkBoxUseRenamingRules()->isChecked() ){
         _rules = RuleEditing::getRenamingRules();
@@ -268,8 +267,6 @@ bool DataStreamROS::start()
 
     _use_header_timestamp = dialog.checkBoxUseHeaderStamp()->isChecked();
     //-------------------------
-
-    ros::start(); // needed because node will go out of scope
 
     _subscribers.clear();
     for (int i=0; i<topic_selected.size(); i++ )
@@ -299,19 +296,12 @@ void DataStreamROS::shutdown()
     if( _running ){
         _running = false;
         _thread.join();
-        _node.reset();
     }
 
     for(ros::Subscriber& sub: _subscribers)
     {
         sub.shutdown();
     }
-    if(ros::isStarted() )
-    {
-        ros::shutdown(); // explicitly needed since we use ros::start();;
-        ros::waitForShutdown();
-    }
-
     _subscribers.clear();
 }
 
@@ -330,7 +320,6 @@ void DataStreamROS::setParentMenu(QMenu *menu)
     _action_saveIntoRosbag->setIcon(iconSave);
 
     _menu->addAction( _action_saveIntoRosbag );
-    _menu->addSeparator();
 
     connect( _action_saveIntoRosbag, &QAction::triggered, this, &DataStreamROS::saveIntoRosbag );
 }
