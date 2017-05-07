@@ -2,6 +2,18 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.0.5 (2017-05-07)
+------------------
+* fixed an issue with ROS during destruction
+* allow timestamp injection
+* Create ISSUE_TEMPLATE.md
+* Contributors: Davide Faconti
+
+1.0.4 (2017-04-30)
+------------------
+* save/restore the selected topics in the layout file
+* Contributors: Davide Faconti
+
 1.0.3 (2017-04-28)
 ------------------
 * fixed window management

@@ -4,59 +4,73 @@
 #include <ros_type_introspection/shape_shifter.hpp>
 #include <PlotJuggler/any.hpp>
 
-class ShapeShifterFactory{
+class RosIntrospectionFactory{
 public:
-  static ShapeShifterFactory &getInstance();
+  static RosIntrospectionFactory &getInstance();
 
   void registerMessage(const std::string& topic_name, const std::string &md5sum, const std::string& datatype, const std::string& definition );
 
-  nonstd::optional<RosIntrospection::ShapeShifter *> getMessage(const std::string& topic_name);
+  const RosIntrospection::ShapeShifter* getShapeShifter(const std::string& topic_name);
+
+  const RosIntrospection::ROSTypeList*  getRosTypeList(const std::string& md5sum);
 
   const std::vector<std::string>& getTopicList() const;
 
 private:
-  ShapeShifterFactory() = default;
-  std::map<std::string, RosIntrospection::ShapeShifter> map_;
+  RosIntrospectionFactory() = default;
+  std::map<std::string, RosIntrospection::ShapeShifter> _ss_map;
+  std::map<std::string, RosIntrospection::ROSTypeList> _tl_map;
   std::vector<std::string> topics_;
 
 };
+//---------------------------------------------
 
-#endif // SHAPE_SHIFTER_FACTORY_HPP
-
-inline ShapeShifterFactory& ShapeShifterFactory::getInstance()
+inline RosIntrospectionFactory& RosIntrospectionFactory::getInstance()
 {
-  static ShapeShifterFactory instance;
+  static RosIntrospectionFactory instance;
   return instance;
 }
 
-inline void ShapeShifterFactory::registerMessage(const std::string &topic_name,
+inline void RosIntrospectionFactory::registerMessage(const std::string &topic_name,
                                                  const std::string &md5sum,
                                                  const std::string &datatype,
                                                  const std::string &definition)
 {
 
-  auto it = map_.find(topic_name);
-  if( it == map_.end() )
+  auto itA = _ss_map.find(topic_name);
+  if( itA == _ss_map.end() )
   {
       RosIntrospection::ShapeShifter msg;
       msg.morph(md5sum, datatype,definition);
-      map_.insert( std::make_pair(topic_name, std::move(msg) ));
+      _ss_map.insert( std::make_pair(topic_name, std::move(msg) ));
       topics_.push_back( topic_name );
+
+      if( _tl_map.find(md5sum) == _tl_map.end())
+      {
+          auto topic_map = RosIntrospection::buildROSTypeMapFromDefinition( datatype, definition);
+          _tl_map.insert( std::make_pair(md5sum,topic_map));
+      }
   }
 }
 
-inline nonstd::optional<RosIntrospection::ShapeShifter*> ShapeShifterFactory::getMessage(const std::string &topic_name)
+inline const RosIntrospection::ShapeShifter* RosIntrospectionFactory::getShapeShifter(const std::string &topic_name)
 {
-  auto it = map_.find( topic_name );
-  if( it == map_.end())
-    return nonstd::optional<RosIntrospection::ShapeShifter*>();
-  else
-    return nonstd::optional<RosIntrospection::ShapeShifter*>( &(it->second) );
+  auto it = _ss_map.find( topic_name );
+  return ( it == _ss_map.end()) ? nullptr :  &(it->second);
 }
 
-inline const std::vector<std::string> &ShapeShifterFactory::getTopicList() const
+inline const RosIntrospection::ROSTypeList* RosIntrospectionFactory::getRosTypeList(const std::string &md5sum)
+{
+  auto it = _tl_map.find( md5sum );
+  return ( it == _tl_map.end()) ? nullptr :  &(it->second);
+}
+
+inline const std::vector<std::string> &RosIntrospectionFactory::getTopicList() const
 {
   return topics_;
 }
+
+#endif // SHAPE_SHIFTER_FACTORY_HPP
+
 
 
