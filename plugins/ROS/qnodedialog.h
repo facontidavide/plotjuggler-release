@@ -31,6 +31,20 @@ private:
 
 };
 
-ros::NodeHandlePtr getGlobalRosNode();
+
+class RosManager
+{
+private:
+    ros::NodeHandlePtr _node;
+    RosManager(): _node(nullptr) {}
+    void stopROS();
+
+public:
+    static RosManager& get();
+    ~RosManager();
+    static ros::NodeHandlePtr getNode();
+};
+
+
 
 #endif // QNODEDIALOG_H
