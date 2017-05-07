@@ -47,9 +47,6 @@ PlotDataMap DataLoadROS::readDataFromFile(const QString &file_name,
     rosbag::View bag_view ( bag, ros::TIME_MIN, ros::TIME_MAX, true );
     std::vector<const rosbag::ConnectionInfo *> connections = bag_view.getConnections();
 
-    // create a list and a type map for each topic
-    std::map<std::string,ROSTypeList> type_map;
-
     for(unsigned i=0;  i<connections.size(); i++)
     {
         const auto&  topic      =  connections[i]->topic;
@@ -58,11 +55,7 @@ PlotDataMap DataLoadROS::readDataFromFile(const QString &file_name,
         const auto&  definition =  connections[i]->msg_def;
 
         all_topics.push_back( std::make_pair(QString( topic.c_str()), QString( data_type.c_str()) ) );
-
-        auto topic_map = buildROSTypeMapFromDefinition( data_type, definition);
-        type_map.insert( std::make_pair(data_type,topic_map));
-
-        ShapeShifterFactory::getInstance().registerMessage(connections[i]->topic, md5sum, data_type, definition);
+        RosIntrospectionFactory::getInstance().registerMessage(topic, md5sum, data_type, definition);
     }
 
     int count = 0;
@@ -143,7 +136,8 @@ PlotDataMap DataLoadROS::readDataFromFile(const QString &file_name,
         // used as prefix. We will remove that here.
         if( topicname_SS.at(0) == '/' ) topicname_SS = SString( topic.data() +1,  topic.size()-1 );
 
-        buildRosFlatType(type_map[ datatype ], datatype, topicname_SS, buffer.data(), &flat_container);
+        auto typelist = RosIntrospectionFactory::getInstance().getRosTypeList( md5sum );
+        buildRosFlatType( *typelist, datatype, topicname_SS, buffer.data(), &flat_container);
         applyNameTransform( _rules[datatype], &flat_container );
 
         // apply time offsets
