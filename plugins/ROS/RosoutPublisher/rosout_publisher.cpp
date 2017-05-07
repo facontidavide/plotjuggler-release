@@ -73,14 +73,13 @@ std::vector<const PlotDataAny *> RosoutPublisher::findRosoutTimeseries(PlotDataM
         const std::string&    topic_name = data_it.first;
 
         // check if I registered this message before
-        nonstd::optional<RosIntrospection::ShapeShifter*> registered_shapeshifted_msg = ShapeShifterFactory::getInstance().getMessage( topic_name );
+        const RosIntrospection::ShapeShifter* registered_shapeshifted_msg = RosIntrospectionFactory::getInstance().getShapeShifter( topic_name );
         if( ! registered_shapeshifted_msg )
         {
             continue; // will not be able to use this anyway, just skip
         }
 
-        RosIntrospection::ShapeShifter* shapeshifted_msg = registered_shapeshifted_msg.value();
-        if(shapeshifted_msg->getMD5Sum() != std::string(ros::message_traits::MD5Sum< rosgraph_msgs::Log >::value()) )
+        if(registered_shapeshifted_msg->getMD5Sum() != std::string(ros::message_traits::MD5Sum< rosgraph_msgs::Log >::value()) )
         {
             continue; // it is NOT a rosgraph_msgs::Log
         }
