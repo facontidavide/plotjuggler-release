@@ -18,7 +18,7 @@ public:
 
     virtual PlotDataMap& getDataMap() override { return _plot_data; }
 
-    virtual bool start() override;
+    virtual bool start(QString& default_configuration) override;
 
     virtual void shutdown() override;
 
