@@ -393,7 +393,7 @@ void MainWindow::loadPlugins(QString directory_name)
             continue;
         }
 
-        QPluginLoader pluginLoader(pluginsDir.absoluteFilePath(filename));
+        QPluginLoader pluginLoader(pluginsDir.absoluteFilePath(filename), this);
 
         QObject *plugin = pluginLoader.instance();
         if (plugin)
@@ -424,15 +424,18 @@ void MainWindow::loadPlugins(QString directory_name)
                 else
                 {
                     loaded_plugins.insert( publisher->name() );
+
                     _state_publisher.insert( std::make_pair(publisher->name(), publisher) );
 
-                    publisher->setParentMenu( ui->menuPublishers );
-
-                    QAction* activatePublisher = new QAction( publisher->name() , this);
+                    QAction* activatePublisher = new QAction(tr("Start: ") + publisher->name() , this);
                     activatePublisher->setCheckable(true);
                     activatePublisher->setChecked(false);
                     ui->menuPublishers->setEnabled(true);
                     ui->menuPublishers->addAction(activatePublisher);
+
+                    publisher->setParentMenu( ui->menuPublishers );
+
+                    ui->menuPublishers->addSeparator();
 
                     connect(activatePublisher, &QAction::toggled,
                            [=](bool enable) { publisher->setEnabled( enable ); } );
@@ -455,6 +458,7 @@ void MainWindow::loadPlugins(QString directory_name)
                     ui->menuStreaming->addAction(startStreamer);
 
                     streamer->setParentMenu( ui->menuStreaming );
+                    ui->menuStreaming->addSeparator();
 
                     connect(startStreamer, SIGNAL(triggered()),
                             _streamer_signal_mapper, SLOT(map()) );
@@ -687,16 +691,16 @@ void MainWindow::onActionSaveLayout()
     {
         QDomElement root = doc.namedItem("root").toElement();
         QDomElement previously_loaded_datafile =  doc.createElement( "previouslyLoadedDatafile" );
-        QDomText textNode = doc.createTextNode( _loaded_datafile );
-        previously_loaded_datafile.appendChild( textNode );
+        previously_loaded_datafile.setAttribute("filename", _loaded_datafile );
+        previously_loaded_datafile.setAttribute("configuration", _last_load_configuration );
         root.appendChild( previously_loaded_datafile );
     }
     if( _current_streamer )
     {
         QDomElement root = doc.namedItem("root").toElement();
         QDomElement loaded_streamer =  doc.createElement( "previouslyLoadedStreamer" );
-        QDomText textNode = doc.createTextNode( _current_streamer->name() );
-        loaded_streamer.appendChild( textNode );
+        loaded_streamer.setAttribute("name", _current_streamer->name() );
+        loaded_streamer.setAttribute("configuration", _last_stream_configuration );
         root.appendChild( loaded_streamer );
     }
 
@@ -894,7 +898,7 @@ bool MainWindow::isStreamingActive() const
     return ui->pushButtonStreaming->isChecked();
 }
 
-void MainWindow::onActionLoadDataFileImpl(QString filename, bool reuse_last_timeindex )
+void MainWindow::onActionLoadDataFileImpl(QString filename, bool reuse_last_configuration )
 {
     const QString extension = QFileInfo(filename).suffix().toLower();
 
@@ -963,18 +967,17 @@ void MainWindow::onActionLoadDataFileImpl(QString filename, bool reuse_last_time
         _loaded_datafile = filename;
         ui->actionDeleteAllData->setEnabled( true );
 
-        std::string timeindex_name_empty;
-        std::string & timeindex_name = timeindex_name_empty;
-        if( reuse_last_timeindex )
+        QString load_configuration; // must be empty by default
+        if( reuse_last_configuration )
         {
-            timeindex_name = _last_load_configuration;
+            load_configuration = _last_load_configuration;
         }
 
         PlotDataMap mapped_data = loader->readDataFromFile(
-                    filename.toStdString(),
-                    timeindex_name   );
+                    filename,
+                    load_configuration   );
 
-        _last_load_configuration = timeindex_name;
+        _last_load_configuration = load_configuration;
 
         // remap to different type
         importPlotDataMap(mapped_data, true);
@@ -1030,7 +1033,8 @@ void MainWindow::onActionLoadStreamer(QString streamer_name)
         }
     }
 
-    if( _current_streamer && _current_streamer->start() )
+
+    if( _current_streamer && _current_streamer->start( _last_stream_configuration) )
     {
         _current_streamer->enableStreaming( false );
         importPlotDataMap( _current_streamer->getDataMap(), true );
@@ -1120,23 +1124,43 @@ void MainWindow::onActionLoadLayoutFromFile(QString filename, bool load_data)
         QDomElement previously_loaded_datafile =  root.firstChildElement( "previouslyLoadedDatafile" );
         if( previously_loaded_datafile.isNull() == false)
         {
-            QString filename = previously_loaded_datafile.text();
+            QString filename;
+
+            //new format
+            if( previously_loaded_datafile.hasAttribute("filename"))
+            {
+                filename =  previously_loaded_datafile.attribute("filename");
+            }
+            else{  // old format
+                filename = previously_loaded_datafile.text();
+            }
 
             QMessageBox::StandardButton reload_previous;
             reload_previous = QMessageBox::question(0, tr("Wait!"),
-                                                    tr("Do you want to reload the datafile?\n\n[%1]\n").arg(filename),
+                                                    tr("Do you want to reload the previous datafile and its configuration?\n\n[%1]\n").arg(filename),
                                                     QMessageBox::Yes | QMessageBox::No,
                                                     QMessageBox::Yes );
 
-            if( reload_previous == QMessageBox::Yes ) {
-                onActionLoadDataFileImpl( filename );
+            if( reload_previous == QMessageBox::Yes )
+            {
+                _last_load_configuration = (previously_loaded_datafile.attribute("configuration", QString() ));
+                onActionLoadDataFileImpl( filename, true );
             }
         }
 
         QDomElement previously_loaded_streamer =  root.firstChildElement( "previouslyLoadedStreamer" );
         if( previously_loaded_streamer.isNull() == false)
         {
-            QString streamer_name = previously_loaded_streamer.text();
+            QString streamer_name;
+            if( previously_loaded_streamer.hasAttribute("name"))
+            {
+                //new format
+                streamer_name = previously_loaded_streamer.attribute("name");
+            }
+            else{ //old format
+                streamer_name = previously_loaded_streamer.text();
+            }
+            _last_stream_configuration = (previously_loaded_streamer.attribute("configuration", QString() ));
 
             bool streamer_loaded = false;
             for(auto& it: _data_streamer) {
@@ -1621,4 +1645,10 @@ void MainWindow::closeEvent(QCloseEvent *event)
     settings.setValue("MainWindow.streamingBufferValue", ui->streamingSpinBox->value() );
     settings.setValue("MainWindow.dateTimeDisplay",ui->pushButtonUseDateTime->isChecked() );
     settings.setValue("MainWindow.timeTrackerSetting", (int)_tracker_param );
+
+    // clean up all the plugins
+    for(auto& it : _data_loader ) { delete it.second; }
+    for(auto& it : _state_publisher ) { delete it.second; }
+    for(auto& it : _data_streamer ) { delete it.second; }
+
 }

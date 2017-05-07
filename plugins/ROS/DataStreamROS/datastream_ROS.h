@@ -21,7 +21,7 @@ public:
 
     virtual PlotDataMap &getDataMap() override;
 
-    virtual bool start() override;
+    virtual bool start(QString& default_configuration) override;
 
     virtual void shutdown() override;
 
@@ -47,8 +47,6 @@ private:
     bool _running;
 
     std::thread _thread;
-
-    std::map<std::string, RosIntrospection::ROSTypeList> _ros_type_map;
 
     void extractInitialSamples();
 
