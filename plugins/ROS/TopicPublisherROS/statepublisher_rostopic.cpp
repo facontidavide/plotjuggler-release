@@ -46,7 +46,7 @@ void TopicPublisherROS::updateState(PlotDataMap *datamap, double current_time)
     {
         const std::string&    topic_name = data_it.first;
 
-        const RosIntrospection::ShapeShifter* registered_shapeshifted_msg = RosIntrospectionFactory::getInstance().getShapeShifter( topic_name );
+        const RosIntrospection::ShapeShifter* registered_shapeshifted_msg = RosIntrospectionFactory::get().getShapeShifter( topic_name );
     if( ! registered_shapeshifted_msg )
     {
       // Not registered, just skip
@@ -68,7 +68,7 @@ void TopicPublisherROS::updateState(PlotDataMap *datamap, double current_time)
 
     if( _current_time->isChecked())
     {
-        auto type_map = RosIntrospectionFactory::getInstance().getRosTypeList( shapeshifted_msg.getMD5Sum());
+        auto type_map = RosIntrospectionFactory::get().getRosTypeList( shapeshifted_msg.getMD5Sum());
         if(type_map)
         {
             injectTime(*type_map, shapeshifted_msg.getDataType(), raw_buffer.data(), ros_time);

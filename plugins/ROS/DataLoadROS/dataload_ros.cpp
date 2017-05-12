@@ -55,7 +55,7 @@ PlotDataMap DataLoadROS::readDataFromFile(const QString &file_name,
         const auto&  definition =  connections[i]->msg_def;
 
         all_topics.push_back( std::make_pair(QString( topic.c_str()), QString( data_type.c_str()) ) );
-        RosIntrospectionFactory::getInstance().registerMessage(topic, md5sum, data_type, definition);
+        RosIntrospectionFactory::get().registerMessage(topic, md5sum, data_type, definition);
     }
 
     int count = 0;
@@ -136,7 +136,7 @@ PlotDataMap DataLoadROS::readDataFromFile(const QString &file_name,
         // used as prefix. We will remove that here.
         if( topicname_SS.at(0) == '/' ) topicname_SS = SString( topic.data() +1,  topic.size()-1 );
 
-        auto typelist = RosIntrospectionFactory::getInstance().getRosTypeList( md5sum );
+        auto typelist = RosIntrospectionFactory::get().getRosTypeList( md5sum );
         buildRosFlatType( *typelist, datatype, topicname_SS, buffer.data(), &flat_container);
         applyNameTransform( _rules[datatype], &flat_container );
 
