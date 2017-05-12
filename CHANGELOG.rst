@@ -2,6 +2,11 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.0.6 (2017-05-12)
+------------------
+* fixed some issues with the installation
+* Contributors: Davide Faconti
+
 1.0.5 (2017-05-07)
 ------------------
 * fixed an issue with ROS during destruction
