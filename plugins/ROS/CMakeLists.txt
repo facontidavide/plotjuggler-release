@@ -110,11 +110,11 @@ add_dependencies(RosoutPublisher
 ## Mark executables and/or libraries for installation
 
 if(COMPILING_WITH_CATKIN)
-    install(TARGETS DataLoadROS DataStreamROS RosTopicPublisher
+    install(TARGETS DataLoadROS DataStreamROS RosTopicPublisher RosoutPublisher
         ARCHIVE DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
         LIBRARY DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
         RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
         )
 elseif()
-    install(TARGETS DataLoadROS DataStreamROS RosTopicPublisher DESTINATION bin  )
+    install(TARGETS DataLoadROS DataStreamROS RosTopicPublisher RosoutPublisher DESTINATION bin  )
 endif()
