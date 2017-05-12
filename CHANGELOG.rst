@@ -2,8 +2,10 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-1.0.6 (2017-05-12)
+1.0.7 (2017-05-12)
 ------------------
+* the list of topics in the Dialog will be automatically updated
+* bug fix
 * fixed some issues with the installation
 * Contributors: Davide Faconti
 
