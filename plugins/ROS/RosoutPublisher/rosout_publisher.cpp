@@ -73,7 +73,7 @@ std::vector<const PlotDataAny *> RosoutPublisher::findRosoutTimeseries(PlotDataM
         const std::string&    topic_name = data_it.first;
 
         // check if I registered this message before
-        const RosIntrospection::ShapeShifter* registered_shapeshifted_msg = RosIntrospectionFactory::getInstance().getShapeShifter( topic_name );
+        const RosIntrospection::ShapeShifter* registered_shapeshifted_msg = RosIntrospectionFactory::get().getShapeShifter( topic_name );
         if( ! registered_shapeshifted_msg )
         {
             continue; // will not be able to use this anyway, just skip
