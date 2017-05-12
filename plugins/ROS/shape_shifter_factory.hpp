@@ -6,9 +6,9 @@
 
 class RosIntrospectionFactory{
 public:
-  static RosIntrospectionFactory &getInstance();
+  static RosIntrospectionFactory &get();
 
-  void registerMessage(const std::string& topic_name, const std::string &md5sum, const std::string& datatype, const std::string& definition );
+  bool registerMessage(const std::string& topic_name, const std::string &md5sum, const std::string& datatype, const std::string& definition );
 
   const RosIntrospection::ShapeShifter* getShapeShifter(const std::string& topic_name);
 
@@ -25,13 +25,14 @@ private:
 };
 //---------------------------------------------
 
-inline RosIntrospectionFactory& RosIntrospectionFactory::getInstance()
+inline RosIntrospectionFactory& RosIntrospectionFactory::get()
 {
   static RosIntrospectionFactory instance;
   return instance;
 }
 
-inline void RosIntrospectionFactory::registerMessage(const std::string &topic_name,
+// return true if added
+inline bool RosIntrospectionFactory::registerMessage(const std::string &topic_name,
                                                  const std::string &md5sum,
                                                  const std::string &datatype,
                                                  const std::string &definition)
@@ -50,7 +51,9 @@ inline void RosIntrospectionFactory::registerMessage(const std::string &topic_na
           auto topic_map = RosIntrospection::buildROSTypeMapFromDefinition( datatype, definition);
           _tl_map.insert( std::make_pair(md5sum,topic_map));
       }
+      return true;
   }
+  return false;
 }
 
 inline const RosIntrospection::ShapeShifter* RosIntrospectionFactory::getShapeShifter(const std::string &topic_name)
