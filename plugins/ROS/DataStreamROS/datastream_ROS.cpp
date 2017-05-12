@@ -47,9 +47,11 @@ void DataStreamROS::topicCallback(const topic_tools::ShapeShifter::ConstPtr& msg
     const auto&  md5sum     =  msg->getMD5Sum();
     const auto&  datatype   =  msg->getDataType();
     const auto&  definition =  msg->getMessageDefinition() ;
-    RosIntrospectionFactory::getInstance().registerMessage(topic_name, md5sum, datatype, definition);
 
-    const RosIntrospection::ROSTypeList* type_map = RosIntrospectionFactory::getInstance().getRosTypeList(md5sum);
+    // register the message type
+    RosIntrospectionFactory::get().registerMessage(topic_name, md5sum, datatype, definition);
+
+    const RosIntrospection::ROSTypeList* type_map = RosIntrospectionFactory::get().getRosTypeList(md5sum);
 
     //------------------------------------
     std::vector<uint8_t> buffer(msg->size());
@@ -115,6 +117,21 @@ void DataStreamROS::topicCallback(const topic_tools::ShapeShifter::ConstPtr& msg
             plot_it = res.first;
         }
         plot_it->second->pushBackAsynchronously( PlotData::Point(msg_time, value));
+    }
+
+    //------------------------------
+    {
+        int& index = _msg_index[topic_name];
+        index++;
+        const std::string index_name = topic_name + std::string("/_MSG_INDEX_") ;
+        auto index_it = _plot_data.numeric.find(index_name);
+        if( index_it == _plot_data.numeric.end())
+        {
+            auto res = _plot_data.numeric.insert(
+                        std::make_pair( index_name, std::make_shared<PlotData>(index_name.c_str()) ));
+            index_it = res.first;
+        }
+        index_it->second->pushBackAsynchronously( PlotData::Point(msg_time, index) );
     }
     PlotData::asyncPushMutex().unlock();
 }
@@ -182,7 +199,7 @@ void DataStreamROS::saveIntoRosbag()
             const std::string& topicname = it.first;
             const PlotDataAnyPtr& plotdata = it.second;
 
-            auto registered_msg_type = RosIntrospectionFactory::getInstance().getShapeShifter(topicname);
+            auto registered_msg_type = RosIntrospectionFactory::get().getShapeShifter(topicname);
             if(!registered_msg_type) continue;
 
             RosIntrospection::ShapeShifter msg;
@@ -244,8 +261,30 @@ bool DataStreamROS::start(QString& default_configuration)
 
     QStringList default_topics = default_configuration.split(' ', QString::SkipEmptyParts);
 
+    QTimer timer;
+    timer.setSingleShot(false);
+    timer.setInterval( 1000);
+    timer.start();
+
     DialogSelectRosTopics dialog(all_topics, default_topics );
+
+    connect( &timer, &QTimer::timeout, [&]()
+    {
+        all_topics.clear();
+        topic_infos.clear();
+        ros::master::getTopics(topic_infos);
+        for (ros::master::TopicInfo topic_info: topic_infos)
+        {
+            all_topics.push_back(
+                        std::make_pair(QString(topic_info.name.c_str()),
+                                       QString(topic_info.datatype.c_str()) ) );
+        }
+        dialog.updateTopicList(all_topics);
+    });
+
     int res = dialog.exec();
+
+    timer.stop();
 
     QStringList topic_selected = dialog.getSelectedItems();
 
