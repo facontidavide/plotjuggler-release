@@ -61,6 +61,8 @@ private:
 
     QAction* _action_saveIntoRosbag;
 
+    std::map<std::string, int> _msg_index;
+
 private slots:
 
     void saveIntoRosbag();
