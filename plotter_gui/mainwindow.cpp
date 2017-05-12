@@ -1634,6 +1634,7 @@ void MainWindow::on_pushButtonTimeTracker_pressed()
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
+    _replot_timer->stop();
     if( _current_streamer )
     {
         _current_streamer->shutdown();

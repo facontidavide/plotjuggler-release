@@ -19,9 +19,11 @@ class DialogSelectRosTopics : public QDialog
     Q_OBJECT
 
 public:
+
     explicit DialogSelectRosTopics(const std::vector<std::pair<QString,QString>>& topic_list,
                                    QStringList default_selected_topics,
                                    QWidget *parent = 0);
+
     ~DialogSelectRosTopics();
 
     QStringList getSelectedItems();
@@ -29,6 +31,10 @@ public:
     QCheckBox* checkBoxUseHeaderStamp();
 
     QCheckBox *checkBoxUseRenamingRules();
+
+public slots:
+
+    void updateTopicList(std::vector<std::pair<QString,QString>> topic_list);
 
 private slots:
 
@@ -42,9 +48,13 @@ private slots:
 
 private:
 
+    void closeEvent(QCloseEvent *event) override;
+
     QStringList _topic_list;
 
     Ui::dialogSelectRosTopics *ui;
+
+    QStringList _default_selected_topics;
 
 };
 
