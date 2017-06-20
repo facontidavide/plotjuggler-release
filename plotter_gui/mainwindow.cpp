@@ -37,6 +37,8 @@ MainWindow::MainWindow(const QCommandLineParser &commandline_parser, QWidget *pa
     ui(new Ui::MainWindow),
     _undo_shortcut(QKeySequence(Qt::CTRL + Qt::Key_Z), this),
     _redo_shortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Z), this),
+    _minimize_view(Qt::Key_F10, this),
+    _minimized(false),
     _current_streamer(nullptr),
     _disable_undo_logging(false),
     _tracker_param( CurveTracker::VALUE )
@@ -338,13 +340,14 @@ void MainWindow::createActions()
 {
     _undo_shortcut.setContext(Qt::ApplicationShortcut);
     _redo_shortcut.setContext(Qt::ApplicationShortcut);
+    _minimize_view.setContext(Qt::ApplicationShortcut);
 
     connect( &_undo_shortcut, &QShortcut::activated, this, &MainWindow::onUndoInvoked );
     connect( &_redo_shortcut, &QShortcut::activated, this, &MainWindow::onRedoInvoked );
-
+    connect( &_minimize_view, &QShortcut::activated, this, &MainWindow::on_minimizeView);
     //---------------------------------------------
 
-    connect( ui->actionSaveLayout, &QAction::triggered,        this, &MainWindow::onActionSaveLayout );
+    connect(ui->actionSaveLayout, &QAction::triggered,         this, &MainWindow::onActionSaveLayout );
     connect(ui->actionLoadLayout, &QAction::triggered,         this, &MainWindow::onActionLoadLayout );
     connect(ui->actionLoadData, &QAction::triggered,           this, &MainWindow::onActionLoadDataFile );
     connect(ui->actionLoadRecentDatafile, &QAction::triggered, this, &MainWindow::onActionReloadDataFileFromSettings );
@@ -481,10 +484,11 @@ void MainWindow::buildDummyData()
 
     QStringList  words_list;
     words_list << "world/siam" << "world/tre" << "walk/piccoli" << "walk/porcellin"
-               << "fly/high/mai" << "fly/high/nessun" << "fly/low/ci" << "fly/low/dividera";
+               << "fly/high/mai" << "fly/high/nessun" << "fly/low/ci" << "fly/low/dividera"
+               << "data_1" << "data_2" << "data_3" << "data_10";
 
     for(auto& word: words_list){
-        _curvelist_widget->addItem( new QTableWidgetItem(word) );
+        _curvelist_widget->addItem( word );
     }
 
     for( const QString& name: words_list)
@@ -520,8 +524,8 @@ void MainWindow::buildDummyData()
     _mapped_plot_data.numeric.insert( std::make_pair( sin_plot->name(), sin_plot) );
     _mapped_plot_data.numeric.insert( std::make_pair( cos_plot->name(), cos_plot) );
 
-    _curvelist_widget->addItem( new QTableWidgetItem(sin_plot->name().c_str()) );
-    _curvelist_widget->addItem( new QTableWidgetItem(cos_plot->name().c_str()) );
+    _curvelist_widget->addItem( QString::fromStdString(sin_plot->name()) );
+    _curvelist_widget->addItem( QString::fromStdString(cos_plot->name()) );
     //--------------------------------------
 
     updateTimeSlider();
@@ -853,7 +857,7 @@ void MainWindow::importPlotDataMap(const PlotDataMap& new_data, bool delete_olde
         // this is a new plot
         if( plot_with_same_name == _mapped_plot_data.numeric.end() )
         {
-            _curvelist_widget->addItem( new QTableWidgetItem( name.c_str() ) );
+            _curvelist_widget->addItem( QString::fromStdString( name ) );
             _mapped_plot_data.numeric.insert( std::make_pair(name, plot) );
         }
         else{ // a plot with the same name existed already, overwrite it
@@ -973,9 +977,20 @@ void MainWindow::onActionLoadDataFileImpl(QString filename, bool reuse_last_conf
             load_configuration = _last_load_configuration;
         }
 
-        PlotDataMap mapped_data = loader->readDataFromFile(
-                    filename,
-                    load_configuration   );
+
+        PlotDataMap mapped_data;
+        try{
+            mapped_data= loader->readDataFromFile(
+                        filename,
+                        load_configuration   );
+        }
+        catch(std::exception &ex)
+        {
+            QMessageBox::warning(this, tr("Exception from the plugin"),
+                                 tr("The plugin [%1] thrown the following exception: \n\n %3\n")
+                                 .arg(loader->name()).arg(ex.what()) );
+            return;
+        }
 
         _last_load_configuration = load_configuration;
 
@@ -1630,6 +1645,12 @@ void MainWindow::on_pushButtonTimeTracker_pressed()
         plot->configureTracker(_tracker_param);
         plot->replot();
     });
+}
+
+void MainWindow::on_minimizeView()
+{
+    _minimized = !_minimized;
+    //TODO
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
