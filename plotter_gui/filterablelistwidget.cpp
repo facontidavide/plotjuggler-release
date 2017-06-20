@@ -1,5 +1,6 @@
 #include "filterablelistwidget.h"
 #include "ui_filterablelistwidget.h"
+#include <PlotJuggler/alphanum.hpp>
 #include <QDebug>
 #include <QLayoutItem>
 #include <QMenu>
@@ -93,8 +94,22 @@ void FilterableListWidget::clear()
     ui->labelNumberDisplayed->setText( "0 of 0");
 }
 
-void FilterableListWidget::addItem(QTableWidgetItem *item)
+class CustomSortedTableItem: public QTableWidgetItem
 {
+
+ public:
+     CustomSortedTableItem(const QString& name): QTableWidgetItem(name) {}
+
+     bool operator< (const QTableWidgetItem &other) const
+     {
+         return doj::alphanum_impl(this->text().toLocal8Bit().constData(),
+                                   other.text().toLocal8Bit().constData()) < 0;
+     }
+ };
+
+void FilterableListWidget::addItem(const QString &item_name)
+{
+    auto item = new CustomSortedTableItem(item_name);
     const int row = rowCount();
     ui->tableWidget->setRowCount(row+1);
     ui->tableWidget->setItem(row, 0, item);
@@ -105,7 +120,9 @@ void FilterableListWidget::addItem(QTableWidgetItem *item)
     val_cell->setFont(  QFontDatabase::systemFont(QFontDatabase::FixedFont) );
 
     ui->tableWidget->setItem(row, 1, val_cell );
-     addToCompletionTree(item);
+    ui->tableWidget->sortByColumn(0,Qt::AscendingOrder);
+
+    addToCompletionTree(item);
 }
 
 
