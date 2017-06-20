@@ -112,6 +112,8 @@ private slots:
 
     void on_pushButtonTimeTracker_pressed();
 
+    void on_minimizeView();
+
 private:
 
     Ui::MainWindow *ui;
@@ -120,6 +122,9 @@ private:
 
     QShortcut _undo_shortcut;
     QShortcut _redo_shortcut;
+    QShortcut _minimize_view;
+
+    bool _minimized;
 
     void createActions();
 
