@@ -152,7 +152,7 @@ void DialogSelectRosTopics::closeEvent(QCloseEvent *event)
 
 nonstd::optional<double> FlatContainedContainHeaderStamp(const RosIntrospection::ROSTypeFlat &flat_container)
 {
-    const char* ID = ".header.stamp";
+    const char* ID = "/header/stamp";
     const int renamed_count = flat_container.renamed_value.size();
     const int OFF = strlen(ID);
 
@@ -167,7 +167,7 @@ nonstd::optional<double> FlatContainedContainHeaderStamp(const RosIntrospection:
         if( field_name.size() > OFF &&
             strcmp( &field_name.data()[ field_name.size() -OFF], ID) == 0)
         {
-            return flat_container.renamed_value[first_index].second;
+            return static_cast<double>(flat_container.renamed_value[first_index].second);
         }
     }
 
@@ -180,7 +180,7 @@ nonstd::optional<double> FlatContainedContainHeaderStamp(const RosIntrospection:
             strcmp( &field_name.data()[ field_name.size() -OFF], ID) == 0)
         {
             first_indexes[&flat_container] = i;
-            return flat_container.renamed_value[i].second;
+            return static_cast<double>(flat_container.renamed_value[i].second);
         }
     }
     return nonstd::optional<double>();

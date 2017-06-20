@@ -2,6 +2,16 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.0.8 (2017-06-20)
+------------------
+* update to be compatible with ros_type_introspection 0.6
+* setting uninitialized variable (thanks valgrind)
+* improvement `#48 <https://github.com/facontidavide/PlotJuggler/issues/48>`_
+* fix for issue `#46 <https://github.com/facontidavide/PlotJuggler/issues/46>`_ (load csv files)
+* more intuitive ordering of strings. Based on PR `#45 <https://github.com/facontidavide/PlotJuggler/issues/45>`_. Fixes `#27 <https://github.com/facontidavide/PlotJuggler/issues/27>`_
+* Correct the string being searched for to find the header stamp field (`#44 <https://github.com/facontidavide/PlotJuggler/issues/44>`_)
+* Contributors: Davide Faconti, Kartik Mohta
+
 1.0.7 (2017-05-12)
 ------------------
 * the list of topics in the Dialog will be automatically updated
