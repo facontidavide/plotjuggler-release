@@ -68,10 +68,10 @@ void TopicPublisherROS::updateState(PlotDataMap *datamap, double current_time)
 
     if( _current_time->isChecked())
     {
-        auto type_map = RosIntrospectionFactory::get().getRosTypeList( shapeshifted_msg.getMD5Sum());
-        if(type_map)
+        auto typelist = RosIntrospectionFactory::get().getRosTypeList( topic_name );
+        if(typelist)
         {
-            injectTime(*type_map, shapeshifted_msg.getDataType(), raw_buffer.data(), ros_time);
+            injectTime(*typelist, shapeshifted_msg.getDataType(), raw_buffer.data(), ros_time);
         }
     }
 
