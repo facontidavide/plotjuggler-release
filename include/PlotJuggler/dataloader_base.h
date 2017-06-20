@@ -7,8 +7,6 @@
 #include <functional>
 #include "PlotJuggler/plotdata.h"
 
-enum { TIME_INDEX_NOT_DEFINED = -2 };
-
 class DataLoader{
 
 public:
