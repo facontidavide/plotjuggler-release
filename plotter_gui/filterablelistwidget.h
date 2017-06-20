@@ -27,9 +27,7 @@ public:
 
     void clear();
 
-    void addItem(QTableWidgetItem *item);
-
-    void addItems(const QStringList& index_list);
+    void addItem(const QString& item_name);
 
     QList<int> findRowsByName(const QString& text) const;
 
