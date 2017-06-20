@@ -87,105 +87,116 @@ PlotDataMap DataLoadROS::readDataFromFile(const QString &file_name,
     }
 
     //-----------------------------------
-    rosbag::View bag_view_reduced ( true );
-    bag_view_reduced.addQuery(bag, [topic_selected](rosbag::ConnectionInfo const* connection)
-    {
-        return topic_selected.count( connection->topic.c_str() ) > 0;
-    } );
-
     QProgressDialog progress_dialog;
     progress_dialog.setLabelText("Loading... please wait");
     progress_dialog.setWindowModality( Qt::ApplicationModal );
-    progress_dialog.setRange(0, bag_view_reduced.size() -1);
+
+    {
+        // get the total number of messages
+        rosbag::View bag_view_selected ( true );
+        bag_view_selected.addQuery(bag, [&topic_selected](rosbag::ConnectionInfo const* connection)
+        {
+            return topic_selected.count( QString( connection->topic.c_str()) ) > 0;
+        } );
+        progress_dialog.setRange(0, bag_view_selected.size()-1);
+    }
+
     progress_dialog.show();
 
     QElapsedTimer timer;
     timer.start();
 
-    ROSTypeFlat flat_container;
-
-    for(const rosbag::MessageInstance& msg: bag_view_reduced )
+    for(const QString& topic_name: topic_selected)
     {
-        const auto& topic      = msg.getTopic();
-        const auto& md5sum     = msg.getMD5Sum();
-        const auto& datatype   = msg.getDataType();
-        auto msg_size = msg.size();
-
-        std::vector<uint8_t> buffer ( msg_size );
-
-        if( count++ %1000 == 0)
+        rosbag::View bag_view_reduced ( true );
+        bag_view_reduced.addQuery(bag, [&topic_name](rosbag::ConnectionInfo const* connection)
         {
-            // qDebug() << count << " / " << bag_view_reduced.size();
+            return topic_name == QString( connection->topic.c_str() );
+        } );
 
-            progress_dialog.setValue( count );
-            QApplication::processEvents();
+        ROSTypeFlat flat_container;
 
-            if( progress_dialog.wasCanceled() ) {
-                return PlotDataMap();
-            }
-        }
-
-        ros::serialization::OStream stream(buffer.data(), buffer.size());
-
-        // this single line takes almost the entire time of the loop
-        msg.write(stream);
+        const std::string topic  = topic_name.toStdString();
 
         SString topicname_SS( topic.data(),  topic.size() );
-
         // WORKAROUND. There are some problems related to renaming when the character / is
         // used as prefix. We will remove that here.
         if( topicname_SS.at(0) == '/' ) topicname_SS = SString( topic.data() +1,  topic.size()-1 );
 
-        auto typelist = RosIntrospectionFactory::get().getRosTypeList( md5sum );
-        buildRosFlatType( *typelist, datatype, topicname_SS, buffer.data(), &flat_container);
-        applyNameTransform( _rules[datatype], &flat_container );
 
-        // apply time offsets
-        double msg_time;
-
-        if(dialog->checkBoxUseHeaderStamp()->isChecked() == false)
+        for(const rosbag::MessageInstance& msg: bag_view_reduced )
         {
-            msg_time = msg.getTime().toSec();
-        }
-        else{
-            auto offset = FlatContainedContainHeaderStamp(flat_container);
-            if(offset){
-                msg_time = offset.value();
+            const auto& datatype   = msg.getDataType();
+            auto msg_size = msg.size();
+
+            std::vector<uint8_t> buffer ( msg_size );
+
+            if( count++ %1000 == 0)
+            {
+                progress_dialog.setValue( count );
+                QApplication::processEvents();
+
+                if( progress_dialog.wasCanceled() ) {
+                    return PlotDataMap();
+                }
             }
-            else{
+
+            ros::serialization::OStream stream(buffer.data(), buffer.size());
+
+            // this single line takes almost the entire time of the loop
+            msg.write(stream);
+
+            auto typelist = RosIntrospectionFactory::get().getRosTypeList( topic );
+            buildRosFlatType( *typelist, datatype, topicname_SS, buffer.data(), &flat_container);
+            applyNameTransform( _rules[datatype], &flat_container );
+
+            // apply time offsets
+            double msg_time;
+
+            if(dialog->checkBoxUseHeaderStamp()->isChecked() == false)
+            {
                 msg_time = msg.getTime().toSec();
             }
-        }
-
-        for(const auto& it: flat_container.renamed_value )
-        {
-            std::string field_name( it.first.data(), it.first.size());
-
-            auto plot_pair = plot_map.numeric.find( field_name );
-            if( plot_pair == plot_map.numeric.end() )
-            {
-                PlotDataPtr temp(new PlotData(field_name.c_str()));
-                auto res = plot_map.numeric.insert( std::make_pair(field_name, temp ) );
-                plot_pair = res.first;
+            else{
+                auto offset = FlatContainedContainHeaderStamp(flat_container);
+                if(offset){
+                    msg_time = offset.value();
+                }
+                else{
+                    msg_time = msg.getTime().toSec();
+                }
             }
 
-            PlotDataPtr& plot_data = plot_pair->second;
-            plot_data->pushBack( PlotData::Point(msg_time, it.second));
-        } //end of for flat_container.renamed_value
-
-        //-----------------------------------------
-        // adding raw serialized topic for future uses.
-        {
-            auto plot_pair = plot_map.user_defined.find( md5sum );
-
-            if( plot_pair == plot_map.user_defined.end() )
+            for(const auto& it: flat_container.renamed_value )
             {
-                PlotDataAnyPtr temp(new PlotDataAny(topic.c_str()));
-                auto res = plot_map.user_defined.insert( std::make_pair( topic, temp ) );
-                plot_pair = res.first;
+                std::string field_name( it.first.data(), it.first.size());
+
+                auto plot_pair = plot_map.numeric.find( field_name );
+                if( plot_pair == plot_map.numeric.end() )
+                {
+                    PlotDataPtr temp(new PlotData(field_name.c_str()));
+                    auto res = plot_map.numeric.insert( std::make_pair(field_name, temp ) );
+                    plot_pair = res.first;
+                }
+
+                PlotDataPtr& plot_data = plot_pair->second;
+                plot_data->pushBack( PlotData::Point(msg_time, (double)it.second));
+            } //end of for flat_container.renamed_value
+
+            //-----------------------------------------
+            // adding raw serialized topic for future uses.
+            {
+                auto plot_pair = plot_map.user_defined.find( topic );
+
+                if( plot_pair == plot_map.user_defined.end() )
+                {
+                    PlotDataAnyPtr temp(new PlotDataAny(topic.c_str()));
+                    auto res = plot_map.user_defined.insert( std::make_pair( topic, temp ) );
+                    plot_pair = res.first;
+                }
+                PlotDataAnyPtr& plot_raw = plot_pair->second;
+                plot_raw->pushBack( PlotDataAny::Point(msg_time, nonstd::any(std::move(buffer)) ));
             }
-            PlotDataAnyPtr& plot_raw = plot_pair->second;
-            plot_raw->pushBack( PlotDataAny::Point(msg_time, nonstd::any(std::move(buffer)) ));
         }
     }
     qDebug() << "The loading operation took" << timer.elapsed() << "milliseconds";
