@@ -51,7 +51,11 @@ void DataStreamROS::topicCallback(const topic_tools::ShapeShifter::ConstPtr& msg
     // register the message type
     RosIntrospectionFactory::get().registerMessage(topic_name, md5sum, datatype, definition);
 
-    const RosIntrospection::ROSTypeList* type_map = RosIntrospectionFactory::get().getRosTypeList(md5sum);
+    const RosIntrospection::ROSTypeList* type_map = RosIntrospectionFactory::get().getRosTypeList(topic_name);
+    if( !type_map )
+    {
+        throw std::runtime_error("Can't retrieve the ROSTypeList from RosIntrospectionFactory");
+    }
 
     //------------------------------------
     std::vector<uint8_t> buffer(msg->size());
