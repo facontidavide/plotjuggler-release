@@ -19,7 +19,8 @@ struct compareX
 
 CurveTracker::CurveTracker( QwtPlot *plot ):
     QObject( plot ),
-    _plot( plot )
+    _plot( plot ),
+    _param( VALUE )
 {
     _line_marker = ( new QwtPlotMarker );
 

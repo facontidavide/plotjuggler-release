@@ -108,7 +108,7 @@ void DataStreamROS::topicCallback(const topic_tools::ShapeShifter::ConstPtr& msg
     for(auto& it: flat_container.renamed_value )
     {
         std::string field_name ( it.first.data(), it.first.size());
-        double value = it.second;
+        double value(it.second);
         auto plot_it = _plot_data.numeric.find(field_name);
         if( plot_it == _plot_data.numeric.end())
         {
