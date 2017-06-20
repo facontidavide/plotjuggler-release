@@ -147,6 +147,10 @@ PlotDataMap DataLoadROS::readDataFromFile(const QString &file_name,
             msg.write(stream);
 
             auto typelist = RosIntrospectionFactory::get().getRosTypeList( topic );
+            if( !typelist )
+            {
+                throw std::runtime_error("Can't retrieve the ROSTypeList from RosIntrospectionFactory");
+            }
             buildRosFlatType( *typelist, datatype, topicname_SS, buffer.data(), &flat_container);
             applyNameTransform( _rules[datatype], &flat_container );
 
