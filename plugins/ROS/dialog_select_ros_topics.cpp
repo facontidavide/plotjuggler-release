@@ -95,12 +95,12 @@ QStringList DialogSelectRosTopics::getSelectedItems()
 }
 
 
-QCheckBox *DialogSelectRosTopics::checkBoxUseHeaderStamp()
+const QCheckBox *DialogSelectRosTopics::checkBoxUseHeaderStamp()
 {
     return ui->checkBoxUseHeaderStamp;
 }
 
-QCheckBox* DialogSelectRosTopics::checkBoxUseRenamingRules()
+const QCheckBox* DialogSelectRosTopics::checkBoxUseRenamingRules()
 {
     return ui->checkBoxEnableRules;
 }

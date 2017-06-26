@@ -111,7 +111,7 @@ void DataStreamROS::topicCallback(const topic_tools::ShapeShifter::ConstPtr& msg
     PlotData::asyncPushMutex().lock();
     for(auto& it: flat_container.renamed_value )
     {
-        std::string field_name ( it.first.data(), it.first.size());
+        const std::string& field_name ( it.first.data() );
         double value(it.second);
         auto plot_it = _plot_data.numeric.find(field_name);
         if( plot_it == _plot_data.numeric.end())
@@ -127,7 +127,7 @@ void DataStreamROS::topicCallback(const topic_tools::ShapeShifter::ConstPtr& msg
     {
         int& index = _msg_index[topic_name];
         index++;
-        const std::string index_name = topic_name + std::string("/_MSG_INDEX_") ;
+        const std::string index_name = topic_name + ("/_MSG_INDEX_") ;
         auto index_it = _plot_data.numeric.find(index_name);
         if( index_it == _plot_data.numeric.end())
         {
