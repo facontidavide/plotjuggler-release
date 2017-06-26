@@ -28,6 +28,7 @@ public:
 
 protected:
     void loadSubstitutionRule(QStringList all_topic_names);
+    rosbag::Bag _bag;
 
 private:
     RosIntrospection::SubstitutionRuleMap  _rules;
