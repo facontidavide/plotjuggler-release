@@ -28,9 +28,9 @@ public:
 
     QStringList getSelectedItems();
 
-    QCheckBox* checkBoxUseHeaderStamp();
+    const QCheckBox* checkBoxUseHeaderStamp();
 
-    QCheckBox *checkBoxUseRenamingRules();
+    const QCheckBox *checkBoxUseRenamingRules();
 
 public slots:
 
