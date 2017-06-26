@@ -3,7 +3,7 @@
 #include "../shape_shifter_factory.hpp"
 #include "../qnodedialog.h"
 #include "timestamp_injector.h"
-
+#include <rosbag/bag.h>
 
 TopicPublisherROS::TopicPublisherROS():
   enabled_(false ),
@@ -58,13 +58,28 @@ void TopicPublisherROS::updateState(PlotDataMap *datamap, double current_time)
 
     nonstd::optional<nonstd::any> any_value = plot_any->getYfromX( current_time );
 
-    if(!any_value || any_value->type() != typeid( std::vector<uint8_t> ))
+    if(!any_value)
     {
       // can't cast "any" to expected type
       continue;
     }
+    const bool isRawBuffer     = any_value->type() == typeid( std::vector<uint8_t>);
+    const bool isRosbagMessage = any_value->type() == typeid(rosbag::MessageInstance);
 
-    std::vector<uint8_t> raw_buffer =  nonstd::any_cast<std::vector<uint8_t>>( any_value.value() );
+    std::vector<uint8_t> raw_buffer;
+
+    if( isRawBuffer){
+        raw_buffer = nonstd::any_cast<std::vector<uint8_t>>( any_value.value() );
+    }
+    else if( isRosbagMessage ){
+        const rosbag::MessageInstance& msg_instance = nonstd::any_cast<rosbag::MessageInstance>( any_value.value() );
+        raw_buffer.resize( msg_instance.size() );
+        ros::serialization::OStream stream(raw_buffer.data(), raw_buffer.size());
+        msg_instance.write(stream);
+    }
+    else{
+        continue;
+    }
 
     if( _current_time->isChecked())
     {
