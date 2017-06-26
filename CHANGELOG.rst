@@ -2,6 +2,15 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.1.1 (2017-06-26)
+------------------
+* store rosbag::MessageInstance to replay data with the publisher
+* avoid allocation
+* minor optimizations
+* bug fix: checkbox to use renaming rules was not detected correctly
+* fix for very large rosbags
+* Contributors: Davide Faconti
+
 1.1.0 (2017-06-20)
 ------------------
 * fixing bug `#47 <https://github.com/facontidavide/PlotJuggler/issues/47>`_
