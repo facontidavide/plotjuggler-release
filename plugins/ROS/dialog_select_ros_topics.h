@@ -54,8 +54,6 @@ private:
 
     Ui::dialogSelectRosTopics *ui;
 
-    QStringList _default_selected_topics;
-
 };
 
 nonstd::optional<double> FlatContainedContainHeaderStamp(const RosIntrospection::ROSTypeFlat& flat_container);
