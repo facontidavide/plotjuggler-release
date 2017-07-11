@@ -494,3 +494,8 @@ TabbedPlotWidget* TabbedPlotWidget::instance(const QString &key)
     }
 }
 
+void TabbedPlotWidget::setControlsVisible(bool visible)
+{
+    ui->widgetControls->setVisible(visible);
+}
+
