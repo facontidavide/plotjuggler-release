@@ -4,13 +4,6 @@
 #include <QSettings>
 #include <QMessageBox>
 
-void showNoMasterMessage()
-{
-  QMessageBox msgBox;
-  msgBox.setText("Could not connect to the ros master.");
-  msgBox.exec();
-}
-
 std::string getDefaultMasterURI()
 {
     if(  qgetenv("ROS_MASTER_URI").isEmpty() )
@@ -42,6 +35,12 @@ QNodeDialog::QNodeDialog( QWidget *parent) :
   ui->lineEditHost->setText( host_ip );
 }
 
+namespace ros {
+    namespace master {
+        void init(const M_string& remappings);
+    }
+}
+
 bool QNodeDialog::Connect(const std::string& ros_master_uri,
                           const std::string& hostname)
 {
@@ -49,10 +48,22 @@ bool QNodeDialog::Connect(const std::string& ros_master_uri,
   remappings["__master"] = ros_master_uri;
   remappings["__hostname"] = hostname;
 
-  ros::init(remappings, "PlotJugglerStreamingListener");
+  static bool first_time = true;
+  if( first_time)
+  {
+      ros::init(remappings,"PlotJugglerListener");
+      first_time = false;
+  }
+  else{
+      ros::master::init(remappings);
+  }
+
   bool connected = ros::master::check();
   if ( ! connected ) {
-    showNoMasterMessage();
+      QMessageBox msgBox;
+      msgBox.setText( QString("Could not connect to the ros master [%1]").
+                      arg(QString::fromStdString(ros_master_uri)));
+      msgBox.exec();
   }
   return connected;
 }
@@ -68,29 +79,23 @@ QNodeDialog::~QNodeDialog()
 
 void QNodeDialog::on_pushButtonConnect_pressed()
 {
-  int init_argc = 0;
-  char** init_argv = NULL;
-
-  if( ui->checkBoxUseEnvironment->isChecked() )
-  {
-    ros::init(init_argc,init_argv,"PlotJugglerStreamingListener");
-    if ( ! ros::master::check() ) {
-      showNoMasterMessage();
-      return;
+    bool connected = false;
+    if( ui->checkBoxUseEnvironment->isChecked() )
+    {
+        const std::string master_uri = getDefaultMasterURI();
+        connected = QNodeDialog::Connect(master_uri, "localhost" );
     }
     else{
-      this->close();
+        std::string ros_master_uri = ui->lineEditMaster->text().toStdString();
+        std::string hostname       = ui->lineEditHost->text().toStdString();
+        connected = QNodeDialog::Connect(ros_master_uri, hostname);
     }
-  }
-  else{
-    std::string ros_master_uri = ui->lineEditMaster->text().toStdString();
-    std::string hostname       = ui->lineEditHost->text().toStdString();
-    bool connected = QNodeDialog::Connect(ros_master_uri, hostname);
-    if( connected )
-    {
+    if( connected ) {
         this->close();
     }
-  }
+    else{
+
+    }
 }
 
 
@@ -132,8 +137,7 @@ ros::NodeHandlePtr RosManager::getNode()
 
     if(!ros::isInitialized() || !ros::master::check() )
     {
-        std::string master_uri = getDefaultMasterURI();
-        bool connected = QNodeDialog::Connect(master_uri, "localhost" );
+        bool connected = QNodeDialog::Connect(getDefaultMasterURI(), "localhost" );
         if ( ! connected )
         {
             //as a fallback strategy, launch the QNodeDialog
