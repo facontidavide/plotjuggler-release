@@ -56,15 +56,18 @@ PlotDataMap DataLoadROS::readDataFromFile(const QString &file_name,
     rosbag::View bag_view ( _bag, ros::TIME_MIN, ros::TIME_MAX, true );
     std::vector<const rosbag::ConnectionInfo *> connections = bag_view.getConnections();
 
+    std::map<std::string,ROSType> rostype;
+
     for(unsigned i=0;  i<connections.size(); i++)
     {
         const auto&  topic      =  connections[i]->topic;
         const auto&  md5sum     =  connections[i]->md5sum;
-        const auto&  data_type  =  connections[i]->datatype;
+        const auto&  datatype  =  connections[i]->datatype;
         const auto&  definition =  connections[i]->msg_def;
 
-        all_topics.push_back( std::make_pair(QString( topic.c_str()), QString( data_type.c_str()) ) );
-        RosIntrospectionFactory::get().registerMessage(topic, md5sum, data_type, definition);
+        all_topics.push_back( std::make_pair(QString( topic.c_str()), QString( datatype.c_str()) ) );
+        RosIntrospectionFactory::get().registerMessage(topic, md5sum, datatype, definition);
+        rostype.insert( std::make_pair(datatype, ROSType(datatype)) );
     }
 
     int count = 0;
@@ -75,18 +78,18 @@ PlotDataMap DataLoadROS::readDataFromFile(const QString &file_name,
 
     DialogSelectRosTopics* dialog = new DialogSelectRosTopics( all_topics, default_topic_names );
 
-    std::set<QString> topic_selected;
+    std::set<std::string> topic_selected;
 
     if( dialog->exec() == static_cast<int>(QDialog::Accepted) )
     {
         const auto& selected_items = dialog->getSelectedItems();
         for(const auto& item: selected_items)
         {
-            QString topic = item;
-            topic_selected.insert( topic );
+            std::string ss_topic = item.toStdString();
+            topic_selected.insert( ss_topic );
 
             // change the names in load_configuration
-            load_configuration.append( topic ).append(" ");
+            load_configuration.append( item ).append(" ");
         }
         // load the rules
         if( dialog->checkBoxUseRenamingRules()->isChecked())
@@ -106,10 +109,9 @@ PlotDataMap DataLoadROS::readDataFromFile(const QString &file_name,
     rosbag::View bag_view_selected ( true );
     bag_view_selected.addQuery( _bag, [&topic_selected](rosbag::ConnectionInfo const* connection)
     {
-        return topic_selected.find( QString( connection->topic.c_str()) ) != topic_selected.end();
+        return topic_selected.find( connection->topic ) != topic_selected.end();
     } );
     progress_dialog.setRange(0, bag_view_selected.size()-1);
-
     progress_dialog.show();
 
     QElapsedTimer timer;
@@ -131,8 +133,8 @@ PlotDataMap DataLoadROS::readDataFromFile(const QString &file_name,
         else
             topicname_SS.assign( topic.data(),  topic.size() );
 
-        const auto& datatype   = msg_instance.getDataType();
-        const auto msg_size = msg_instance.size();
+        const auto& datatype = msg_instance.getDataType();
+        const auto msg_size  = msg_instance.size();
         buffer.resize(msg_size);
 
         if( count++ %100 == 0)
@@ -155,7 +157,7 @@ PlotDataMap DataLoadROS::readDataFromFile(const QString &file_name,
         {
             throw std::runtime_error("Can't retrieve the ROSTypeList from RosIntrospectionFactory");
         }
-        buildRosFlatType( *typelist, datatype, topicname_SS, buffer.data(), &flat_container);
+        buildRosFlatType( *typelist, rostype[datatype], topicname_SS, buffer.data(), &flat_container);
 
         auto rules_it = _rules.find(datatype);
         if(rules_it != _rules.end())
