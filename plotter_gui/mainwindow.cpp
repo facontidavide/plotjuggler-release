@@ -1650,7 +1650,16 @@ void MainWindow::on_pushButtonTimeTracker_pressed()
 void MainWindow::on_minimizeView()
 {
     _minimized = !_minimized;
-    //TODO
+
+    ui->leftFrame->setVisible(!_minimized);
+    ui->widgetOptions->setVisible( !_minimized && ui->pushButtonOptions->isChecked() );
+    ui->widgetTimescale->setVisible(!_minimized);
+    ui->menuBar->setVisible(!_minimized);
+
+    for (auto it: TabbedPlotWidget::instances() )
+    {
+       it.second->setControlsVisible( !_minimized );
+    }
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
@@ -1672,5 +1681,5 @@ void MainWindow::closeEvent(QCloseEvent *event)
     for(auto& it : _data_loader ) { delete it.second; }
     for(auto& it : _state_publisher ) { delete it.second; }
     for(auto& it : _data_streamer ) { delete it.second; }
-
 }
+
