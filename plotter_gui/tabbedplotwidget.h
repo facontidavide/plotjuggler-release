@@ -41,6 +41,8 @@ public:
 
     static TabbedPlotWidget *instance(const QString& key);
 
+    void setControlsVisible(bool visible);
+
 public slots:
 
     void setStreamingMode(bool streaming_mode);
