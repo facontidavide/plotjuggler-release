@@ -2,6 +2,13 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.1.3 (2017-07-11)
+------------------
+* fixed few issues with DataStreamROS
+* Update README.md
+* improvement `#43 <https://github.com/facontidavide/PlotJuggler/issues/43>`_. Use F10 to hide/show controls
+* Contributors: Davide Faconti
+
 1.1.2 (2017-06-28)
 ------------------
 * bug-fix in DataLoadROS (multi-selection from layout)
