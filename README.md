@@ -5,13 +5,11 @@ ROS Indigo build (Travis): [![Build Status](https://travis-ci.org/facontidavide/
 
 [![Join the chat at https://gitter.im/PlotJuggler/Lobby](https://badges.gitter.im/PlotJuggler/Lobby.svg)](https://gitter.im/PlotJuggler/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-# PlotJuggler 1.1.2
+# PlotJuggler 1.1.3
 
-QT5 based application to display time series in plots. This is under heavy development. 
+QT5 based application to display time series in plots. 
 
-To understand what PlotJuggler can do for you, take a look to the following video.
-
-[PlotJuggler: a desktop application to plot time series](https://vimeo.com/174120477) 
+To understand what PlotJuggler can do for you, take a look to the following video [PlotJuggler on Vimeo](https://vimeo.com/214389001) 
 
 ![PlotJuggler](docs/images/PlotJuggler.gif)
 
@@ -40,7 +38,7 @@ Then compile using cmake (qmake is NOT supported):
  
 # Note for ROS users
  
-If you use CATKIN to build this project, the ROS related plugins will be automatically included into the compilation. Both the executable and the plugins will be created in __devel/lib/plotjuggler__ (the address relative to the catkin workspace).
+If you use CATKIN to build this project, the ROS related plugins will be automatically included into the compilation. Both the executable and the plugins will be created in __devel/lib/plotjuggler__ (the address is relative to the catkin workspace).
 
 To run the application, use the command:
 
@@ -48,13 +46,13 @@ To run the application, use the command:
     
 Alternatively, just execute the binary __PlotJuggler__. 
 
-A mandatory dependency is the package: https://github.com/facontidavide/ros_type_introspection 
+A mandatory dependency is https://github.com/facontidavide/ros_type_introspection 
 
-__IMPORTANT__: there is a critical bug in version 0.3.x of ros_type_introspection. Use version 0.4.3 or later.
+__IMPORTANT__: you need version 0.6.3 or later.
 
-You can easily install the Indigo, Jade or Kinetic package with the command:
+You can easily install it in Indigo, Jade, Kinetic or Lunar using the command:
 
-       sudo apt-get install ros-XXXX-ros-type-introspection
+       sudo apt-get install ros-YOUR_ROS_DISTRO-ros-type-introspection
 
       
 
