@@ -247,6 +247,10 @@ bool DataStreamROS::start(QString& default_configuration)
         _node =  RosManager::getNode();
     }
 
+    if( !_node ){
+        return false;
+    }
+
     _plot_data.numeric.clear();
     _plot_data.user_defined.clear();
     _initial_time = std::numeric_limits<double>::max();
@@ -291,6 +295,7 @@ bool DataStreamROS::start(QString& default_configuration)
     timer.stop();
 
     QStringList topic_selected = dialog.getSelectedItems();
+    std::vector<std::string> std_topic_selected;
 
     if( res != QDialog::Accepted || topic_selected.empty() )
     {
@@ -298,9 +303,10 @@ bool DataStreamROS::start(QString& default_configuration)
     }
 
     default_configuration.clear();
-    for (const auto& topic :topic_selected )
+    for (const QString& topic :topic_selected )
     {
         default_configuration.append(topic).append(" ");
+        std_topic_selected.push_back( topic.toStdString() );
     }
 
     // load the rules
@@ -312,11 +318,15 @@ bool DataStreamROS::start(QString& default_configuration)
     //-------------------------
 
     _subscribers.clear();
+
     for (int i=0; i<topic_selected.size(); i++ )
     {
-        auto topic_name = topic_selected.at(i).toStdString();
         boost::function<void(const topic_tools::ShapeShifter::ConstPtr&) > callback;
-        callback = boost::bind( &DataStreamROS::topicCallback, this, _1, topic_name ) ;
+        const std::string& topic_name = std_topic_selected[i];
+        callback = [this, topic_name](const topic_tools::ShapeShifter::ConstPtr& msg) -> void
+        {
+            this->topicCallback(msg, topic_name) ;
+        };
         _subscribers.push_back( _node->subscribe( topic_name, 0,  callback)  );
     }
 
@@ -372,9 +382,6 @@ void DataStreamROS::updateLoop()
 {
     while (ros::ok() && _running)
     {
-        //  ros::getGlobalCallbackQueue()->callAvailable(ros::WallDuration(0.2));
-        // _node->spin();
         ros::spinOnce();
     }
-    ros::shutdown();
 }
