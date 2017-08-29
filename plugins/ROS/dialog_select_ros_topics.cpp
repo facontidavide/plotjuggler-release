@@ -164,24 +164,25 @@ void DialogSelectRosTopics::closeEvent(QCloseEvent *event)
     settings.setValue("DialogSelectRosTopics.geometry", saveGeometry());
 }
 
-nonstd::optional<double> FlatContainedContainHeaderStamp(const RosIntrospection::ROSTypeFlat &flat_container)
+nonstd::optional<double> FlatContainedContainHeaderStamp(const RosIntrospection::RenamedValues& renamed_value)
 {
     const char* ID = "/header/stamp";
-    const int renamed_count = flat_container.renamed_value.size();
+    const int renamed_count = renamed_value.size();
     const int OFF = strlen(ID);
 
     // cache the previous result
-    static std::map<const RosIntrospection::ROSTypeFlat*,int> first_indexes;
+    static std::map<const RosIntrospection::RenamedValues*,int> first_indexes;
 
-    int first_index = first_indexes[&flat_container];
+    int first_index = first_indexes[&renamed_value];
 
     if( first_index >= 0 && first_index < renamed_count)
     {
-        const RosIntrospection::SString& field_name = flat_container.renamed_value[first_index].first;
+        const RosIntrospection::SString& field_name = renamed_value[first_index].first;
         if( field_name.size() > OFF &&
             strcmp( &field_name.data()[ field_name.size() -OFF], ID) == 0)
         {
-            return static_cast<double>(flat_container.renamed_value[first_index].second);
+            const RosIntrospection::VarNumber& var_value = renamed_value[first_index].second;
+            return var_value.convert<double>();
         }
     }
 
@@ -189,12 +190,13 @@ nonstd::optional<double> FlatContainedContainHeaderStamp(const RosIntrospection:
     {
         if( i == first_index ) continue;
 
-        const RosIntrospection::SString& field_name = flat_container.renamed_value[i].first;
+        const RosIntrospection::SString& field_name = renamed_value[i].first;
         if( field_name.size() > OFF &&
             strcmp( &field_name.data()[ field_name.size() -OFF], ID) == 0)
         {
-            first_indexes[&flat_container] = i;
-            return static_cast<double>(flat_container.renamed_value[i].second);
+            first_indexes[&renamed_value] = i;
+            const RosIntrospection::VarNumber& var_value = renamed_value[i].second;
+            return var_value.convert<double>();
         }
     }
     return nonstd::optional<double>();
