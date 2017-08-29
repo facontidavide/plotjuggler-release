@@ -838,6 +838,8 @@ PlotData::RangeValue  PlotWidget::getMaximumRangeY( PlotData::RangeTime range_X,
         {
             left += _time_offset;
             right += _time_offset;
+            left = std::nextafter(left, right);
+            right = std::nextafter(right, left);
         }
 
         int X0 = series->data()->getIndexFromX(left);
