@@ -1,7 +1,7 @@
 sudo: required
 dist: trusty
 language:
-  - generic
+  - minimal
   - cpp
 
 os:
@@ -41,6 +41,7 @@ install:
   # Create the devel/setup.bash (run catkin_make with an empty workspace) and
   # source it to set the path variables.
   - cd ~/catkin_ws
+  - rosdep install -y --from-paths src --ignore-src --rosdistro $ROS_DISTRO
   - catkin_make
   - source devel/setup.bash
   # Add the package under integration to the workspace using a symlink.
@@ -48,8 +49,6 @@ install:
   - ln -s $CI_SOURCE_PATH .
 
 before_script:
- - cd ~/catkin_ws/src/PlotJuggler
- - git submodule foreach git pull origin master
  - cd ~/catkin_ws
  - rosdep install -y --from-paths src --ignore-src --rosdistro $ROS_DISTRO
  
