@@ -27,7 +27,9 @@ public:
 
     void clear();
 
-    void addItem(const QString& item_name);
+    void addItem(const QString& item_name, bool sort_columns);
+
+    void sortColumns();
 
     QList<int> findRowsByName(const QString& text) const;
 
