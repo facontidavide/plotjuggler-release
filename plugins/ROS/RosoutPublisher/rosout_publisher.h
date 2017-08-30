@@ -52,7 +52,7 @@ private:
     bool enabled_;
     int64_t _minimum_time_usec, _maximum_time_usec;
 
-    LogsTableModel _tablemodel;
+    LogsTableModel* _tablemodel;
     rqt_console_plus::LogWidget* _log_widget;
 
     std::vector<const PlotDataAny *> findRosoutTimeseries(PlotDataMap *datamap);

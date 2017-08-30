@@ -176,9 +176,13 @@ inline int PlotDataGeneric<Time, Value>::getIndexFromX(Time x ) const
 
   auto index = std::distance( _points.begin(), lower);
 
-  if( index >= _points.size() || index <0 )
+  if( index >= _points.size() )
   {
-    return -1;
+    return _points.size() -1;
+  }
+  if( index < 0)
+  {
+    return 0;
   }
   return index;
 }
