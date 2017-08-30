@@ -2,6 +2,25 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.2.1 (2017-08-30)
+------------------
+* better limits for timeSlider
+* fix a potential issue with ranges
+* set explicitly the max vector size
+* avoid wasting time doing tableWidget->sortByColumn
+* bug fix
+* prevent a nasty error during construction
+* Update README.md
+* added ros_type_introspection to travis
+* Contributors: Davide Faconti
+
+1.2.0 (2017-08-29)
+------------------
+* Ros introspection updated (`#52 <https://github.com/facontidavide/PlotJuggler/issues/52>`_)
+* Potential fix for precision issue when adding time_offset
+* Update snap/snapcraft.yaml
+* Contributors: Davide Faconti, Kartik Mohta
+
 1.1.3 (2017-07-11)
 ------------------
 * fixed few issues with DataStreamROS

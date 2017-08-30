@@ -5,7 +5,8 @@
 #include <QSettings>
 
 RosoutPublisher::RosoutPublisher():
-    enabled_(false )
+    enabled_(false ),
+    _tablemodel(nullptr)
 {
 
 }
@@ -22,13 +23,16 @@ void RosoutPublisher::setEnabled(bool to_enable)
 
     if( enabled())
     {
-        _tablemodel.clear();
         _minimum_time_usec = std::numeric_limits<int64_t>::max();
         _maximum_time_usec = std::numeric_limits<int64_t>::min();
 
+        if( _tablemodel == nullptr ){
+          _tablemodel = new LogsTableModel(this);
+        }
+
         _log_window = new RosoutWindow();
 
-        auto logwidget = new rqt_console_plus::LogWidget(_tablemodel, _log_window);
+        auto logwidget = new rqt_console_plus::LogWidget( *_tablemodel, _log_window);
         _log_window->setCentralWidget( logwidget );
         Qt::WindowFlags flags = _log_window->windowFlags();
         _log_window->setWindowFlags( flags | Qt::SubWindow );
@@ -57,9 +61,14 @@ void RosoutPublisher::onWindowClosed()
     QSettings settings( "IcarusTechnology", "PlotJuggler");
     settings.setValue("RosoutPublisher.geometry", _log_window->saveGeometry());
 
-    _tablemodel.clear();
-    _log_window->deleteLater();
-    _log_window = nullptr;
+    if( _tablemodel ){
+      _tablemodel->deleteLater();
+      _tablemodel = nullptr;
+    }
+    if( _log_window ) {
+      _log_window->deleteLater();
+      _log_window = nullptr;
+    }
     enabled_ = false;
 }
 
@@ -129,12 +138,12 @@ void RosoutPublisher::syncWithTableModel(const std::vector<const PlotDataAny*>& 
     {
         return a->header.stamp < b->header.stamp;
     } );
-    _tablemodel.push_back( logs );
+    _tablemodel->push_back( logs );
 }
 
 void RosoutPublisher::updateState(PlotDataMap *datamap, double current_time)
 {
-    if(!enabled_) return;
+    if(!enabled_ && !_tablemodel) return;
 
     std::vector<const PlotDataAny*> logs_timeseries = findRosoutTimeseries(datamap);
 

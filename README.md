@@ -5,7 +5,7 @@ ROS Indigo build (Travis): [![Build Status](https://travis-ci.org/facontidavide/
 
 [![Join the chat at https://gitter.im/PlotJuggler/Lobby](https://badges.gitter.im/PlotJuggler/Lobby.svg)](https://gitter.im/PlotJuggler/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-# PlotJuggler 1.1.3
+# PlotJuggler 1.2.1
 
 QT5 based application to display time series in plots. 
 
@@ -48,7 +48,7 @@ Alternatively, just execute the binary __PlotJuggler__.
 
 A mandatory dependency is https://github.com/facontidavide/ros_type_introspection 
 
-__IMPORTANT__: you need version 0.6.3 or later.
+__IMPORTANT__: you need version 0.7.1 or later.
 
 You can easily install it in Indigo, Jade, Kinetic or Lunar using the command:
 
