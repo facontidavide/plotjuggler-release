@@ -74,7 +74,9 @@ void DataStreamROS::topicCallback(const topic_tools::ShapeShifter::ConstPtr& msg
     // used as prefix. We will remove that here.
     if( topicname_SS.at(0) == '/' ) topicname_SS = SString( topic_name.data() +1,  topic_name.size()-1 );
 
-    buildRosFlatType( *type_map, datatype, topicname_SS, buffer.data(), &flat_container);
+    buildRosFlatType( *type_map, datatype, topicname_SS,
+                      buffer.data(), &flat_container, 250);
+
     applyNameTransform( _rules[datatype], flat_container, renamed_value );
 
     SString header_stamp_field( topic_name );
