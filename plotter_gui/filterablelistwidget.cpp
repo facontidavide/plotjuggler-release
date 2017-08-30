@@ -107,7 +107,7 @@ class CustomSortedTableItem: public QTableWidgetItem
      }
  };
 
-void FilterableListWidget::addItem(const QString &item_name)
+void FilterableListWidget::addItem(const QString &item_name, bool sort_columns)
 {
     auto item = new CustomSortedTableItem(item_name);
     const int row = rowCount();
@@ -120,9 +120,17 @@ void FilterableListWidget::addItem(const QString &item_name)
     val_cell->setFont(  QFontDatabase::systemFont(QFontDatabase::FixedFont) );
 
     ui->tableWidget->setItem(row, 1, val_cell );
-    ui->tableWidget->sortByColumn(0,Qt::AscendingOrder);
+    if( sort_columns )
+    {
+      ui->tableWidget->sortByColumn(0,Qt::AscendingOrder);
+    }
 
     addToCompletionTree(item);
+}
+
+void FilterableListWidget::sortColumns()
+{
+  ui->tableWidget->sortByColumn(0,Qt::AscendingOrder);
 }
 
 

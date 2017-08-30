@@ -2,6 +2,18 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.2.1 (2017-08-30)
+------------------
+* better limits for timeSlider
+* fix a potential issue with ranges
+* set explicitly the max vector size
+* avoid wasting time doing tableWidget->sortByColumn
+* bug fix
+* prevent a nasty error during construction
+* Update README.md
+* added ros_type_introspection to travis
+* Contributors: Davide Faconti
+
 1.2.0 (2017-08-29)
 ------------------
 * Ros introspection updated (`#52 <https://github.com/facontidavide/PlotJuggler/issues/52>`_)
