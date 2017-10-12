@@ -11,6 +11,7 @@
 #include <QtGlobal>
 #include <QApplication>
 #include <QProcess>
+#include <QSettings>
 #include <QFileDialog>
 #include <ros/callback_queue.h>
 #include <rosbag/bag.h>
@@ -43,25 +44,28 @@ void DataStreamROS::topicCallback(const topic_tools::ShapeShifter::ConstPtr& msg
     }
 
     using namespace RosIntrospection;
+    auto& parser = RosIntrospectionFactory::parser();
 
     const auto&  md5sum     =  msg->getMD5Sum();
     const auto&  datatype   =  msg->getDataType();
     const auto&  definition =  msg->getMessageDefinition() ;
 
-    // register the message type
-    RosIntrospectionFactory::get().registerMessage(topic_name, md5sum, datatype, definition);
-
-    const RosIntrospection::ROSTypeList* type_map = RosIntrospectionFactory::get().getRosTypeList(topic_name);
-    if( !type_map )
+    if( RosIntrospectionFactory::isRegistered(topic_name ) == false)
     {
-        throw std::runtime_error("Can't retrieve the ROSTypeList from RosIntrospectionFactory");
+      // register the message type
+      RosIntrospectionFactory::registerMessage(topic_name, md5sum, datatype, definition);
+
+      for (auto it: _rules)
+      {
+        RosIntrospectionFactory::parser().registerRenamingRules( it.first, it.second );
+      }
     }
 
     //------------------------------------
 
     // it is more efficient to recycle this elements
     static std::vector<uint8_t> buffer;
-    static ROSTypeFlat flat_container;
+    static FlatMessage flat_container;
     static RenamedValues renamed_value;
     
     buffer.resize( msg->size() );
@@ -69,18 +73,12 @@ void DataStreamROS::topicCallback(const topic_tools::ShapeShifter::ConstPtr& msg
     ros::serialization::OStream stream(buffer.data(), buffer.size());
     msg->write(stream);
 
-    SString topicname_SS( topic_name.data(), topic_name.length() );
     // WORKAROUND. There are some problems related to renaming when the character / is
     // used as prefix. We will remove that here.
-    if( topicname_SS.at(0) == '/' ) topicname_SS = SString( topic_name.data() +1,  topic_name.size()-1 );
+    //if( topicname_SS.at(0) == '/' ) topicname_SS = SString( topic_name.data() +1,  topic_name.size()-1 );
 
-    buildRosFlatType( *type_map, datatype, topicname_SS,
-                      buffer.data(), &flat_container, 250);
-
-    applyNameTransform( _rules[datatype], flat_container, renamed_value );
-
-    SString header_stamp_field( topic_name );
-    header_stamp_field.append(".header.stamp");
+    parser.deserializeIntoFlatContainer( topic_name, absl::Span<uint8_t>(buffer), &flat_container, 250);
+    parser.applyNameTransform( topic_name, flat_container, &renamed_value );
 
     double msg_time = 0;
 
@@ -117,8 +115,7 @@ void DataStreamROS::topicCallback(const topic_tools::ShapeShifter::ConstPtr& msg
     for(auto& it: renamed_value )
     {
         const std::string& field_name ( it.first.data() );
-        const RosIntrospection::VarNumber& var_value = it.second;
-        const double value = var_value.convert<double>();
+        const double value = it.second.convert<double>();
         auto plot_it = _plot_data.numeric.find(field_name);
         if( plot_it == _plot_data.numeric.end())
         {
@@ -246,7 +243,7 @@ void DataStreamROS::saveIntoRosbag()
 }
 
 
-bool DataStreamROS::start(QString& default_configuration)
+bool DataStreamROS::start()
 {
     if( !_node )
     {
@@ -273,14 +270,24 @@ bool DataStreamROS::start(QString& default_configuration)
                                    QString(topic_info.datatype.c_str()) ) );
     }
 
-    QStringList default_topics = default_configuration.split(' ', QString::SkipEmptyParts);
+    QSettings settings( "IcarusTechnology", "PlotJuggler");
+
+    if( _default_topic_names.empty())
+    {
+        // if _default_topic_names is empty (xmlLoad didn't work) use QSettings.
+        QVariant def = settings.value("DataStreamROS/default_topics");
+        if( !def.isNull() && def.isValid())
+        {
+            _default_topic_names = def.toStringList();
+        }
+    }
 
     QTimer timer;
     timer.setSingleShot(false);
     timer.setInterval( 1000);
     timer.start();
 
-    DialogSelectRosTopics dialog(all_topics, default_topics );
+    DialogSelectRosTopics dialog(all_topics, _default_topic_names );
 
     connect( &timer, &QTimer::timeout, [&]()
     {
@@ -308,12 +315,13 @@ bool DataStreamROS::start(QString& default_configuration)
         return false;
     }
 
-    default_configuration.clear();
+     _default_topic_names.clear();
     for (const QString& topic :topic_selected )
     {
-        default_configuration.append(topic).append(" ");
+        _default_topic_names.push_back(topic);
         std_topic_selected.push_back( topic.toStdString() );
     }
+    settings.setValue("DataStreamROS/default_topics", _default_topic_names);
 
     // load the rules
     if( dialog.checkBoxUseRenamingRules()->isChecked() ){
@@ -381,6 +389,29 @@ void DataStreamROS::setParentMenu(QMenu *menu)
     _menu->addAction( _action_saveIntoRosbag );
 
     connect( _action_saveIntoRosbag, &QAction::triggered, this, &DataStreamROS::saveIntoRosbag );
+}
+
+QDomElement DataStreamROS::xmlSaveState(QDomDocument &doc) const
+{
+    QString topics_list = _default_topic_names.join(";");
+    QDomElement list_elem = doc.createElement("selected_topics");
+    list_elem.setAttribute("list", topics_list );
+    return list_elem;
+}
+
+bool DataStreamROS::xmlLoadState(QDomElement &parent_element)
+{
+    QDomElement list_elem = parent_element.firstChildElement( "selected_topics" );
+    if( !list_elem.isNull()    )
+    {
+        if( list_elem.hasAttribute("list") )
+        {
+            QString topics_list = list_elem.attribute("list");
+            _default_topic_names = topics_list.split(";", QString::SkipEmptyParts);
+            return true;
+        }
+    }
+    return false;
 }
 
 
