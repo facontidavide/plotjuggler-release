@@ -4,6 +4,7 @@
 #include <QtPlugin>
 #include <QMenu>
 #include <QFile>
+#include <QDomDocument>
 #include <functional>
 #include "PlotJuggler/plotdata.h"
 
@@ -13,8 +14,7 @@ public:
 
     virtual const std::vector<const char*>& compatibleFileExtensions() const = 0;
 
-    virtual PlotDataMap readDataFromFile(const QString& file_name,
-                                         QString& default_configuration ) = 0;
+    virtual PlotDataMap readDataFromFile(const QString& file_name, bool use_previous_configuration) = 0;
 
     virtual const char* name() const = 0;
 
@@ -25,6 +25,10 @@ public:
     virtual void setParentMenu(QMenu* menu) { _menu = menu; }
 
     virtual QWidget* embeddedWidget() { return nullptr; }
+
+    virtual QDomElement xmlSaveState(QDomDocument &doc) const { return QDomElement(); }
+
+    virtual bool xmlLoadState(QDomElement &parent_element ) { return false; }
 
 protected:
     QMenu* _menu;
