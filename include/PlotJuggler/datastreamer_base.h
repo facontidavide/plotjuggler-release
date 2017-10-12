@@ -3,6 +3,7 @@
 
 #include <QtPlugin>
 #include <QMenu>
+#include <QDomDocument>
 #include <mutex>
 #include "PlotJuggler/plotdata.h"
 
@@ -14,7 +15,7 @@ public:
 
     virtual PlotDataMap& getDataMap() = 0;
 
-    virtual bool start(QString& default_configuration) = 0;
+    virtual bool start() = 0;
 
     virtual void shutdown() = 0;
 
@@ -31,6 +32,10 @@ public:
     virtual void setParentMenu(QMenu* menu) { _menu = menu; }
 
     virtual QWidget* embeddedWidget() { return nullptr; }
+
+    virtual QDomElement xmlSaveState(QDomDocument &doc) const { return QDomElement(); }
+
+    virtual bool xmlLoadState(QDomElement &parent_element ) { return false; }
 
 protected:
     QMenu* _menu;
