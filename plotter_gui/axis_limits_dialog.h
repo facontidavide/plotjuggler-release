@@ -3,7 +3,7 @@
 
 #include <QDialog>
 #include <QRadialGradient>
-#include <PlotJuggler/plotdata.h>
+#include "PlotJuggler/plotdata.h"
 
 namespace Ui {
 class AxisLimitsDialog;
