@@ -444,6 +444,7 @@ background: white;
     </property>
     <addaction name="actionLoadData"/>
     <addaction name="actionLoadRecentDatafile"/>
+    <addaction name="actionReloadPrevious"/>
     <addaction name="actionDeleteAllData"/>
     <addaction name="separator"/>
     <addaction name="actionLoadLayout"/>
@@ -545,6 +546,11 @@ background: white;
   <action name="actionClearBuffer">
    <property name="text">
     <string>Clear buffer</string>
+   </property>
+  </action>
+  <action name="actionReloadPrevious">
+   <property name="text">
+    <string>Reload previous</string>
    </property>
   </action>
  </widget>
