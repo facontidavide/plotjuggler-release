@@ -10,6 +10,7 @@
 #include <QProcess>
 #include <rosbag/view.h>
 #include <sys/sysinfo.h>
+#include <QSettings>
 
 #include "../dialog_select_ros_topics.h"
 #include "../shape_shifter_factory.hpp"
@@ -33,81 +34,92 @@ size_t getAvailableRAM()
     return info.freeram;
 }
 
-PlotDataMap DataLoadROS::readDataFromFile(const QString &file_name,
-                                          QString &load_configuration  )
+PlotDataMap DataLoadROS::readDataFromFile(const QString &file_name, bool use_previous_configuration)
 {
+    if( _bag ) _bag->close();
+
+    _bag = std::make_shared<rosbag::Bag>();
+
     using namespace RosIntrospection;
 
     std::vector<std::pair<QString,QString>> all_topics;
     PlotDataMap plot_map;
 
     try{
-        _bag.close();
-        _bag.open( file_name.toStdString(), rosbag::bagmode::Read );
+        _bag->open( file_name.toStdString(), rosbag::bagmode::Read );
     }
     catch( rosbag::BagException&  ex)
     {
         QMessageBox::warning(0, tr("Error"),
                              QString("rosbag::open thrown an exception:\n")+
                              QString(ex.what()) );
-        return plot_map;
+        return PlotDataMap{};
     }
 
-    rosbag::View bag_view ( _bag, ros::TIME_MIN, ros::TIME_MAX, true );
-    std::vector<const rosbag::ConnectionInfo *> connections = bag_view.getConnections();
+    rosbag::View bag_view ( *_bag, ros::TIME_MIN, ros::TIME_MAX, true );
+    std::vector<const rosbag::ConnectionInfo*> connections = bag_view.getConnections();
 
-    std::map<std::string,ROSType> rostype;
-
-    for(unsigned i=0;  i<connections.size(); i++)
+    for(unsigned i=0; i<connections.size(); i++)
     {
         const auto&  topic      =  connections[i]->topic;
         const auto&  md5sum     =  connections[i]->md5sum;
-        const auto&  datatype  =  connections[i]->datatype;
+        const auto&  datatype   =  connections[i]->datatype;
         const auto&  definition =  connections[i]->msg_def;
 
         all_topics.push_back( std::make_pair(QString( topic.c_str()), QString( datatype.c_str()) ) );
-        RosIntrospectionFactory::get().registerMessage(topic, md5sum, datatype, definition);
-        rostype.insert( std::make_pair(datatype, ROSType(datatype)) );
+        RosIntrospectionFactory::registerMessage(topic, md5sum, datatype, definition);
     }
 
     int count = 0;
 
     //----------------------------------
-    QStringList default_topic_names = load_configuration.split(' ',QString::SkipEmptyParts);
-    load_configuration.clear();
+    QSettings settings( "IcarusTechnology", "PlotJuggler");
 
-    DialogSelectRosTopics* dialog = new DialogSelectRosTopics( all_topics, default_topic_names );
-
-    std::set<std::string> topic_selected;
-
-    if( dialog->exec() == static_cast<int>(QDialog::Accepted) )
+    if( _default_topic_names.empty())
     {
-        const auto& selected_items = dialog->getSelectedItems();
-        for(const auto& item: selected_items)
+        // if _default_topic_names is empty (xmlLoad didn't work) use QSettings.
+        QVariant def = settings.value("DataLoadROS/default_topics");
+        if( !def.isNull() && def.isValid())
         {
-            std::string ss_topic = item.toStdString();
-            topic_selected.insert( ss_topic );
-
-            // change the names in load_configuration
-            load_configuration.append( item ).append(" ");
-        }
-        // load the rules
-        if( dialog->checkBoxUseRenamingRules()->isChecked())
-        {
-            _rules = RuleEditing::getRenamingRules();
-        }
-        else{
-            _rules.clear();
+            _default_topic_names = def.toStringList();
         }
     }
 
+    DialogSelectRosTopics* dialog = new DialogSelectRosTopics( all_topics, _default_topic_names );
+
+    if( !use_previous_configuration )
+    {
+        if( dialog->exec() == static_cast<int>(QDialog::Accepted) )
+        {
+            _default_topic_names = dialog->getSelectedItems();
+
+            // load the rules
+            if( dialog->checkBoxUseRenamingRules()->isChecked())
+            {
+                _rules = RuleEditing::getRenamingRules();
+            }
+            else{
+                _rules.clear();
+            }
+            for(const auto& it: _rules) {
+                RosIntrospectionFactory::parser().registerRenamingRules( ROSType(it.first) , it.second );
+            }
+        }
+        settings.setValue("DataLoadROS/default_topics", _default_topic_names);
+    }
     //-----------------------------------
+    std::set<std::string> topic_selected;
+    for(const auto& topic: _default_topic_names)
+    {
+        topic_selected.insert( topic.toStdString() );
+    }
+
     QProgressDialog progress_dialog;
     progress_dialog.setLabelText("Loading... please wait");
     progress_dialog.setWindowModality( Qt::ApplicationModal );
 
     rosbag::View bag_view_selected ( true );
-    bag_view_selected.addQuery( _bag, [&topic_selected](rosbag::ConnectionInfo const* connection)
+    bag_view_selected.addQuery( *_bag, [topic_selected](rosbag::ConnectionInfo const* connection)
     {
         return topic_selected.find( connection->topic ) != topic_selected.end();
     } );
@@ -117,24 +129,16 @@ PlotDataMap DataLoadROS::readDataFromFile(const QString &file_name,
     QElapsedTimer timer;
     timer.start();
 
-    ROSTypeFlat flat_container;
-
-    SString topicname_SS;
-    std::vector<uint8_t> buffer;
+    static FlatMessage flat_container;
+    static std::vector<uint8_t> buffer;
+    static RenamedValues renamed_value;
 
     for(rosbag::MessageInstance msg_instance: bag_view_selected )
     {
-        const std::string& topic  = msg_instance.getTopic();
+        const std::string& topic_name  = msg_instance.getTopic();
+        const std::string& datatype = msg_instance.getDataType();
+        const size_t msg_size  = msg_instance.size();
 
-        // WORKAROUND. There are some problems related to renaming when the character / is
-        // used as prefix. We will remove that here.
-        if( topic.at(0) == '/' )
-            topicname_SS.assign( topic.data() +1,  topic.size()-1 );
-        else
-            topicname_SS.assign( topic.data(),  topic.size() );
-
-        const auto& datatype = msg_instance.getDataType();
-        const auto msg_size  = msg_instance.size();
         buffer.resize(msg_size);
 
         if( count++ %100 == 0)
@@ -148,28 +152,10 @@ PlotDataMap DataLoadROS::readDataFromFile(const QString &file_name,
         }
 
         ros::serialization::OStream stream(buffer.data(), buffer.size());
-
-        // this single line takes almost the entire time of the loop
         msg_instance.write(stream);
 
-        auto typelist = RosIntrospectionFactory::get().getRosTypeList( topic );
-        if( !typelist )
-        {
-            throw std::runtime_error("Can't retrieve the ROSTypeList from RosIntrospectionFactory");
-        }
-        buildRosFlatType( *typelist, rostype[datatype], topicname_SS,
-                          buffer.data(), &flat_container, 250);
-
-        static RenamedValues renamed_value;
- 
-        auto rules_it = _rules.find(datatype);
-        if(rules_it != _rules.end())
-        {
-            applyNameTransform( rules_it->second, flat_container, renamed_value );
-        }
-        else{
-            applyNameTransform( std::vector<SubstitutionRule>(), flat_container, renamed_value );
-        }
+        RosIntrospectionFactory::parser().deserializeIntoFlatContainer( topic_name, absl::Span<uint8_t>(buffer), &flat_container, 250 );
+        RosIntrospectionFactory::parser().applyNameTransform( topic_name, flat_container, &renamed_value );
 
         // apply time offsets
         double msg_time = 0;
@@ -193,7 +179,7 @@ PlotDataMap DataLoadROS::readDataFromFile(const QString &file_name,
             const std::string& field_name = it.first;
 
             auto plot_pair = plot_map.numeric.find( field_name );
-            if( plot_pair == plot_map.numeric.end() )
+            if( !(plot_pair != plot_map.numeric.end()) )
             {
                 PlotDataPtr temp(new PlotData(field_name.data()));
                 auto res = plot_map.numeric.insert( std::make_pair(field_name, temp ) );
@@ -201,19 +187,18 @@ PlotDataMap DataLoadROS::readDataFromFile(const QString &file_name,
             }
 
             PlotDataPtr& plot_data = plot_pair->second;
-            const RosIntrospection::VarNumber& var_value = it.second;
-            plot_data->pushBack( PlotData::Point(msg_time, var_value.convert<double>() ));
+            plot_data->pushBack( PlotData::Point(msg_time, it.second.convert<double>() ));
         } //end of for renamed_value
 
         //-----------------------------------------
         // adding raw serialized topic for future uses.
         {
-            auto plot_pair = plot_map.user_defined.find( topic );
+            auto plot_pair = plot_map.user_defined.find( topic_name );
 
             if( plot_pair == plot_map.user_defined.end() )
             {
-                PlotDataAnyPtr temp(new PlotDataAny(topic.c_str()));
-                auto res = plot_map.user_defined.insert( std::make_pair( topic, temp ) );
+                PlotDataAnyPtr temp(new PlotDataAny(topic_name.c_str()));
+                auto res = plot_map.user_defined.insert( std::make_pair( topic_name, temp ) );
                 plot_pair = res.first;
             }
             PlotDataAnyPtr& plot_raw = plot_pair->second;
@@ -229,6 +214,29 @@ PlotDataMap DataLoadROS::readDataFromFile(const QString &file_name,
 DataLoadROS::~DataLoadROS()
 {
 
+}
+
+QDomElement DataLoadROS::xmlSaveState(QDomDocument &doc) const
+{
+    QString topics_list = _default_topic_names.join(";");
+    QDomElement list_elem = doc.createElement("selected_topics");
+    list_elem.setAttribute("list", topics_list );
+    return list_elem;
+}
+
+bool DataLoadROS::xmlLoadState(QDomElement &parent_element)
+{
+    QDomElement list_elem = parent_element.firstChildElement( "selected_topics" );
+    if( !list_elem.isNull()    )
+    {
+        if( list_elem.hasAttribute("list") )
+        {
+            QString topics_list = list_elem.attribute("list");
+            _default_topic_names = topics_list.split(";", QString::SkipEmptyParts);
+            return true;
+        }
+    }
+    return false;
 }
 
 

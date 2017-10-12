@@ -3,6 +3,7 @@
 #include <QFile>
 #include <QMessageBox>
 #include <QDebug>
+#include <QSettings>
 #include <QProgressDialog>
 #include "selectlistdialog.h"
 
@@ -98,8 +99,7 @@ int DataLoadCSV::parseHeader(QFile *file,
     return linecount;
 }
 
-PlotDataMap DataLoadCSV::readDataFromFile(const QString &file_name,
-                                          QString &load_configuration )
+PlotDataMap DataLoadCSV::readDataFromFile(const QString &file_name, bool use_previous_configuration)
 {
     const int TIME_INDEX_NOT_DEFINED = -2;
 
@@ -141,6 +141,16 @@ PlotDataMap DataLoadCSV::readDataFromFile(const QString &file_name,
     //---- build plots_vector from header  ------
     QStringList valid_field_names;
 
+    QSettings settings( "IcarusTechnology", "PlotJuggler");
+    if( _default_time_axis.isEmpty() )
+    {
+        QVariant def = settings.value("DataLoadCSV/default_time_axis");
+        if( !def.isNull() && def.isValid())
+        {
+            _default_time_axis = def.toString();
+        }
+    }
+
     for (unsigned i=0; i < ordered_names.size(); i++ )
     {
         bool valid = ordered_names[i].first;
@@ -157,7 +167,7 @@ PlotDataMap DataLoadCSV::readDataFromFile(const QString &file_name,
 
             if (time_index == TIME_INDEX_NOT_DEFINED)
             {
-                if( load_configuration == qname )
+                if( _default_time_axis == qname )
                 {
                     time_index = valid_field_names.size() ;
                 }
@@ -165,7 +175,7 @@ PlotDataMap DataLoadCSV::readDataFromFile(const QString &file_name,
         }
     }
 
-    if( time_index == TIME_INDEX_NOT_DEFINED)
+    if( time_index == TIME_INDEX_NOT_DEFINED && !use_previous_configuration)
     {
         QStringList field_names;
         field_names.push_back( "INDEX (auto-generated)" );
@@ -182,8 +192,10 @@ PlotDataMap DataLoadCSV::readDataFromFile(const QString &file_name,
 
         // vector is supposed to have only one element
         time_index = dialog->getSelectedRowNumber().at(0) -1;
-        load_configuration = field_names.at( time_index + 1 ) ;
+        _default_time_axis = field_names.at( time_index + 1 ) ;
+        settings.setValue("DataLoadCSV/default_time_axis", _default_time_axis);
     }
+
     //-----------------
 
     while (!inB.atEnd())
@@ -247,4 +259,25 @@ PlotDataMap DataLoadCSV::readDataFromFile(const QString &file_name,
 DataLoadCSV::~DataLoadCSV()
 {
 
+}
+
+QDomElement DataLoadCSV::xmlSaveState(QDomDocument &doc) const
+{
+    QDomElement elem = doc.createElement("default");
+    elem.setAttribute("time_axis", _default_time_axis );
+    return elem;
+}
+
+bool DataLoadCSV::xmlLoadState(QDomElement &parent_element)
+{
+    QDomElement elem = parent_element.firstChildElement( "default" );
+    if( !elem.isNull()    )
+    {
+        if( elem.hasAttribute("time_axis") )
+        {
+            _default_time_axis = elem.attribute("time_axis");
+            return true;
+        }
+    }
+    return false;
 }
