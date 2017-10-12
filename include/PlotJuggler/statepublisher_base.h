@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QtPlugin>
 #include <QMenu>
+#include <QDomElement>
 #include <functional>
 #include "PlotJuggler/plotdata.h"
 
@@ -26,6 +27,10 @@ public:
     virtual void setParentMenu(QMenu* menu) { _menu = menu; }
 
     virtual QWidget* embeddedWidget() { return nullptr; }
+
+    virtual QDomElement xmlSaveState(QDomDocument &doc) const { return QDomElement(); }
+
+    virtual bool xmlLoadState(QDomElement &parent_element ) { return false; }
 
 protected:
     QMenu* _menu;
