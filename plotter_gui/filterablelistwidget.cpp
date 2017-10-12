@@ -1,6 +1,6 @@
 #include "filterablelistwidget.h"
 #include "ui_filterablelistwidget.h"
-#include <PlotJuggler/alphanum.hpp>
+#include "PlotJuggler/alphanum.hpp"
 #include <QDebug>
 #include <QLayoutItem>
 #include <QMenu>
