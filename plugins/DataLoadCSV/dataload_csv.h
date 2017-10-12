@@ -16,18 +16,23 @@ public:
     DataLoadCSV();
     virtual const std::vector<const char*>& compatibleFileExtensions() const override;
 
-    virtual PlotDataMap readDataFromFile(const QString& file_name,
-                                         QString &load_configuration  ) override;
+    virtual PlotDataMap readDataFromFile(const QString& file_name, bool use_previous_configuration  ) override;
 
     virtual ~DataLoadCSV();
 
     virtual const char* name() const override { return "DataLoad CSV"; }
+
+    virtual QDomElement xmlSaveState(QDomDocument &doc) const override;
+
+    virtual bool xmlLoadState(QDomElement &parent_element ) override;
 
 protected:
     int parseHeader(QFile *file, std::vector<std::pair<bool, QString> > &ordered_names);
 
 private:
     std::vector<const char*> _extensions;
+
+    QString _default_time_axis;
 
 
 };
