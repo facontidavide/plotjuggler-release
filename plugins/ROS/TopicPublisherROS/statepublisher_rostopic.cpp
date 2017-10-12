@@ -1,9 +1,10 @@
 #include "statepublisher_rostopic.h"
-#include <PlotJuggler/any.hpp>
+#include "PlotJuggler/any.hpp"
 #include "../shape_shifter_factory.hpp"
 #include "../qnodedialog.h"
-#include "timestamp_injector.h"
+#include "ros_type_introspection/ros_introspection.hpp"
 #include <rosbag/bag.h>
+#include <std_msgs/Header.h>
 
 TopicPublisherROS::TopicPublisherROS():
   enabled_(false ),
@@ -40,7 +41,7 @@ void TopicPublisherROS::updateState(PlotDataMap *datamap, double current_time)
 {
     if(!enabled_ || !_node) return;
 
-    const ros::Time ros_time =ros::Time::now();
+    const ros::Time ros_time = ros::Time::now();
 
     for(const auto& data_it:  datamap->user_defined )
     {
@@ -83,10 +84,23 @@ void TopicPublisherROS::updateState(PlotDataMap *datamap, double current_time)
 
     if( _current_time->isChecked())
     {
-        auto typelist = RosIntrospectionFactory::get().getRosTypeList( topic_name );
-        if(typelist)
+        const RosIntrospection::Parser::VisitingCallback modifyTimestamp = [&ros_time](const RosIntrospection::ROSType&, absl::Span<uint8_t>& buffer)
         {
-            injectTime(*typelist, shapeshifted_msg.getDataType(), raw_buffer.data(), ros_time);
+            std_msgs::Header msg;
+            ros::serialization::IStream is( buffer.data(), buffer.size() );
+            ros::serialization::deserialize(is, msg);
+            msg.stamp = ros_time;
+            ros::serialization::OStream os( buffer.data(), buffer.size() );
+            ros::serialization::serialize(os, msg);
+        };
+
+        auto msg_info = RosIntrospectionFactory::parser().getMessageInfo( topic_name );
+        if(msg_info)
+        {
+            const RosIntrospection::ROSType header_type( ros::message_traits::DataType<std_msgs::Header>::value() ) ;
+            absl::Span<uint8_t> buffer_span(raw_buffer);
+            RosIntrospectionFactory::parser().applyVisitorToBuffer(topic_name, header_type,
+                                                                   buffer_span,  modifyTimestamp );
         }
     }
 

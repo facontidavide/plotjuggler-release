@@ -21,7 +21,7 @@ public:
 
     virtual PlotDataMap &getDataMap() override;
 
-    virtual bool start(QString& default_configuration) override;
+    virtual bool start() override;
 
     virtual void shutdown() override;
 
@@ -34,6 +34,10 @@ public:
     virtual const char* name() const override { return "ROS Topic Streamer";  }
 
     virtual void setParentMenu(QMenu* menu) override;
+
+    virtual QDomElement xmlSaveState(QDomDocument &doc) const override;
+
+    virtual bool xmlLoadState(QDomElement &parent_element ) override;
 
 private:
 
@@ -62,6 +66,8 @@ private:
     QAction* _action_saveIntoRosbag;
 
     std::map<std::string, int> _msg_index;
+
+    QStringList _default_topic_names;
 
 private slots:
 

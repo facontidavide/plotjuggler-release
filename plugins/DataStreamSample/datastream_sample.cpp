@@ -48,7 +48,7 @@ DataStreamSample::DataStreamSample():
     }
 }
 
-bool DataStreamSample::start(QString& default_configuration)
+bool DataStreamSample::start()
 {
     _running = true;
     pushSingleCycle();
@@ -69,6 +69,16 @@ bool DataStreamSample::isStreamingEnabled() const { return _enabled; }
 DataStreamSample::~DataStreamSample()
 {
     shutdown();
+}
+
+QDomElement DataStreamSample::xmlSaveState(QDomDocument &doc) const
+{
+    return QDomElement();
+}
+
+bool DataStreamSample::xmlLoadState(QDomElement &parent_element)
+{
+    return false;
 }
 
 void DataStreamSample::pushSingleCycle()
