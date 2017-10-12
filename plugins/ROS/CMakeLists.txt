@@ -67,7 +67,6 @@ add_dependencies(DataStreamROS
 #############
 SET( PUBLISHER_SRC
     TopicPublisherROS/statepublisher_rostopic.cpp
-    TopicPublisherROS/timestamp_injector.cpp
     TopicPublisherROS/statepublisher_rostopic.h
     )
 
@@ -76,10 +75,10 @@ QT5_WRAP_UI ( PUBLISHER_UI_SRC  )
 add_library( RosTopicPublisher SHARED ${PUBLISHER_SRC} ${PUBLISHER_UI_SRC} )
 target_link_libraries( RosTopicPublisher  ${catkin_LIBRARIES} commonROS )
 
-add_dependencies(RosTopicPublisher
-    ${${PROJECT_NAME}_EXPORTED_TARGETS}
-    ${catkin_EXPORTED_TARGETS}
-    )
+#add_dependencies(RosTopicPublisher
+#    ${${PROJECT_NAME}_EXPORTED_TARGETS}
+#    ${catkin_EXPORTED_TARGETS}
+#    )
 
 #############
 SET( ROSOUT_SRC
@@ -110,11 +109,12 @@ add_dependencies(RosoutPublisher
 ## Mark executables and/or libraries for installation
 
 if(COMPILING_WITH_CATKIN)
-    install(TARGETS DataLoadROS DataStreamROS RosTopicPublisher RosoutPublisher
+    install(TARGETS DataLoadROS  DataStreamROS  RosTopicPublisher  RosoutPublisher
         ARCHIVE DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
         LIBRARY DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
         RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
         )
 elseif()
-    install(TARGETS DataLoadROS DataStreamROS RosTopicPublisher RosoutPublisher DESTINATION bin  )
+    install(TARGETS DataLoadROS  DataStreamROS RosTopicPublisher RosoutPublisher
+        DESTINATION bin  )
 endif()

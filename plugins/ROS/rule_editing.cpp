@@ -292,7 +292,7 @@ RosIntrospection::SubstitutionRuleMap RuleEditing::getRenamingRules()
 
             rules_vect.push_back( rule );
         }
-        rule_map.insert( std::make_pair( std::move(type_name), std::move( rules_vect ) ));
+        rule_map.insert( std::make_pair( ROSType(type_name), std::move( rules_vect ) ));
     }
     return rule_map;
 }
