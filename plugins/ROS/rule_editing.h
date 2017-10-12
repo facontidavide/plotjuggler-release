@@ -6,7 +6,7 @@
 #include <QSyntaxHighlighter>
 #include <QTextCharFormat>
 #include <QTextEdit>
-#include <ros_type_introspection/renamer.hpp>
+#include <ros_type_introspection/ros_introspection.hpp>
 
 namespace Ui {
 class RuleEditing;
