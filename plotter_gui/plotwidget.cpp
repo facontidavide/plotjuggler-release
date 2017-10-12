@@ -21,7 +21,7 @@
 #include <QFileDialog>
 #include <QtXml/QDomElement>
 #include "qwt_plot_renderer.h"
-#include <PlotJuggler/random_color.h>
+#include "PlotJuggler/random_color.h"
 
 const double MAX_DOUBLE = std::numeric_limits<double>::max() / 2 ;
 
