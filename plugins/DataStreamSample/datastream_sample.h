@@ -18,7 +18,7 @@ public:
 
     virtual PlotDataMap& getDataMap() override { return _plot_data; }
 
-    virtual bool start(QString& default_configuration) override;
+    virtual bool start() override;
 
     virtual void shutdown() override;
 
@@ -31,6 +31,10 @@ public:
     virtual const char* name() const override { return "DataStreamer Dummy"; }
 
     virtual bool isDebugPlugin() override { return true; }
+
+    virtual QDomElement xmlSaveState(QDomDocument &doc) const override;
+
+    virtual bool xmlLoadState(QDomElement &parent_element ) override;
 
 private:
 

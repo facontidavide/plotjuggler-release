@@ -30,6 +30,7 @@
 #include "tabbedplotwidget.h"
 #include "selectlistdialog.h"
 #include "aboutdialog.h"
+#include "PlotJuggler/plotdata.h"
 
 
 MainWindow::MainWindow(const QCommandLineParser &commandline_parser, QWidget *parent) :
@@ -115,6 +116,7 @@ MainWindow::MainWindow(const QCommandLineParser &commandline_parser, QWidget *pa
             this, SLOT(onActionLoadStreamer(QString)) );
 
     ui->actionDeleteAllData->setEnabled( _test_option );
+    ui->actionReloadPrevious->setEnabled( false );
 
     if( _test_option )
     {
@@ -350,9 +352,11 @@ void MainWindow::createActions()
     connect(ui->actionSaveLayout, &QAction::triggered,         this, &MainWindow::onActionSaveLayout );
     connect(ui->actionLoadLayout, &QAction::triggered,         this, &MainWindow::onActionLoadLayout );
     connect(ui->actionLoadData, &QAction::triggered,           this, &MainWindow::onActionLoadDataFile );
-    connect(ui->actionLoadRecentDatafile, &QAction::triggered, this, &MainWindow::onActionReloadDataFileFromSettings );
+    connect(ui->actionLoadRecentDatafile, &QAction::triggered, this, &MainWindow::onActionReloadRecentDataFile );
     connect(ui->actionLoadRecentLayout, &QAction::triggered,   this, &MainWindow::onActionReloadRecentLayout );
     connect(ui->actionDeleteAllData, &QAction::triggered,      this, &MainWindow::onDeleteLoadedData );
+
+    connect(ui->actionReloadPrevious, &QAction::triggered,     this, &MainWindow::onReloadDatafile );
 
     //---------------------------------------------
 
@@ -405,6 +409,23 @@ void MainWindow::loadPlugins(QString directory_name)
             StatePublisher *publisher = qobject_cast<StatePublisher *>(plugin);
             DataStreamer *streamer    =  qobject_cast<DataStreamer *>(plugin);
 
+            QString plugin_name;
+            if( loader )    plugin_name = loader->name();
+            if( publisher ) plugin_name = publisher->name();
+            if( streamer )  plugin_name = streamer->name();
+            plugin_name.replace(" ", "_");
+
+            if( loaded_plugins.find(plugin_name) == loaded_plugins.end())
+            {
+                loaded_plugins.insert( plugin_name );
+            }
+            else{
+                QMessageBox::warning(0, tr("Warning"),
+                                     tr("Trying to load twice a plugin with name [%1].\n"
+                                        "Only the first will be loaded.").arg(plugin_name) );
+                continue;
+            }
+
             if (loader)
             {
                 qDebug() << filename << ": is a DataLoader plugin";
@@ -413,8 +434,7 @@ void MainWindow::loadPlugins(QString directory_name)
                     qDebug() << filename << "...but will be ignored unless the argument -t is used.";
                 }
                 else{
-                    loaded_plugins.insert( loader->name() );
-                    _data_loader.insert( std::make_pair( loader->name(), loader) );
+                    _data_loader.insert( std::make_pair( plugin_name, loader) );
                 }
             }
             else if (publisher)
@@ -426,11 +446,9 @@ void MainWindow::loadPlugins(QString directory_name)
                 }
                 else
                 {
-                    loaded_plugins.insert( publisher->name() );
+                    _state_publisher.insert( std::make_pair(plugin_name, publisher) );
 
-                    _state_publisher.insert( std::make_pair(publisher->name(), publisher) );
-
-                    QAction* activatePublisher = new QAction(tr("Start: ") + publisher->name() , this);
+                    QAction* activatePublisher = new QAction(tr("Start: ") + plugin_name , this);
                     activatePublisher->setCheckable(true);
                     activatePublisher->setChecked(false);
                     ui->menuPublishers->setEnabled(true);
@@ -452,20 +470,17 @@ void MainWindow::loadPlugins(QString directory_name)
                     qDebug() << filename << "...but will be ignored unless the argument -t is used.";
                 }
                 else{
-                    QString name(streamer->name());
-                    loaded_plugins.insert( name );
-                    _data_streamer.insert( std::make_pair(name , streamer ) );
+                    _data_streamer.insert( std::make_pair(plugin_name , streamer ) );
 
-                    QAction* startStreamer = new QAction(QString("Start: ") + name, this);
+                    QAction* startStreamer = new QAction(QString("Start: ") + plugin_name, this);
                     ui->menuStreaming->setEnabled(true);
                     ui->menuStreaming->addAction(startStreamer);
 
                     streamer->setParentMenu( ui->menuStreaming );
                     ui->menuStreaming->addSeparator();
 
-                    connect(startStreamer, SIGNAL(triggered()),
-                            _streamer_signal_mapper, SLOT(map()) );
-                    _streamer_signal_mapper->setMapping(startStreamer, name );
+                    connect(startStreamer, SIGNAL(triggered()), _streamer_signal_mapper, SLOT(map()) );
+                    _streamer_signal_mapper->setMapping(startStreamer, plugin_name );
                 }
             }
         }
@@ -684,7 +699,6 @@ bool MainWindow::xmlLoadState(QDomDocument state_document)
         bool remove_offset = (relative_time.attribute("enabled") == QString("1"));
         ui->pushButtonRemoveTimeOffset->setChecked(remove_offset);
     }
-
     return true;
 }
 
@@ -692,22 +706,26 @@ void MainWindow::onActionSaveLayout()
 {
     QDomDocument doc = xmlSaveState();
 
+    //--------------------------
+    savePluginState(doc);
+    //--------------------------
+
+    QDomElement root = doc.namedItem("root").toElement();
+
     if( _loaded_datafile.isEmpty() == false)
     {
-        QDomElement root = doc.namedItem("root").toElement();
         QDomElement previously_loaded_datafile =  doc.createElement( "previouslyLoadedDatafile" );
         previously_loaded_datafile.setAttribute("filename", _loaded_datafile );
-        previously_loaded_datafile.setAttribute("configuration", _last_load_configuration );
         root.appendChild( previously_loaded_datafile );
     }
+
     if( _current_streamer )
     {
-        QDomElement root = doc.namedItem("root").toElement();
         QDomElement loaded_streamer =  doc.createElement( "previouslyLoadedStreamer" );
         loaded_streamer.setAttribute("name", _current_streamer->name() );
-        loaded_streamer.setAttribute("configuration", _last_stream_configuration );
         root.appendChild( loaded_streamer );
     }
+    //------------------------------------
 
     QSettings settings( "IcarusTechnology", "PlotJuggler");
 
@@ -844,6 +862,11 @@ void MainWindow::onActionLoadDataFile(bool reload_from_settings)
     onActionLoadDataFileImpl(filename, false );
 }
 
+void MainWindow::onReloadDatafile()
+{
+
+}
+
 void MainWindow::importPlotDataMap(const PlotDataMap& new_data, bool delete_older)
 {
     // overwrite the old user_defined map
@@ -908,8 +931,6 @@ void MainWindow::onActionLoadDataFileImpl(QString filename, bool reuse_last_conf
 {
     const QString extension = QFileInfo(filename).suffix().toLower();
 
-    DataLoader* loader = nullptr;
-
     typedef std::map<QString,DataLoader*>::iterator MapIterator;
 
     std::vector<MapIterator> compatible_loaders;
@@ -928,9 +949,11 @@ void MainWindow::onActionLoadDataFileImpl(QString filename, bool reuse_last_conf
         }
     }
 
+    _last_dataloader = nullptr;
+
     if( compatible_loaders.size() == 1)
     {
-        loader = compatible_loaders.front()->second;
+        _last_dataloader = compatible_loaders.front()->second;
     }
     else{
         static QString last_plugin_name_used;
@@ -952,12 +975,12 @@ void MainWindow::onActionLoadDataFileImpl(QString filename, bool reuse_last_conf
         QString plugin_name = QInputDialog::getItem(this, tr("QInputDialog::getItem()"), tr("Select the loader to use:"), names, 0, false, &ok);
         if (ok && !plugin_name.isEmpty())
         {
-            loader = _data_loader[ plugin_name ];
+            _last_dataloader = _data_loader[ plugin_name ];
             last_plugin_name_used = plugin_name;
         }
     }
 
-    if( loader )
+    if( _last_dataloader )
     {
         QFile file(filename);
 
@@ -972,29 +995,19 @@ void MainWindow::onActionLoadDataFileImpl(QString filename, bool reuse_last_conf
 
         _loaded_datafile = filename;
         ui->actionDeleteAllData->setEnabled( true );
-
-        QString load_configuration; // must be empty by default
-        if( reuse_last_configuration )
-        {
-            load_configuration = _last_load_configuration;
-        }
-
+        ui->actionReloadPrevious->setEnabled( true );
 
         PlotDataMap mapped_data;
         try{
-            mapped_data= loader->readDataFromFile(
-                        filename,
-                        load_configuration   );
+            mapped_data = _last_dataloader->readDataFromFile( filename, reuse_last_configuration );
         }
         catch(std::exception &ex)
         {
             QMessageBox::warning(this, tr("Exception from the plugin"),
                                  tr("The plugin [%1] thrown the following exception: \n\n %3\n")
-                                 .arg(loader->name()).arg(ex.what()) );
+                                 .arg(_last_dataloader->name()).arg(ex.what()) );
             return;
         }
-
-        _last_load_configuration = load_configuration;
 
         // remap to different type
         importPlotDataMap(mapped_data, true);
@@ -1008,7 +1021,7 @@ void MainWindow::onActionLoadDataFileImpl(QString filename, bool reuse_last_conf
 }
 
 
-void MainWindow::onActionReloadDataFileFromSettings()
+void MainWindow::onActionReloadRecentDataFile()
 {
     onActionLoadDataFile( true );
 }
@@ -1051,11 +1064,10 @@ void MainWindow::onActionLoadStreamer(QString streamer_name)
     }
 
 
-    if( _current_streamer && _current_streamer->start( _last_stream_configuration) )
+    if( _current_streamer && _current_streamer->start() )
     {
         _current_streamer->enableStreaming( false );
         importPlotDataMap( _current_streamer->getDataMap(), true );
-        _loaded_datafile = QString();
 
         for(auto& action: ui->menuStreaming->actions()) {
             action->setEnabled(false);
@@ -1063,6 +1075,7 @@ void MainWindow::onActionLoadStreamer(QString streamer_name)
         ui->actionStopStreaming->setEnabled(true);
         ui->actionDeleteAllData->setEnabled( false );
         ui->actionDeleteAllData->setToolTip("Stop streaming to be able to delete the data");
+        ui->actionReloadPrevious->setEnabled( false );
 
         ui->pushButtonStreaming->setEnabled(true);
         ui->pushButtonStreaming->setChecked(true);
@@ -1102,6 +1115,74 @@ void MainWindow::onActionLoadLayout(bool reload_previous)
         onActionLoadLayoutFromFile(filename, true);
 }
 
+void MainWindow::loadPluginState(const QDomElement& root)
+{
+    QDomElement plugins = root.firstChildElement("Plugins");
+
+    if( ! plugins.isNull() )
+    {
+        for ( QDomElement plugin_elem = plugins.firstChildElement()  ;
+               plugin_elem.isNull() == false;
+               plugin_elem = plugin_elem.nextSiblingElement() )
+        {
+            const QString plugin_name = plugin_elem.nodeName();
+            if( _data_loader.find(plugin_name) != _data_loader.end() )
+            {
+                _data_loader[plugin_name]->xmlLoadState(plugin_elem);
+            }
+            if( _data_streamer.find(plugin_name) != _data_streamer.end() )
+            {
+               _data_streamer[plugin_name]->xmlLoadState(plugin_elem);
+            }
+            if( _state_publisher.find(plugin_name) != _state_publisher.end() )
+            {
+               _state_publisher[plugin_name]->xmlLoadState(plugin_elem);
+            }
+        }
+    }
+}
+
+void MainWindow::savePluginState(QDomDocument& doc)
+{
+    QDomElement root = doc.namedItem("root").toElement();
+
+    QDomElement plugins_elem = doc.createElement( "Plugins" );
+    root.appendChild( plugins_elem );
+
+    for (auto& it: _data_loader)
+    {
+        QString name  = it.first;
+        const DataLoader* dataloader = it.second;
+
+        QDomElement elem = doc.createElement( name );
+        if( elem.isNull() == false)
+        {
+            elem.appendChild( dataloader->xmlSaveState(doc) );
+        }
+        plugins_elem.appendChild( elem );
+    }
+
+    for (auto& it: _data_streamer)
+    {
+        QString name = it.first;
+        const DataStreamer* datastreamer = it.second;
+
+        QDomElement elem = doc.createElement(  name );
+        elem.appendChild( datastreamer->xmlSaveState(doc) );
+        plugins_elem.appendChild( elem );
+    }
+
+    for (auto& it: _state_publisher)
+    {
+        QString name = it.first;
+        const StatePublisher* state_publisher = it.second;
+
+        QDomElement elem = doc.createElement(  name );
+        elem.appendChild( state_publisher->xmlSaveState(doc) );
+        plugins_elem.appendChild( elem );
+    }
+}
+
 void MainWindow::onActionLoadLayoutFromFile(QString filename, bool load_data)
 {
     QSettings settings( "IcarusTechnology", "PlotJuggler");
@@ -1134,8 +1215,12 @@ void MainWindow::onActionLoadLayoutFromFile(QString filename, bool load_data)
         return;
     }
 
-    QDomElement root = domDocument.namedItem("root").toElement();
 
+    //-------------------------------------------------
+    // refresh plugins
+    QDomElement root = domDocument.namedItem("root").toElement();
+    loadPluginState(root);
+    //-------------------------------------------------
     if(load_data)
     {
         QDomElement previously_loaded_datafile =  root.firstChildElement( "previouslyLoadedDatafile" );
@@ -1154,14 +1239,16 @@ void MainWindow::onActionLoadLayoutFromFile(QString filename, bool load_data)
 
             QMessageBox::StandardButton reload_previous;
             reload_previous = QMessageBox::question(0, tr("Wait!"),
-                                                    tr("Do you want to reload the previous datafile and its configuration?\n\n[%1]\n").arg(filename),
-                                                    QMessageBox::Yes | QMessageBox::No,
+                                                    tr("Do you want to reload the previous datafile and its configuration?\n\n %1 \n\n"
+                                                       "Yes:       reload both the file and the previous configuration.\n"
+                                                       "YesToAll:  reload the file but change the previous configuration.\n"
+                                                       "No:        use the already loaded data.\n").arg(filename),
+                                                    QMessageBox::YesToAll | QMessageBox::Yes  | QMessageBox::No,
                                                     QMessageBox::Yes );
 
-            if( reload_previous == QMessageBox::Yes )
+            if( reload_previous != QMessageBox::No )
             {
-                _last_load_configuration = (previously_loaded_datafile.attribute("configuration", QString() ));
-                onActionLoadDataFileImpl( filename, true );
+                onActionLoadDataFileImpl( filename, reload_previous == QMessageBox::YesToAll );
             }
         }
 
@@ -1177,7 +1264,6 @@ void MainWindow::onActionLoadLayoutFromFile(QString filename, bool load_data)
             else{ //old format
                 streamer_name = previously_loaded_streamer.text();
             }
-            _last_stream_configuration = (previously_loaded_streamer.attribute("configuration", QString() ));
 
             bool streamer_loaded = false;
             for(auto& it: _data_streamer) {
@@ -1282,7 +1368,7 @@ void MainWindow::updateTimeSlider()
 
     double min_time =  std::numeric_limits<double>::max();
     double max_time = -std::numeric_limits<double>::max();
-    size_t max_steps = 10;
+    size_t max_steps = 0;
 
     forEachWidget([&](PlotWidget* widget)
     {
@@ -1302,11 +1388,29 @@ void MainWindow::updateTimeSlider()
       }
     });
 
-    if( _mapped_plot_data.numeric.size() == 0)
+    // needed if all the plots are empty
+    if( max_steps == 0 || max_time < min_time)
     {
-        min_time = 0.0;
-        max_time = 0.0;
-        max_steps = 1;
+      for (auto it: _mapped_plot_data.numeric)
+      {
+        const PlotDataPtr data = it.second;
+        if(data->size() >=1)
+        {
+          const double t0 = data->at(0).x;
+          const double t1 = data->at( data->size() -1).x;
+          min_time  = std::min( min_time, t0);
+          max_time  = std::max( max_time, t1);
+          max_steps = std::max( max_steps, data->size());
+        }
+      }
+    }
+
+    // last opportunity. Everuthing else failed
+    if( max_steps == 0 || max_time < min_time)
+    {
+      min_time = 0.0;
+      max_time = 1.0;
+      max_steps = 1;
     }
     //----------------------------------
     // Update Time offset
