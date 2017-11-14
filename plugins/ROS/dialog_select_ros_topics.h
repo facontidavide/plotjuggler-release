@@ -27,6 +27,8 @@ public:
 
     QStringList getSelectedItems();
 
+    int maxArraySize() const;
+
     const QCheckBox* checkBoxUseHeaderStamp();
 
     const QCheckBox *checkBoxUseRenamingRules();
