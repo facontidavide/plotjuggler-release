@@ -105,8 +105,13 @@ PlotDataMap DataLoadROS::readDataFromFile(const QString &file_name, bool use_pre
                 RosIntrospectionFactory::parser().registerRenamingRules( ROSType(it.first) , it.second );
             }
         }
+        else{
+          return plot_map;
+        }
         settings.setValue("DataLoadROS/default_topics", _default_topic_names);
     }
+    int max_array_size = dialog->maxArraySize();
+
     //-----------------------------------
     std::set<std::string> topic_selected;
     for(const auto& topic: _default_topic_names)
@@ -133,6 +138,8 @@ PlotDataMap DataLoadROS::readDataFromFile(const QString &file_name, bool use_pre
     static std::vector<uint8_t> buffer;
     static RenamedValues renamed_value;
 
+    bool parsed = true;
+
     for(rosbag::MessageInstance msg_instance: bag_view_selected )
     {
         const std::string& topic_name  = msg_instance.getTopic();
@@ -154,7 +161,9 @@ PlotDataMap DataLoadROS::readDataFromFile(const QString &file_name, bool use_pre
         ros::serialization::OStream stream(buffer.data(), buffer.size());
         msg_instance.write(stream);
 
-        RosIntrospectionFactory::parser().deserializeIntoFlatContainer( topic_name, absl::Span<uint8_t>(buffer), &flat_container, 250 );
+        parsed &= RosIntrospectionFactory::parser().deserializeIntoFlatContainer( topic_name,
+                                                                                  absl::Span<uint8_t>(buffer),
+                                                                                  &flat_container, max_array_size );
         RosIntrospectionFactory::parser().applyNameTransform( topic_name, flat_container, &renamed_value );
 
         // apply time offsets
@@ -204,6 +213,12 @@ PlotDataMap DataLoadROS::readDataFromFile(const QString &file_name, bool use_pre
             PlotDataAnyPtr& plot_raw = plot_pair->second;
             plot_raw->pushBack( PlotDataAny::Point(msg_time, nonstd::any(std::move(msg_instance)) ));
         }
+    }
+    if( !parsed )
+    {
+      QMessageBox::warning(0, tr("Warning"),
+                           tr("Some fields were not parsed, because they contain\n"
+                              "one or more vectors having more than %1 elements.").arg(max_array_size) );
     }
 
     qDebug() << "The loading operation took" << timer.elapsed() << "milliseconds";
