@@ -2,6 +2,19 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.4.0 (2017-11-14)
+------------------
+* added the ability to set max_array_size in the GUI
+* Contributors: Davide Faconti
+
+1.3.1 (2017-11-14)
+------------------
+* warnings added
+* License updated
+* Fix build failures on Archlinux (#57)
+* Update README.md
+* Contributors: Davide Faconti, Kartik Mohta
+
 1.3.0 (2017-10-12)
 ------------------
 * added xmlLoadState and xmlSaveState to ALL plugins
