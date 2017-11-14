@@ -105,7 +105,12 @@ DialogSelectRosTopics::~DialogSelectRosTopics()
 
 QStringList DialogSelectRosTopics::getSelectedItems()
 {
-    return _topic_list;
+  return _topic_list;
+}
+
+int DialogSelectRosTopics::maxArraySize() const
+{
+  return ui->spinBoxArraySize->value();
 }
 
 
