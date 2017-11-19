@@ -56,7 +56,7 @@ private slots:
 
     void onActionLoadLayoutFromFile(QString filename, bool load_data);
 
-    void onActionLoadDataFile(bool reload_from_settings = false);
+    void onActionLoadDataFile();
 
     void onReloadDatafile();
 
@@ -81,6 +81,8 @@ private slots:
     void onSwapPlots(PlotWidget* source, PlotWidget* destination);
 
     void on_pushButtonStreaming_toggled(bool streaming);
+
+    void on_ToggleStreaming();
 
     void updateDataAndReplot();
 
@@ -125,6 +127,7 @@ private:
     QShortcut _undo_shortcut;
     QShortcut _redo_shortcut;
     QShortcut _minimize_view;
+    QShortcut _toggle_streaming;
 
     bool _minimized;
 
