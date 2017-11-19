@@ -5,6 +5,7 @@
 #include <QtPlugin>
 #include <map>
 #include <ros/ros.h>
+#include <ros_type_introspection/ros_introspection.hpp>
 #include "PlotJuggler/statepublisher_base.h"
 
 

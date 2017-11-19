@@ -44,22 +44,21 @@ void DataStreamROS::topicCallback(const topic_tools::ShapeShifter::ConstPtr& msg
     }
 
     using namespace RosIntrospection;
-    auto& parser = RosIntrospectionFactory::parser();
-
     const auto&  md5sum     =  msg->getMD5Sum();
     const auto&  datatype   =  msg->getDataType();
     const auto&  definition =  msg->getMessageDefinition() ;
 
-    if( RosIntrospectionFactory::isRegistered(topic_name ) == false)
-    {
       // register the message type
-      RosIntrospectionFactory::registerMessage(topic_name, md5sum, datatype, definition);
+    _parser->registerMessageDefinition(topic_name, ROSType(datatype), definition);
+    RosIntrospectionFactory::registerMessage(topic_name, md5sum, datatype, definition );
 
+    if( _using_renaming_rules ){
       for (auto it: _rules)
       {
-        RosIntrospectionFactory::parser().registerRenamingRules( it.first, it.second );
+        _parser->registerRenamingRules( it.first, it.second );
       }
     }
+
 
     //------------------------------------
 
@@ -77,8 +76,8 @@ void DataStreamROS::topicCallback(const topic_tools::ShapeShifter::ConstPtr& msg
     // used as prefix. We will remove that here.
     //if( topicname_SS.at(0) == '/' ) topicname_SS = SString( topic_name.data() +1,  topic_name.size()-1 );
 
-    parser.deserializeIntoFlatContainer( topic_name, absl::Span<uint8_t>(buffer), &flat_container, _max_array_size);
-    parser.applyNameTransform( topic_name, flat_container, &renamed_value );
+    _parser->deserializeIntoFlatContainer( topic_name, absl::Span<uint8_t>(buffer), &flat_container, _max_array_size);
+    _parser->applyNameTransform( topic_name, flat_container, &renamed_value );
 
     double msg_time = 0;
 
@@ -245,6 +244,7 @@ void DataStreamROS::saveIntoRosbag()
 
 bool DataStreamROS::start()
 {
+    _parser.reset( new RosIntrospection::Parser );
     if( !_node )
     {
         _node =  RosManager::getNode();
@@ -308,6 +308,8 @@ bool DataStreamROS::start()
     timer.stop();
 
     QStringList topic_selected = dialog.getSelectedItems();
+    _using_renaming_rules = dialog.checkBoxUseRenamingRules()->isChecked();
+
     std::vector<std::string> std_topic_selected;
 
     if( res != QDialog::Accepted || topic_selected.empty() )
