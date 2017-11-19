@@ -40,6 +40,10 @@ private:
 
     QStringList _default_topic_names;
 
+    std::unique_ptr<RosIntrospection::Parser> _parser;
+
+    bool _use_renaming_rules;
+
 };
 
 #endif // DATALOAD_CSV_H
