@@ -39,6 +39,7 @@ PlotDataMap DataLoadROS::readDataFromFile(const QString &file_name, bool use_pre
     if( _bag ) _bag->close();
 
     _bag = std::make_shared<rosbag::Bag>();
+    _parser.reset( new RosIntrospection::Parser );
 
     using namespace RosIntrospection;
 
@@ -67,6 +68,7 @@ PlotDataMap DataLoadROS::readDataFromFile(const QString &file_name, bool use_pre
         const auto&  definition =  connections[i]->msg_def;
 
         all_topics.push_back( std::make_pair(QString( topic.c_str()), QString( datatype.c_str()) ) );
+        _parser->registerMessageDefinition(topic, ROSType(datatype), definition);
         RosIntrospectionFactory::registerMessage(topic, md5sum, datatype, definition);
     }
 
@@ -75,7 +77,9 @@ PlotDataMap DataLoadROS::readDataFromFile(const QString &file_name, bool use_pre
     //----------------------------------
     QSettings settings( "IcarusTechnology", "PlotJuggler");
 
-    if( _default_topic_names.empty())
+    _use_renaming_rules = settings.value("DataLoadROS/use_renaming").toBool();
+
+    if( _default_topic_names.empty() )
     {
         // if _default_topic_names is empty (xmlLoad didn't work) use QSettings.
         QVariant def = settings.value("DataLoadROS/default_topics");
@@ -97,18 +101,22 @@ PlotDataMap DataLoadROS::readDataFromFile(const QString &file_name, bool use_pre
             if( dialog->checkBoxUseRenamingRules()->isChecked())
             {
                 _rules = RuleEditing::getRenamingRules();
+                _use_renaming_rules = true;
             }
             else{
                 _rules.clear();
+                _use_renaming_rules = false;
             }
-            for(const auto& it: _rules) {
-                RosIntrospectionFactory::parser().registerRenamingRules( ROSType(it.first) , it.second );
-            }
-        }
-        else{
-          return plot_map;
         }
         settings.setValue("DataLoadROS/default_topics", _default_topic_names);
+        settings.setValue("DataLoadROS/use_renaming", _use_renaming_rules);
+    }
+
+    if( _use_renaming_rules )
+    {
+      for(const auto& it: _rules) {
+        _parser->registerRenamingRules( ROSType(it.first) , it.second );
+      }
     }
     int max_array_size = dialog->maxArraySize();
 
@@ -134,16 +142,15 @@ PlotDataMap DataLoadROS::readDataFromFile(const QString &file_name, bool use_pre
     QElapsedTimer timer;
     timer.start();
 
-    static FlatMessage flat_container;
-    static std::vector<uint8_t> buffer;
-    static RenamedValues renamed_value;
-
+    FlatMessage flat_container;
+    std::vector<uint8_t> buffer;
+    RenamedValues renamed_value;
+    
     bool parsed = true;
 
     for(rosbag::MessageInstance msg_instance: bag_view_selected )
     {
         const std::string& topic_name  = msg_instance.getTopic();
-        const std::string& datatype = msg_instance.getDataType();
         const size_t msg_size  = msg_instance.size();
 
         buffer.resize(msg_size);
@@ -161,10 +168,8 @@ PlotDataMap DataLoadROS::readDataFromFile(const QString &file_name, bool use_pre
         ros::serialization::OStream stream(buffer.data(), buffer.size());
         msg_instance.write(stream);
 
-        parsed &= RosIntrospectionFactory::parser().deserializeIntoFlatContainer( topic_name,
-                                                                                  absl::Span<uint8_t>(buffer),
-                                                                                  &flat_container, max_array_size );
-        RosIntrospectionFactory::parser().applyNameTransform( topic_name, flat_container, &renamed_value );
+        parsed &= _parser->deserializeIntoFlatContainer( topic_name, absl::Span<uint8_t>(buffer), &flat_container, max_array_size );
+        _parser->applyNameTransform( topic_name, flat_container, &renamed_value );
 
         // apply time offsets
         double msg_time = 0;
