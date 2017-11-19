@@ -70,6 +70,9 @@ private:
 
     QStringList _default_topic_names;
 
+    std::unique_ptr<RosIntrospection::Parser> _parser;
+    bool _using_renaming_rules;
+
 private slots:
 
     void saveIntoRosbag();
