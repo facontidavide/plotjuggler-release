@@ -2,6 +2,18 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.4.2 (2017-11-20)
+------------------
+* bug fix in getIndexFromX that affected the vertical axis range calculation
+* fix issue #61
+* Contributors: Davide Faconti
+
+1.4.1 (2017-11-19)
+------------------
+* fixed some issue with reloading rosbags and addressing issue #54
+* adding improvement #55
+* Contributors: Davide Faconti
+
 1.4.0 (2017-11-14)
 ------------------
 * added the ability to set max_array_size in the GUI
@@ -120,7 +132,7 @@ Changelog for package plotjuggler
 * color widget simplified
 * Update README.md
 * default extension fixed in layout.xml
-* Contributors: Davide Faconti, Eduardo Cáceres
+* Contributors: Davide Faconti, Eduardo Caceres
 
 1.0.0 (2017-4-22)
 -----------------
@@ -312,4 +324,4 @@ Changelog for package plotjuggler
 0.8.0 (2017-01-23)
 ------------------
 * First official beta of PJ
-* Contributors: Arturo Martín-de-Nicolás, Davide Faconti, Kartik Mohta, Mikael Arguedas
+* Contributors: Arturo Martin-de-Nicolas, Davide Faconti, Kartik Mohta, Mikael Arguedas
