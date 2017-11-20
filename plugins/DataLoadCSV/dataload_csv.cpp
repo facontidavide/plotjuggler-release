@@ -76,9 +76,9 @@ PlotDataMap DataLoadCSV::readDataFromFile(const QString &file_name, bool use_pre
     QFile file( file_name );
     file.open(QFile::ReadOnly);
 
-    std::vector<std::pair<bool, QString> > ordered_names;
+    std::vector<std::pair<bool, QString> > column_names;
 
-    int linecount = parseHeader( &file, ordered_names);
+    int linecount = parseHeader( &file, column_names);
 
     file.close();
     file.open(QFile::ReadOnly);
@@ -107,11 +107,11 @@ PlotDataMap DataLoadCSV::readDataFromFile(const QString &file_name, bool use_pre
     //---- build plots_vector from header  ------
     QStringList valid_field_names;
 
-    for (unsigned i=0; i < ordered_names.size(); i++ )
+    for (unsigned i=0; i < column_names.size(); i++ )
     {
-        if( ordered_names[i].first )
+        if( column_names[i].first )
         {
-            const QString& field_name = ( ordered_names[i].second );
+            const QString& field_name = ( column_names[i].second );
             std::string name = field_name.toStdString();
 
             PlotDataPtr plot( new PlotData(name.c_str()) );
@@ -124,7 +124,7 @@ PlotDataMap DataLoadCSV::readDataFromFile(const QString &file_name, bool use_pre
             {
                 if( _default_time_axis == field_name )
                 {
-                    time_index = valid_field_names.size() ;
+                    time_index = i ;
                 }
             }
         }
@@ -132,11 +132,9 @@ PlotDataMap DataLoadCSV::readDataFromFile(const QString &file_name, bool use_pre
 
     if( time_index == TIME_INDEX_NOT_DEFINED && !use_previous_configuration)
     {
-        QStringList field_names;
-        field_names.push_back( "INDEX (auto-generated)" );
-        field_names.append( valid_field_names );
+        valid_field_names.push_front( "INDEX (auto-generated)" );
 
-        SelectFromListDialog* dialog = new SelectFromListDialog( &field_names );
+        SelectFromListDialog* dialog = new SelectFromListDialog( &valid_field_names );
         dialog->setWindowTitle("Select the time axis");
         int res = dialog->exec();
 
@@ -145,9 +143,19 @@ PlotDataMap DataLoadCSV::readDataFromFile(const QString &file_name, bool use_pre
             return PlotDataMap();
         }
 
-        // vector is supposed to have only one element
-        time_index = dialog->getSelectedRowNumber().at(0) -1;
-        _default_time_axis = field_names.at( time_index + 1 ) ;
+        const int selected_item = dialog->getSelectedRowNumber().at(0);
+        if( selected_item > 0)
+        {
+          for (int i=0; i< column_names.size(); i++)
+          {
+            if( column_names[i].first && column_names[i].second == valid_field_names[ selected_item ] )
+            {
+              _default_time_axis = column_names[i].second;
+              time_index = selected_item -1;
+              break;
+            }
+          }
+        }
     }
 
     //-----------------
@@ -165,12 +173,10 @@ PlotDataMap DataLoadCSV::readDataFromFile(const QString &file_name, bool use_pre
             if( t <= prev_time)
             {
                 QMessageBox::StandardButton reply;
-                reply = QMessageBox::question(0, tr("Error reading file"),
-                                              tr("Selected time in not strictly  monotonic. Do you want to abort?\n"
-                                                 "(Clicking \"NO\" you continue loading)") );
+                reply = QMessageBox::warning(0, tr("Error reading file"),
+                                              tr("Selected time in not strictly  monotonic. Loading will be aborted\n") );
 
-                interrupted = (reply == QMessageBox::Yes);
-                break;
+                return PlotDataMap();
             }
             prev_time = t;
         }
@@ -178,7 +184,7 @@ PlotDataMap DataLoadCSV::readDataFromFile(const QString &file_name, bool use_pre
         int index = 0;
         for (int i=0; i < string_items.size(); i++ )
         {
-            if( ordered_names[i].first )
+            if( column_names[i].first )
             {
                 double y = string_items[i].toDouble();
                 PlotData::Point point( t,y );
