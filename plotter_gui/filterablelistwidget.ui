@@ -305,6 +305,11 @@ border: 0.5px solid rgb(150, 150, 150);</string>
          <verstretch>1</verstretch>
         </sizepolicy>
        </property>
+       <property name="font">
+        <font>
+         <pointsize>9</pointsize>
+        </font>
+       </property>
        <property name="toolTip">
         <string/>
        </property>
@@ -313,7 +318,7 @@ border: 0.5px solid rgb(150, 150, 150);</string>
        </property>
        <property name="styleSheet">
         <string notr="true">border-radius: 4px;
-border: 0.5px solid rgb(150, 150, 150);</string>
+border: 1px solid rgb(150, 150, 150);</string>
        </property>
        <property name="horizontalScrollBarPolicy">
         <enum>Qt::ScrollBarAsNeeded</enum>
