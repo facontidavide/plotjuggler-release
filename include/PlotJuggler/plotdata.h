@@ -174,7 +174,6 @@ inline int PlotDataGeneric<Time, Value>::getIndexFromX(Time x ) const
   auto lower = std::lower_bound(_points.begin(), _points.end(), Point(x,0),
                                 [](const Point &a, const Point &b)
                                 { return a.x < b.x; } );
-
   auto index = std::distance( _points.begin(), lower);
 
   if( index >= _points.size() )
@@ -184,6 +183,17 @@ inline int PlotDataGeneric<Time, Value>::getIndexFromX(Time x ) const
   if( index < 0)
   {
     return 0;
+  }
+
+  if( index > 0)
+  {
+    if( std::abs( _points[index-1].x - x) < std::abs( _points[index].x - x) )
+    {
+      return index-1;
+    }
+    else{
+      return index;
+    }
   }
   return index;
 }
