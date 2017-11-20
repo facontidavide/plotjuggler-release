@@ -32,62 +32,28 @@ int DataLoadCSV::parseHeader(QFile *file,
     QStringList string_items = first_line.split(csv_separator);
     QStringList secondline_items = second_line.split(csv_separator);
 
+    if( string_items.count() != secondline_items.count() )
+    {
+      throw std::runtime_error("DataLoadCSV: problem parsing the first two lines");
+    }
+
     for (int i=0; i < string_items.size(); i++ )
     {
         // remove annoying prefix
-        QStringRef field_name ( &string_items[i] );
+        QString field_name ( string_items[i] );
         if( field_name.startsWith( "field." ) )
         {
             field_name = field_name.mid(6);
         }
 
-        QString qname = field_name.toString();
-        if( qname.isEmpty())
+        if( field_name.isEmpty())
         {
-            qname = QString("_Column_%1").arg(i);
+            field_name = QString("_Column_%1").arg(i);
         }
-        ordered_names.push_back( std::make_pair(true,qname) );
-    }
 
-    for (unsigned i=0; i < ordered_names.size(); i++ )
-    {
-        QString field_name ( ordered_names[i].second );
-        if( field_name.endsWith( ".name" ) && i < ordered_names.size()-1)
-        {
-            QString prefix =  field_name.left(field_name.size() - 5 );
-            QString replace_name = secondline_items[i];
-
-            ordered_names[i].first = false;
-            i++;
-            //----------------------------------------
-
-            QString value_prefix =  prefix + ".value";
-
-            if( value_prefix.contains("vectors3d") )
-            {
-                ordered_names[i].second =  prefix + "/" + replace_name + "/x";
-                i++;
-                ordered_names[i].second =  prefix + "/" + replace_name + "/y";
-                i++;
-                ordered_names[i].second =  prefix + "/" + replace_name + "/z";
-            }
-            else
-            {
-                while( i < ordered_names.size() &&
-                       ordered_names[i].second.startsWith( value_prefix ) )
-                {
-                    QString name = ordered_names[i].second;
-                    QString suffix = name.right( name.size() - value_prefix.size());
-                    ordered_names[i].second = prefix + "/" + replace_name;
-                    if( suffix.size() > 0)
-                    {
-                        ordered_names[i].second.append( "/" + suffix );
-                    }
-                    i++;
-                }
-                i--;
-            }
-        }
+        bool is_number;
+        secondline_items[i].toDouble(&is_number);
+        ordered_names.push_back( std::make_pair(is_number,field_name) );
     }
 
     while (!inA.atEnd())
@@ -110,9 +76,9 @@ PlotDataMap DataLoadCSV::readDataFromFile(const QString &file_name, bool use_pre
     QFile file( file_name );
     file.open(QFile::ReadOnly);
 
-    std::vector<std::pair<bool, QString> > ordered_names;
+    std::vector<std::pair<bool, QString> > column_names;
 
-    int linecount = parseHeader( &file, ordered_names);
+    int linecount = parseHeader( &file, column_names);
 
     file.close();
     file.open(QFile::ReadOnly);
@@ -135,41 +101,30 @@ PlotDataMap DataLoadCSV::readDataFromFile(const QString &file_name, bool use_pre
 
     double prev_time = -1;
 
-    // remove first line (header
+    // remove first line (header)
     inB.readLine();
 
     //---- build plots_vector from header  ------
     QStringList valid_field_names;
 
-    QSettings settings( "IcarusTechnology", "PlotJuggler");
-    if( _default_time_axis.isEmpty() )
+    for (unsigned i=0; i < column_names.size(); i++ )
     {
-        QVariant def = settings.value("DataLoadCSV/default_time_axis");
-        if( !def.isNull() && def.isValid())
+        if( column_names[i].first )
         {
-            _default_time_axis = def.toString();
-        }
-    }
-
-    for (unsigned i=0; i < ordered_names.size(); i++ )
-    {
-        bool valid = ordered_names[i].first;
-        if( valid )
-        {
-            QString&   qname = ( ordered_names[i].second );
-            std::string name = qname.toStdString();
+            const QString& field_name = ( column_names[i].second );
+            std::string name = field_name.toStdString();
 
             PlotDataPtr plot( new PlotData(name.c_str()) );
             plot_data.numeric.insert( std::make_pair( name, plot ) );
 
-            valid_field_names.push_back( qname );
+            valid_field_names.push_back( field_name );
             plots_vector.push_back( plot );
 
-            if (time_index == TIME_INDEX_NOT_DEFINED)
+            if (time_index == TIME_INDEX_NOT_DEFINED && use_previous_configuration)
             {
-                if( _default_time_axis == qname )
+                if( _default_time_axis == field_name )
                 {
-                    time_index = valid_field_names.size() ;
+                    time_index = i ;
                 }
             }
         }
@@ -177,11 +132,9 @@ PlotDataMap DataLoadCSV::readDataFromFile(const QString &file_name, bool use_pre
 
     if( time_index == TIME_INDEX_NOT_DEFINED && !use_previous_configuration)
     {
-        QStringList field_names;
-        field_names.push_back( "INDEX (auto-generated)" );
-        field_names.append( valid_field_names );
+        valid_field_names.push_front( "INDEX (auto-generated)" );
 
-        SelectFromListDialog* dialog = new SelectFromListDialog( &field_names );
+        SelectFromListDialog* dialog = new SelectFromListDialog( &valid_field_names );
         dialog->setWindowTitle("Select the time axis");
         int res = dialog->exec();
 
@@ -190,10 +143,19 @@ PlotDataMap DataLoadCSV::readDataFromFile(const QString &file_name, bool use_pre
             return PlotDataMap();
         }
 
-        // vector is supposed to have only one element
-        time_index = dialog->getSelectedRowNumber().at(0) -1;
-        _default_time_axis = field_names.at( time_index + 1 ) ;
-        settings.setValue("DataLoadCSV/default_time_axis", _default_time_axis);
+        const int selected_item = dialog->getSelectedRowNumber().at(0);
+        if( selected_item > 0)
+        {
+          for (int i=0; i< column_names.size(); i++)
+          {
+            if( column_names[i].first && column_names[i].second == valid_field_names[ selected_item ] )
+            {
+              _default_time_axis = column_names[i].second;
+              time_index = selected_item -1;
+              break;
+            }
+          }
+        }
     }
 
     //-----------------
@@ -211,12 +173,10 @@ PlotDataMap DataLoadCSV::readDataFromFile(const QString &file_name, bool use_pre
             if( t <= prev_time)
             {
                 QMessageBox::StandardButton reply;
-                reply = QMessageBox::question(0, tr("Error reading file"),
-                                              tr("Selected time in notstrictly  monotonic. Do you want to abort?\n"
-                                                 "(Clicking \"NO\" you continue loading)") );
+                reply = QMessageBox::warning(0, tr("Error reading file"),
+                                              tr("Selected time in not strictly  monotonic. Loading will be aborted\n") );
 
-                interrupted = (reply == QMessageBox::Yes);
-                break;
+                return PlotDataMap();
             }
             prev_time = t;
         }
@@ -224,7 +184,7 @@ PlotDataMap DataLoadCSV::readDataFromFile(const QString &file_name, bool use_pre
         int index = 0;
         for (int i=0; i < string_items.size(); i++ )
         {
-            if( ordered_names[i].first )
+            if( column_names[i].first )
             {
                 double y = string_items[i].toDouble();
                 PlotData::Point point( t,y );
