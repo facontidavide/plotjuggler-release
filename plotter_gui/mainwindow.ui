@@ -236,7 +236,7 @@ border-radius: 4px;
               <enum>Qt::NoFocus</enum>
              </property>
              <property name="toolTip">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Start/Stop streaming&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Start/Stop streaming&lt;/p&gt;&lt;p&gt;( &lt;span style=&quot; font-weight:600;&quot;&gt;CTRL+Space &lt;/span&gt;)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
              <property name="styleSheet">
               <string notr="true">QToolTip {
@@ -435,7 +435,7 @@ background: white;
      <x>0</x>
      <y>0</y>
      <width>1000</width>
-     <height>20</height>
+     <height>19</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -550,7 +550,7 @@ background: white;
   </action>
   <action name="actionReloadPrevious">
    <property name="text">
-    <string>Reload previous</string>
+    <string>Quick Data Reload</string>
    </property>
   </action>
  </widget>
