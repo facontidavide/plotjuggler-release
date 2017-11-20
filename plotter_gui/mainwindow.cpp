@@ -38,6 +38,7 @@ MainWindow::MainWindow(const QCommandLineParser &commandline_parser, QWidget *pa
     ui(new Ui::MainWindow),
     _undo_shortcut(QKeySequence(Qt::CTRL + Qt::Key_Z), this),
     _redo_shortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Z), this),
+    _toggle_streaming(QKeySequence(Qt::CTRL + Qt::Key_Space), this),
     _minimize_view(Qt::Key_F10, this),
     _minimized(false),
     _current_streamer(nullptr),
@@ -347,6 +348,7 @@ void MainWindow::createActions()
     connect( &_undo_shortcut, &QShortcut::activated, this, &MainWindow::onUndoInvoked );
     connect( &_redo_shortcut, &QShortcut::activated, this, &MainWindow::onRedoInvoked );
     connect( &_minimize_view, &QShortcut::activated, this, &MainWindow::on_minimizeView);
+    connect( &_toggle_streaming, &QShortcut::activated, this, &MainWindow::on_ToggleStreaming );
     //---------------------------------------------
 
     connect(ui->actionSaveLayout, &QAction::triggered,         this, &MainWindow::onActionSaveLayout );
@@ -806,7 +808,7 @@ void MainWindow::onDeleteLoadedData()
 
 }
 
-void MainWindow::onActionLoadDataFile(bool reload_from_settings)
+void MainWindow::onActionLoadDataFile()
 {
     if( _data_loader.empty())
     {
@@ -837,18 +839,10 @@ void MainWindow::onActionLoadDataFile(bool reload_from_settings)
 
     QString directory_path = settings.value("MainWindow.lastDatafileDirectory", QDir::currentPath() ).toString();
 
-    QString filename;
-    if( reload_from_settings && settings.contains("MainWindow.recentlyLoadedDatafile") )
-    {
-        filename = settings.value("MainWindow.recentlyLoadedDatafile").toString();
-    }
-    else{
-        filename = QFileDialog::getOpenFileName(this, "Open Datafile",
+    QString filename = QFileDialog::getOpenFileName(this, "Open Datafile",
                                                 directory_path,
                                                 file_extension_filter);
-    }
-
-    if (filename.isEmpty()) {
+     if (filename.isEmpty()) {
         return;
     }
 
@@ -864,8 +858,24 @@ void MainWindow::onActionLoadDataFile(bool reload_from_settings)
 
 void MainWindow::onReloadDatafile()
 {
-
+  QSettings settings( "IcarusTechnology", "PlotJuggler");
+  if( settings.contains("MainWindow.recentlyLoadedDatafile") )
+  {
+      QString filename = settings.value("MainWindow.recentlyLoadedDatafile").toString();
+      onActionLoadDataFileImpl(filename, true);
+  }
 }
+
+void MainWindow::onActionReloadRecentDataFile()
+{
+  QSettings settings( "IcarusTechnology", "PlotJuggler");
+  if( settings.contains("MainWindow.recentlyLoadedDatafile") )
+  {
+      QString filename = settings.value("MainWindow.recentlyLoadedDatafile").toString();
+      onActionLoadDataFileImpl(filename, false);
+  }
+}
+
 
 void MainWindow::importPlotDataMap(const PlotDataMap& new_data, bool delete_older)
 {
@@ -1018,12 +1028,6 @@ void MainWindow::onActionLoadDataFileImpl(QString filename, bool reuse_last_conf
                              .arg(filename) );
     }
     _curvelist_widget->updateFilter();
-}
-
-
-void MainWindow::onActionReloadRecentDataFile()
-{
-    onActionLoadDataFile( true );
 }
 
 void MainWindow::onActionReloadRecentLayout()
@@ -1535,6 +1539,11 @@ void MainWindow::on_pushButtonStreaming_toggled(bool streaming)
     else{
         onUndoableChange();
     }
+}
+
+void MainWindow::on_ToggleStreaming()
+{
+  ui->pushButtonStreaming->setChecked( !ui->pushButtonStreaming->isChecked() );
 }
 
 void MainWindow::updateDataAndReplot()
