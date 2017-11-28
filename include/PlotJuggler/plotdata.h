@@ -77,8 +77,6 @@ public:
 
   void setMaximumRangeX(Time max_range);
 
-  static std::mutex& asyncPushMutex() { return _mutex; }
-
 protected:
 
   std::string _name;
@@ -90,7 +88,7 @@ protected:
 private:
 
   Time _max_range_X;
-  static std::mutex _mutex;
+  std::mutex _mutex;
 };
 
 
@@ -108,9 +106,6 @@ typedef struct{
 
 
 //-----------------------------------
-
-template < typename Time, typename Value>
-std::mutex PlotDataGeneric<Time, Value>::_mutex;
 
 
 //template < typename Time, typename Value>
@@ -139,6 +134,7 @@ inline void PlotDataGeneric<Time, Value>::pushBack(Point point)
 template < typename Time, typename Value>
 inline void PlotDataGeneric<Time, Value>::pushBackAsynchronously(Point point)
 {
+  std::lock_guard<std::mutex> lock(_mutex);
   _pushed_points.push_back( point );
   while(_pushed_points.size() > ASYNC_BUFFER_CAPACITY) _pushed_points.pop_front();
 }
@@ -146,7 +142,7 @@ inline void PlotDataGeneric<Time, Value>::pushBackAsynchronously(Point point)
 template < typename Time, typename Value>
 inline bool PlotDataGeneric<Time, Value>::flushAsyncBuffer()
 {
- // std::lock_guard<std::mutex> lock(_mutex);
+  std::lock_guard<std::mutex> lock(_mutex);
   if( _pushed_points.empty() ) return false;
 
   while( !_pushed_points.empty() )
