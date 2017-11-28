@@ -43,14 +43,12 @@ private:
 
     void topicCallback(const topic_tools::ShapeShifter::ConstPtr& msg, const std::string &topic_name);
 
-    void updateLoop();
-
     PlotDataMap _plot_data;
 
     bool _enabled;
     bool _running;
 
-    std::thread _thread;
+    std::shared_ptr<ros::AsyncSpinner> _spinner;
 
     void extractInitialSamples();
 

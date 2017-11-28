@@ -5,7 +5,7 @@ ROS Indigo build (Travis): [![Build Status](https://travis-ci.org/facontidavide/
 
 [![Join the chat at https://gitter.im/PlotJuggler/Lobby](https://badges.gitter.im/PlotJuggler/Lobby.svg)](https://gitter.im/PlotJuggler/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-# PlotJuggler 1.4.2
+# PlotJuggler 1.5.0
 
 [![Faircode](https://faircode.io/product/PlotJuggler/badge)](https://faircode.io/product/PlotJuggler?utm_source=badge&utm_medium=badgelarge&utm_campaign=PlotJuggler)
 
