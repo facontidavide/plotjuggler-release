@@ -1552,13 +1552,13 @@ void MainWindow::updateDataAndReplot()
     // STEP 1: sync the data (usefull for streaming
     bool data_updated = false;
     {
-        PlotData::asyncPushMutex().lock();
+      //  PlotData::asyncPushMutex().lock();
         for(auto it : _mapped_plot_data.numeric)
         {
             PlotDataPtr data = ( it.second );
             data_updated |=  data->flushAsyncBuffer();
         }
-        PlotData::asyncPushMutex().unlock();
+      //  PlotData::asyncPushMutex().unlock();
     }
 
     if( data_updated )
@@ -1719,21 +1719,16 @@ void MainWindow::on_pushButtonActivateGrid_toggled(bool checked)
 
 void MainWindow::on_actionClearBuffer_triggered()
 {
-    {
-        std::unique_lock<std::mutex> locker( PlotData::asyncPushMutex() );
-        for (auto it: _mapped_plot_data.numeric )
-        {
-            it.second->clear();
-        }
-    }
+  for (auto it: _mapped_plot_data.numeric )
+  {
+    it.second->clear();
+  }
 
-    {
-        std::unique_lock<std::mutex> locker( PlotDataAny::asyncPushMutex() );
-        for (auto it: _mapped_plot_data.user_defined )
-        {
-            it.second->clear();
-        }
-    }
+  for (auto it: _mapped_plot_data.user_defined )
+  {
+    it.second->clear();
+  }
+
     forEachWidget( [](PlotWidget* plot) {
         plot->reloadPlotData();
         plot->replot();
