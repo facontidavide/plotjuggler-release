@@ -2,6 +2,12 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.5.0 (2017-11-28)
+------------------
+* using AsyncSpinner as it ought to be
+* fixing the mutex problem in streaming
+* Contributors: Davide Faconti
+
 1.4.2 (2017-11-20)
 ------------------
 * bug fix in getIndexFromX that affected the vertical axis range calculation
