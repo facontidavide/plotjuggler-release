@@ -106,11 +106,9 @@ void DataStreamSample::loop()
     _running = true;
     while( _running )
     {
-        PlotData::asyncPushMutex().lock();
         if( _enabled ){
             pushSingleCycle();
         }
-        PlotData::asyncPushMutex().unlock();
         std::this_thread::sleep_for ( std::chrono::milliseconds(10) );
     }
 }
