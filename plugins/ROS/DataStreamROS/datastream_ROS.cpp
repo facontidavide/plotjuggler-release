@@ -110,7 +110,6 @@ void DataStreamROS::topicCallback(const topic_tools::ShapeShifter::ConstPtr& msg
         user_defined_data->pushBack( PlotDataAny::Point(msg_time, nonstd::any(std::move(buffer)) ));
     }
 
-    PlotData::asyncPushMutex().lock();
     for(auto& it: renamed_value )
     {
         const std::string& field_name ( it.first.data() );
@@ -139,7 +138,6 @@ void DataStreamROS::topicCallback(const topic_tools::ShapeShifter::ConstPtr& msg
         }
         index_it->second->pushBackAsynchronously( PlotData::Point(msg_time, index) );
     }
-    PlotData::asyncPushMutex().unlock();
 }
 
 void DataStreamROS::extractInitialSamples()
@@ -351,7 +349,8 @@ bool DataStreamROS::start()
 
     extractInitialSamples();
 
-    _thread = std::thread([this](){ this->updateLoop();} );
+    _spinner = std::make_shared<ros::AsyncSpinner>(1);
+    _spinner->start();
 
     return true;
 }
@@ -365,7 +364,7 @@ void DataStreamROS::shutdown()
 {
     if( _running ){
         _running = false;
-        _thread.join();
+        _spinner->stop();
     }
 
     for(ros::Subscriber& sub: _subscribers)
@@ -417,11 +416,3 @@ bool DataStreamROS::xmlLoadState(QDomElement &parent_element)
     return false;
 }
 
-
-void DataStreamROS::updateLoop()
-{
-    while (ros::ok() && _running)
-    {
-        ros::spinOnce();
-    }
-}
