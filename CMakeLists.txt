@@ -8,7 +8,7 @@ endif()
 
 SET(PLOTJUGGLER_VERSION_MAJOR 1)
 SET(PLOTJUGGLER_VERSION_MINOR 5)
-SET(PLOTJUGGLER_VERSION_PATCH 0)
+SET(PLOTJUGGLER_VERSION_PATCH 1)
 
 add_definitions(
     -DPJ_MAJOR_VERSION=${PLOTJUGGLER_VERSION_MAJOR}
@@ -21,12 +21,29 @@ SET(CMAKE_AUTOUIC ON)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -g")
 
-find_package(Qt5 REQUIRED COMPONENTS Core Widgets PrintSupport Concurrent Xml )
-#find_package(Qt5Svg )
+find_package(Qt5 REQUIRED COMPONENTS Core Widgets PrintSupport Concurrent Xml)
+find_package(Qt5 QUIET COMPONENTS Svg)
+find_package(Qt5 QUIET COMPONENTS WebSockets)
+
+set( QT_LINK_LIBRARIES
+    Qt5::Core
+    Qt5::Widgets
+    Qt5::PrintSupport
+    Qt5::Xml
+    Qt5::Concurrent)
 
 if( NOT Qt5Svg_FOUND)
     message(STATUS "Can't find Qt5Svg in your system. Have you tried [sudo apt-get install libqt5svg5-dev] ?")
     add_definitions( -DQWT_NO_SVG )
+else()
+    set( QT_LINK_LIBRARIES ${QT_LINK_LIBRARIES} Qt5::Svg)
+endif()
+
+if( NOT Qt5WebSockets_FOUND)
+    message(STATUS "Can't find Qt5WebSockets in your system. Have you tried [sudo apt-get install libqt5websockets5-dev] ?")
+    add_definitions( -DQWT_NO_SVG )
+else()
+    set( QT_LINK_LIBRARIES ${QT_LINK_LIBRARIES} Qt5::WebSockets)
 endif()
 
 if (NOT CMAKE_BUILD_TYPE)
@@ -72,6 +89,7 @@ include_directories(
     ${Qt5PrintSupport_INCLUDE_DIRS}
     ${Qt5Xml_INCLUDE_DIRS}
     ${Qt5Svg_INCLUDE_DIRS}
+    ${Qt5WebSockets_INCLUDE_DIRS}
     )
 
 include_directories( ./qwt/src
@@ -107,6 +125,17 @@ add_subdirectory( plotter_gui )
 
 add_subdirectory( plugins/DataLoadCSV )
 add_subdirectory( plugins/DataStreamSample )
+
+if (Qt5Widgets_VERSION VERSION_LESS 5.3.0)
+    message(STATUS "Minimum Qt5 version for DataStreamWebSocket plugin is 5.3. Skipping plugins/DataStreamWebSocket")
+else()
+    if( NOT Qt5WebSockets_FOUND)
+        message(STATUS "Qt5WebSockets not found. Skipping plugins/DataStreamWebSocket")
+    else()
+        add_subdirectory( plugins/DataStreamWebSocket )
+    endif()
+endif()
+
 
 if(COMPILING_WITH_CATKIN)
     add_subdirectory( plugins/ROS )

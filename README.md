@@ -2,13 +2,11 @@ Ubuntu 14.04 build (Semaphore): [![Build Status](https://semaphoreci.com/api/v1/
 
 ROS Indigo build (Travis): [![Build Status](https://travis-ci.org/facontidavide/PlotJuggler.svg?branch=master)](https://travis-ci.org/facontidavide/PlotJuggler)
 
-
 [![Join the chat at https://gitter.im/PlotJuggler/Lobby](https://badges.gitter.im/PlotJuggler/Lobby.svg)](https://gitter.im/PlotJuggler/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-# PlotJuggler 1.5.0
+[Donate with Paypal](https://www.paypal.me/facontidavide).
 
-[![Faircode](https://faircode.io/product/PlotJuggler/badge)](https://faircode.io/product/PlotJuggler?utm_source=badge&utm_medium=badgelarge&utm_campaign=PlotJuggler)
-
+# PlotJuggler 1.5.1
 
 QT5 based application to display time series in plots. 
 
@@ -41,7 +39,8 @@ Then compile using cmake (qmake is NOT supported):
  
 # Note for ROS users
  
-If you use CATKIN to build this project, the ROS related plugins will be automatically included into the compilation. Both the executable and the plugins will be created in __devel/lib/plotjuggler__ (the address is relative to the catkin workspace).
+If you use CATKIN to build this project, the ROS related plugins will be automatically included into the compilation.
+Both the executable and the plugins will be created in __devel/lib/plotjuggler__ (the address is relative to the catkin workspace).
 
 To run the application, use the command:
 
@@ -51,11 +50,20 @@ Alternatively, just execute the binary __PlotJuggler__.
 
 A mandatory dependency is https://github.com/facontidavide/ros_type_introspection 
 
-__IMPORTANT__: you need version 1.0.1 or later.
+__IMPORTANT__: you need version 1.0.2 or later.
 
 You can easily install it in Indigo, Jade, Kinetic or Lunar using the command:
 
        sudo apt-get install ros-YOUR_ROS_DISTRO-ros-type-introspection
+
+# How you may help
+
+PlotJuggler required many hundreds of man/hours to be developed, with the goal to be the most
+intuitive tool to visualize data and time series.
+
+If you believe that I achieved this goal, consider making a donation here: [Paypal](https://www.paypal.me/facontidavide).
+
+If you have any problem, you found a bug or you need help, feel free to submit an issue.
 
       
 

@@ -28,13 +28,19 @@ public:
 
 public slots:
     virtual void setEnabled(bool enabled) override;
+    void ChangeFilter(bool toggled = true);
 
 private:
-    std::map<std::string, ros::Publisher> publishers_;
+    std::map<std::string, ros::Publisher> _publishers;
     bool enabled_;
     ros::NodeHandlePtr _node;
 
     QAction* _current_time;
+    QAction* _select_topics_to_pulish;
+    bool _filter_topics;
+    std::set<std::string> _topics_to_publish;
+
+
 };
 
 #endif // DATALOAD_CSV_H
