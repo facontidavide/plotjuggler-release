@@ -3,6 +3,7 @@
 #include "../shape_shifter_factory.hpp"
 #include "../qnodedialog.h"
 #include <QSettings>
+#include <rosbag/bag.h>
 
 RosoutPublisher::RosoutPublisher():
     enabled_(false ),
@@ -115,10 +116,25 @@ void RosoutPublisher::syncWithTableModel(const std::vector<const PlotDataAny*>& 
         { 
             for( int i=first_index; i< type_erased_logs->size(); i++)
             {
-                auto        any_msg   = type_erased_logs->at(i);
-                nonstd::any any_value = any_msg.y;
+                const auto&        any_msg   = type_erased_logs->at(i);
+                const nonstd::any& any_value = any_msg.y;
 
-                std::vector<uint8_t> raw_buffer =  nonstd::any_cast<std::vector<uint8_t>>( any_value );
+                const bool isRawBuffer     = any_value.type() == typeid( std::vector<uint8_t>);
+                const bool isRosbagMessage = any_value.type() == typeid( rosbag::MessageInstance );
+                std::vector<uint8_t> raw_buffer;
+
+                if( isRawBuffer){
+                  raw_buffer = nonstd::any_cast<std::vector<uint8_t>>( any_value );
+                }
+                else if( isRosbagMessage ){
+                  const rosbag::MessageInstance& msg_instance = nonstd::any_cast<rosbag::MessageInstance>( any_value );
+                  raw_buffer.resize( msg_instance.size() );
+                  ros::serialization::OStream stream(raw_buffer.data(), raw_buffer.size());
+                  msg_instance.write(stream);
+                }
+                else{
+                  continue;
+                }
 
                 rosgraph_msgs::LogPtr p(boost::make_shared<rosgraph_msgs::Log>());
                 ros::serialization::IStream stream(raw_buffer.data(), raw_buffer.size() );
