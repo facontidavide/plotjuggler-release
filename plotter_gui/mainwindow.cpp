@@ -127,15 +127,12 @@ MainWindow::MainWindow(const QCommandLineParser &commandline_parser, QWidget *pa
     bool file_loaded = false;
     if( commandline_parser.isSet("datafile"))
     {
-        QMetaObject::invokeMethod(this, "onActionLoadDataFileImpl",
-                                  Q_ARG(QString, commandline_parser.value("datafile")) );
+        onActionLoadDataFileImpl( commandline_parser.value("datafile"), true);
         file_loaded = true;
     }
     if( commandline_parser.isSet("layout"))
     {
-        QMetaObject::invokeMethod(this, "onActionLoadLayoutFromFile",
-                                  Q_ARG(QString, commandline_parser.value("layout")),
-                                  Q_ARG(bool, file_loaded ) );
+        onActionLoadLayoutFromFile( commandline_parser.value("layout"), file_loaded);
     }
 
     QSettings settings( "IcarusTechnology", "PlotJuggler");
@@ -461,7 +458,7 @@ void MainWindow::loadPlugins(QString directory_name)
                     ui->menuPublishers->addSeparator();
 
                     connect(activatePublisher, &QAction::toggled,
-                           [=](bool enable) { publisher->setEnabled( enable ); } );
+                            [=](bool enable) { publisher->setEnabled( enable ); } );
                 }
             }
             else if (streamer)
@@ -682,8 +679,8 @@ bool MainWindow::xmlLoadState(QDomDocument state_document)
     //-----------------------------------------------------
 
     for ( QDomElement tw = root.firstChildElement(  "tabbed_widget" )  ;
-           tw.isNull() == false;
-           tw = tw.nextSiblingElement( "tabbed_widget" ) )
+          tw.isNull() == false;
+          tw = tw.nextSiblingElement( "tabbed_widget" ) )
     {
         if( tw.attribute("parent") == ("main_window") )
         {
@@ -692,7 +689,7 @@ bool MainWindow::xmlLoadState(QDomDocument state_document)
         else{
             TabbedPlotWidget* tabwidget = TabbedPlotWidget::instance( tw.attribute("name"));
             tabwidget->xmlLoadState( tw );
-         }
+        }
     }
 
     QDomElement relative_time = root.firstChildElement( "use_relative_time_offset" );
@@ -724,7 +721,9 @@ void MainWindow::onActionSaveLayout()
     if( _current_streamer )
     {
         QDomElement loaded_streamer =  doc.createElement( "previouslyLoadedStreamer" );
-        loaded_streamer.setAttribute("name", _current_streamer->name() );
+        QString streamer_name = _current_streamer->name();
+        streamer_name.replace(" ", "_");
+        loaded_streamer.setAttribute("name", streamer_name );
         root.appendChild( loaded_streamer );
     }
     //------------------------------------
@@ -840,9 +839,9 @@ void MainWindow::onActionLoadDataFile()
     QString directory_path = settings.value("MainWindow.lastDatafileDirectory", QDir::currentPath() ).toString();
 
     QString filename = QFileDialog::getOpenFileName(this, "Open Datafile",
-                                                directory_path,
-                                                file_extension_filter);
-     if (filename.isEmpty()) {
+                                                    directory_path,
+                                                    file_extension_filter);
+    if (filename.isEmpty()) {
         return;
     }
 
@@ -858,22 +857,22 @@ void MainWindow::onActionLoadDataFile()
 
 void MainWindow::onReloadDatafile()
 {
-  QSettings settings( "IcarusTechnology", "PlotJuggler");
-  if( settings.contains("MainWindow.recentlyLoadedDatafile") )
-  {
-      QString filename = settings.value("MainWindow.recentlyLoadedDatafile").toString();
-      onActionLoadDataFileImpl(filename, true);
-  }
+    QSettings settings( "IcarusTechnology", "PlotJuggler");
+    if( settings.contains("MainWindow.recentlyLoadedDatafile") )
+    {
+        QString filename = settings.value("MainWindow.recentlyLoadedDatafile").toString();
+        onActionLoadDataFileImpl(filename, true);
+    }
 }
 
 void MainWindow::onActionReloadRecentDataFile()
 {
-  QSettings settings( "IcarusTechnology", "PlotJuggler");
-  if( settings.contains("MainWindow.recentlyLoadedDatafile") )
-  {
-      QString filename = settings.value("MainWindow.recentlyLoadedDatafile").toString();
-      onActionLoadDataFileImpl(filename, false);
-  }
+    QSettings settings( "IcarusTechnology", "PlotJuggler");
+    if( settings.contains("MainWindow.recentlyLoadedDatafile") )
+    {
+        QString filename = settings.value("MainWindow.recentlyLoadedDatafile").toString();
+        onActionLoadDataFileImpl(filename, false);
+    }
 }
 
 
@@ -1126,8 +1125,8 @@ void MainWindow::loadPluginState(const QDomElement& root)
     if( ! plugins.isNull() )
     {
         for ( QDomElement plugin_elem = plugins.firstChildElement()  ;
-               plugin_elem.isNull() == false;
-               plugin_elem = plugin_elem.nextSiblingElement() )
+              plugin_elem.isNull() == false;
+              plugin_elem = plugin_elem.nextSiblingElement() )
         {
             const QString plugin_name = plugin_elem.nodeName();
             if( _data_loader.find(plugin_name) != _data_loader.end() )
@@ -1136,11 +1135,11 @@ void MainWindow::loadPluginState(const QDomElement& root)
             }
             if( _data_streamer.find(plugin_name) != _data_streamer.end() )
             {
-               _data_streamer[plugin_name]->xmlLoadState(plugin_elem);
+                _data_streamer[plugin_name]->xmlLoadState(plugin_elem);
             }
             if( _state_publisher.find(plugin_name) != _state_publisher.end() )
             {
-               _state_publisher[plugin_name]->xmlLoadState(plugin_elem);
+                _state_publisher[plugin_name]->xmlLoadState(plugin_elem);
             }
         }
     }
@@ -1255,31 +1254,31 @@ void MainWindow::onActionLoadLayoutFromFile(QString filename, bool load_data)
                 onActionLoadDataFileImpl( filename, reload_previous == QMessageBox::YesToAll );
             }
         }
+    }
 
-        QDomElement previously_loaded_streamer =  root.firstChildElement( "previouslyLoadedStreamer" );
-        if( previously_loaded_streamer.isNull() == false)
+    QDomElement previously_loaded_streamer =  root.firstChildElement( "previouslyLoadedStreamer" );
+    if( previously_loaded_streamer.isNull() == false)
+    {
+        QString streamer_name;
+        if( previously_loaded_streamer.hasAttribute("name"))
         {
-            QString streamer_name;
-            if( previously_loaded_streamer.hasAttribute("name"))
-            {
-                //new format
-                streamer_name = previously_loaded_streamer.attribute("name");
-            }
-            else{ //old format
-                streamer_name = previously_loaded_streamer.text();
-            }
+            //new format
+            streamer_name = previously_loaded_streamer.attribute("name");
+        }
+        else{ //old format
+            streamer_name = previously_loaded_streamer.text();
+        }
 
-            bool streamer_loaded = false;
-            for(auto& it: _data_streamer) {
-                if( it.first == streamer_name) streamer_loaded = true;
-            }
-            if( streamer_loaded ){
-                onActionLoadStreamer( streamer_name );
-            }
-            else{
-                QMessageBox::warning(this, tr("Error Loading Streamer"),
-                                     tr("The stramer named %1 can not be loaded.").arg(streamer_name));
-            }
+        bool streamer_loaded = false;
+        for(auto& it: _data_streamer) {
+            if( it.first == streamer_name) streamer_loaded = true;
+        }
+        if( streamer_loaded ){
+            onActionLoadStreamer( streamer_name );
+        }
+        else{
+            QMessageBox::warning(this, tr("Error Loading Streamer"),
+                                 tr("The streamer named %1 can not be loaded.").arg(streamer_name));
         }
     }
 
@@ -1319,14 +1318,14 @@ void MainWindow::on_tabbedAreaDestroyed(QObject *object)
 
 void MainWindow::onFloatingWindowDestroyed(QObject *object)
 {
-//    for (size_t i=0; i< SubWindow::instances().size(); i++)
-//    {
-//        if( SubWindow::instances()[i] == object)
-//        {
-//            SubWindow::instances().erase( SubWindow::instances().begin() + i);
-//            break;
-//        }
-//    }
+    //    for (size_t i=0; i< SubWindow::instances().size(); i++)
+    //    {
+    //        if( SubWindow::instances()[i] == object)
+    //        {
+    //            SubWindow::instances().erase( SubWindow::instances().begin() + i);
+    //            break;
+    //        }
+    //    }
 }
 
 void MainWindow::onCreateFloatingWindow(PlotMatrix* first_tab)
@@ -1376,45 +1375,45 @@ void MainWindow::updateTimeSlider()
 
     forEachWidget([&](PlotWidget* widget)
     {
-      for (auto it: widget->curveList())
-      {
-        const auto& curve_name = it.first.toStdString();
-
-        const PlotDataPtr data = _mapped_plot_data.numeric[curve_name];
-        if(data->size() >=1)
+        for (auto it: widget->curveList())
         {
-          const double t0 = data->at(0).x;
-          const double t1 = data->at( data->size() -1).x;
-          min_time  = std::min( min_time, t0);
-          max_time  = std::max( max_time, t1);
-          max_steps = std::max( max_steps, data->size());
+            const auto& curve_name = it.first.toStdString();
+
+            const PlotDataPtr data = _mapped_plot_data.numeric[curve_name];
+            if(data->size() >=1)
+            {
+                const double t0 = data->at(0).x;
+                const double t1 = data->at( data->size() -1).x;
+                min_time  = std::min( min_time, t0);
+                max_time  = std::max( max_time, t1);
+                max_steps = std::max( max_steps, data->size());
+            }
         }
-      }
     });
 
     // needed if all the plots are empty
     if( max_steps == 0 || max_time < min_time)
     {
-      for (auto it: _mapped_plot_data.numeric)
-      {
-        const PlotDataPtr data = it.second;
-        if(data->size() >=1)
+        for (auto it: _mapped_plot_data.numeric)
         {
-          const double t0 = data->at(0).x;
-          const double t1 = data->at( data->size() -1).x;
-          min_time  = std::min( min_time, t0);
-          max_time  = std::max( max_time, t1);
-          max_steps = std::max( max_steps, data->size());
+            const PlotDataPtr data = it.second;
+            if(data->size() >=1)
+            {
+                const double t0 = data->at(0).x;
+                const double t1 = data->at( data->size() -1).x;
+                min_time  = std::min( min_time, t0);
+                max_time  = std::max( max_time, t1);
+                max_steps = std::max( max_steps, data->size());
+            }
         }
-      }
     }
 
     // last opportunity. Everuthing else failed
     if( max_steps == 0 || max_time < min_time)
     {
-      min_time = 0.0;
-      max_time = 1.0;
-      max_steps = 1;
+        min_time = 0.0;
+        max_time = 1.0;
+        max_steps = 1;
     }
     //----------------------------------
     // Update Time offset
@@ -1543,7 +1542,7 @@ void MainWindow::on_pushButtonStreaming_toggled(bool streaming)
 
 void MainWindow::on_ToggleStreaming()
 {
-  ui->pushButtonStreaming->setChecked( !ui->pushButtonStreaming->isChecked() );
+    ui->pushButtonStreaming->setChecked( !ui->pushButtonStreaming->isChecked() );
 }
 
 void MainWindow::updateDataAndReplot()
@@ -1552,13 +1551,13 @@ void MainWindow::updateDataAndReplot()
     // STEP 1: sync the data (usefull for streaming
     bool data_updated = false;
     {
-      //  PlotData::asyncPushMutex().lock();
+        //  PlotData::asyncPushMutex().lock();
         for(auto it : _mapped_plot_data.numeric)
         {
             PlotDataPtr data = ( it.second );
             data_updated |=  data->flushAsyncBuffer();
         }
-      //  PlotData::asyncPushMutex().unlock();
+        //  PlotData::asyncPushMutex().unlock();
     }
 
     if( data_updated )
@@ -1696,11 +1695,11 @@ void MainWindow::updatedDisplayTime()
     {
         if( _time_offset.get() > 0 )
         {
-            QTime time = QTime::fromMSecsSinceStartOfDay( std::round(relative_time*1000.0));
+            QTime time = QTime::fromMSecsSinceStartOfDay( Round(relative_time*1000.0));
             ui->displayTime->setText( time.toString("HH:mm::ss.zzz") );
         }
         else{
-            QDateTime datetime = QDateTime::fromMSecsSinceEpoch( std::round(relative_time*1000.0) );
+            QDateTime datetime = QDateTime::fromMSecsSinceEpoch( Round(relative_time*1000.0) );
             ui->displayTime->setText( datetime.toString("d/M/yy HH:mm::ss.zzz") );
         }
     }
@@ -1719,15 +1718,15 @@ void MainWindow::on_pushButtonActivateGrid_toggled(bool checked)
 
 void MainWindow::on_actionClearBuffer_triggered()
 {
-  for (auto it: _mapped_plot_data.numeric )
-  {
-    it.second->clear();
-  }
+    for (auto it: _mapped_plot_data.numeric )
+    {
+        it.second->clear();
+    }
 
-  for (auto it: _mapped_plot_data.user_defined )
-  {
-    it.second->clear();
-  }
+    for (auto it: _mapped_plot_data.user_defined )
+    {
+        it.second->clear();
+    }
 
     forEachWidget( [](PlotWidget* plot) {
         plot->reloadPlotData();
@@ -1773,7 +1772,7 @@ void MainWindow::on_minimizeView()
 
     for (auto it: TabbedPlotWidget::instances() )
     {
-       it.second->setControlsVisible( !_minimized );
+        it.second->setControlsVisible( !_minimized );
     }
 }
 
