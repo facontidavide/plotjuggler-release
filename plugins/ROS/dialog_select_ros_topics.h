@@ -33,6 +33,8 @@ public:
 
     const QCheckBox *checkBoxUseRenamingRules();
 
+    QString prefix();
+
 public slots:
 
     void updateTopicList(std::vector<std::pair<QString,QString>> topic_list);
@@ -47,11 +49,14 @@ private slots:
 
     void on_pushButtonEditRules_pressed();
 
+    void on_checkBoxPrefix_toggled(bool checked);
+
 private:
 
     void closeEvent(QCloseEvent *event) override;
 
     QStringList _topic_list;
+    QStringList _default_selected_topics;
 
     Ui::dialogSelectRosTopics *ui;
 
