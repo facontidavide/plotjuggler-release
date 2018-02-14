@@ -2,6 +2,25 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.5.1 (2018-02-14)
+------------------
+* Ignore not initialized timestamps (#75)
+* added a warning as suggested in issue #75
+* Housekeeping of publishers in StatePublisher
+* improved layout and visibility in StatePublisher selector
+* Fix issue #73: bad_cast exception
+* Update README.md
+* added more control over the published topics
+* save ALL message instances
+* CSV  plugin: accept CSV files with empty cells
+* fix issue #72: std::round not supported by older compilers
+* add a prefix to the field name if required
+* Fix issue #69
+* bug fix in onActionSaveLayout + indentation
+* A small plugin creating a websocket server (#64)
+* bug fixes
+* Contributors: Davide Faconti, Philippe Gauthier
+
 1.5.0 (2017-11-28)
 ------------------
 * using AsyncSpinner as it ought to be
