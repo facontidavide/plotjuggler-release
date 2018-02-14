@@ -43,28 +43,11 @@ SET( PLOTTER_SRC
 
 add_executable(PlotJuggler ${PLOTTER_SRC} ${RES_SRC} ${UI_SRC} ${BACKWARD_SRC})
 
-if( Qt5Svg_FOUND)
-    target_link_libraries(PlotJuggler
-        Qt5::Core
-        Qt5::Widgets
-        Qt5::PrintSupport
-        Qt5::Xml
-        Qt5::Concurrent
-        Qt5::Svg
-        colorwidgets
-        qwt_static
-        ${BACKWARD_LIBS} )
-else()
-    target_link_libraries(PlotJuggler
-        Qt5::Core
-        Qt5::Widgets
-        Qt5::PrintSupport
-        Qt5::Xml
-        Qt5::Concurrent
-        colorwidgets
-        qwt_static
-        ${BACKWARD_LIBS})
-endif()
+target_link_libraries(PlotJuggler
+    ${QT_LINK_LIBRARIES}
+    colorwidgets
+    qwt_static
+    ${BACKWARD_LIBS} )
 
 if(COMPILING_WITH_CATKIN)
     install(TARGETS PlotJuggler
