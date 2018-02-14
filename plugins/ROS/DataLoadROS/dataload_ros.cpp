@@ -118,7 +118,8 @@ PlotDataMap DataLoadROS::readDataFromFile(const QString &file_name, bool use_pre
         _parser->registerRenamingRules( ROSType(it.first) , it.second );
       }
     }
-    int max_array_size = dialog->maxArraySize();
+    const int max_array_size = dialog->maxArraySize();
+    const std::string prefix = dialog->prefix().toStdString();
 
     //-----------------------------------
     std::set<std::string> topic_selected;
@@ -126,6 +127,9 @@ PlotDataMap DataLoadROS::readDataFromFile(const QString &file_name, bool use_pre
     {
         topic_selected.insert( topic.toStdString() );
     }
+
+    const bool use_header_stamp = dialog->checkBoxUseHeaderStamp()->isChecked();
+    bool warning_use_header_stamp_ignored = false;
 
     QProgressDialog progress_dialog;
     progress_dialog.setLabelText("Loading... please wait");
@@ -147,6 +151,7 @@ PlotDataMap DataLoadROS::readDataFromFile(const QString &file_name, bool use_pre
     RenamedValues renamed_value;
     
     bool parsed = true;
+    bool monotonic_time = true;
 
     for(rosbag::MessageInstance msg_instance: bag_view_selected )
     {
@@ -171,59 +176,99 @@ PlotDataMap DataLoadROS::readDataFromFile(const QString &file_name, bool use_pre
         parsed &= _parser->deserializeIntoFlatContainer( topic_name, absl::Span<uint8_t>(buffer), &flat_container, max_array_size );
         _parser->applyNameTransform( topic_name, flat_container, &renamed_value );
 
-        // apply time offsets
-        double msg_time = 0;
+        double msg_time = msg_instance.getTime().toSec();
 
-        if(dialog->checkBoxUseHeaderStamp()->isChecked() == false)
+        if(use_header_stamp)
         {
-            msg_time = msg_instance.getTime().toSec();
-        }
-        else{
-            auto offset = FlatContainedContainHeaderStamp(renamed_value);
-            if(offset){
-                msg_time = offset.value();
-            }
-            else{
-                msg_time = msg_instance.getTime().toSec();
+            auto header_stamp = FlatContainedContainHeaderStamp(renamed_value);
+            if(header_stamp){
+                msg_time = header_stamp.value();
             }
         }
 
         for(const auto& it: renamed_value )
         {
-            const std::string& field_name = it.first;
+            const std::string key = prefix + it.first;
 
-            auto plot_pair = plot_map.numeric.find( field_name );
+            auto plot_pair = plot_map.numeric.find( key );
             if( !(plot_pair != plot_map.numeric.end()) )
             {
-                PlotDataPtr temp(new PlotData(field_name.data()));
-                auto res = plot_map.numeric.insert( std::make_pair(field_name, temp ) );
+                PlotDataPtr temp(new PlotData(key.data()));
+                auto res = plot_map.numeric.insert( std::make_pair(key, temp ) );
                 plot_pair = res.first;
             }
 
             PlotDataPtr& plot_data = plot_pair->second;
+            size_t data_size = plot_data->size();
+            if( monotonic_time  && data_size>0 )
+            {
+              const double last_time = plot_data->at(data_size-1).x;
+              monotonic_time = (msg_time > last_time);
+            }
             plot_data->pushBack( PlotData::Point(msg_time, it.second.convert<double>() ));
         } //end of for renamed_value
-
-        //-----------------------------------------
-        // adding raw serialized topic for future uses.
-        {
-            auto plot_pair = plot_map.user_defined.find( topic_name );
-
-            if( plot_pair == plot_map.user_defined.end() )
-            {
-                PlotDataAnyPtr temp(new PlotDataAny(topic_name.c_str()));
-                auto res = plot_map.user_defined.insert( std::make_pair( topic_name, temp ) );
-                plot_pair = res.first;
-            }
-            PlotDataAnyPtr& plot_raw = plot_pair->second;
-            plot_raw->pushBack( PlotDataAny::Point(msg_time, nonstd::any(std::move(msg_instance)) ));
-        }
     }
+
+    for(rosbag::MessageInstance msg_instance: bag_view )
+    {
+        const std::string& topic_name  = msg_instance.getTopic();
+        const std::string key = prefix + topic_name;
+        double msg_time = msg_instance.getTime().toSec();
+
+        if(use_header_stamp)
+        {
+            const auto header_stamp = FlatContainedContainHeaderStamp(renamed_value);
+            if(header_stamp)
+            {
+                const double time = header_stamp.value();
+                if( time > 0 ) {
+                  msg_time = time;
+                }
+                else{
+                  warning_use_header_stamp_ignored = true;
+                }
+            }
+        }
+
+        auto plot_pair = plot_map.user_defined.find( key );
+
+        if( plot_pair == plot_map.user_defined.end() )
+        {
+            PlotDataAnyPtr temp(new PlotDataAny(key.c_str()));
+            auto res = plot_map.user_defined.insert( std::make_pair( key, temp ) );
+            plot_pair = res.first;
+        }
+        PlotDataAnyPtr& plot_raw = plot_pair->second;
+        plot_raw->pushBack( PlotDataAny::Point(msg_time, nonstd::any(std::move(msg_instance)) ));
+    }
+
     if( !parsed )
     {
       QMessageBox::warning(0, tr("Warning"),
                            tr("Some fields were not parsed, because they contain\n"
                               "one or more vectors having more than %1 elements.").arg(max_array_size) );
+    }
+
+    if( !monotonic_time )
+    {
+      QString message = "The time of one or more fields is not strictly monotonic.\n"
+                         "Some plots will not be displayed correctly\n";
+
+      if( use_header_stamp)
+      {
+        message += "\nNOTE: you should probably DISABLE this checkbox:\n\n"
+                   "[If present, use the timestamp in the field header.stamp]";
+      }
+
+      QMessageBox::warning(0, tr("Warning"), message );
+    }
+
+    if( warning_use_header_stamp_ignored )
+    {
+      QString message = "You checked the option:\n\n"
+          "[If present, use the timestamp in the field header.stamp]\n\n"
+          "But the [header.stamp] of one or more messages was NOT initialized correctly.\n";
+      QMessageBox::warning(0, tr("Warning"), message );
     }
 
     qDebug() << "The loading operation took" << timer.elapsed() << "milliseconds";

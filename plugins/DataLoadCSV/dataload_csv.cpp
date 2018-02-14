@@ -12,14 +12,14 @@ DataLoadCSV::DataLoadCSV()
     _extensions.push_back( "csv");
 }
 
-const QRegExp csv_separator("(\\,|\\;|\\ |\\t|\\|)");
+const QRegExp csv_separator("(\\,|\\;|\\|)");
 
 const std::vector<const char*> &DataLoadCSV::compatibleFileExtensions() const
 {
     return _extensions;
 }
 
-int DataLoadCSV::parseHeader(QFile *file,
+QSize DataLoadCSV::parseHeader(QFile *file,
                              std::vector<std::pair<bool,QString> >& ordered_names)
 {
     QTextStream inA(file);
@@ -27,20 +27,21 @@ int DataLoadCSV::parseHeader(QFile *file,
     QString first_line = inA.readLine();
     QString second_line = inA.readLine();
 
-    int linecount = 1;
-
-    QStringList string_items = first_line.split(csv_separator);
+    QStringList firstline_items = first_line.split(csv_separator);
     QStringList secondline_items = second_line.split(csv_separator);
 
-    if( string_items.count() != secondline_items.count() )
+    int linecount = 1;
+    int columncount = firstline_items.count();
+
+    if( firstline_items.count() != secondline_items.count() )
     {
       throw std::runtime_error("DataLoadCSV: problem parsing the first two lines");
     }
 
-    for (int i=0; i < string_items.size(); i++ )
+    for (int i=0; i < firstline_items.size(); i++ )
     {
         // remove annoying prefix
-        QString field_name ( string_items[i] );
+        QString field_name ( firstline_items[i] );
         if( field_name.startsWith( "field." ) )
         {
             field_name = field_name.mid(6);
@@ -62,7 +63,10 @@ int DataLoadCSV::parseHeader(QFile *file,
         linecount++;
     }
 
-    return linecount;
+    QSize table_size;
+    table_size.setWidth( columncount);
+    table_size.setHeight( linecount );
+    return table_size;
 }
 
 PlotDataMap DataLoadCSV::readDataFromFile(const QString &file_name, bool use_previous_configuration)
@@ -78,7 +82,9 @@ PlotDataMap DataLoadCSV::readDataFromFile(const QString &file_name, bool use_pre
 
     std::vector<std::pair<bool, QString> > column_names;
 
-    int linecount = parseHeader( &file, column_names);
+    const QSize table_size = parseHeader( &file, column_names);
+    const int tot_lines   = table_size.height() -1;
+    const int columncount = table_size.width();
 
     file.close();
     file.open(QFile::ReadOnly);
@@ -88,8 +94,7 @@ PlotDataMap DataLoadCSV::readDataFromFile(const QString &file_name, bool use_pre
 
     bool interrupted = false;
 
-    int tot_lines = linecount -1;
-    linecount = 0;
+    int linecount = 0;
 
     QProgressDialog progress_dialog;
     progress_dialog.setLabelText("Loading... please wait");
@@ -160,17 +165,31 @@ PlotDataMap DataLoadCSV::readDataFromFile(const QString &file_name, bool use_pre
 
     //-----------------
 
-    while (!inB.atEnd())
+    while (!inB.atEnd() )
     {
         QString line = inB.readLine();
 
         QStringList string_items = line.split(csv_separator);
+        if( string_items.size() != columncount)
+        {
+          continue;
+        }
         double t = linecount;
 
         if( time_index >= 0)
         {
-            t = string_items[ time_index ].toDouble();
-            if( t <= prev_time)
+            bool is_number = false;
+            t = string_items[ time_index ].toDouble(&is_number);
+
+            if( !is_number)
+            {
+                QMessageBox::StandardButton reply;
+                reply = QMessageBox::warning(0, tr("Error reading file"),
+                                              tr("One of the timestamps is not a valid number. Abort\n") );
+
+                return PlotDataMap();
+            }
+            if( t <= prev_time )
             {
                 QMessageBox::StandardButton reply;
                 reply = QMessageBox::warning(0, tr("Error reading file"),
@@ -178,6 +197,7 @@ PlotDataMap DataLoadCSV::readDataFromFile(const QString &file_name, bool use_pre
 
                 return PlotDataMap();
             }
+
             prev_time = t;
         }
 
@@ -186,9 +206,13 @@ PlotDataMap DataLoadCSV::readDataFromFile(const QString &file_name, bool use_pre
         {
             if( column_names[i].first )
             {
-                double y = string_items[i].toDouble();
-                PlotData::Point point( t,y );
-                plots_vector[index]->pushBack( point );
+                bool is_number = false;
+                double y = string_items[i].toDouble(&is_number);
+                if( is_number )
+                {
+                  PlotData::Point point( t,y );
+                  plots_vector[index]->pushBack( point );
+                }
                 index++;
             }
         }
