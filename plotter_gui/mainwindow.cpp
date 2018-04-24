@@ -1243,11 +1243,11 @@ void MainWindow::onActionLoadLayoutFromFile(QString filename, bool load_data)
             QMessageBox::StandardButton reload_previous;
             reload_previous = QMessageBox::question(0, tr("Wait!"),
                                                     tr("Do you want to reload the previous datafile and its configuration?\n\n %1 \n\n"
-                                                       "Yes:       reload both the file and the previous configuration.\n"
-                                                       "YesToAll:  reload the file but change the previous configuration.\n"
+                                                       "YesToAll:  reload both the datafile and the configuration.\n\n"
+                                                       "Yes:       reload only the datafile and change the configuration.\n\n"
                                                        "No:        use the already loaded data.\n").arg(filename),
-                                                    QMessageBox::YesToAll | QMessageBox::Yes  | QMessageBox::No,
-                                                    QMessageBox::Yes );
+                                                    QMessageBox::YesToAll | QMessageBox::Yes | QMessageBox::No,
+                                                    QMessageBox::YesToAll );
 
             if( reload_previous != QMessageBox::No )
             {
@@ -1288,7 +1288,6 @@ void MainWindow::onActionLoadLayoutFromFile(QString filename, bool load_data)
 
     _undo_states.clear();
     _undo_states.push_back( domDocument );
-
 }
 
 
