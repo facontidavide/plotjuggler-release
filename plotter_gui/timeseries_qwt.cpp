@@ -50,6 +50,16 @@ void TimeseriesQwt::updateData()
     double min_x =( std::numeric_limits<double>::max() );
     double max_x =(-std::numeric_limits<double>::max() );
 
+    auto updateMinMax = [&min_x, &min_y, &max_x, &max_y](double x, double y)
+    {
+      min_x = std::min( min_x, x );
+      max_x = std::max( max_x, x );
+
+      min_y = std::min( min_y, y );
+      max_y = std::max( max_y, y );
+    };
+
+
     //if(updated || force_transform)
     {
         if(_transform == noTransform)
@@ -62,11 +72,7 @@ void TimeseriesQwt::updateData()
                 auto p = _plot_data->at( i );
                 p.x -= _time_offset;
 
-                if(min_y > p.y) min_y =(p.y);
-                else if(max_y    < p.y) max_y =(p.y);
-
-                if(min_x   > p.x) min_x =(p.x);
-                else if(max_x  < p.x) max_x =(p.x);
+                updateMinMax( p.x, p.y );
             }
         }
         else if(_transform == firstDerivative)
@@ -88,11 +94,7 @@ void TimeseriesQwt::updateData()
                 p.setX( p.x() - _time_offset);
                 _cached_transformed_curve[i] = p;
 
-                if(min_y > p.y()) min_y =(p.y());
-                else if(max_y    < p.y()) max_y =(p.y());
-
-                if(min_x   > p.x()) min_x =(p.x());
-                else if(max_x  < p.x()) max_x =(p.x());
+                updateMinMax( p.x(), p.y() );
             }
         }
         else if(_transform == secondDerivative)
@@ -115,11 +117,7 @@ void TimeseriesQwt::updateData()
                 p.setX( p.x() - _time_offset);
                 _cached_transformed_curve[i] = p;
 
-                if(min_y > p.y()) min_y =(p.y());
-                else if(max_y    < p.y()) max_y =(p.y());
-
-                if(min_x   > p.x()) min_x =(p.x());
-                else if(max_x  < p.x()) max_x =(p.x());
+                updateMinMax( p.x(), p.y() );
             }
         }
         else if( _transform == XYPlot && _alternative_X_axis)
@@ -152,17 +150,14 @@ void TimeseriesQwt::updateData()
                     const QPointF p(_alternative_X_axis->at(i).y, _plot_data->at(i).y );
                     _cached_transformed_curve[i] = p;
 
-                    if(min_y > p.y()) min_y =(p.y());
-                    else if(max_y    < p.y()) max_y =(p.y());
-
-                    if(min_x   > p.x()) min_x =(p.x());
-                    else if(max_x  < p.x()) max_x =(p.x());
+                    updateMinMax( p.x(), p.y() );
                 }
             }
         }
     }
     _bounding_box.setBottom(min_y);
     _bounding_box.setTop(max_y);
+
     _bounding_box.setLeft(min_x);
     _bounding_box.setRight(max_x);
 }
