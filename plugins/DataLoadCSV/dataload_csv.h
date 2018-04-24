@@ -27,12 +27,12 @@ public:
     virtual bool xmlLoadState(QDomElement &parent_element ) override;
 
 protected:
-    QSize parseHeader(QFile *file, std::vector<std::pair<bool, QString> > &ordered_names);
+    QSize parseHeader(QFile *file, std::vector<std::string> &ordered_names);
 
 private:
     std::vector<const char*> _extensions;
 
-    QString _default_time_axis;
+    std::string _default_time_axis;
 
 
 };

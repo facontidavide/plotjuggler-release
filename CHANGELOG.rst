@@ -2,6 +2,14 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.5.2 (2018-04-24)
+------------------
+* bug fix #78
+* Fix typo (#76)
+* Fix QmessageBox
+* fixed issue reported in #68
+* Contributors: Davide Faconti, Victor Lopez
+
 1.5.1 (2018-02-14)
 ------------------
 * Ignore not initialized timestamps (#75)
