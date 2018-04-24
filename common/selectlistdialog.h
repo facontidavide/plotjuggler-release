@@ -2,6 +2,7 @@
 #define SELECT_FROM_LIST_DIALOG_H
 
 #include <QDialog>
+#include <deque>
 #include "ui_selectlistdialog.h"
 
 namespace Ui {
@@ -13,7 +14,7 @@ class SelectFromListDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit SelectFromListDialog(QStringList* fields, bool single_selection = true, QWidget *parent = 0);
+    explicit SelectFromListDialog(const std::deque<std::string> &fields, bool single_selection = true, QWidget *parent = 0);
     ~SelectFromListDialog();
 
     std::vector<int> getSelectedRowNumber() const;
@@ -37,7 +38,7 @@ private:
 
 
 //-----------------------------------------------
-inline SelectFromListDialog::SelectFromListDialog(QStringList *fields, bool single_selection, QWidget *parent) :
+inline SelectFromListDialog::SelectFromListDialog(const std::deque<std::string>& fields, bool single_selection, QWidget *parent) :
     QDialog(parent),
     ui(new Ui::SelectXAxisDialog),
     _single_selection( single_selection )
@@ -55,12 +56,12 @@ inline SelectFromListDialog::SelectFromListDialog(QStringList *fields, bool sing
     }
 
     // if there is only one item in the list, select it by default
-    for (int i=0; i< fields->size(); i++)
+    for (int i=0; i< fields.size(); i++)
     {
-      auto item = new QListWidgetItem( (*fields)[i] );
+      auto item = new QListWidgetItem( QString::fromStdString(fields[i]) );
       ui->listFieldsWidget->addItem( item );
 
-      if( fields->size() == 1){
+      if( fields.size() == 1){
         item->setSelected(true);
       }
     }
