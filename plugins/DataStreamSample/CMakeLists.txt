@@ -14,15 +14,5 @@ SET( SRC
     )
 
 add_library(DataStreamSample SHARED ${SRC} ${UI_SRC}  )
-
-
 target_link_libraries(DataStreamSample  ${Qt5Widgets_LIBRARIES} ${Qt5Xml_LIBRARIES})
 
-if(COMPILING_WITH_CATKIN)
-    install(TARGETS DataStreamSample
-        ARCHIVE DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-        LIBRARY DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION} )
-else()
-    install(TARGETS DataStreamSample DESTINATION bin  )
-endif()

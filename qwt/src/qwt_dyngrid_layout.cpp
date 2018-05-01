@@ -40,8 +40,8 @@ void QwtDynGridLayout::PrivateData::updateLayoutCache()
 
     int index = 0;
 
-    for ( QList<QLayoutItem*>::iterator it = itemList.begin();
-        it != itemList.end(); ++it, index++ )
+    for ( QList<QLayoutItem*>::const_iterator it = itemList.constBegin();
+        it != itemList.constEnd(); ++it, index++ )
     {
         itemSizeHints[ index ] = ( *it )->sizeHint();
     }
@@ -89,9 +89,7 @@ void QwtDynGridLayout::init()
 
 QwtDynGridLayout::~QwtDynGridLayout()
 {
-    for ( int i = 0; i < d_data->itemList.size(); i++ )
-        delete d_data->itemList[i];
-
+    qDeleteAll( d_data->itemList );
     delete d_data;
 }
 
@@ -235,11 +233,11 @@ void QwtDynGridLayout::setGeometry( const QRect &rect )
     if ( itemCount() % d_data->numColumns )
         d_data->numRows++;
 
-    QList<QRect> itemGeometries = layoutItems( rect, d_data->numColumns );
+    const QList<QRect> itemGeometries = layoutItems( rect, d_data->numColumns );
 
     int index = 0;
-    for ( QList<QLayoutItem*>::iterator it = d_data->itemList.begin();
-        it != d_data->itemList.end(); ++it )
+    for ( QList<QLayoutItem*>::const_iterator it = d_data->itemList.constBegin();
+        it != d_data->itemList.constEnd(); ++it )
     {
         ( *it )->setGeometry( itemGeometries[index] );
         index++;
@@ -391,12 +389,16 @@ QList<QRect> QwtDynGridLayout::layoutItems( const QRect &rect,
         colX[c] = colX[c-1] + colWidth[c-1] + xySpace;
 
     const int itemCount = d_data->itemList.size();
+#if QT_VERSION >= 0x040700
+    itemGeometries.reserve( itemCount );
+#endif
+
     for ( int i = 0; i < itemCount; i++ )
     {
         const int row = i / numColumns;
         const int col = i % numColumns;
 
-        QRect itemGeometry( colX[col], rowY[row],
+        const QRect itemGeometry( colX[col], rowY[row],
             colWidth[col], rowHeight[row] );
         itemGeometries.append( itemGeometry );
     }

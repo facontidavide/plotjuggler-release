@@ -65,7 +65,7 @@ private:
 
     QPoint _drag_start_pos;
 
-    bool _newX_modifier;
+    bool _newX_modifier, _dragging;
 
     QStandardItemModel* _tree_model;
 
