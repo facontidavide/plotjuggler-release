@@ -2,6 +2,16 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.6.0 (2018-05-01)
+------------------
+* fixed the most annoying bug ever (erroneus DragLeave). issue #80
+* fine tuning the widget spacing
+* added feature #83
+* fix issue #82
+* remove redundant code in CMakeLists.txt
+* Qwt updated and background color change during drag&drop
+* Contributors: Davide Faconti
+
 1.5.2 (2018-04-24)
 ------------------
 * bug fix #78

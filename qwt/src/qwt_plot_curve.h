@@ -74,9 +74,6 @@ public:
         */
         Lines,
 
-
-        LinesAndDots,
-
         /*!
            Draw vertical or horizontal sticks ( depending on the 
            orientation() ) from a baseline which is defined by setBaseline().
@@ -97,6 +94,8 @@ public:
            painting a point.
         */
         Dots,
+
+        LinesAndDots,
 
         /*!
            Styles >= QwtPlotCurve::UserCurve are reserved for derived
@@ -237,7 +236,7 @@ public:
     //! Paint attributes
     typedef QFlags<PaintAttribute> PaintAttributes;
 
-    explicit QwtPlotCurve( const QString &title = QString::null );
+    explicit QwtPlotCurve( const QString &title = QString() );
     explicit QwtPlotCurve( const QwtText &title );
 
     virtual ~QwtPlotCurve();

@@ -17,7 +17,7 @@
 #include <qpaintengine.h>
 #include <qmath.h>
 #ifndef QWT_NO_SVG
-#include <QtSvg/QSvgRenderer>
+#include <qsvgrenderer.h>
 #endif
 
 namespace QwtTriangle
@@ -1389,8 +1389,6 @@ void QwtSymbol::drawSymbols( QPainter *painter,
     if ( useCache )
     {
         const QRect br = boundingRect();
-
-        const QRect rect( 0, 0, br.width(), br.height() );
 
         if ( d_data->cache.pixmap.isNull() )
         {
