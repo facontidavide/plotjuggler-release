@@ -428,7 +428,7 @@ void QwtPlotIntervalCurve::drawTube( QPainter *painter,
         if ( d_data->paintAttributes & ClipPolygons )
         {
             const qreal m = 1.0;
-            const QPolygonF p = QwtClipper::clipPolygonF(
+            const QPolygonF p = QwtClipper::clippedPolygonF(
                canvasRect.adjusted( -m, -m, m, m ), polygon, true );
 
             QwtPainter::drawPolygon( painter, p );
@@ -449,17 +449,15 @@ void QwtPlotIntervalCurve::drawTube( QPainter *painter,
             qreal pw = qMax( qreal( 1.0 ), painter->pen().widthF() );
             const QRectF clipRect = canvasRect.adjusted( -pw, -pw, pw, pw );
 
-            QPolygonF p;
+            QPolygonF p( size );
 
-            p.resize( size );
             ::memcpy( p.data(), points, size * sizeof( QPointF ) );
-            p = QwtClipper::clipPolygonF( clipRect, p );
-            QwtPainter::drawPolyline( painter, p );
+            QwtPainter::drawPolyline( painter, 
+                QwtClipper::clippedPolygonF( clipRect, p ) );
 
-            p.resize( size );
             ::memcpy( p.data(), points + size, size * sizeof( QPointF ) );
-            p = QwtClipper::clipPolygonF( clipRect, p );
-            QwtPainter::drawPolyline( painter, p );
+            QwtPainter::drawPolyline( painter, 
+                QwtClipper::clippedPolygonF( clipRect, p ) );
         }
         else
         {
