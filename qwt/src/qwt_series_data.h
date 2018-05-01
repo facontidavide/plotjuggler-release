@@ -53,6 +53,8 @@ public:
     //! Destructor
     virtual ~QwtSeriesData();
 
+#ifndef QWT_PYTHON_WRAPPER
+
     //! \return Number of samples
     virtual size_t size() const = 0;
 
@@ -76,6 +78,13 @@ public:
        \return Bounding rectangle
      */
     virtual QRectF boundingRect() const = 0;
+
+#else
+    // Needed for generating the python bindings, but not for using them !
+    virtual size_t size() const { return 0; }
+    virtual T sample( size_t i ) const { return T(); }
+    virtual QRectF boundingRect() const { return d_boundingRect; }
+#endif
 
     /*!
        Set a the "rect of interest"

@@ -27,7 +27,7 @@ static double qwtAlignToScaleDiv(
     if ( tValue == slider->transform( sd.lowerBound() ) )
         return sd.lowerBound();
 
-    if ( tValue == slider->transform( sd.lowerBound() ) )
+    if ( tValue == slider->transform( sd.upperBound() ) )
         return sd.upperBound();
 
     for ( int i = 0; i < QwtScaleDiv::NTickTypes; i++ )
