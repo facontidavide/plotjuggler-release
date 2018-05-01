@@ -674,6 +674,9 @@ QList<double> QwtLinearScaleEngine::buildMajorTicks(
         numTicks = 10000;
 
     QList<double> ticks;
+#if QT_VERSION >= 0x040700
+    ticks.reserve( numTicks );
+#endif
 
     ticks += interval.minValue();
     for ( int i = 1; i < numTicks - 1; i++ )
@@ -979,6 +982,9 @@ QList<double> QwtLogScaleEngine::buildMajorTicks(
     const double lstep = ( lxmax - lxmin ) / double( numTicks - 1 );
 
     QList<double> ticks;
+#if QT_VERSION >= 0x040700
+    ticks.reserve( numTicks );
+#endif
 
     ticks += interval.minValue();
 

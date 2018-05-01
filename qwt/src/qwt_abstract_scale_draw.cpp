@@ -392,8 +392,8 @@ QwtText QwtAbstractScaleDraw::label( double value ) const
 const QwtText &QwtAbstractScaleDraw::tickLabel(
     const QFont &font, double value ) const
 {
-    QMap<double, QwtText>::const_iterator it = d_data->labelCache.find( value );
-    if ( it == d_data->labelCache.end() )
+    QMap<double, QwtText>::const_iterator it = d_data->labelCache.constFind( value );
+    if ( it == d_data->labelCache.constEnd() )
     {
         QwtText lbl = label( value );
         lbl.setRenderFlags( 0 );
