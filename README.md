@@ -1,3 +1,26 @@
+## plotjuggler (lunar) - 1.6.0-0
+
+The packages in the `plotjuggler` repository were released into the `lunar` distro by running `/usr/bin/bloom-release --track lunar --rosdistro lunar plotjuggler` on `Tue, 01 May 2018 21:55:39 -0000`
+
+The `plotjuggler` package was released.
+
+Version of package(s) in repository `plotjuggler`:
+
+- upstream repository: https://github.com/facontidavide/PlotJuggler.git
+- release repository: https://github.com/facontidavide/plotjuggler-release.git
+- rosdistro version: `1.5.2-0`
+- old version: `1.5.2-0`
+- new version: `1.6.0-0`
+
+Versions of tools used:
+
+- bloom version: `0.6.4`
+- catkin_pkg version: `0.4.1`
+- rosdep version: `0.12.2`
+- rosdistro version: `0.6.8`
+- vcstools version: `0.1.40`
+
+
 ## plotjuggler (kinetic) - 1.6.0-0
 
 The packages in the `plotjuggler` repository were released into the `kinetic` distro by running `/usr/bin/bloom-release --track kinetic --rosdistro kinetic plotjuggler` on `Tue, 01 May 2018 20:56:29 -0000`
