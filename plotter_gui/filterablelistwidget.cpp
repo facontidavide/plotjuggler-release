@@ -45,7 +45,6 @@ FilterableListWidget::FilterableListWidget(QWidget *parent) :
 {
     ui->setupUi(this);
     ui->tableWidget->viewport()->installEventFilter( this );
-    ui->lineEdit->installEventFilter( this );
 
     ui->tableWidget->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
     ui->tableWidget->horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
@@ -175,91 +174,87 @@ bool FilterableListWidget::eventFilter(QObject *object, QEvent *event)
         obj = obj->parent();
     }
 
-    if(obj == ui->tableWidget)
+    //Ignore obj different than tableWidget
+    if(obj != ui->tableWidget)
     {
-        if(event->type() == QEvent::MouseButtonPress)
-        {
-            QMouseEvent *mouse_event = static_cast<QMouseEvent*>(event);
-            if(mouse_event->button() == Qt::LeftButton )
-            {
-                _newX_modifier = false;
-                _drag_start_pos = mouse_event->pos();
-            }
-            else if(mouse_event->button() == Qt::RightButton )
-            {
-                _newX_modifier = true;
-                _drag_start_pos = mouse_event->pos();
-            }
-        }
-        else if(event->type() == QEvent::MouseMove)
-        {
-            QMouseEvent *mouse_event = static_cast<QMouseEvent*>(event);
-            double distance_from_click = (mouse_event->pos() - _drag_start_pos).manhattanLength();
-
-            if ((mouse_event->buttons() == Qt::LeftButton || mouse_event->buttons() == Qt::RightButton) &&
-                    distance_from_click >= QApplication::startDragDistance())
-            {
-                QDrag *drag = new QDrag(this);
-                QMimeData *mimeData = new QMimeData;
-
-                QByteArray mdata;
-                QDataStream stream(&mdata, QIODevice::WriteOnly);
-
-                for(QTableWidgetItem* item: ui->tableWidget->selectedItems()) {
-                    stream << item->text();
-                }
-                if( _newX_modifier )
-                {
-                    if( ui->tableWidget->selectedItems().size() == 1)
-                    {
-                        mimeData->setData("curveslist/new_X_axis", mdata);
-
-                        QPixmap cursor( QSize(160,30) );
-                        cursor.fill();
-
-                        QPainter painter;
-                        painter.begin( &cursor);
-                        painter.setPen(QColor(22, 22, 22));
-
-                        QString text("set as new X axis");
-                        painter.setFont( QFont("Arial", 14 ) );
-
-                        painter.drawText( QRect(0, 0, 160, 30), Qt::AlignHCenter | Qt::AlignVCenter, text );
-                        painter.end();
-
-                        drag->setDragCursor(cursor, Qt::MoveAction);
-                    }
-                    else{
-                        //abort
-                        QWidget::eventFilter(object,event);
-                    }
-                }
-                else{
-                    mimeData->setData("curveslist/add_curve", mdata);
-                }
-
-                drag->setMimeData(mimeData);
-                drag->exec(Qt::CopyAction | Qt::MoveAction);
-            }
-        }
+      return QWidget::eventFilter(object,event);
     }
 
-//    if( obj == ui->lineEdit )
-//    {
-//        if(event->type() == QEvent::KeyPress)
-//        {
-//            QKeyEvent *key_event = static_cast<QKeyEvent*>(event);
-//            if( key_event->key() | Qt::Key_Tab || key_event->key() | Qt::Key_Enter)
-//            {
-//                qDebug() << "key event" ;
-//                if( _completer->completionCount() == 1)
-//                {
-//                    qDebug() << "pathFromIndex "  <<
-//                    _completer->pathFromIndex( _completer->currentIndex() );
-//                }
-//            }
-//        }
-//    }
+    if(event->type() == QEvent::MouseButtonPress)
+    {
+      QMouseEvent *mouse_event = static_cast<QMouseEvent*>(event);
+
+      _dragging = false;
+      _drag_start_pos = mouse_event->pos();
+
+      if(mouse_event->button() == Qt::LeftButton )
+      {
+        _newX_modifier = false;
+      }
+      else if(mouse_event->button() == Qt::RightButton )
+      {
+        _newX_modifier = true;
+      }
+      else {
+        return false;
+      }
+      return QWidget::eventFilter(object,event);
+    }
+    else if(event->type() == QEvent::MouseMove)
+    {
+      QMouseEvent *mouse_event = static_cast<QMouseEvent*>(event);
+      double distance_from_click = (mouse_event->pos() - _drag_start_pos).manhattanLength();
+
+      if ((mouse_event->buttons() == Qt::LeftButton ||
+           mouse_event->buttons() == Qt::RightButton) &&
+          distance_from_click >= QApplication::startDragDistance() &&
+          _dragging == false)
+      {
+        _dragging = true;
+        QDrag *drag = new QDrag(this);
+        QMimeData *mimeData = new QMimeData;
+
+        QByteArray mdata;
+        QDataStream stream(&mdata, QIODevice::WriteOnly);
+
+        for(QTableWidgetItem* item: ui->tableWidget->selectedItems()) {
+          stream << item->text();
+        }
+
+        if( !_newX_modifier )
+        {
+          mimeData->setData("curveslist/add_curve", mdata);
+        }
+        else
+        {
+          if( ui->tableWidget->selectedItems().size() != 1)
+          {
+            return false;
+          }
+          mimeData->setData("curveslist/new_X_axis", mdata);
+
+          QPixmap cursor( QSize(160,30) );
+          cursor.fill();
+
+          QPainter painter;
+          painter.begin( &cursor);
+          painter.setPen(QColor(22, 22, 22));
+
+          QString text("set as new X axis");
+          painter.setFont( QFont("Arial", 14 ) );
+
+          painter.drawText( QRect(0, 0, 160, 30), Qt::AlignHCenter | Qt::AlignVCenter, text );
+          painter.end();
+
+          drag->setDragCursor(cursor, Qt::MoveAction);
+        }
+
+        drag->setMimeData(mimeData);
+        drag->start(Qt::CopyAction | Qt::MoveAction);
+      }
+      return true;
+    }
+
     return QWidget::eventFilter(object,event);
 }
 

@@ -240,6 +240,16 @@ void QwtPlot::setCanvas( QWidget *canvas )
 */
 bool QwtPlot::event( QEvent *event )
 {
+    if( event->type() == QEvent::DragLeave )
+    {
+        QPoint local_pos =  canvas()->mapFromGlobal(QCursor::pos()) ;
+        if( canvas()->rect().contains( local_pos ) )
+        {
+            qDebug() << event->type();
+            event->ignore();
+            return false;
+        }
+    }
     bool ok = QFrame::event( event );
     switch ( event->type() )
     {
@@ -605,35 +615,32 @@ void QwtPlot::updateLayout()
             d_data->footerLabel->show();
     }
     else
+    {
         d_data->footerLabel->hide();
+    }
 
     for ( int axisId = 0; axisId < axisCnt; axisId++ )
     {
+        QwtScaleWidget* scaleWidget = axisWidget( axisId );
+
         if ( axisEnabled( axisId ) )
         {
-            axisWidget( axisId )->setGeometry( scaleRect[axisId] );
-
-#if 1
-            if ( axisId == xBottom || axisId == xTop )
+            if ( scaleRect[axisId] != scaleWidget->geometry() )
             {
-                // do we need this code any longer ???
+                scaleWidget->setGeometry( scaleRect[axisId] );
 
-                QRegion r( scaleRect[axisId] );
-                if ( axisEnabled( yLeft ) )
-                    r = r.subtracted( QRegion( scaleRect[yLeft] ) );
-                if ( axisEnabled( yRight ) )
-                    r = r.subtracted( QRegion( scaleRect[yRight] ) );
-                r.translate( -scaleRect[ axisId ].x(),
-                    -scaleRect[axisId].y() );
-
-                axisWidget( axisId )->setMask( r );
+                int startDist, endDist;
+                scaleWidget->getBorderDistHint( startDist, endDist );
+                scaleWidget->setBorderDist( startDist, endDist );
             }
-#endif
-            if ( !axisWidget( axisId )->isVisibleTo( this ) )
-                axisWidget( axisId )->show();
+
+            if ( !scaleWidget->isVisibleTo( this ) )
+                scaleWidget->show();
         }
         else
-            axisWidget( axisId )->hide();
+        {
+            scaleWidget->hide();
+        }
     }
 
     if ( d_data->legend )

@@ -59,6 +59,7 @@ PlotWidget::PlotWidget(PlotDataMap &datamap, QWidget *parent):
     _time_offset(0.0)
 {
     this->setAcceptDrops( true );
+
     this->setMinimumWidth( 100 );
     this->setMinimumHeight( 100 );
 
@@ -76,8 +77,6 @@ PlotWidget::PlotWidget(PlotDataMap &datamap, QWidget *parent):
 
     this->axisScaleEngine(QwtPlot::xBottom)->setAttribute(QwtScaleEngine::Floating,true);
     this->plotLayout()->setAlignCanvasToScales( true );
-
-    this->canvas()->installEventFilter( this );
 
     //--------------------------
     _grid = new QwtPlotGrid();
@@ -117,7 +116,6 @@ PlotWidget::PlotWidget(PlotDataMap &datamap, QWidget *parent):
 
     _custom_Y_limits.min = (-MAX_DOUBLE );
     _custom_Y_limits.max = ( MAX_DOUBLE );
-
 }
 
 void PlotWidget::buildActions()
@@ -376,7 +374,8 @@ const std::map<QString, std::shared_ptr<QwtPlotCurve> > &PlotWidget::curveList()
 
 void PlotWidget::dragEnterEvent(QDragEnterEvent *event)
 {
-    QwtPlot::dragEnterEvent(event);
+    this->setCanvasBackground( QColor( 230, 230, 230 ) );
+    replot();
 
     const QMimeData *mimeData = event->mimeData();
     QStringList mimeFormats = mimeData->formats();
@@ -400,15 +399,17 @@ void PlotWidget::dragEnterEvent(QDragEnterEvent *event)
         }
     }
 }
-void PlotWidget::dragMoveEvent(QDragMoveEvent *)
+
+
+void PlotWidget::dragLeaveEvent(QDragLeaveEvent *event)
 {
-
+  this->setCanvasBackground( QColor( 250, 250, 250 ) );
+  replot();
 }
-
 
 void PlotWidget::dropEvent(QDropEvent *event)
 {
-    QwtPlot::dropEvent(event);
+    this->setCanvasBackground( QColor( 250, 250, 250 ) );
 
     const QMimeData *mimeData = event->mimeData();
     QStringList mimeFormats = mimeData->formats();
@@ -431,12 +432,14 @@ void PlotWidget::dropEvent(QDropEvent *event)
             if( plot_added ) {
                 emit undoableChange();
             }
+            event->acceptProposedAction();
         }
         else if( format.contains( "curveslist/new_X_axis") )
         {
             QString curve_name;
             stream >> curve_name;
             changeAxisX(curve_name);
+            event->acceptProposedAction();
         }
         else if( format.contains( "plot_area") )
         {
@@ -444,6 +447,7 @@ void PlotWidget::dropEvent(QDropEvent *event)
             stream >> source_name;
             PlotWidget* source_plot = static_cast<PlotWidget*>( event->source() );
             emit swapWidgetsRequested( source_plot, this );
+            event->acceptProposedAction();
         }
     }
 }
@@ -1325,8 +1329,23 @@ bool PlotWidget::eventFilter(QObject *obj, QEvent *event)
         }
     }break;
 
+    case QEvent::DragEnter: {
+      this->dragEnterEvent( static_cast<QDragEnterEvent*>(event) );
+    } break;                         // drag moves into widget
+    case QEvent::DragMove:  {
+      this->dragMoveEvent(  static_cast<QDragMoveEvent*>(event ) );
+    } break;
+    case QEvent::DragLeave: {
+      this->dragLeaveEvent( static_cast<QDragLeaveEvent*>(event ) );
+    } break;
+    case QEvent::Drop:      {
+      this->dropEvent( static_cast<QDropEvent*>(event ) );
+    } break;
+
+
     } //end switch
 
-    return QwtPlot::eventFilter( obj, event );
+    return QWidget::eventFilter( obj, event );
 }
+
 
