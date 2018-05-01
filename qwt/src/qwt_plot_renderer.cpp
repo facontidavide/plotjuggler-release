@@ -277,7 +277,7 @@ void QwtPlotRenderer::renderDocument( QwtPlot *plot,
     const QRectF documentRect( 0.0, 0.0, size.width(), size.height() );
 
     const QString fmt = format.toLower();
-    if ( fmt == "pdf" )
+    if ( fmt == QLatin1String( "pdf" ) )
     {
 #if QWT_FORMAT_PDF
 
@@ -305,7 +305,7 @@ void QwtPlotRenderer::renderDocument( QwtPlot *plot,
 #endif
 #endif
     }
-    else if ( fmt == "ps" )
+    else if ( fmt == QLatin1String( "ps" ) )
     {
 #if QWT_FORMAT_POSTSCRIPT
         QPrinter printer;
@@ -321,7 +321,7 @@ void QwtPlotRenderer::renderDocument( QwtPlot *plot,
         render( plot, &painter, documentRect );
 #endif
     }
-    else if ( fmt == "svg" )
+    else if ( fmt == QLatin1String( "svg" ) )
     {
 #if QWT_FORMAT_SVG
         QSvgGenerator generator;

@@ -547,11 +547,15 @@ void QwtPainter::drawPolygon( QPainter *painter, const QPolygonF &polygon )
     QRectF clipRect;
     const bool deviceClipping = qwtIsClippingNeeded( painter, clipRect );
 
-    QPolygonF cpa = polygon;
     if ( deviceClipping )
-        cpa = QwtClipper::clipPolygonF( clipRect, polygon );
-
-    painter->drawPolygon( cpa );
+    {
+        painter->drawPolygon(
+            QwtClipper::clippedPolygonF( clipRect, polygon, true ) );
+    }
+    else
+    {
+        painter->drawPolygon( polygon );
+    }
 }
 
 //! Wrapper for QPainter::drawPolyline()
@@ -560,12 +564,18 @@ void QwtPainter::drawPolyline( QPainter *painter, const QPolygonF &polygon )
     QRectF clipRect;
     const bool deviceClipping = qwtIsClippingNeeded( painter, clipRect );
 
-    QPolygonF cpa = polygon;
     if ( deviceClipping )
-        cpa = QwtClipper::clipPolygonF( clipRect, cpa );
+    {
+        const QPolygonF cpa = QwtClipper::clippedPolygonF( clipRect, polygon );
 
-    qwtDrawPolyline<QPointF>( painter,
-        cpa.constData(), cpa.size(), d_polylineSplitting );
+        qwtDrawPolyline<QPointF>( painter,
+            cpa.constData(), cpa.size(), d_polylineSplitting );
+    }
+    else
+    {
+        qwtDrawPolyline<QPointF>( painter,
+            polygon.constData(), polygon.size(), d_polylineSplitting );
+    }
 }
 
 //! Wrapper for QPainter::drawPolyline()
@@ -580,7 +590,7 @@ void QwtPainter::drawPolyline( QPainter *painter,
         QPolygonF polygon( pointCount );
         ::memcpy( polygon.data(), points, pointCount * sizeof( QPointF ) );
 
-        polygon = QwtClipper::clipPolygonF( clipRect, polygon );
+        QwtClipper::clipPolygonF( clipRect, polygon );
         qwtDrawPolyline<QPointF>( painter,
             polygon.constData(), polygon.size(), d_polylineSplitting );
     }
@@ -596,11 +606,15 @@ void QwtPainter::drawPolygon( QPainter *painter, const QPolygon &polygon )
     QRectF clipRect;
     const bool deviceClipping = qwtIsClippingNeeded( painter, clipRect );
 
-    QPolygon cpa = polygon;
     if ( deviceClipping )
-        cpa = QwtClipper::clipPolygon( clipRect, polygon );
-
-    painter->drawPolygon( cpa );
+    {
+        painter->drawPolygon(
+            QwtClipper::clippedPolygon( clipRect, polygon, true ) );
+    }
+    else
+    {
+        painter->drawPolygon( polygon );
+    }
 }
 
 //! Wrapper for QPainter::drawPolyline()
@@ -609,12 +623,18 @@ void QwtPainter::drawPolyline( QPainter *painter, const QPolygon &polygon )
     QRectF clipRect;
     const bool deviceClipping = qwtIsClippingNeeded( painter, clipRect );
 
-    QPolygon cpa = polygon;
     if ( deviceClipping )
-        cpa = QwtClipper::clipPolygon( clipRect, cpa );
+    {
+        const QPolygon cpa = QwtClipper::clippedPolygon( clipRect, polygon );
 
-    qwtDrawPolyline<QPoint>( painter,
-        cpa.constData(), cpa.size(), d_polylineSplitting );
+        qwtDrawPolyline<QPoint>( painter,
+            cpa.constData(), cpa.size(), d_polylineSplitting );
+    }
+    else
+    {
+        qwtDrawPolyline<QPoint>( painter,
+            polygon.constData(), polygon.size(), d_polylineSplitting );
+    }
 }
 
 //! Wrapper for QPainter::drawPolyline()
@@ -629,12 +649,14 @@ void QwtPainter::drawPolyline( QPainter *painter,
         QPolygon polygon( pointCount );
         ::memcpy( polygon.data(), points, pointCount * sizeof( QPoint ) );
 
-        polygon = QwtClipper::clipPolygon( clipRect, polygon );
+        QwtClipper::clipPolygon( clipRect, polygon );
         qwtDrawPolyline<QPoint>( painter,
             polygon.constData(), polygon.size(), d_polylineSplitting );
     }
     else
+    {
         qwtDrawPolyline<QPoint>( painter, points, pointCount, d_polylineSplitting );
+    }
 }
 
 //! Wrapper for QPainter::drawPoint()

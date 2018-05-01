@@ -98,23 +98,3 @@ add_dependencies(RosoutPublisher
     ${${PROJECT_NAME}_EXPORTED_TARGETS}
     ${catkin_EXPORTED_TARGETS}
     )
-
-#############
-## Install ##
-#############
-
-# all install targets should use catkin DESTINATION variables
-# See http://ros.org/doc/api/catkin/html/adv_user_guide/variables.html
-
-## Mark executables and/or libraries for installation
-
-if(COMPILING_WITH_CATKIN)
-    install(TARGETS DataLoadROS  DataStreamROS  RosTopicPublisher  RosoutPublisher
-        ARCHIVE DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-        LIBRARY DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-        )
-elseif()
-    install(TARGETS DataLoadROS  DataStreamROS RosTopicPublisher RosoutPublisher
-        DESTINATION bin  )
-endif()
