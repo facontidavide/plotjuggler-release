@@ -409,6 +409,10 @@ void QwtLegend::updateLegend( const QVariant &itemInfo,
             w->deleteLater();
         }
 
+#if QT_VERSION >= 0x040700
+        widgetList.reserve( data.size() );
+#endif
+
         for ( int i = widgetList.size(); i < data.size(); i++ )
         {
             QWidget *widget = createWidget( data[i] );
@@ -678,7 +682,7 @@ void QwtLegend::renderLegend( QPainter *painter,
     layoutRect.setBottom( qFloor( rect.bottom() ) - bottom );
 
     uint numCols = legendLayout->columnsForWidth( layoutRect.width() );
-    QList<QRect> itemRects =
+    const QList<QRect> itemRects =
         legendLayout->layoutItems( layoutRect, numCols );
 
     int index = 0;
