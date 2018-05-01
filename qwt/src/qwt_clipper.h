@@ -25,12 +25,22 @@ class QRectF;
 class QWT_EXPORT QwtClipper
 {
 public:
-    static QPolygon clipPolygon( const QRect &, 
-        const QPolygon &, bool closePolygon = false );
-    static QPolygon clipPolygon( const QRectF &, 
+    static void clipPolygon( const QRect &,  
+        QPolygon &, bool closePolygon = false );
+    
+    static void clipPolygon( const QRectF &, 
+        QPolygon &, bool closePolygon = false );
+    
+    static void clipPolygonF( const QRectF &, 
+        QPolygonF &, bool closePolygon = false );
+
+    static QPolygon clippedPolygon( const QRect &, 
         const QPolygon &, bool closePolygon = false );
 
-    static QPolygonF clipPolygonF( const QRectF &, 
+    static QPolygon clippedPolygon( const QRectF &, 
+        const QPolygon &, bool closePolygon = false );
+
+    static QPolygonF clippedPolygonF( const QRectF &, 
         const QPolygonF &, bool closePolygon = false );
 
     static QVector<QwtInterval> clipCircle(

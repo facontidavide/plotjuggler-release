@@ -153,7 +153,7 @@ void QwtCounter::setValid( bool on )
         }
         else
         {
-            d_data->valueEdit->setText( QString::null );
+            d_data->valueEdit->setText( QString() );
         }
     }   
 }   
