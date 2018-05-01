@@ -16,15 +16,6 @@ SET( SRC
     )
 
 add_library(DataStreamWebSocket SHARED ${SRC} ${UI_SRC}  )
-
-
 target_link_libraries(DataStreamWebSocket  ${Qt5Widgets_LIBRARIES} Qt5::WebSockets Qt5::Xml)
 
-if(COMPILING_WITH_CATKIN)
-    install(TARGETS DataStreamWebSocket
-        ARCHIVE DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-        LIBRARY DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION} )
-else()
-    install(TARGETS DataStreamWebSocket DESTINATION bin  )
-endif()
+

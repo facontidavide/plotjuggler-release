@@ -11,6 +11,7 @@
 #define QWT_PLOT_CANVAS_H
 
 #include "qwt_global.h"
+#include "qwt_plot_abstract_canvas.h"
 #include <qframe.h>
 #include <qpainterpath.h>
 
@@ -24,7 +25,7 @@ class QPixmap;
 
   \sa QwtPlot::setCanvas(), QwtPlotGLCanvas
 */
-class QWT_EXPORT QwtPlotCanvas : public QFrame
+class QWT_EXPORT QwtPlotCanvas : public QFrame, public QwtPlotAbstractCanvas
 {
     Q_OBJECT
 
@@ -94,54 +95,44 @@ public:
 
           \sa replot(), QWidget::repaint(), QWidget::update()
          */
-        ImmediatePaint = 8
+        ImmediatePaint = 8,
+
+        /*!
+          \brief Render the canvas via an OpenGL buffer
+
+          In OpenGLBuffer mode the plot scene will be rendered to a temporary
+          OpenGL buffer, that will be translated to a QImage afterwards.
+          Then this image will be painted to the canvas.
+
+          This mode might be useful for "heavy" plots to achieve 
+          hardware acceleration on platforms, where the raster paint engine 
+          ( = software renderer ) would be used otherwise.
+          But the penalty for copying out the buffer to the image makes this mode
+          less optimal when looking for high refresh rates of a "lightweight" plot.
+
+          On a hardware accelerated graphics system ( f.e. Qt4/X11 "native" ) 
+          using this mode does not make much sense. Unfortunately those systems have 
+          been removed from Qt5.
+
+          \note The OpenGLBuffer mode has no effect, when "QwtOpenGL" has been disabled in 
+                qwtconfig.pri.
+
+          \sa QwtPlotOpenGLCanvas, QwtPlotGLCanvas
+         */
+        OpenGLBuffer = 16
     };
 
     //! Paint attributes
     typedef QFlags<PaintAttribute> PaintAttributes;
 
-    /*!
-      \brief Focus indicator
-      The default setting is NoFocusIndicator
-      \sa setFocusIndicator(), focusIndicator(), drawFocusIndicator()
-    */
-
-    enum FocusIndicator
-    {
-        //! Don't paint a focus indicator
-        NoFocusIndicator,
-
-        /*!
-          The focus is related to the complete canvas.
-          Paint the focus indicator using drawFocusIndicator()
-         */
-        CanvasFocusIndicator,
-
-        /*!
-          The focus is related to an item (curve, point, ...) on
-          the canvas. It is up to the application to display a
-          focus indication using f.e. highlighting.
-         */
-        ItemFocusIndicator
-    };
-
     explicit QwtPlotCanvas( QwtPlot * = NULL );
     virtual ~QwtPlotCanvas();
-
-    QwtPlot *plot();
-    const QwtPlot *plot() const;
-
-    void setFocusIndicator( FocusIndicator );
-    FocusIndicator focusIndicator() const;
-
-    void setBorderRadius( double );
-    double borderRadius() const;
 
     void setPaintAttribute( PaintAttribute, bool on = true );
     bool testPaintAttribute( PaintAttribute ) const;
 
     const QPixmap *backingStore() const;
-    void invalidateBackingStore();
+    Q_INVOKABLE void invalidateBackingStore();
 
     virtual bool event( QEvent * );
 
@@ -154,13 +145,10 @@ protected:
     virtual void paintEvent( QPaintEvent * );
     virtual void resizeEvent( QResizeEvent * );
 
-    virtual void drawFocusIndicator( QPainter * );
     virtual void drawBorder( QPainter * );
 
-    void updateStyleSheetInfo();
-
 private:
-    void drawCanvas( QPainter *, bool withBackground );
+    QImage toImageFBO( const QSize &size );
 
     class PrivateData;
     PrivateData *d_data;
