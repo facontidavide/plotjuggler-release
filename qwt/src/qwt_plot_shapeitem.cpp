@@ -408,19 +408,17 @@ void QwtPlotShapeItem::draw( QPainter *painter,
 
     if ( testPaintAttribute( QwtPlotShapeItem::ClipPolygons ) )
     {
-        qreal pw = qMax( qreal( 1.0 ), painter->pen().widthF());
-        QRectF clipRect = canvasRect.adjusted( -pw, -pw, pw, pw );
+        const qreal pw = qMax( qreal( 1.0 ), painter->pen().widthF());
+        const QRectF clipRect = canvasRect.adjusted( -pw, -pw, pw, pw );
 
         QPainterPath clippedPath;
         clippedPath.setFillRule( path.fillRule() );
 
-        const QList<QPolygonF> polygons = path.toSubpathPolygons();
+        QList<QPolygonF> polygons = path.toSubpathPolygons();
         for ( int i = 0; i < polygons.size(); i++ )
         {
-            const QPolygonF p = QwtClipper::clipPolygonF(
-                clipRect, polygons[i], true );
-
-            clippedPath.addPolygon( p );
+            QwtClipper::clipPolygonF( clipRect, polygons[i], true );
+            clippedPath.addPolygon( polygons[i] );
 
         }
 

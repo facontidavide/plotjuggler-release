@@ -55,11 +55,10 @@ public:
     bool isXYPlot() const;
 
 protected:
-    virtual void dragEnterEvent(QDragEnterEvent *event) ;
-    virtual void dragMoveEvent(QDragMoveEvent *event) ;
-    virtual void dropEvent(QDropEvent *event) ;
-    virtual bool eventFilter(QObject *obj, QEvent *event);
-
+    virtual void dragEnterEvent(QDragEnterEvent *event) override;
+    virtual void dropEvent(QDropEvent *event) override;
+    virtual bool eventFilter(QObject *obj, QEvent *event) override;
+    virtual void dragLeaveEvent(QDragLeaveEvent *event) override;
 
 signals:
     void swapWidgetsRequested(PlotWidget* source, PlotWidget* destination);
