@@ -20,7 +20,7 @@
 #include <qtconcurrentrun.h>
 
 #if !defined(QT_NO_QFUTURE)
-#define QWT_USE_THREADS 0
+#define QWT_USE_THREADS 1
 #endif
 
 static QRectF qwtInvalidRect( 0.0, 0.0, -1.0, -1.0 );
@@ -285,7 +285,7 @@ public:
 
 static void qwtRenderDots(
     const QwtScaleMap &xMap, const QwtScaleMap &yMap,
-    const QwtDotsCommand command, const QPoint &pos, QImage *image ) 
+    const QwtDotsCommand &command, const QPoint &pos, QImage *image ) 
 {
     const QRgb rgb = command.rgb;
     QRgb *bits = reinterpret_cast<QRgb *>( image->bits() );

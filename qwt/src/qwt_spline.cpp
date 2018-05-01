@@ -386,7 +386,7 @@ static inline SplineStore qwtSplineC1PathParametric(
 
 template< QwtSplinePolynomial toPolynomial( const QPointF &, double, const QPointF &, double ) >
 static QPolygonF qwtPolygonParametric( double distance,
-    const QPolygonF &points, const QVector<double> values, bool withNodes ) 
+    const QPolygonF &points, const QVector<double> &values, bool withNodes )
 {
     QPolygonF fittedPoints;
 
@@ -1205,6 +1205,7 @@ QVector<QwtSplinePolynomial> QwtSplineC1::polynomials(
     if ( m.size() < 2 )
         return polynomials;
 
+    polynomials.reserve( m.size() - 1 );
     for ( int i = 1; i < m.size(); i++ )
     {
         polynomials += QwtSplinePolynomial::fromSlopes( 
@@ -1386,7 +1387,8 @@ QVector<QwtSplinePolynomial> QwtSplineC2::polynomials( const QPolygonF &points )
     const QPointF *p = points.constData();
     const double *cv = curvatures.constData();
     const int n = curvatures.size();
-    
+    polynomials.reserve( n - 1 );
+
     for ( int i = 1; i < n; i++ )
     {   
         polynomials += QwtSplinePolynomial::fromCurvatures(
