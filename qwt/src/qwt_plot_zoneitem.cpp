@@ -159,7 +159,7 @@ void QwtPlotZoneItem::setOrientation( Qt::Orientation orientation )
   \return Orientation of the zone
   \sa setOrientation()
  */
-Qt::Orientation QwtPlotZoneItem::orientation()
+Qt::Orientation QwtPlotZoneItem::orientation() const
 {
     return d_data->orientation;
 }

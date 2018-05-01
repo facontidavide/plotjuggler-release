@@ -41,20 +41,20 @@ static QString qwtExpandedFormat( const QString & format,
 
     QString weekNoWW;
     if ( weekNo.length() == 1 )
-        weekNoWW += "0";
+        weekNoWW += QLatin1Char( '0' );
 
     weekNoWW += weekNo;
 
     QString fmt = format;
-    fmt.replace( "ww", weekNoWW );
-    fmt.replace( "w", weekNo );
+    fmt.replace( QLatin1String( "ww" ), weekNoWW );
+    fmt.replace( QLatin1Char( 'w' ), weekNo );
 
     if ( week == 1 && dateTime.date().month() != 1 )
     {
         // in case of week 1, we might need to increment the year
 
-        static QString s_yyyy = "yyyy";
-        static QString s_yy = "yy";
+        QLatin1String s_yyyy( "yyyy" );
+        QLatin1String s_yy( "yy" );
 
         // week 1 might start in the previous year
 

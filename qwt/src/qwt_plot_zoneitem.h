@@ -38,7 +38,7 @@ public:
     virtual int rtti() const;
 
     void setOrientation( Qt::Orientation );
-    Qt::Orientation orientation();
+    Qt::Orientation orientation() const;
 
     void setInterval( double min, double max );
     void setInterval( const QwtInterval & );
