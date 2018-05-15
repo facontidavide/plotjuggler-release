@@ -234,7 +234,7 @@ bool FilterableListWidget::eventFilter(QObject *object, QEvent *event)
           mimeData->setData("curveslist/new_X_axis", mdata);
 
           QPixmap cursor( QSize(160,30) );
-          cursor.fill();
+          cursor.fill(Qt::transparent);
 
           QPainter painter;
           painter.begin( &cursor);
@@ -243,6 +243,7 @@ bool FilterableListWidget::eventFilter(QObject *object, QEvent *event)
           QString text("set as new X axis");
           painter.setFont( QFont("Arial", 14 ) );
 
+          painter.setBackground(Qt::transparent);
           painter.drawText( QRect(0, 0, 160, 30), Qt::AlignHCenter | Qt::AlignVCenter, text );
           painter.end();
 
@@ -250,7 +251,7 @@ bool FilterableListWidget::eventFilter(QObject *object, QEvent *event)
         }
 
         drag->setMimeData(mimeData);
-        drag->start(Qt::CopyAction | Qt::MoveAction);
+        drag->exec(Qt::CopyAction | Qt::MoveAction);
       }
       return true;
     }
