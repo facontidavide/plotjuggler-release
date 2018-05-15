@@ -2,6 +2,13 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.6.1 (2018-05-15)
+------------------
+* allow the buffer size to be edited
+* qDebug removed
+* fixing right mouse drag&drop
+* Contributors: Davide Faconti
+
 1.6.0 (2018-05-01)
 ------------------
 * fixed the most annoying bug ever (erroneus DragLeave). issue #80
