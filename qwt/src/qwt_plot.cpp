@@ -245,7 +245,6 @@ bool QwtPlot::event( QEvent *event )
         QPoint local_pos =  canvas()->mapFromGlobal(QCursor::pos()) ;
         if( canvas()->rect().contains( local_pos ) )
         {
-            qDebug() << event->type();
             event->ignore();
             return false;
         }
