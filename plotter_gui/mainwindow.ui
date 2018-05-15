@@ -257,13 +257,16 @@ border-radius: 4px;
              <item>
               <widget class="QSpinBox" name="streamingSpinBox">
                <property name="focusPolicy">
-                <enum>Qt::NoFocus</enum>
+                <enum>Qt::ClickFocus</enum>
+               </property>
+               <property name="toolTip">
+                <string>Size of the  Buffer (seconds)</string>
                </property>
                <property name="buttonSymbols">
                 <enum>QAbstractSpinBox::PlusMinus</enum>
                </property>
                <property name="accelerated">
-                <bool>false</bool>
+                <bool>true</bool>
                </property>
                <property name="correctionMode">
                 <enum>QAbstractSpinBox::CorrectToPreviousValue</enum>
@@ -272,13 +275,13 @@ border-radius: 4px;
                 <string> sec</string>
                </property>
                <property name="minimum">
-                <number>4</number>
+                <number>5</number>
                </property>
                <property name="maximum">
-                <number>60</number>
+                <number>100</number>
                </property>
                <property name="value">
-                <number>4</number>
+                <number>5</number>
                </property>
               </widget>
              </item>
