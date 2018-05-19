@@ -98,3 +98,14 @@ add_dependencies(RosoutPublisher
     ${${PROJECT_NAME}_EXPORTED_TARGETS}
     ${catkin_EXPORTED_TARGETS}
     )
+
+if(COMPILING_WITH_CATKIN)
+    install(TARGETS DataLoadROS  DataStreamROS  RosTopicPublisher  RosoutPublisher
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+        )
+elseif()
+    install(TARGETS DataLoadROS  DataStreamROS RosTopicPublisher RosoutPublisher
+        DESTINATION bin  )
+endif()
