@@ -2,6 +2,11 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.6.2 (2018-05-19)
+------------------
+* fixing issue introduced in bec2c74195d74969f9c017b9b718faf9be6c1687
+* Contributors: Davide Faconti
+
 1.6.1 (2018-05-15)
 ------------------
 * allow the buffer size to be edited
