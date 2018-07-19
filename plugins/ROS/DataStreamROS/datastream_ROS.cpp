@@ -30,16 +30,16 @@ DataStreamROS::DataStreamROS():
     _running = false;
     _initial_time = std::numeric_limits<double>::max();
     _use_header_timestamp = true;
+
+    _periodic_timer = new QTimer();
+    connect( _periodic_timer, &QTimer::timeout,
+             this, &DataStreamROS::timerCallback);
 }
 
-PlotDataMap& DataStreamROS::getDataMap()
+void DataStreamROS::topicCallback(const topic_tools::ShapeShifter::ConstPtr& msg,
+                                  const std::string &topic_name)
 {
-    return _plot_data;
-}
-
-void DataStreamROS::topicCallback(const topic_tools::ShapeShifter::ConstPtr& msg, const std::string &topic_name)
-{
-    if( !_running ||  !_enabled){
+    if( !_running || !_enabled){
         return;
     }
 
@@ -58,7 +58,6 @@ void DataStreamROS::topicCallback(const topic_tools::ShapeShifter::ConstPtr& msg
         _parser->registerRenamingRules( it.first, it.second );
       }
     }
-
 
     //------------------------------------
 
@@ -93,15 +92,17 @@ void DataStreamROS::topicCallback(const topic_tools::ShapeShifter::ConstPtr& msg
         }
     }
 
+    std::lock_guard<std::mutex> lock( mutex() );
+
     // adding raw serialized msg for future uses.
     // do this before msg_time normalization
     {
         const std::string key = _prefix + topic_name;
-        auto plot_pair = _plot_data.user_defined.find( key );
-        if( plot_pair == _plot_data.user_defined.end() )
+        auto plot_pair = dataMap().user_defined.find( key );
+        if( plot_pair == dataMap().user_defined.end() )
         {
             PlotDataAnyPtr temp(new PlotDataAny(key.c_str()));
-            auto res = _plot_data.user_defined.insert( std::make_pair( key, temp ) );
+            auto res = dataMap().user_defined.insert( std::make_pair( key, temp ) );
             plot_pair = res.first;
         }
         PlotDataAnyPtr& user_defined_data = plot_pair->second;
@@ -112,14 +113,14 @@ void DataStreamROS::topicCallback(const topic_tools::ShapeShifter::ConstPtr& msg
     {
         const std::string key = ( _prefix + it.first  );
         const double value = it.second.convert<double>();
-        auto plot_it = _plot_data.numeric.find(key);
-        if( plot_it == _plot_data.numeric.end())
+        auto plot_it = dataMap().numeric.find(key);
+        if( plot_it == dataMap().numeric.end())
         {
-            auto res =   _plot_data.numeric.insert(
+            auto res =   dataMap().numeric.insert(
                         std::make_pair( key, std::make_shared<PlotData>(key.c_str()) ));
             plot_it = res.first;
         }
-        plot_it->second->pushBackAsynchronously( PlotData::Point(msg_time, value));
+        plot_it->second->pushBack( PlotData::Point(msg_time, value));
     }
 
     //------------------------------
@@ -127,14 +128,14 @@ void DataStreamROS::topicCallback(const topic_tools::ShapeShifter::ConstPtr& msg
         int& index = _msg_index[topic_name];
         index++;
         const std::string key = _prefix + topic_name + ("/_MSG_INDEX_") ;
-        auto index_it = _plot_data.numeric.find(key);
-        if( index_it == _plot_data.numeric.end())
+        auto index_it = dataMap().numeric.find(key);
+        if( index_it == dataMap().numeric.end())
         {
-            auto res = _plot_data.numeric.insert(
+            auto res = dataMap().numeric.insert(
                         std::make_pair( key, std::make_shared<PlotData>(key.c_str()) ));
             index_it = res.first;
         }
-        index_it->second->pushBackAsynchronously( PlotData::Point(msg_time, index) );
+        index_it->second->pushBack( PlotData::Point(msg_time, index) );
     }
 }
 
@@ -173,9 +174,51 @@ void DataStreamROS::extractInitialSamples()
     }
 }
 
+void DataStreamROS::timerCallback()
+{
+    if( _running && _enabled && ros::master::check() == false
+            && !_roscore_disconnection_already_notified)
+    {
+        auto ret = QMessageBox::warning(nullptr,
+                                        tr("Disconnected!"),
+                                        tr("The roscore master cannot be detected.\n\n"
+                                           "Do you want to try reconnecting to it? \n\n"
+                                           "NOTE: if you select CONTINUE, you might need"
+                                           " to stop and restart this plugin."),
+                                        tr("Stop Plugin"),
+                                        tr("Try reconnect"),
+                                        tr("Continue"),
+                                        0);
+        _roscore_disconnection_already_notified = ( ret == 2);
+        if( ret == 1)
+        {
+            this->shutdown();
+            _node =  RosManager::getNode();
+
+            if( !_node ){
+                emit connectionClosed();
+                return;
+            }
+            subscribe();
+
+            _running = true;
+            _enabled = true;
+            _spinner = std::make_shared<ros::AsyncSpinner>(1);
+            _spinner->start();
+            _periodic_timer->start();
+        }
+        else if( ret == 0)
+        {
+          this->shutdown();
+          emit connectionClosed();
+        }
+    }
+}
+
 void DataStreamROS::saveIntoRosbag()
 {
-    if( _plot_data.user_defined.empty()){
+    std::lock_guard<std::mutex> lock( mutex() );
+    if( dataMap().user_defined.empty()){
         QMessageBox::warning(0, tr("Warning"), tr("Your buffer is empty. Nothing to save.\n") );
         return;
     }
@@ -196,7 +239,7 @@ void DataStreamROS::saveIntoRosbag()
     {
         rosbag::Bag rosbag(fileName.toStdString(), rosbag::bagmode::Write );
 
-        for (auto it: _plot_data.user_defined )
+        for (auto it: dataMap().user_defined )
         {
             const std::string& topicname = it.first;
             const PlotDataAnyPtr& plotdata = it.second;
@@ -238,6 +281,22 @@ void DataStreamROS::saveIntoRosbag()
 }
 
 
+void DataStreamROS::subscribe()
+{
+    _subscribers.clear();
+
+    for (int i=0; i< _default_topic_names.size(); i++ )
+    {
+        boost::function<void(const topic_tools::ShapeShifter::ConstPtr&) > callback;
+        const std::string topic_name = _default_topic_names[i].toStdString();
+        callback = [this, topic_name](const topic_tools::ShapeShifter::ConstPtr& msg) -> void
+        {
+            this->topicCallback(msg, topic_name) ;
+        };
+        _subscribers.insert( {topic_name, _node->subscribe( topic_name, 0,  callback)}  );
+    }
+}
+
 bool DataStreamROS::start()
 {
     _parser.reset( new RosIntrospection::Parser );
@@ -250,8 +309,11 @@ bool DataStreamROS::start()
         return false;
     }
 
-    _plot_data.numeric.clear();
-    _plot_data.user_defined.clear();
+    {
+        std::lock_guard<std::mutex> lock( mutex() );
+        dataMap().numeric.clear();
+        dataMap().user_defined.clear();
+    }
     _initial_time = std::numeric_limits<double>::max();
 
     using namespace RosIntrospection;
@@ -303,22 +365,15 @@ bool DataStreamROS::start()
 
     timer.stop();
 
-    QStringList topic_selected = dialog.getSelectedItems();
     _using_renaming_rules = dialog.checkBoxUseRenamingRules()->isChecked();
 
-    std::vector<std::string> std_topic_selected;
-
-    if( res != QDialog::Accepted || topic_selected.empty() )
+    if( res != QDialog::Accepted || dialog.getSelectedItems().empty() )
     {
         return false;
     }
 
-     _default_topic_names.clear();
-    for (const QString& topic :topic_selected )
-    {
-        _default_topic_names.push_back(topic);
-        std_topic_selected.push_back( topic.toStdString() );
-    }
+     _default_topic_names = dialog.getSelectedItems();
+
     settings.setValue("DataStreamROS/default_topics", _default_topic_names);
 
     // load the rules
@@ -332,18 +387,7 @@ bool DataStreamROS::start()
     _max_array_size = dialog.maxArraySize();
     //-------------------------
 
-    _subscribers.clear();
-
-    for (int i=0; i<topic_selected.size(); i++ )
-    {
-        boost::function<void(const topic_tools::ShapeShifter::ConstPtr&) > callback;
-        const std::string& topic_name = std_topic_selected[i];
-        callback = [this, topic_name](const topic_tools::ShapeShifter::ConstPtr& msg) -> void
-        {
-            this->topicCallback(msg, topic_name) ;
-        };
-        _subscribers.push_back( _node->subscribe( topic_name, 0,  callback)  );
-    }
+    subscribe();
 
     _running = true;
 
@@ -352,26 +396,33 @@ bool DataStreamROS::start()
     _spinner = std::make_shared<ros::AsyncSpinner>(1);
     _spinner->start();
 
+    _periodic_timer->setInterval(500);
+    _roscore_disconnection_already_notified = false;
+    _periodic_timer->start();
     return true;
 }
 
 void DataStreamROS::enableStreaming(bool enable) { _enabled = enable; }
 
-bool DataStreamROS::isStreamingEnabled() const { return _enabled; }
+bool DataStreamROS::isStreamingRunning() const { return _running; }
 
 
 void DataStreamROS::shutdown()
 {
-    if( _running ){
-        _running = false;
+    _periodic_timer->stop();
+    if(_spinner)
+    {
         _spinner->stop();
     }
-
-    for(ros::Subscriber& sub: _subscribers)
+    for(auto& it: _subscribers)
     {
-        sub.shutdown();
+        it.second.shutdown();
     }
     _subscribers.clear();
+    _running = false;
+    _enabled = false;
+    _node.reset();
+    _spinner.reset();
 }
 
 DataStreamROS::~DataStreamROS()
