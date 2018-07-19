@@ -480,6 +480,7 @@ void MainWindow::loadPlugins(QString directory_name)
 
                     connect(activatePublisher, &QAction::toggled,
                             [=](bool enable) { publisher->setEnabled( enable ); } );
+
                 }
             }
             else if (streamer)
@@ -501,6 +502,9 @@ void MainWindow::loadPlugins(QString directory_name)
 
                     connect(startStreamer, SIGNAL(triggered()), _streamer_signal_mapper, SLOT(map()) );
                     _streamer_signal_mapper->setMapping(startStreamer, plugin_name );
+
+                    connect(streamer, &DataStreamer::connectionClosed,
+                            ui->actionStopStreaming, &QAction::trigger );
                 }
             }
         }
@@ -954,7 +958,7 @@ void MainWindow::importPlotDataMap(const PlotDataMap& new_data, bool delete_olde
 
 bool MainWindow::isStreamingActive() const
 {
-    return ui->pushButtonStreaming->isChecked();
+    return ui->pushButtonStreaming->isChecked() && _current_streamer;
 }
 
 void MainWindow::onActionLoadDataFileImpl(QString filename, bool reuse_last_configuration )
@@ -1091,7 +1095,7 @@ void MainWindow::onActionLoadStreamer(QString streamer_name)
     if( _current_streamer && _current_streamer->start() )
     {
         _current_streamer->enableStreaming( false );
-        importPlotDataMap( _current_streamer->getDataMap(), true );
+        importPlotDataMap( _current_streamer->dataMap(), true );
 
         for(auto& action: ui->menuStreaming->actions()) {
             action->setEnabled(false);
@@ -1428,7 +1432,7 @@ void MainWindow::updateTimeSlider()
         }
     }
 
-    // last opportunity. Everuthing else failed
+    // last opportunity. Everything else failed
     if( max_steps == 0 || max_time < min_time)
     {
         min_time = 0.0;
@@ -1437,19 +1441,15 @@ void MainWindow::updateTimeSlider()
     }
     //----------------------------------
     // Update Time offset
-    //if( update_timeoffset)
+    const bool remove_offset = ui->pushButtonRemoveTimeOffset->isChecked();
+    if( remove_offset )
     {
-        bool remove_offset = ui->pushButtonRemoveTimeOffset->isChecked();
-
-        if( remove_offset )
-        {
-            if( isStreamingActive() == false){
-                _time_offset.set( min_time );
-            }
+        if( isStreamingActive() == false){
+            _time_offset.set( min_time );
         }
-        else{
-            _time_offset.set( 0.0 );
-        }
+    }
+    else{
+        _time_offset.set( 0.0 );
     }
 
     //----------------------------------
@@ -1539,8 +1539,7 @@ void MainWindow::on_pushButtonStreaming_toggled(bool streaming)
         double min_time = std::numeric_limits<double>::max();
         for (auto it: _mapped_plot_data.numeric )
         {
-            PlotDataPtr data = it.second;
-            data->flushAsyncBuffer();
+            PlotDataPtr& data = it.second;
             if(data->size() > 0)
             {
                 min_time  = std::min( min_time,  data->at(0).x);
@@ -1568,37 +1567,24 @@ void MainWindow::on_ToggleStreaming()
 
 void MainWindow::updateDataAndReplot()
 {
-
-    // STEP 1: sync the data (usefull for streaming
-    bool data_updated = false;
     {
-        //  PlotData::asyncPushMutex().lock();
-        for(auto it : _mapped_plot_data.numeric)
-        {
-            PlotDataPtr data = ( it.second );
-            data_updated |=  data->flushAsyncBuffer();
-        }
-        //  PlotData::asyncPushMutex().unlock();
-    }
-
-    if( data_updated )
-    {
+        std::lock_guard<std::mutex> lock( _current_streamer->mutex() );
         forEachWidget( [](PlotWidget* plot)
         {
-            plot->updateCurves(true);
+            plot->updateCurves();
         } );
         updateTimeSlider();
     }
     //--------------------------------
     // trigger again the execution of this callback if steaming == true
-    if( isStreamingActive())
+    if( isStreamingActive() )
     {
         static auto prev_time = std::chrono::steady_clock::now();
         auto time_now =  std::chrono::steady_clock::now();
         if( (time_now - prev_time) > std::chrono::seconds(2) )
         {
             prev_time = time_now;
-            importPlotDataMap( _current_streamer->getDataMap(), false );
+            importPlotDataMap( _current_streamer->dataMap(), false );
         }
 
         _replot_timer->setSingleShot(true);
