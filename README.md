@@ -6,7 +6,7 @@ ROS Indigo build (Travis): [![Build Status](https://travis-ci.org/facontidavide/
 
 [Donate with Paypal](https://www.paypal.me/facontidavide).
 
-# PlotJuggler 1.6.2
+# PlotJuggler 1.7.0
 
 QT5 based application to display time series in plots. 
 
