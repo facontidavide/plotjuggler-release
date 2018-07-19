@@ -6,7 +6,7 @@
 #include "PlotJuggler/datastreamer_base.h"
 
 
-class  DataStreamSample: public QObject, DataStreamer
+class  DataStreamSample: public DataStreamer
 {
     Q_OBJECT
     Q_PLUGIN_METADATA(IID "com.icarustechnology.PlotJuggler.DataStreamer" "../datastreamer.json")
@@ -16,15 +16,13 @@ public:
 
     DataStreamSample();
 
-    virtual PlotDataMap& getDataMap() override { return _plot_data; }
-
     virtual bool start() override;
 
     virtual void shutdown() override;
 
     virtual void enableStreaming(bool enable) override;
 
-    virtual bool isStreamingEnabled() const override;
+    virtual bool isStreamingRunning() const override;
 
     virtual ~DataStreamSample();
 
@@ -44,16 +42,13 @@ private:
 
     void loop();
 
-    PlotDataMap _plot_data;
     bool _enabled;
 
     std::thread _thread;
 
     bool _running;
 
-
     std::map<std::string,Parameters> _parameters;
-
 
     void pushSingleCycle();
 };
