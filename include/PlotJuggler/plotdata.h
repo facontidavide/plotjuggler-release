@@ -67,10 +67,6 @@ public:
 
   void pushBack(Point p);
 
-  void pushBackAsynchronously(Point p);
-
-  bool flushAsyncBuffer();
-
   QColor getColorHint() const;
 
   void setColorHint(QColor color);
@@ -81,14 +77,12 @@ protected:
 
   std::string _name;
   std::deque<Point> _points;
-  std::deque<Point> _pushed_points;
 
   QColor _color_hint;
 
 private:
 
   Time _max_range_X;
-  std::mutex _mutex;
 };
 
 
@@ -130,36 +124,6 @@ inline void PlotDataGeneric<Time, Value>::pushBack(Point point)
 {
   _points.push_back( point );
 }
-
-template < typename Time, typename Value>
-inline void PlotDataGeneric<Time, Value>::pushBackAsynchronously(Point point)
-{
-  std::lock_guard<std::mutex> lock(_mutex);
-  _pushed_points.push_back( point );
-  while(_pushed_points.size() > ASYNC_BUFFER_CAPACITY) _pushed_points.pop_front();
-}
-
-template < typename Time, typename Value>
-inline bool PlotDataGeneric<Time, Value>::flushAsyncBuffer()
-{
-  std::lock_guard<std::mutex> lock(_mutex);
-  if( _pushed_points.empty() ) return false;
-
-  while( !_pushed_points.empty() )
-  {
-      const Point& point = _pushed_points.front();
-      _points.push_back( point );
-      _pushed_points.pop_front();
-  }
-
-  while( _points.size()>2 &&
-         _points.back().x - _points.front().x > _max_range_X)
-  {
-      _points.pop_front();
-  }
-  return true;
-}
-
 
 template < typename Time, typename Value>
 inline int PlotDataGeneric<Time, Value>::getIndexFromX(Time x ) const
