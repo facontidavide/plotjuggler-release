@@ -17,7 +17,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include "PlotJuggler/datastreamer_base.h"
 
 
-class  DataStreamServer: public QObject, DataStreamer
+class  DataStreamServer: public DataStreamer
 {
     Q_OBJECT
     Q_PLUGIN_METADATA(IID "fr.upmc.isir.stech.plotjugglerplugins.DataStreamerServer")
@@ -31,11 +31,9 @@ public:
 
 	virtual void shutdown() override;
 
-    virtual PlotDataMap& getDataMap() override { return _plot_data; }
-
     virtual void enableStreaming(bool enable) override { _enabled = enable; }
 
-    virtual bool isStreamingEnabled() const override { return _enabled; }
+    virtual bool isStreamingRunning() const override { return _running; }
 
     virtual ~DataStreamServer();
 
@@ -48,7 +46,6 @@ private:
 	QList<QWebSocket *> _clients;
 	QWebSocketServer _server;    
 
-    PlotDataMap _plot_data;
     bool _enabled;
     bool _running;
 
