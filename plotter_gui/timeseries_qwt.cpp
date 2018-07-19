@@ -2,7 +2,10 @@
 #include <limits>
 #include <stdexcept>
 #include <QMessageBox>
+#include <QPushButton>
 #include <QString>
+
+bool if_xy_plot_failed_show_dialog = true;
 
 TimeseriesQwt::TimeseriesQwt(PlotDataPtr base):
     _plot_data(base),
@@ -41,6 +44,7 @@ void TimeseriesQwt::setSubsampleFactor()
     //  _subsample = (_plot_data->size() / 2000) + 1;
 }
 
+
 void TimeseriesQwt::updateData()
 {
     if(_plot_data->size() == 0) return;
@@ -58,7 +62,6 @@ void TimeseriesQwt::updateData()
       min_y = std::min( min_y, y );
       max_y = std::max( max_y, y );
     };
-
 
     //if(updated || force_transform)
     {
@@ -84,7 +87,7 @@ void TimeseriesQwt::updateData()
                 _cached_transformed_curve.resize( _plot_data->size() - 1 );
             }
 
-            for (size_t i=0; i< _plot_data->size() -1; i++ )
+            for (size_t i=0; i < _plot_data->size() -1; i++ )
             {
                 const auto& p0 = _plot_data->at( i );
                 const auto& p1 = _plot_data->at( i+1 );
@@ -137,21 +140,34 @@ void TimeseriesQwt::updateData()
                 }
             }
 
-            if( failed){
-                QMessageBox::warning(0, QString("Warning"),
-                                     QString("The creation of the XY plot failed because at least two "
-                                             "timeseries don't share the same time axis.") );
+            if( failed)
+            {
+                if( if_xy_plot_failed_show_dialog )
+                {
+                    QMessageBox msgBox;
+                    msgBox.setWindowTitle("Warnings");
+                    msgBox.setText("The creation of the XY plot failed because at least two "
+                                   "timeseries don't share the same time axis.");
+
+                    QAbstractButton* buttonDontRepear = msgBox.addButton("Don't show again",
+                                                                         QMessageBox::ActionRole);
+                    msgBox.addButton("Continue", QMessageBox::AcceptRole);
+                    msgBox.exec();
+
+                    if (msgBox.clickedButton() == buttonDontRepear) {
+                        if_xy_plot_failed_show_dialog = false;
+                    }
+                }
                 return;
             }
-            else{
-                _cached_transformed_curve.resize(N);
-                for (size_t i=0; i<N; i++ )
-                {
-                    const QPointF p(_alternative_X_axis->at(i).y, _plot_data->at(i).y );
-                    _cached_transformed_curve[i] = p;
+            _cached_transformed_curve.resize(N);
+            for (size_t i=0; i<N; i++ )
+            {
+                const QPointF p(_alternative_X_axis->at(i).y,
+                                _plot_data->at(i).y );
+                _cached_transformed_curve[i] = p;
 
-                    updateMinMax( p.x(), p.y() );
-                }
+                updateMinMax( p.x(), p.y() );
             }
         }
     }
