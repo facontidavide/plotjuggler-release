@@ -902,11 +902,11 @@ PlotData::RangeValue  PlotWidget::getMaximumRangeY( PlotData::RangeTime range_X,
     return PlotData::RangeValue({ bottom,  top});
 }
 
-void PlotWidget::updateCurves(bool force)
+void PlotWidget::updateCurves()
 {
-    for(auto it = _curve_list.begin(); it != _curve_list.end(); ++it)
+    for(auto& it: _curve_list)
     {
-        TimeseriesQwt* series = static_cast<TimeseriesQwt*>( it->second->data() );
+        TimeseriesQwt* series = static_cast<TimeseriesQwt*>( it.second->data() );
         series->updateData();
     }
 }

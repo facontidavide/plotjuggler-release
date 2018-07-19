@@ -7,13 +7,19 @@
 #include <mutex>
 #include "PlotJuggler/plotdata.h"
 
+/**
+ * @brief The DataStreamer base class to create your own plugin.
+ *
+ * Important. To avoid problems with thread safety, it is important that ANY update to
+ * dataMap(), which share its elements with the main application, is protected by the mutex()
+ *
+ * This includes in particular the periodic updates.
+ */
+class DataStreamer: public QObject{
 
-class DataStreamer{
-
+    Q_OBJECT
 public:
     DataStreamer(): _menu(NULL){}
-
-    virtual PlotDataMap& getDataMap() = 0;
 
     virtual bool start() = 0;
 
@@ -21,7 +27,7 @@ public:
 
     virtual void enableStreaming(bool enable) = 0;
 
-    virtual bool isStreamingEnabled() const = 0;
+    virtual bool isStreamingRunning() const = 0;
 
     virtual ~DataStreamer() {}
 
@@ -37,8 +43,26 @@ public:
 
     virtual bool xmlLoadState(QDomElement &parent_element ) { return false; }
 
+    std::mutex& mutex(){
+        return _mutex;
+    }
+
+    PlotDataMap& dataMap()
+    {
+        return _data_map;
+    }
+
+signals:
+
+    void dataUpdated();
+
+    void connectionClosed();
+
 protected:
     QMenu* _menu;
+private:
+    std::mutex _mutex;
+    PlotDataMap _data_map;
 };
 
 QT_BEGIN_NAMESPACE

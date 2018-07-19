@@ -2,6 +2,15 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.7.0 (2018-07-19)
+------------------
+* fixing issue #93 (thread safety in XYPlot and streaming)
+* fix issue #92
+* bug fix
+* Issue #88 (#90)
+* Reorder header files to fix conflicts with boost and QT (#86)
+* Contributors: Davide Faconti, Enrique Fernández Perdomo
+
 1.6.2 (2018-05-19)
 ------------------
 * fixing issue introduced in bec2c74195d74969f9c017b9b718faf9be6c1687

@@ -53,14 +53,13 @@ public slots:
 
 private:
     PlotDataPtr _plot_data;
+    PlotDataPtr _alternative_X_axis;
 
     std::vector<QPointF> _cached_transformed_curve;
 
     unsigned _subsample;
 
     Transform _transform;
-
-    PlotDataPtr _alternative_X_axis;
 
     QRectF _bounding_box;
 
