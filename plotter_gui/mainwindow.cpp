@@ -1091,8 +1091,18 @@ void MainWindow::onActionLoadStreamer(QString streamer_name)
         }
     }
 
-
-    if( _current_streamer && _current_streamer->start() )
+    bool started = false;
+    try{
+        started = _current_streamer && _current_streamer->start();
+    }
+    catch(std::runtime_error& err)
+    {
+        QMessageBox::warning(this, tr("Exception from the plugin"),
+                             tr("The plugin thrown the following exception: \n\n %1\n")
+                             .arg(err.what()) );
+        return;
+    }
+    if( started )
     {
         _current_streamer->enableStreaming( false );
         importPlotDataMap( _current_streamer->dataMap(), true );
