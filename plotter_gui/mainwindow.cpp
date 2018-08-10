@@ -11,6 +11,7 @@
 #include <QDomDocument>
 #include <QDesktopServices>
 #include <QFileDialog>
+#include <QCheckBox>
 #include <QMessageBox>
 #include <QStringRef>
 #include <QThread>
@@ -21,6 +22,7 @@
 #include <QCommandLineParser>
 #include <QMovie>
 #include <QScrollBar>
+#include <QPushButton>
 
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
@@ -135,7 +137,7 @@ MainWindow::MainWindow(const QCommandLineParser &commandline_parser, QWidget *pa
         onActionLoadLayoutFromFile( commandline_parser.value("layout"), file_loaded);
     }
 
-    QSettings settings( "IcarusTechnology", "PlotJuggler");
+    QSettings settings;
     restoreGeometry(settings.value("MainWindow.geometry").toByteArray());
 
     bool activate_grid = settings.value("MainWindow.activateGrid", false).toBool();
@@ -380,7 +382,7 @@ void MainWindow::createActions()
 
     //---------------------------------------------
 
-    QSettings settings( "IcarusTechnology", "PlotJuggler");
+    QSettings settings;
     if( settings.contains("MainWindow.recentlyLoadedDatafile") )
     {
         QString filename = settings.value("MainWindow.recentlyLoadedDatafile").toString();
@@ -654,6 +656,60 @@ QDomDocument MainWindow::xmlSaveState() const
     return doc;
 }
 
+void MainWindow::checkAllCurvesFromLayout(const QDomElement& root)
+{
+    std::set<std::string> curves;
+    // ugly code, I am sorry
+    for ( QDomElement   tw = root.firstChildElement(  "tabbed_widget" )  ;
+          !tw.isNull(); tw = tw.nextSiblingElement( "tabbed_widget" ) )
+    {
+        for ( QDomElement   pm = tw.firstChildElement(  "plotmatrix" )  ;
+              !pm.isNull(); pm = pm.nextSiblingElement( "plotmatrix" ) )
+        {
+            for ( QDomElement   pl = pm.firstChildElement(  "plot" )  ;
+                  !pl.isNull(); pl = pl.nextSiblingElement( "plot" ) )
+            {
+                for ( QDomElement   cv = pl.firstChildElement(  "curve" )  ;
+                      !cv.isNull(); cv = cv.nextSiblingElement( "curve" ) )
+                {
+                     curves.insert( cv.attribute("name").toStdString() );
+                }
+            }
+        }
+    }
+
+    std::vector<std::string> missing_curves;
+
+    for (auto& curve_name: curves)
+    {
+        if( _mapped_plot_data.numeric.count( curve_name ) == 0)
+        {
+            missing_curves.push_back(curve_name);
+        }
+    }
+    if( missing_curves.size() > 0 )
+    {
+        QMessageBox msgBox;
+        msgBox.setWindowTitle("Warning");
+        msgBox.setText(tr("One or more timeseries in the layout haven't been loaded yet\n"
+                          "What do you want to do?"));
+
+        QPushButton* buttonRemove = msgBox.addButton(tr("Remove curves from plots"), QMessageBox::RejectRole);
+        QPushButton* buttonPlaceholder = msgBox.addButton(tr("Create empty placeholders"), QMessageBox::YesRole);
+        msgBox.setDefaultButton(buttonPlaceholder);
+        msgBox.exec();
+        if( msgBox.clickedButton() == buttonPlaceholder )
+        {
+            for(auto& name: missing_curves )
+            {
+                _curvelist_widget->addItem( QString::fromStdString( name ), false );
+                _mapped_plot_data.numeric.insert( {name,  PlotDataPtr(new PlotData( name.c_str())) });
+            }
+            _curvelist_widget->sortColumns();
+        }
+    }
+}
+
 bool MainWindow::xmlLoadState(QDomDocument state_document)
 {
     QDomElement root = state_document.namedItem("root").toElement();
@@ -669,13 +725,6 @@ bool MainWindow::xmlLoadState(QDomDocument state_document)
          tw.isNull() == false;
          tw = tw.nextSiblingElement( "tabbed_widget" ) )
     {
-        if( ! tw.hasAttribute("name") ||  ! tw.hasAttribute("parent"))
-        {
-            QMessageBox::warning(0, tr("Warning"),
-                                 tr("This Layout format can not be parsed anymore\n") );
-            return false;
-        }
-
         if( tw.attribute("parent") != ("main_window") )
         {
             num_floating++;
@@ -701,6 +750,8 @@ bool MainWindow::xmlLoadState(QDomDocument state_document)
         }
     }
 
+    //-----------------------------------------------------
+    checkAllCurvesFromLayout(root);
     //-----------------------------------------------------
 
     for ( QDomElement tw = root.firstChildElement(  "tabbed_widget" )  ;
@@ -736,27 +787,36 @@ void MainWindow::onActionSaveLayout()
 
     QDomElement root = doc.namedItem("root").toElement();
 
-    if( _loaded_datafile.isEmpty() == false)
+    if( !_loaded_datafile.isEmpty() || _current_streamer )
     {
-        QDomElement previously_loaded_datafile =  doc.createElement( "previouslyLoadedDatafile" );
-        previously_loaded_datafile.setAttribute("filename", _loaded_datafile );
-        root.appendChild( previously_loaded_datafile );
-    }
-
-    if( _current_streamer )
-    {
-        QDomElement loaded_streamer =  doc.createElement( "previouslyLoadedStreamer" );
-        QString streamer_name = _current_streamer->name();
-        streamer_name.replace(" ", "_");
-        loaded_streamer.setAttribute("name", streamer_name );
-        root.appendChild( loaded_streamer );
+        auto reply = QMessageBox::question(0, tr("Hey!"),
+                                      tr("Do you want the layout to remember the source of your data,\n"
+                                         "i.e. the Datafile used or the Streaming Plugin loaded ?"),
+                                      QMessageBox::Yes | QMessageBox::No, QMessageBox::No );
+        if( reply == QMessageBox::Yes )
+        {
+            if( _loaded_datafile.isEmpty() == false)
+            {
+                QDomElement previously_loaded_datafile =  doc.createElement( "previouslyLoadedDatafile" );
+                previously_loaded_datafile.setAttribute("filename", _loaded_datafile );
+                root.appendChild( previously_loaded_datafile );
+            }
+        }
+        if( _current_streamer )
+        {
+            QDomElement loaded_streamer =  doc.createElement( "previouslyLoadedStreamer" );
+            QString streamer_name = _current_streamer->name();
+            streamer_name.replace(" ", "_");
+            loaded_streamer.setAttribute("name", streamer_name );
+            root.appendChild( loaded_streamer );
+        }
     }
     //------------------------------------
 
-    QSettings settings( "IcarusTechnology", "PlotJuggler");
+    QSettings settings;
 
     QString directory_path  = settings.value("MainWindow.lastLayoutDirectory",
-                                             QDir::currentPath() ). toString();
+                                             QDir::currentPath() ).toString();
 
     QFileDialog saveDialog;
     saveDialog.setAcceptMode(QFileDialog::AcceptSave);
@@ -841,7 +901,7 @@ void MainWindow::onActionLoadDataFile()
         return;
     }
 
-    QSettings settings( "IcarusTechnology", "PlotJuggler");
+    QSettings settings;
 
     QString file_extension_filter;
 
@@ -882,7 +942,7 @@ void MainWindow::onActionLoadDataFile()
 
 void MainWindow::onReloadDatafile()
 {
-    QSettings settings( "IcarusTechnology", "PlotJuggler");
+    QSettings settings;
     if( settings.contains("MainWindow.recentlyLoadedDatafile") )
     {
         QString filename = settings.value("MainWindow.recentlyLoadedDatafile").toString();
@@ -892,7 +952,7 @@ void MainWindow::onReloadDatafile()
 
 void MainWindow::onActionReloadRecentDataFile()
 {
-    QSettings settings( "IcarusTechnology", "PlotJuggler");
+    QSettings settings;
     if( settings.contains("MainWindow.recentlyLoadedDatafile") )
     {
         QString filename = settings.value("MainWindow.recentlyLoadedDatafile").toString();
@@ -1052,6 +1112,7 @@ void MainWindow::onActionLoadDataFileImpl(QString filename, bool reuse_last_conf
                              .arg(filename) );
     }
     _curvelist_widget->updateFilter();
+    updateDataAndReplot();
 }
 
 void MainWindow::onActionReloadRecentLayout()
@@ -1127,7 +1188,7 @@ void MainWindow::onActionLoadStreamer(QString streamer_name)
 
 void MainWindow::onActionLoadLayout(bool reload_previous)
 {
-    QSettings settings( "IcarusTechnology", "PlotJuggler");
+    QSettings settings;
 
     QString directory_path = QDir::currentPath();
 
@@ -1223,7 +1284,7 @@ void MainWindow::savePluginState(QDomDocument& doc)
 
 void MainWindow::onActionLoadLayoutFromFile(QString filename, bool load_data)
 {
-    QSettings settings( "IcarusTechnology", "PlotJuggler");
+    QSettings settings;
 
     QString directory_path = QFileInfo(filename).absolutePath();
     settings.setValue("MainWindow.lastLayoutDirectory",  directory_path);
@@ -1253,7 +1314,6 @@ void MainWindow::onActionLoadLayoutFromFile(QString filename, bool load_data)
         return;
     }
 
-
     //-------------------------------------------------
     // refresh plugins
     QDomElement root = domDocument.namedItem("root").toElement();
@@ -1275,18 +1335,16 @@ void MainWindow::onActionLoadLayoutFromFile(QString filename, bool load_data)
                 filename = previously_loaded_datafile.text();
             }
 
-            QMessageBox::StandardButton reload_previous;
-            reload_previous = QMessageBox::question(0, tr("Wait!"),
-                                                    tr("Do you want to reload the previous datafile and its configuration?\n\n %1 \n\n"
-                                                       "YesToAll:  reload both the datafile and the configuration.\n\n"
-                                                       "Yes:       reload only the datafile and change the configuration.\n\n"
-                                                       "No:        use the already loaded data.\n").arg(filename),
-                                                    QMessageBox::YesToAll | QMessageBox::Yes | QMessageBox::No,
-                                                    QMessageBox::YesToAll );
-
-            if( reload_previous != QMessageBox::No )
+            QMessageBox msgBox;
+            msgBox.setWindowTitle("Load Data?");
+            msgBox.setText(tr("Do you want to reload the previous datafile?\n\n %1 \n\n").arg(filename));
+            msgBox.addButton(tr("No (Layout only)"), QMessageBox::RejectRole);
+            QPushButton* buttonBoth = msgBox.addButton(tr("Yes (Both Layout and Datafile)"), QMessageBox::YesRole);
+            msgBox.setDefaultButton(buttonBoth);
+            msgBox.exec();
+            if( msgBox.clickedButton() == buttonBoth )
             {
-                onActionLoadDataFileImpl( filename, reload_previous == QMessageBox::YesToAll );
+                onActionLoadDataFileImpl( filename, true );
             }
         }
     }
@@ -1294,26 +1352,25 @@ void MainWindow::onActionLoadLayoutFromFile(QString filename, bool load_data)
     QDomElement previously_loaded_streamer =  root.firstChildElement( "previouslyLoadedStreamer" );
     if( previously_loaded_streamer.isNull() == false)
     {
-        QString streamer_name;
-        if( previously_loaded_streamer.hasAttribute("name"))
-        {
-            //new format
-            streamer_name = previously_loaded_streamer.attribute("name");
-        }
-        else{ //old format
-            streamer_name = previously_loaded_streamer.text();
-        }
+        QString streamer_name = previously_loaded_streamer.attribute("name");
 
-        bool streamer_loaded = false;
-        for(auto& it: _data_streamer) {
-            if( it.first == streamer_name) streamer_loaded = true;
-        }
-        if( streamer_loaded ){
-            onActionLoadStreamer( streamer_name );
-        }
-        else{
-            QMessageBox::warning(this, tr("Error Loading Streamer"),
-                                 tr("The streamer named %1 can not be loaded.").arg(streamer_name));
+        QMessageBox msgBox;
+        msgBox.setWindowTitle("Start Streaming?");
+        msgBox.setText(tr("Do you want to start the previously used streaming plugin?\n\n %1 \n\n").arg(streamer_name));
+        msgBox.addButton(tr("No (Layout only)"), QMessageBox::RejectRole);
+        QPushButton* buttonBoth = msgBox.addButton(tr("Yes (Both Layout and Streaming)"), QMessageBox::YesRole);
+        msgBox.setDefaultButton(buttonBoth);
+        msgBox.exec();
+        if( msgBox.clickedButton() == buttonBoth )
+        {
+            if( _data_streamer.count(streamer_name) != 0 )
+            {
+                onActionLoadStreamer( streamer_name );
+            }
+            else{
+                QMessageBox::warning(this, tr("Error Loading Streamer"),
+                                     tr("The streamer named %1 can not be loaded.").arg(streamer_name));
+            }
         }
     }
 
@@ -1328,8 +1385,6 @@ void MainWindow::onActionLoadLayoutFromFile(QString filename, bool load_data)
 
 void MainWindow::onUndoInvoked( )
 {
-    // qDebug() << "on_UndoInvoked "<<_undo_states.size() << " -> " <<_undo_states.size()-1;
-
     _disable_undo_logging = true;
     if( _undo_states.size() > 1)
     {
@@ -1622,6 +1677,9 @@ void MainWindow::updateDataAndReplot()
 
 void MainWindow::on_streamingSpinBox_valueChanged(int value)
 {
+    if( _current_streamer ) {
+        _current_streamer->mutex().lock();
+    }
     for (auto it : _mapped_plot_data.numeric )
     {
         PlotDataPtr plot = it.second;
@@ -1632,6 +1690,10 @@ void MainWindow::on_streamingSpinBox_valueChanged(int value)
     {
         PlotDataAnyPtr plot = it.second;
         plot->setMaximumRangeX( value );
+    }
+
+    if( _current_streamer ) {
+        _current_streamer->mutex().unlock();
     }
 }
 
@@ -1801,7 +1863,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
         _current_streamer->shutdown();
         _current_streamer = nullptr;
     }
-    QSettings settings( "IcarusTechnology", "PlotJuggler");
+    QSettings settings;
     settings.setValue("MainWindow.geometry", saveGeometry());
     settings.setValue("MainWindow.activateGrid", ui->pushButtonActivateGrid->isChecked() );
     settings.setValue("MainWindow.streamingBufferValue", ui->streamingSpinBox->value() );
