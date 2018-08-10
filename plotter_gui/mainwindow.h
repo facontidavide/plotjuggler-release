@@ -164,6 +164,8 @@ private:
 
     bool xmlLoadState(QDomDocument state_document);
 
+    void checkAllCurvesFromLayout(const QDomElement& root);
+
     std::deque<QDomDocument> _undo_states;
 
     std::deque<QDomDocument> _redo_states;
