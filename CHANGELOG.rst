@@ -2,6 +2,22 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.7.2 (2018-08-10)
+------------------
+* Update .travis.yml
+* fixed potential thread safety problem
+* trying to apply changes discussed in issue #96
+* add transport hint
+* make hyperlinks clickable by allowing to open external links (#95)
+* Contributors: Davide Faconti, Romain Reignier
+
+* Update .travis.yml
+* fixed potential thread safety problem
+* trying to apply changes discussed in issue #96
+* add transport hint
+* make hyperlinks clickable by allowing to open external links (#95)
+* Contributors: Davide Faconti, Romain Reignier
+
 1.7.1 (2018-07-22)
 ------------------
 * catch exceptions

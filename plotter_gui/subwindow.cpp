@@ -12,7 +12,7 @@ SubWindow::SubWindow(QString name, PlotMatrix *first_tab, PlotDataMap &mapped_da
     this->setWindowFlags( flags | Qt::SubWindow );
     this->setWindowTitle( tabbed_widget_->name() );
 
-    QSettings settings( "IcarusTechnology", "PlotJuggler");
+    QSettings settings;
     restoreGeometry(settings.value( QString("SubWindow.%1.geometry").arg(name) ).toByteArray());
 
     this->setAttribute( Qt::WA_DeleteOnClose );
@@ -20,7 +20,7 @@ SubWindow::SubWindow(QString name, PlotMatrix *first_tab, PlotDataMap &mapped_da
 
 SubWindow::~SubWindow()
 {
-    QSettings settings( "IcarusTechnology", "PlotJuggler");
+    QSettings settings;
     settings.setValue(QString("SubWindow.%1.geometry").arg( tabbedWidget()->name() ), saveGeometry());
     tabbed_widget_->close();
 }
