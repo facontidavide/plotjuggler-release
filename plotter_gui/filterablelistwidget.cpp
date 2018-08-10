@@ -58,7 +58,7 @@ FilterableListWidget::FilterableListWidget(QWidget *parent) :
 
     _completer->setCompletionMode( QCompleter::PopupCompletion );
 
-    QSettings settings( "IcarusTechnology", "PlotJuggler");
+    QSettings settings;
 
     QString active_filter = settings.value("FilterableListWidget.searchFilter", "radioContains").toString();
     if( active_filter == "radioRegExp")        ui->radioRegExp->setChecked(true);
@@ -69,7 +69,7 @@ FilterableListWidget::FilterableListWidget(QWidget *parent) :
 
 FilterableListWidget::~FilterableListWidget()
 {
-    QSettings settings( "IcarusTechnology", "PlotJuggler");
+    QSettings settings;
 
     if(ui->radioRegExp->isChecked())
         settings.setValue("FilterableListWidget.searchFilter", "radioRegExp");
