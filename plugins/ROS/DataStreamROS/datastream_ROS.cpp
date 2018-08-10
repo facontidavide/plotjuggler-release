@@ -16,6 +16,7 @@
 #include <ros/callback_queue.h>
 #include <rosbag/bag.h>
 #include <topic_tools/shape_shifter.h>
+#include <ros/transport_hints.h>
 
 #include "../dialog_select_ros_topics.h"
 #include "../rule_editing.h"
@@ -287,13 +288,18 @@ void DataStreamROS::subscribe()
 
     for (int i=0; i< _default_topic_names.size(); i++ )
     {
-        boost::function<void(const topic_tools::ShapeShifter::ConstPtr&) > callback;
         const std::string topic_name = _default_topic_names[i].toStdString();
+        boost::function<void(const topic_tools::ShapeShifter::ConstPtr&) > callback;
         callback = [this, topic_name](const topic_tools::ShapeShifter::ConstPtr& msg) -> void
         {
             this->topicCallback(msg, topic_name) ;
         };
-        _subscribers.insert( {topic_name, _node->subscribe( topic_name, 0,  callback)}  );
+
+        ros::SubscribeOptions ops;
+        ops.initByFullCallbackType(topic_name, 1, callback);
+        ops.transport_hints = ros::TransportHints().tcpNoDelay();
+
+        _subscribers.insert( {topic_name, _node->subscribe(ops) }  );
     }
 }
 

@@ -35,6 +35,9 @@ int main(int argc, char *argv[])
     QApplication app(argc, argv);
     app.setApplicationName("PlotJuggler");
 
+    app.setOrganizationName("IcarusTechnology");
+    app.setApplicationName("PlotJuggler");
+
     qApp->setStyleSheet(QString("QToolTip {\n"
                                 "   border: 1px solid black;\n"
                                 "   border-radius: 4px;\n"
