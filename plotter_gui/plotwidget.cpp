@@ -534,7 +534,7 @@ QDomElement PlotWidget::xmlSaveState( QDomDocument &doc) const
     return plot_el;
 }
 
-bool PlotWidget::xmlLoadState(QDomElement &plot_widget, QMessageBox::StandardButton* answer)
+bool PlotWidget::xmlLoadState(QDomElement &plot_widget)
 {
     QDomElement curve;
 
@@ -574,6 +574,8 @@ bool PlotWidget::xmlLoadState(QDomElement &plot_widget, QMessageBox::StandardBut
         }
     }
 
+    static bool warning_message_shown = false;
+
     for (  curve = plot_widget.firstChildElement( "curve" )  ;
            !curve.isNull();
            curve = curve.nextSiblingElement( "curve" ) )
@@ -590,24 +592,12 @@ bool PlotWidget::xmlLoadState(QDomElement &plot_widget, QMessageBox::StandardBut
             _curve_list[curve_name]->setPen( color, 1.0);
             added_curve_names.insert(curve_name );
         }
-        else{
-            if( *answer !=  QMessageBox::YesToAll)
-            {
-                *answer = QMessageBox::question(
-                            0,
-                            tr("Warning"),
-                            tr("Can't find the curve with name %1.\n Do you want to ignore it? ").arg(curve_name),
-                            QMessageBox::Yes | QMessageBox::YesToAll | QMessageBox::Abort ,
-                            QMessageBox::Abort );
-            }
-
-            if( *answer ==  QMessageBox::Yes || *answer ==  QMessageBox::YesToAll) {
-                continue;
-            }
-
-            if( *answer ==  QMessageBox::Abort) {
-                return false;
-            }
+        else if( ! warning_message_shown )
+        {
+            QMessageBox::warning(this, "Warning",
+                                 tr("Can't find one or more curves.\n"
+                                    "This message will be shown only once.").arg(curve_name) );
+            warning_message_shown = true;
         }
     }
 

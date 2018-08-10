@@ -56,121 +56,119 @@ void TimeseriesQwt::updateData()
 
     auto updateMinMax = [&min_x, &min_y, &max_x, &max_y](double x, double y)
     {
-      min_x = std::min( min_x, x );
-      max_x = std::max( max_x, x );
+        min_x = std::min( min_x, x );
+        max_x = std::max( max_x, x );
 
-      min_y = std::min( min_y, y );
-      max_y = std::max( max_y, y );
+        min_y = std::min( min_y, y );
+        max_y = std::max( max_y, y );
     };
 
-    //if(updated || force_transform)
+    if(_transform == noTransform)
     {
-        if(_transform == noTransform)
+        _cached_transformed_curve.resize( 0 );
+        _cached_transformed_curve.shrink_to_fit();
+
+        for (size_t i=0; i< _plot_data->size(); i++ )
         {
-            _cached_transformed_curve.resize( 0 );
-            _cached_transformed_curve.shrink_to_fit();
+            auto p = _plot_data->at( i );
+            p.x -= _time_offset;
 
-            for (size_t i=0; i< _plot_data->size(); i++ )
-            {
-                auto p = _plot_data->at( i );
-                p.x -= _time_offset;
-
-                updateMinMax( p.x, p.y );
-            }
-        }
-        else if(_transform == firstDerivative)
-        {
-            if( _plot_data->size() < 1){
-                _cached_transformed_curve.clear();
-            }
-            else{
-                _cached_transformed_curve.resize( _plot_data->size() - 1 );
-            }
-
-            for (size_t i=0; i < _plot_data->size() -1; i++ )
-            {
-                const auto& p0 = _plot_data->at( i );
-                const auto& p1 = _plot_data->at( i+1 );
-                const auto delta = p1.x - p0.x;
-                const auto vel = (p1.y - p0.y) /delta;
-                QPointF p( (p1.x + p0.x)*0.5, vel);
-                p.setX( p.x() - _time_offset);
-                _cached_transformed_curve[i] = p;
-
-                updateMinMax( p.x(), p.y() );
-            }
-        }
-        else if(_transform == secondDerivative)
-        {
-            if( _plot_data->size() < 2){
-                _cached_transformed_curve.clear();
-            }
-            else{
-                _cached_transformed_curve.resize( _plot_data->size() - 2 );
-            }
-
-            for (size_t i=0; i< _cached_transformed_curve.size(); i++ )
-            {
-                const auto& p0 = _plot_data->at( i );
-                const auto& p1 = _plot_data->at( i+1 );
-                const auto& p2 = _plot_data->at( i+2 );
-                const auto delta = (p2.x - p0.x) *0.5;
-                const auto acc = ( p2.y - 2.0* p1.y + p0.y)/(delta*delta);
-                QPointF p( (p2.x + p0.x)*0.5, acc );
-                p.setX( p.x() - _time_offset);
-                _cached_transformed_curve[i] = p;
-
-                updateMinMax( p.x(), p.y() );
-            }
-        }
-        else if( _transform == XYPlot && _alternative_X_axis)
-        {
-            bool failed = false;
-            const size_t N = _alternative_X_axis->size();
-
-            if( _plot_data->size() != N ){
-                failed = true ;
-            }
-
-            for (size_t i=0; i<N && !failed; i++ )
-            {
-                if( _alternative_X_axis->at(i).x != _plot_data->at(i).x ){
-                    failed = true ;
-                    break;
-                }
-            }
-
-            if( failed)
-            {
-                if( if_xy_plot_failed_show_dialog )
-                {
-                    QMessageBox msgBox;
-                    msgBox.setWindowTitle("Warnings");
-                    msgBox.setText("The creation of the XY plot failed because at least two "
-                                   "timeseries don't share the same time axis.");
-
-                    QAbstractButton* buttonDontRepear = msgBox.addButton("Don't show again",
-                                                                         QMessageBox::ActionRole);
-                    msgBox.addButton("Continue", QMessageBox::AcceptRole);
-                    msgBox.exec();
-
-                    if (msgBox.clickedButton() == buttonDontRepear) {
-                        if_xy_plot_failed_show_dialog = false;
-                    }
-                }
-                return;
-            }
-            _cached_transformed_curve.resize(N);
-            for (size_t i=0; i<N; i++ )
-            {
-                const QPointF p(_alternative_X_axis->at(i).y,
-                                _plot_data->at(i).y );
-                _cached_transformed_curve[i] = p;
-
-                updateMinMax( p.x(), p.y() );
-            }
+            updateMinMax( p.x, p.y );
         }
     }
+    else if(_transform == firstDerivative)
+    {
+        if( _plot_data->size() < 1){
+            _cached_transformed_curve.clear();
+        }
+        else{
+            _cached_transformed_curve.resize( _plot_data->size() - 1 );
+        }
+
+        for (size_t i=0; i < _plot_data->size() -1; i++ )
+        {
+            const auto& p0 = _plot_data->at( i );
+            const auto& p1 = _plot_data->at( i+1 );
+            const auto delta = p1.x - p0.x;
+            const auto vel = (p1.y - p0.y) /delta;
+            QPointF p( (p1.x + p0.x)*0.5, vel);
+            p.setX( p.x() - _time_offset);
+            _cached_transformed_curve[i] = p;
+
+            updateMinMax( p.x(), p.y() );
+        }
+    }
+    else if(_transform == secondDerivative)
+    {
+        if( _plot_data->size() < 2){
+            _cached_transformed_curve.clear();
+        }
+        else{
+            _cached_transformed_curve.resize( _plot_data->size() - 2 );
+        }
+
+        for (size_t i=0; i< _cached_transformed_curve.size(); i++ )
+        {
+            const auto& p0 = _plot_data->at( i );
+            const auto& p1 = _plot_data->at( i+1 );
+            const auto& p2 = _plot_data->at( i+2 );
+            const auto delta = (p2.x - p0.x) *0.5;
+            const auto acc = ( p2.y - 2.0* p1.y + p0.y)/(delta*delta);
+            QPointF p( (p2.x + p0.x)*0.5, acc );
+            p.setX( p.x() - _time_offset);
+            _cached_transformed_curve[i] = p;
+
+            updateMinMax( p.x(), p.y() );
+        }
+    }
+    else if( _transform == XYPlot && _alternative_X_axis)
+    {
+        bool failed = false;
+        const size_t N = _alternative_X_axis->size();
+
+        if( _plot_data->size() != N ){
+            failed = true ;
+        }
+
+        for (size_t i=0; i<N && !failed; i++ )
+        {
+            if( _alternative_X_axis->at(i).x != _plot_data->at(i).x ){
+                failed = true ;
+                break;
+            }
+        }
+
+        if( failed)
+        {
+            if( if_xy_plot_failed_show_dialog )
+            {
+                QMessageBox msgBox;
+                msgBox.setWindowTitle("Warnings");
+                msgBox.setText("The creation of the XY plot failed because at least two "
+                               "timeseries don't share the same time axis.");
+
+                QAbstractButton* buttonDontRepear = msgBox.addButton("Don't show again",
+                                                                     QMessageBox::ActionRole);
+                msgBox.addButton("Continue", QMessageBox::AcceptRole);
+                msgBox.exec();
+
+                if (msgBox.clickedButton() == buttonDontRepear) {
+                    if_xy_plot_failed_show_dialog = false;
+                }
+            }
+            return;
+        }
+        _cached_transformed_curve.resize(N);
+        for (size_t i=0; i<N; i++ )
+        {
+            const QPointF p(_alternative_X_axis->at(i).y,
+                            _plot_data->at(i).y );
+            _cached_transformed_curve[i] = p;
+
+            updateMinMax( p.x(), p.y() );
+        }
+    }
+
     _bounding_box.setBottom(min_y);
     _bounding_box.setTop(max_y);
 
