@@ -213,6 +213,11 @@ template < typename Time, typename Value>
 inline void PlotDataGeneric<Time, Value>::setMaximumRangeX(Time max_range)
 {
   _max_range_X = max_range;
+  while( _points.size()>2 &&
+         _points.back().x - _points.front().x > _max_range_X)
+  {
+        _points.pop_front();
+  }
 }
 
 #endif // PLOTDATA_H

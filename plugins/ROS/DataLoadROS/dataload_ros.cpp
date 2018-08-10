@@ -198,9 +198,9 @@ PlotDataMap DataLoadROS::readDataFromFile(const QString &file_name, bool use_pre
             const std::string key = prefix + it.first;
 
             auto plot_pair = plot_map.numeric.find( key );
-            if( !(plot_pair != plot_map.numeric.end()) )
+            if( (plot_pair == plot_map.numeric.end()) )
             {
-                PlotDataPtr temp(new PlotData(key.data()));
+                PlotDataPtr temp(new PlotData( key.c_str() ));
                 auto res = plot_map.numeric.insert( std::make_pair(key, temp ) );
                 plot_pair = res.first;
             }
