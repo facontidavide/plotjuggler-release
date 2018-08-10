@@ -38,7 +38,7 @@ public:
 
     QDomElement xmlSaveState(QDomDocument &doc) const;
 
-    bool xmlLoadState(QDomElement &element, QMessageBox::StandardButton* answer);
+    bool xmlLoadState(QDomElement &element);
 
     QRectF currentBoundingRect() const;
 
