@@ -2,6 +2,15 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.7.3 (2018-08-12)
+------------------
+* enhancement discussed in #104 Can clear buffer while streaming is active
+* adding enhancements 4 and 5 from issue #105
+* fixed bug reported in  #105
+* fix critical error
+* fix issue #101
+* Contributors: Davide Faconti
+
 1.7.2 (2018-08-10)
 ------------------
 * Update .travis.yml
