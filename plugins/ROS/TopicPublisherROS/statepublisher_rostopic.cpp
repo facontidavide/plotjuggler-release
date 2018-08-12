@@ -62,8 +62,8 @@ void TopicPublisherROS::ChangeFilter(bool)
     QDialog* dialog = new QDialog();
     dialog->setWindowTitle("Select topics to be published");
     dialog->setMinimumWidth(350);
-    QVBoxLayout* vertical_layout = new QVBoxLayout(dialog);
-    QFormLayout* grid_layout = new QFormLayout(dialog);
+    QVBoxLayout* vertical_layout = new QVBoxLayout();
+    QFormLayout* grid_layout = new QFormLayout();
 
     std::map<std::string, QCheckBox*> checkbox;
 
