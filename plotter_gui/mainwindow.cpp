@@ -672,7 +672,7 @@ void MainWindow::checkAllCurvesFromLayout(const QDomElement& root)
                 for ( QDomElement   cv = pl.firstChildElement(  "curve" )  ;
                       !cv.isNull(); cv = cv.nextSiblingElement( "curve" ) )
                 {
-                     curves.insert( cv.attribute("name").toStdString() );
+                    curves.insert( cv.attribute("name").toStdString() );
                 }
             }
         }
@@ -790,9 +790,9 @@ void MainWindow::onActionSaveLayout()
     if( !_loaded_datafile.isEmpty() || _current_streamer )
     {
         auto reply = QMessageBox::question(0, tr("Hey!"),
-                                      tr("Do you want the layout to remember the source of your data,\n"
-                                         "i.e. the Datafile used or the Streaming Plugin loaded ?"),
-                                      QMessageBox::Yes | QMessageBox::No, QMessageBox::No );
+                                           tr("Do you want the layout to remember the source of your data,\n"
+                                              "i.e. the Datafile used or the Streaming Plugin loaded ?"),
+                                           QMessageBox::Yes | QMessageBox::No, QMessageBox::No );
         if( reply == QMessageBox::Yes )
         {
             if( _loaded_datafile.isEmpty() == false)
@@ -870,26 +870,66 @@ void MainWindow::deleteDataOfSingleCurve(const QString& curve_name)
 
 void MainWindow::onDeleteLoadedData()
 {
-    QMessageBox::StandardButton reply;
-    reply = QMessageBox::question(0, tr("Warning"),
-                                  tr("Do you really want to remove the loaded data?\n"),
-                                  QMessageBox::Yes | QMessageBox::No,
-                                  QMessageBox::No );
-    if( reply == QMessageBox::No ) {
-        return;
+    if( isStreamingActive() )
+    {
+        _current_streamer->mutex().lock();
+        for( auto& it: _current_streamer->dataMap().numeric )
+        {
+            it.second->clear();
+        }
+        for( auto& it: _current_streamer->dataMap().user_defined )
+        {
+            it.second->clear();
+        }
+        _current_streamer->mutex().unlock();
+        importPlotDataMap(_current_streamer->dataMap(), true);
     }
+    else
+    {
+        QMessageBox msgBox;
+        msgBox.setWindowTitle("Warning");
+        msgBox.setText(tr("Do you really want to REMOVE the loaded data?\n"));
+        msgBox.addButton(QMessageBox::No);
+        msgBox.addButton(QMessageBox::Yes);
+        msgBox.setDefaultButton(QMessageBox::Yes);
+        QPushButton* buttonPlaceholder = msgBox.addButton(tr("Keep empty placeholders"), QMessageBox::NoRole);
+        auto reply = msgBox.exec();
 
-    _mapped_plot_data.numeric.clear();
-    _mapped_plot_data.user_defined.clear();
+        if( reply == QMessageBox::No ) {
+            return;
+        }
 
-    _curvelist_widget->clear();
+        if( msgBox.clickedButton() == buttonPlaceholder )
+        {
+            for( auto& it: _mapped_plot_data.numeric )
+            {
+                it.second->clear();
+            }
+            for( auto& it: _mapped_plot_data.user_defined )
+            {
+                it.second->clear();
+            }
+            _main_tabbed_widget->currentTab()->maximumZoomOut() ;
 
-    forEachWidget( [](PlotWidget* plot) {
-        plot->detachAllCurves();
-    } );
+            for(const auto& it: TabbedPlotWidget::instances())
+            {
+                PlotMatrix* matrix =  it.second->currentTab() ;
+                matrix->maximumZoomOut(); // includes replot
+            }
+        }
+        else
+        {
+            _mapped_plot_data.numeric.clear();
+            _mapped_plot_data.user_defined.clear();
 
-    ui->actionDeleteAllData->setEnabled( false );
+            _curvelist_widget->clear();
 
+            forEachWidget( [](PlotWidget* plot) {
+                plot->detachAllCurves();
+            } );
+            ui->actionDeleteAllData->setEnabled( false );
+        }
+    }
 }
 
 void MainWindow::onActionLoadDataFile()
@@ -1172,8 +1212,8 @@ void MainWindow::onActionLoadStreamer(QString streamer_name)
             action->setEnabled(false);
         }
         ui->actionStopStreaming->setEnabled(true);
-        ui->actionDeleteAllData->setEnabled( false );
-        ui->actionDeleteAllData->setToolTip("Stop streaming to be able to delete the data");
+        ui->actionDeleteAllData->setEnabled( true );
+       // ui->actionDeleteAllData->setToolTip("Stop streaming to be able to delete the data");
         ui->actionReloadPrevious->setEnabled( false );
 
         ui->pushButtonStreaming->setEnabled(true);
@@ -1633,12 +1673,14 @@ void MainWindow::on_ToggleStreaming()
 void MainWindow::updateDataAndReplot()
 {
     {
-        std::lock_guard<std::mutex> lock( _current_streamer->mutex() );
+        if( _current_streamer )  _current_streamer->mutex().lock();
+
         forEachWidget( [](PlotWidget* plot)
         {
             plot->updateCurves();
         } );
         updateTimeSlider();
+        if( _current_streamer )  _current_streamer->mutex().unlock();
     }
     //--------------------------------
     // trigger again the execution of this callback if steaming == true
@@ -1663,6 +1705,7 @@ void MainWindow::updateDataAndReplot()
         } );
 
         onTrackerTimeUpdated(_tracker_time);
+        ui->actionDeleteAllData->setEnabled( true );
     }
     //--------------------------------
     // zoom out and replot
