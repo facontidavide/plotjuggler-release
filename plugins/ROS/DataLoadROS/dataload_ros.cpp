@@ -108,6 +108,9 @@ PlotDataMap DataLoadROS::readDataFromFile(const QString &file_name, bool use_pre
                 _use_renaming_rules = false;
             }
         }
+        else{
+            return PlotDataMap{};
+        }
         settings.setValue("DataLoadROS/default_topics", _default_topic_names);
         settings.setValue("DataLoadROS/use_renaming", _use_renaming_rules);
     }

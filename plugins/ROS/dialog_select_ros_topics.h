@@ -51,6 +51,8 @@ private slots:
 
     void on_checkBoxPrefix_toggled(bool checked);
 
+    void on_maximumSizeHelp_pressed();
+
 private:
 
     void closeEvent(QCloseEvent *event) override;
