@@ -34,11 +34,11 @@ class  RosoutPublisher: public QObject, StatePublisher
 public:
     RosoutPublisher();
 
-    virtual void updateState(PlotDataMap* datamap, double current_time) override;
+    virtual void updateState(double current_time) override;
     virtual const char* name() const override { return "RosoutPublisherROS"; }
     virtual ~RosoutPublisher();
 
-    virtual bool enabled() const override { return enabled_; }
+    virtual bool enabled() const override { return _enabled; }
 
 public slots:
     virtual void setEnabled(bool enabled) override;
@@ -49,13 +49,13 @@ private slots:
 
 private:
 
-    bool enabled_;
+    bool _enabled;
     int64_t _minimum_time_usec, _maximum_time_usec;
 
     LogsTableModel* _tablemodel;
     rqt_console_plus::LogWidget* _log_widget;
 
-    std::vector<const PlotDataAny *> findRosoutTimeseries(PlotDataMap *datamap);
+    std::vector<const PlotDataAny *> findRosoutTimeseries();
     void syncWithTableModel(const std::vector<const PlotDataAny *> &logs_timeseries);
 
     RosoutWindow* _log_window;

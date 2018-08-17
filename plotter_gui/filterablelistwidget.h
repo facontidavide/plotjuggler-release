@@ -8,12 +8,13 @@
 #include <QMouseEvent>
 #include <QStandardItemModel>
 
+#include "tree_completer.h"
+
+class CustomSortedTableItem;
 
 namespace Ui {
 class FilterableListWidget;
 }
-
-class TreeModelCompleter;
 
 class FilterableListWidget : public QWidget
 {
@@ -27,7 +28,7 @@ public:
 
     void clear();
 
-    void addItem(const QString& item_name, bool sort_columns);
+    void addItem(const QString& item_name);
 
     void sortColumns();
 
@@ -47,6 +48,8 @@ private slots:
 
     void on_radioRegExp_toggled(bool checked);
 
+    void on_radioPrefix_toggled(bool checked);
+
     void on_checkBoxCaseSensitive_toggled(bool checked);
 
     void on_lineEdit_textChanged(const QString &search_string);
@@ -57,8 +60,6 @@ private slots:
 
     void removeSelectedCurves();
 
-    void on_radioPrefix_toggled(bool checked);
-
 private:
 
     Ui::FilterableListWidget *ui;
@@ -67,15 +68,13 @@ private:
 
     bool _newX_modifier, _dragging;
 
-    QStandardItemModel* _tree_model;
-
     TreeModelCompleter* _completer;
 
     bool eventFilter(QObject *object, QEvent *event);
 
     void updateTreeModel();
-    
-    void addToCompletionTree(QTableWidgetItem *item);
+
+    bool _completer_need_update;
 
 signals:
 
