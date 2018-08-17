@@ -2,7 +2,7 @@
 #include <QDebug>
 #include <QSettings>
 
-SubWindow::SubWindow(QString name, PlotMatrix *first_tab, PlotDataMap &mapped_data, QMainWindow *parent_window) :
+SubWindow::SubWindow(QString name, PlotMatrix *first_tab, PlotDataMapRef &mapped_data, QMainWindow *parent_window) :
   QMainWindow(parent_window)
 {
     tabbed_widget_ = new TabbedPlotWidget( name, parent_window, first_tab, mapped_data, this );
