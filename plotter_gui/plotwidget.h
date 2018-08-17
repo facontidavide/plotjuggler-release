@@ -27,10 +27,8 @@ class PlotWidget : public QwtPlot
 
 public:
 
-    PlotWidget(PlotDataMap& datamap, QWidget *parent=0);
+    PlotWidget(PlotDataMapRef& datamap, QWidget *parent=0);
     virtual ~PlotWidget();
-
-    bool addCurve(const QString&  name, bool do_replot );
 
     bool isEmpty() const;
 
@@ -54,6 +52,8 @@ public:
 
     bool isXYPlot() const;
 
+    void changeBackgroundColor(QColor color);
+
 protected:
     virtual void dragEnterEvent(QDragEnterEvent *event) override;
     virtual void dropEvent(QDropEvent *event) override;
@@ -65,6 +65,7 @@ signals:
     void rectChanged(PlotWidget* self, QRectF rect );
     void undoableChange();
     void trackerMoved(QPointF pos);
+    void curveListChanged();
 
 public slots:
 
@@ -142,10 +143,13 @@ private:
     QwtPlotLegendItem* _legend;
     QwtPlotGrid* _grid;
 
-    PlotDataMap& _mapped_data;
+    PlotDataMapRef& _mapped_data;
     TimeseriesQwt::Transform _current_transform;
 
+    bool addCurve(const QString& name);
+
     void buildActions();
+
     void buildLegend();
 
     int   _fps_counter;
@@ -154,7 +158,7 @@ private:
 
     void setDefaultRangeX();
 
-    PlotDataPtr _axisX;
+    const PlotData* _axisX;
 
     double _time_offset;
 

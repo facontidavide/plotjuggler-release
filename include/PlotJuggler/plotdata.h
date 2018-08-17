@@ -49,7 +49,16 @@ public:
 
   typedef Value   ValueType;
 
-  PlotDataGeneric(const char* name);
+  PlotDataGeneric(const std::string& name);
+
+  PlotDataGeneric( const PlotDataGeneric<Time,Value>& other) = delete;
+
+  void swapData( PlotDataGeneric<Time,Value>& other)
+  {
+      std::swap(_points, other._points);
+  }
+
+  PlotDataGeneric& operator = (const PlotDataGeneric<Time,Value>& other) = delete;
 
   virtual ~PlotDataGeneric() {}
 
@@ -61,7 +70,9 @@ public:
 
   nonstd::optional<Value> getYfromX(Time x ) const;
 
-  const Point& at(size_t index) const;
+  const Point &at(size_t index) const;
+
+  Point &at(size_t index);
 
   void clear();
 
@@ -73,15 +84,21 @@ public:
 
   void setMaximumRangeX(Time max_range);
 
+  Time maximumRangeX() const { return _max_range_X; }
+
+  const Point& front() const { return _points.front(); }
+
+  const Point& back() const { return _points.back(); }
+
+  void popFront() { _points.pop_front(); }
+
 protected:
 
   std::string _name;
   std::deque<Point> _points;
-
   QColor _color_hint;
 
 private:
-
   Time _max_range_X;
 };
 
@@ -90,13 +107,28 @@ typedef PlotDataGeneric<double,double>  PlotData;
 typedef PlotDataGeneric<double, nonstd::any> PlotDataAny;
 
 
-typedef std::shared_ptr<PlotData>     PlotDataPtr;
-typedef std::shared_ptr<PlotDataAny>  PlotDataAnyPtr;
-
 typedef struct{
-  std::unordered_map<std::string, PlotDataPtr>     numeric;
-  std::unordered_map<std::string, PlotDataAnyPtr>  user_defined;
-} PlotDataMap;
+  std::unordered_map<std::string, PlotData>     numeric;
+  std::unordered_map<std::string, PlotDataAny>  user_defined;
+
+  std::unordered_map<std::string, PlotData>::iterator addNumeric(const std::string& name)
+  {
+      return numeric.emplace( std::piecewise_construct,
+                       std::forward_as_tuple(name),
+                       std::forward_as_tuple(name)
+                       ).first;
+  }
+
+
+  std::unordered_map<std::string, PlotDataAny>::iterator addUserDefined(const std::string& name)
+  {
+      return user_defined.emplace( std::piecewise_construct,
+                                   std::forward_as_tuple(name),
+                                   std::forward_as_tuple(name)
+                                   ).first;
+  }
+
+} PlotDataMapRef;
 
 
 //-----------------------------------
@@ -111,7 +143,7 @@ typedef struct{
 //}
 
 template<typename Time, typename Value>
-inline PlotDataGeneric<Time, Value>::PlotDataGeneric(const char *name):
+inline PlotDataGeneric<Time, Value>::PlotDataGeneric(const std::string &name):
     _max_range_X( std::numeric_limits<Time>::max() )
     , _color_hint(Qt::black)
     , _name(name)
@@ -125,7 +157,7 @@ inline void PlotDataGeneric<Time, Value>::pushBack(Point point)
   _points.push_back( point );
 
   while( _points.size()>2 &&
-         _points.back().x - _points.front().x > _max_range_X)
+         (_points.back().x - _points.front().x) > _max_range_X)
   {
         _points.pop_front();
   }
@@ -179,6 +211,13 @@ inline nonstd::optional<Value> PlotDataGeneric<Time, Value>::getYfromX(Time x) c
 template < typename Time, typename Value>
 inline const typename PlotDataGeneric<Time, Value>::Point&
 PlotDataGeneric<Time, Value>::at(size_t index) const
+{
+    return _points[index];
+}
+
+template < typename Time, typename Value>
+inline typename PlotDataGeneric<Time, Value>::Point&
+PlotDataGeneric<Time, Value>::at(size_t index)
 {
     return _points[index];
 }

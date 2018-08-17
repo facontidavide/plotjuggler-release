@@ -7,11 +7,11 @@
 
 bool if_xy_plot_failed_show_dialog = true;
 
-TimeseriesQwt::TimeseriesQwt(PlotDataPtr base):
+TimeseriesQwt::TimeseriesQwt(const PlotData *base, double time_offset):
     _plot_data(base),
     _subsample(1),
     _transform( noTransform ),
-    _time_offset(0)
+    _time_offset(time_offset)
 {
     updateData();
 }
@@ -48,6 +48,7 @@ void TimeseriesQwt::setSubsampleFactor()
 void TimeseriesQwt::updateData()
 {
     if(_plot_data->size() == 0) return;
+    const size_t data_size = _plot_data->size();
 
     double min_y =( std::numeric_limits<double>::max() );
     double max_y =(-std::numeric_limits<double>::max() );
@@ -68,24 +69,24 @@ void TimeseriesQwt::updateData()
         _cached_transformed_curve.resize( 0 );
         _cached_transformed_curve.shrink_to_fit();
 
-        for (size_t i=0; i< _plot_data->size(); i++ )
+        for (size_t i=0; i < data_size; i++ )
         {
             auto p = _plot_data->at( i );
-            p.x -= _time_offset;
-
             updateMinMax( p.x, p.y );
         }
+        min_x -= _time_offset;
+        max_x -= _time_offset;
     }
     else if(_transform == firstDerivative)
     {
-        if( _plot_data->size() < 1){
+        if( data_size < 1){
             _cached_transformed_curve.clear();
         }
         else{
-            _cached_transformed_curve.resize( _plot_data->size() - 1 );
+            _cached_transformed_curve.resize( data_size - 1 );
         }
 
-        for (size_t i=0; i < _plot_data->size() -1; i++ )
+        for (size_t i=0; i < data_size -1; i++ )
         {
             const auto& p0 = _plot_data->at( i );
             const auto& p1 = _plot_data->at( i+1 );
@@ -100,14 +101,14 @@ void TimeseriesQwt::updateData()
     }
     else if(_transform == secondDerivative)
     {
-        if( _plot_data->size() < 2){
+        if( data_size < 2){
             _cached_transformed_curve.clear();
         }
         else{
-            _cached_transformed_curve.resize( _plot_data->size() - 2 );
+            _cached_transformed_curve.resize( data_size - 2 );
         }
 
-        for (size_t i=0; i< _cached_transformed_curve.size(); i++ )
+        for (size_t i=0; i < data_size - 2; i++ )
         {
             const auto& p0 = _plot_data->at( i );
             const auto& p1 = _plot_data->at( i+1 );
@@ -126,7 +127,7 @@ void TimeseriesQwt::updateData()
         bool failed = false;
         const size_t N = _alternative_X_axis->size();
 
-        if( _plot_data->size() != N ){
+        if( data_size != N ){
             failed = true ;
         }
 
@@ -214,7 +215,7 @@ PlotData::RangeValueOpt TimeseriesQwt::getVisualizationRangeY(int first_index, i
     return PlotData::RangeValueOpt( { y_min, y_max } );
 }
 
-void TimeseriesQwt::setAlternativeAxisX(PlotDataPtr new_x_data)
+void TimeseriesQwt::setAlternativeAxisX(const PlotData *new_x_data)
 {
     _alternative_X_axis = new_x_data;
 }
@@ -251,8 +252,41 @@ void TimeseriesQwt::setTransform(TimeseriesQwt::Transform trans)
     }
 }
 
-void TimeseriesQwt::setTimeOffset(double offset)
+void TimeseriesQwt::setTimeOffset(double new_offset)
 {
-    _time_offset = offset;
-    updateData();
+    double delta = new_offset - _time_offset;
+    if( std::abs( delta ) > std::numeric_limits<double>::epsilon())
+    {
+        double min_x =( std::numeric_limits<double>::max() );
+        double max_x =(-std::numeric_limits<double>::max() );
+        _time_offset = new_offset;
+
+        if( _transform == noTransform)
+        {
+            const size_t data_size = _plot_data->size();
+            for (size_t i=0; i<data_size; i++  )
+            {
+                auto p = _plot_data->at(i);
+                min_x = std::min( min_x, p.x );
+                max_x = std::max( max_x, p.x );
+            }
+            min_x -= _time_offset;
+            max_x -= _time_offset;
+        }
+        else if( _transform == firstDerivative || _transform == secondDerivative)
+        {
+            for (auto& p: _cached_transformed_curve )
+            {
+                p.setX( p.x() - delta );
+                min_x = std::min( min_x, p.x() );
+                max_x = std::max( max_x, p.x() );
+            }
+        }
+
+        if( _transform != XYPlot && _plot_data->size() >=2 )
+        {
+           _bounding_box.setLeft( min_x );
+           _bounding_box.setRight( max_x );
+        }
+    }
 }
