@@ -16,7 +16,7 @@ public:
     DataLoadCSV();
     virtual const std::vector<const char*>& compatibleFileExtensions() const override;
 
-    virtual PlotDataMap readDataFromFile(const QString& file_name, bool use_previous_configuration  ) override;
+    virtual PlotDataMapRef readDataFromFile(const QString& file_name, bool use_previous_configuration  ) override;
 
     virtual ~DataLoadCSV();
 
