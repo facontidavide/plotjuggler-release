@@ -9,8 +9,7 @@
 #include <thread>
 #include <math.h>
 
-DataStreamSample::DataStreamSample():
-    _enabled(false)
+DataStreamSample::DataStreamSample()
 {
     QStringList  words_list;
     words_list << "siam" << "tre" << "piccoli" << "porcellin"
@@ -41,9 +40,8 @@ DataStreamSample::DataStreamSample():
         }
 
         const std::string name_str = name.toStdString();
-        PlotDataPtr plot( new PlotData(name_str.c_str()) );
 
-        dataMap().numeric.insert( std::make_pair( name_str, plot) );
+        dataMap().addNumeric(name_str);
         _parameters.insert( std::make_pair( name_str, param) );
     }
 }
@@ -62,9 +60,7 @@ void DataStreamSample::shutdown()
     if( _thread.joinable()) _thread.join();
 }
 
-void DataStreamSample::enableStreaming(bool enable) { _enabled = enable; }
-
-bool DataStreamSample::isStreamingRunning() const { return _running; }
+bool DataStreamSample::isRunning() const { return _running; }
 
 DataStreamSample::~DataStreamSample()
 {
@@ -98,7 +94,7 @@ void DataStreamSample::pushSingleCycle()
         const double t = duration_cast< duration<double>>( now - initial_time ).count() ;
         double y =  par.A*sin(par.B*t + par.C) + par.D*t*0.05;
 
-        plot->pushBack( PlotData::Point( t + offset, y ) );
+        plot.pushBack( PlotData::Point( t + offset, y ) );
     }
 }
 
@@ -107,9 +103,7 @@ void DataStreamSample::loop()
     _running = true;
     while( _running )
     {
-        if( _enabled ){
-            pushSingleCycle();
-        }
+        pushSingleCycle();
         std::this_thread::sleep_for ( std::chrono::milliseconds(10) );
     }
 }

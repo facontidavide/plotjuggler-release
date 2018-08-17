@@ -14,34 +14,29 @@
 #include <QPainter>
 #include <QCompleter>
 
-class TreeModelCompleter : public QCompleter
+
+class CustomSortedTableItem: public QTableWidgetItem
 {
 
 public:
-    TreeModelCompleter(QAbstractItemModel *model, QObject *parent = 0): QCompleter(model, parent)
-    {  }
+    CustomSortedTableItem(const QString& name): QTableWidgetItem(name), str(name.toStdString()) {}
 
-    QStringList splitPath(const QString &path) const override {
-        return path.split('/');
-    }
-
-    QString pathFromIndex(const QModelIndex &index) const override
+    bool operator< (const CustomSortedTableItem &other) const
     {
-        QStringList dataList;
-        for (QModelIndex i = index; i.isValid(); i = i.parent())
-        {
-            QString name = model()->data(i, completionRole()).toString();
-            dataList.prepend(name);
-        }
-        return dataList.join('/');
+        return doj::alphanum_impl(this->str.c_str(),
+                                  other.str.c_str()) < 0;
     }
+private:
+    std::string str;
 };
+
+
+//-------------------------------------------------
 
 FilterableListWidget::FilterableListWidget(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::FilterableListWidget),
-    _tree_model( new QStandardItemModel(this)),
-    _completer( new TreeModelCompleter(_tree_model, this) )
+    _completer( new TreeModelCompleter(this) )
 {
     ui->setupUi(this);
     ui->tableWidget->viewport()->installEventFilter( this );
@@ -60,24 +55,26 @@ FilterableListWidget::FilterableListWidget(QWidget *parent) :
 
     QSettings settings;
 
-    QString active_filter = settings.value("FilterableListWidget.searchFilter", "radioContains").toString();
-    if( active_filter == "radioRegExp")        ui->radioRegExp->setChecked(true);
-    else if( active_filter == "radioPrefix")   ui->radioPrefix->setChecked(true);
-    else if( active_filter == "radioContains") ui->radioContains->setChecked(true);
+    QString active_filter = settings.value("FilterableListWidget.searchFilter").toString();
+    if( active_filter == "radioRegExp"){
 
+        ui->radioRegExp->setChecked(true);
+    }
+    else if( active_filter == "radioPrefix"){
+
+        ui->radioPrefix->setChecked(true);
+    }
+    else if( active_filter == "radioContains"){
+
+        ui->radioContains->setChecked(true);
+    }
+
+    _completer_need_update = ui->radioPrefix->isChecked();
+    ui->lineEdit->setCompleter( _completer_need_update ? _completer : nullptr );
 }
 
 FilterableListWidget::~FilterableListWidget()
 {
-    QSettings settings;
-
-    if(ui->radioRegExp->isChecked())
-        settings.setValue("FilterableListWidget.searchFilter", "radioRegExp");
-    else if(ui->radioPrefix->isChecked())
-        settings.setValue("FilterableListWidget.searchFilter", "radioPrefix");
-    else if(ui->radioContains->isChecked())
-        settings.setValue("FilterableListWidget.searchFilter", "radioContains");
-
     delete ui;
 }
 
@@ -89,24 +86,12 @@ int FilterableListWidget::rowCount() const
 void FilterableListWidget::clear()
 {
     ui->tableWidget->setRowCount(0);
-    _tree_model->clear();
+    _completer->clear();
     ui->labelNumberDisplayed->setText( "0 of 0");
 }
 
-class CustomSortedTableItem: public QTableWidgetItem
-{
 
- public:
-     CustomSortedTableItem(const QString& name): QTableWidgetItem(name) {}
-
-     bool operator< (const QTableWidgetItem &other) const
-     {
-         return doj::alphanum_impl(this->text().toLocal8Bit().constData(),
-                                   other.text().toLocal8Bit().constData()) < 0;
-     }
- };
-
-void FilterableListWidget::addItem(const QString &item_name, bool sort_columns)
+void FilterableListWidget::addItem(const QString &item_name)
 {
     auto item = new CustomSortedTableItem(item_name);
     const int row = rowCount();
@@ -119,17 +104,16 @@ void FilterableListWidget::addItem(const QString &item_name, bool sort_columns)
     val_cell->setFont(  QFontDatabase::systemFont(QFontDatabase::FixedFont) );
 
     ui->tableWidget->setItem(row, 1, val_cell );
-    if( sort_columns )
-    {
-      ui->tableWidget->sortByColumn(0,Qt::AscendingOrder);
-    }
 
-    addToCompletionTree(item);
+    if( _completer_need_update )
+    {
+        _completer->addToCompletionTree(item_name);
+    }
 }
 
 void FilterableListWidget::sortColumns()
 {
-  ui->tableWidget->sortByColumn(0,Qt::AscendingOrder);
+    ui->tableWidget->sortByColumn(0,Qt::AscendingOrder);
 }
 
 
@@ -177,83 +161,83 @@ bool FilterableListWidget::eventFilter(QObject *object, QEvent *event)
     //Ignore obj different than tableWidget
     if(obj != ui->tableWidget)
     {
-      return QWidget::eventFilter(object,event);
+        return QWidget::eventFilter(object,event);
     }
 
     if(event->type() == QEvent::MouseButtonPress)
     {
-      QMouseEvent *mouse_event = static_cast<QMouseEvent*>(event);
+        QMouseEvent *mouse_event = static_cast<QMouseEvent*>(event);
 
-      _dragging = false;
-      _drag_start_pos = mouse_event->pos();
+        _dragging = false;
+        _drag_start_pos = mouse_event->pos();
 
-      if(mouse_event->button() == Qt::LeftButton )
-      {
-        _newX_modifier = false;
-      }
-      else if(mouse_event->button() == Qt::RightButton )
-      {
-        _newX_modifier = true;
-      }
-      else {
-        return false;
-      }
-      return QWidget::eventFilter(object,event);
+        if(mouse_event->button() == Qt::LeftButton )
+        {
+            _newX_modifier = false;
+        }
+        else if(mouse_event->button() == Qt::RightButton )
+        {
+            _newX_modifier = true;
+        }
+        else {
+            return false;
+        }
+        return QWidget::eventFilter(object,event);
     }
     else if(event->type() == QEvent::MouseMove)
     {
-      QMouseEvent *mouse_event = static_cast<QMouseEvent*>(event);
-      double distance_from_click = (mouse_event->pos() - _drag_start_pos).manhattanLength();
+        QMouseEvent *mouse_event = static_cast<QMouseEvent*>(event);
+        double distance_from_click = (mouse_event->pos() - _drag_start_pos).manhattanLength();
 
-      if ((mouse_event->buttons() == Qt::LeftButton ||
-           mouse_event->buttons() == Qt::RightButton) &&
-          distance_from_click >= QApplication::startDragDistance() &&
-          _dragging == false)
-      {
-        _dragging = true;
-        QDrag *drag = new QDrag(this);
-        QMimeData *mimeData = new QMimeData;
-
-        QByteArray mdata;
-        QDataStream stream(&mdata, QIODevice::WriteOnly);
-
-        for(QTableWidgetItem* item: ui->tableWidget->selectedItems()) {
-          stream << item->text();
-        }
-
-        if( !_newX_modifier )
+        if ((mouse_event->buttons() == Qt::LeftButton ||
+             mouse_event->buttons() == Qt::RightButton) &&
+                distance_from_click >= QApplication::startDragDistance() &&
+                _dragging == false)
         {
-          mimeData->setData("curveslist/add_curve", mdata);
+            _dragging = true;
+            QDrag *drag = new QDrag(this);
+            QMimeData *mimeData = new QMimeData;
+
+            QByteArray mdata;
+            QDataStream stream(&mdata, QIODevice::WriteOnly);
+
+            for(QTableWidgetItem* item: ui->tableWidget->selectedItems()) {
+                stream << item->text();
+            }
+
+            if( !_newX_modifier )
+            {
+                mimeData->setData("curveslist/add_curve", mdata);
+            }
+            else
+            {
+                if( ui->tableWidget->selectedItems().size() != 1)
+                {
+                    return false;
+                }
+                mimeData->setData("curveslist/new_X_axis", mdata);
+
+                QPixmap cursor( QSize(160,30) );
+                cursor.fill(Qt::transparent);
+
+                QPainter painter;
+                painter.begin( &cursor);
+                painter.setPen(QColor(22, 22, 22));
+
+                QString text("set as new X axis");
+                painter.setFont( QFont("Arial", 14 ) );
+
+                painter.setBackground(Qt::transparent);
+                painter.drawText( QRect(0, 0, 160, 30), Qt::AlignHCenter | Qt::AlignVCenter, text );
+                painter.end();
+
+                drag->setDragCursor(cursor, Qt::MoveAction);
+            }
+
+            drag->setMimeData(mimeData);
+            drag->exec(Qt::CopyAction | Qt::MoveAction);
         }
-        else
-        {
-          if( ui->tableWidget->selectedItems().size() != 1)
-          {
-            return false;
-          }
-          mimeData->setData("curveslist/new_X_axis", mdata);
-
-          QPixmap cursor( QSize(160,30) );
-          cursor.fill(Qt::transparent);
-
-          QPainter painter;
-          painter.begin( &cursor);
-          painter.setPen(QColor(22, 22, 22));
-
-          QString text("set as new X axis");
-          painter.setFont( QFont("Arial", 14 ) );
-
-          painter.setBackground(Qt::transparent);
-          painter.drawText( QRect(0, 0, 160, 30), Qt::AlignHCenter | Qt::AlignVCenter, text );
-          painter.end();
-
-          drag->setDragCursor(cursor, Qt::MoveAction);
-        }
-
-        drag->setMimeData(mimeData);
-        drag->exec(Qt::CopyAction | Qt::MoveAction);
-      }
-      return true;
+        return true;
     }
 
     return QWidget::eventFilter(object,event);
@@ -265,6 +249,8 @@ void FilterableListWidget::on_radioContains_toggled(bool checked)
     if(checked) {
         updateFilter();
         ui->lineEdit->setCompleter( nullptr );
+        QSettings settings;
+        settings.setValue("FilterableListWidget.searchFilter", "radioContains");
     }
 }
 
@@ -273,41 +259,28 @@ void FilterableListWidget::on_radioRegExp_toggled(bool checked)
     if(checked) {
         updateFilter();
         ui->lineEdit->setCompleter( nullptr );
-    }
-}
-
-void FilterableListWidget::addToCompletionTree(QTableWidgetItem* item)
-{
-    QString name = item->data(Qt::DisplayRole).toString();
-    QStringList parts = name.split('/');
-
-    QStandardItem *parent_item = _tree_model->invisibleRootItem();
-
-    for (int col=0; col < parts.count(); col++)
-    {
-        bool already_stored = false;
-        for (int row = 0; row < parent_item->rowCount() && !already_stored; row++)
-        {
-            if( parent_item->child(row)->text() == parts[col])
-            {
-                already_stored = true;
-                parent_item = parent_item->child(row);
-            }
-        }
-        if( !already_stored )
-        {
-            QStandardItem *item = new QStandardItem(parts[col]);
-            parent_item->appendRow(item);
-            parent_item = item;
-        }
+        QSettings settings;
+        settings.setValue("FilterableListWidget.searchFilter", "radioRegExp");
     }
 }
 
 void FilterableListWidget::on_radioPrefix_toggled(bool checked)
 {
-    if(checked) {
+    _completer_need_update = checked;
+
+    if( checked )
+    {
+        _completer->clear();
+        for (int row=0; row< rowCount(); row++)
+        {
+            QTableWidgetItem* item = ui->tableWidget->item(row,0);
+            _completer->addToCompletionTree(item->text());
+        }
+
         updateFilter();
         ui->lineEdit->setCompleter( _completer );
+        QSettings settings;
+        settings.setValue("FilterableListWidget.searchFilter", "radioPrefix");
     }
 }
 
@@ -315,7 +288,6 @@ void FilterableListWidget::on_checkBoxCaseSensitive_toggled(bool checked)
 {
     updateFilter();
 }
-
 
 void FilterableListWidget::on_lineEdit_textChanged(const QString &search_string)
 {
@@ -331,7 +303,9 @@ void FilterableListWidget::on_lineEdit_textChanged(const QString &search_string)
     QRegExp regexp( search_string,  cs, QRegExp::Wildcard );
     QRegExpValidator v(regexp, 0);
 
-    for (int row=0; row< rowCount(); row++)
+    QStringList spaced_items = search_string.split(' ');
+
+    for (int row=0; row < rowCount(); row++)
     {
         QTableWidgetItem* item = ui->tableWidget->item(row,0);
         QString name = item->text();
@@ -348,12 +322,12 @@ void FilterableListWidget::on_lineEdit_textChanged(const QString &search_string)
         }
         else if( ui->radioContains->isChecked())
         {
-            QStringList items = search_string.split(' ');
-            for (int i=0; i< items.size(); i++)
+            for (const auto& item: spaced_items)
             {
-                if( name.contains(items[i], cs) == false )
+                if( name.contains(item, cs) == false )
                 {
                     toHide = true;
+                    break;
                 }
             }
         }
@@ -405,11 +379,14 @@ void FilterableListWidget::removeSelectedCurves()
     }
 
     // rebuild the tree model
-    _tree_model->clear();
-    for (int row=0; row< rowCount(); row++)
+    if( _completer_need_update )
     {
-        QTableWidgetItem* item = ui->tableWidget->item(row,0);
-        addToCompletionTree(item);
+        _completer->clear();
+        for (int row=0; row< rowCount(); row++)
+        {
+            QTableWidgetItem* item = ui->tableWidget->item(row,0);
+            _completer->addToCompletionTree(item->text());
+        }
     }
 
     updateFilter();
