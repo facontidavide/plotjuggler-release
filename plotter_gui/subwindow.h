@@ -9,7 +9,7 @@ class SubWindow : public QMainWindow
 {
     Q_OBJECT
 public:
-    explicit SubWindow(QString name, PlotMatrix* first_tab, PlotDataMap &mapped_data, QMainWindow *parent_window);
+    explicit SubWindow(QString name, PlotMatrix* first_tab, PlotDataMapRef &mapped_data, QMainWindow *parent_window);
 
     virtual ~SubWindow();
 

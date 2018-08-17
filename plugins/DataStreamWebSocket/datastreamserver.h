@@ -31,9 +31,7 @@ public:
 
 	virtual void shutdown() override;
 
-    virtual void enableStreaming(bool enable) override { _enabled = enable; }
-
-    virtual bool isStreamingRunning() const override { return _running; }
+    virtual bool isRunning() const override { return _running; }
 
     virtual ~DataStreamServer();
 
@@ -46,7 +44,6 @@ private:
 	QList<QWebSocket *> _clients;
 	QWebSocketServer _server;    
 
-    bool _enabled;
     bool _running;
 
 private slots:

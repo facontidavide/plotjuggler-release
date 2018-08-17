@@ -38,7 +38,7 @@ public slots:
 
 private slots:
 
-    void onTrackerTimeUpdated(double absolute_time );
+    void onTrackerTimeUpdated(double absolute_time , bool do_replot);
 
     void onTrackerMovedFromWidget(QPointF pos );
 
@@ -118,6 +118,10 @@ private slots:
 
     void on_minimizeView();
 
+    void updateTimeSlider();
+
+    void updateTimeOffset();
+
 private:
 
     Ui::MainWindow *ui;
@@ -141,11 +145,9 @@ private:
 
     void forEachWidget(std::function<void(PlotWidget*)> op);
 
-    void updateTimeSlider();
-
     void buildDummyData();
 
-    PlotDataMap    _mapped_plot_data;
+    PlotDataMapRef  _mapped_plot_data;
 
     void rearrangeGridLayout();
 
@@ -184,7 +186,7 @@ private:
 
     void createTabbedDialog(QString suggest_win_name, PlotMatrix *first_tab);
 
-    void importPlotDataMap(const PlotDataMap &new_data, bool delete_older);
+    void importPlotDataMap(PlotDataMapRef &new_data, bool delete_older);
 
     bool isStreamingActive() const ;
 
@@ -197,6 +199,8 @@ private:
     void loadPluginState(const QDomElement &root);
     
     void savePluginState(QDomDocument &doc);
+
+    std::tuple<double,double,int> calculateVisibleRangeX();
     
 protected:
 

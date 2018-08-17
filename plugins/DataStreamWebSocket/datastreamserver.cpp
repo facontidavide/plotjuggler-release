@@ -18,7 +18,6 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include <QInputDialog>
 
 DataStreamServer::DataStreamServer() :
-	_enabled(false),
 	_running(false),
 	_server("plotJuggler", QWebSocketServer::NonSecureMode)	
 {
@@ -63,8 +62,6 @@ void DataStreamServer::shutdown()
 		_server.close();
 		_running = false;
 	}
-	else
-		qDebug() << "Nothing to shutdown";
 }
 
 void DataStreamServer::onNewConnection()
@@ -96,11 +93,10 @@ void DataStreamServer::processMessage(QString message)
 		
         if (plotIt == numeric_plots.end())
         {
-			PlotDataPtr plot(new PlotData(name_str.c_str()));
-            numeric_plots.insert(std::make_pair(name_str, plot));
+            dataMap().addNumeric(name_str);
 		}
         else{
-            numeric_plots[name_str]->pushBack(PlotData::Point(time, value));
+            plotIt->second.pushBack( {time, value} );
         }
 	}	
 }
