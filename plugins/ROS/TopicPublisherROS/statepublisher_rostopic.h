@@ -19,7 +19,8 @@ public:
     TopicPublisherROS();
     virtual ~TopicPublisherROS();
 
-    virtual void updateState(PlotDataMap* datamap, double current_time) override;
+    virtual void updateState(double current_time) override;
+
     virtual const char* name() const override { return "TopicPublisherROS"; }
 
     virtual bool enabled() const override { return enabled_; }
@@ -36,10 +37,9 @@ private:
     ros::NodeHandlePtr _node;
 
     QAction* _current_time;
-    QAction* _select_topics_to_pulish;
+    QAction* _select_topics_to_publish;
     bool _filter_topics;
     std::set<std::string> _topics_to_publish;
-
 
 };
 

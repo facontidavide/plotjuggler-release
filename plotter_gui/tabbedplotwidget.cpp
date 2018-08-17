@@ -13,7 +13,7 @@ std::map<QString,TabbedPlotWidget*> TabbedPlotWidget::_instances;
 TabbedPlotWidget::TabbedPlotWidget(QString name,
                                    QMainWindow *main_window,
                                    PlotMatrix  *first_tab,
-                                   PlotDataMap &mapped_data,
+                                   PlotDataMapRef &mapped_data,
                                    QMainWindow *parent ) :
     QWidget(parent),
     _mapped_data(mapped_data),
@@ -431,7 +431,7 @@ bool TabbedPlotWidget::eventFilter(QObject *obj, QEvent *event)
                 connect( action_new_window, &QAction::triggered, this, &TabbedPlotWidget::on_moveTabIntoNewWindow );
 
                 //-----------------------------------
-                for (auto it : TabbedPlotWidget::_instances)
+                for(auto& it : TabbedPlotWidget::_instances)
                 {
                     QString name = it.first;
                     TabbedPlotWidget* tabbed_menu = it.second;
