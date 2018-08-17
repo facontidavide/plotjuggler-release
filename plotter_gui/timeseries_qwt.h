@@ -10,7 +10,7 @@ class TimeseriesQwt: public QwtSeriesData<QPointF>
 {
 public:
 
-    TimeseriesQwt(PlotDataPtr base);
+    TimeseriesQwt(const PlotData* base, double time_offset);
 
     virtual ~TimeseriesQwt() {}
 
@@ -20,7 +20,7 @@ public:
 
     virtual size_t size() const override;
 
-    PlotDataPtr data() { return _plot_data; }
+    const PlotData* data() const { return _plot_data; }
 
     void setSubsampleFactor();
 
@@ -30,7 +30,7 @@ public:
 
     PlotData::RangeValueOpt getVisualizationRangeY(int first_index, int last_index );
 
-    void setAlternativeAxisX( PlotDataPtr new_x_data);
+    void setAlternativeAxisX(const PlotData* new_x_data);
 
     nonstd::optional<QPointF> sampleFromTime(double t);
 
@@ -52,8 +52,8 @@ public slots:
     void setTimeOffset(double offset);
 
 private:
-    PlotDataPtr _plot_data;
-    PlotDataPtr _alternative_X_axis;
+    const PlotData* _plot_data;
+    const PlotData* _alternative_X_axis;
 
     std::vector<QPointF> _cached_transformed_curve;
 

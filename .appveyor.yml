@@ -1,8 +1,8 @@
 clone_depth: 5
 
 environment:
-  QTDIR32: C:\Qt\5.7\msvc2015
-  QTDIR64: C:\Qt\5.7\msvc2015_64
+  QTDIR32: C:\Qt\5.7.0\msvc2015
+  QTDIR64: C:\Qt\5.7.0
   GENERATOR64: "Visual Studio 14 Win64"
   GENERATOR32: "Visual Studio 14"
   CONFIG: Release
