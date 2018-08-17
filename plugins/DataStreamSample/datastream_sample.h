@@ -20,9 +20,7 @@ public:
 
     virtual void shutdown() override;
 
-    virtual void enableStreaming(bool enable) override;
-
-    virtual bool isStreamingRunning() const override;
+    virtual bool isRunning() const override;
 
     virtual ~DataStreamSample();
 
@@ -41,8 +39,6 @@ private:
     };
 
     void loop();
-
-    bool _enabled;
 
     std::thread _thread;
 

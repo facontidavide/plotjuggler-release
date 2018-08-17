@@ -11,7 +11,7 @@ CurveColorPick::CurveColorPick(const std::map<QString, QColor> &mapped_colors, Q
 {
     ui->setupUi(this);
 
-    for(auto it : _mapped_colors)
+    for(auto& it : _mapped_colors)
     {
         QListWidgetItem* item = new QListWidgetItem( it.first );
         item->setForeground( it.second );
