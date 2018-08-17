@@ -5,7 +5,6 @@
 #include <QDebug>
 #include <QApplication>
 #include <QProgressDialog>
-#include <QElapsedTimer>
 #include <QFileInfo>
 #include <QProcess>
 #include <rosbag/view.h>
@@ -34,7 +33,7 @@ size_t getAvailableRAM()
     return info.freeram;
 }
 
-PlotDataMap DataLoadROS::readDataFromFile(const QString &file_name, bool use_previous_configuration)
+PlotDataMapRef DataLoadROS::readDataFromFile(const QString &file_name, bool use_previous_configuration)
 {
     if( _bag ) _bag->close();
 
@@ -44,7 +43,7 @@ PlotDataMap DataLoadROS::readDataFromFile(const QString &file_name, bool use_pre
     using namespace RosIntrospection;
 
     std::vector<std::pair<QString,QString>> all_topics;
-    PlotDataMap plot_map;
+    PlotDataMapRef plot_map;
 
     try{
         _bag->open( file_name.toStdString(), rosbag::bagmode::Read );
@@ -54,7 +53,7 @@ PlotDataMap DataLoadROS::readDataFromFile(const QString &file_name, bool use_pre
         QMessageBox::warning(0, tr("Error"),
                              QString("rosbag::open thrown an exception:\n")+
                              QString(ex.what()) );
-        return PlotDataMap{};
+        return PlotDataMapRef();
     }
 
     rosbag::View bag_view ( *_bag, ros::TIME_MIN, ros::TIME_MAX, true );
@@ -109,7 +108,7 @@ PlotDataMap DataLoadROS::readDataFromFile(const QString &file_name, bool use_pre
             }
         }
         else{
-            return PlotDataMap{};
+            return PlotDataMapRef();
         }
         settings.setValue("DataLoadROS/default_topics", _default_topic_names);
         settings.setValue("DataLoadROS/use_renaming", _use_renaming_rules);
@@ -146,15 +145,13 @@ PlotDataMap DataLoadROS::readDataFromFile(const QString &file_name, bool use_pre
     progress_dialog.setRange(0, bag_view_selected.size()-1);
     progress_dialog.show();
 
-    QElapsedTimer timer;
-    timer.start();
-
     FlatMessage flat_container;
     std::vector<uint8_t> buffer;
     RenamedValues renamed_value;
     
     bool parsed = true;
     bool monotonic_time = true;
+    bool numerical_cancellation_error = false;
 
     for(rosbag::MessageInstance msg_instance: bag_view_selected )
     {
@@ -169,7 +166,7 @@ PlotDataMap DataLoadROS::readDataFromFile(const QString &file_name, bool use_pre
             QApplication::processEvents();
 
             if( progress_dialog.wasCanceled() ) {
-                return PlotDataMap();
+                return PlotDataMapRef();
             }
         }
 
@@ -199,20 +196,19 @@ PlotDataMap DataLoadROS::readDataFromFile(const QString &file_name, bool use_pre
         for(const auto& it: renamed_value )
         {
             const std::string key = prefix + it.first;
+            const RosIntrospection::Variant& value = it.second;
 
             auto plot_pair = plot_map.numeric.find( key );
             if( (plot_pair == plot_map.numeric.end()) )
             {
-                PlotDataPtr temp(new PlotData( key.c_str() ));
-                auto res = plot_map.numeric.insert( std::make_pair(key, temp ) );
-                plot_pair = res.first;
+                plot_pair = plot_map.addNumeric( key );
             }
 
-            PlotDataPtr& plot_data = plot_pair->second;
-            size_t data_size = plot_data->size();
+            PlotData& plot_data = plot_pair->second;
+            size_t data_size = plot_data.size();
             if( monotonic_time  && data_size>0 )
             {
-              const double last_time = plot_data->at(data_size-1).x;
+              const double last_time = plot_data.at(data_size-1).x;
               monotonic_time = (msg_time > last_time);
               if(!monotonic_time)
               {
@@ -220,7 +216,24 @@ PlotDataMap DataLoadROS::readDataFromFile(const QString &file_name, bool use_pre
                          << "]: " << msg_time << " / " << last_time;
               }
             }
-            plot_data->pushBack( PlotData::Point(msg_time, it.second.convert<double>() ));
+
+            if( value.getTypeID() == RosIntrospection::UINT64)
+            {
+                uint64_t val_i = value.extract<uint64_t>();
+                double val_d = static_cast<double>(val_i);
+                numerical_cancellation_error = (val_i != static_cast<uint64_t>(val_d));
+                plot_data.pushBack( PlotData::Point(msg_time, val_d) );
+            }
+            else if( value.getTypeID() == RosIntrospection::INT64)
+            {
+                int64_t val_i = value.extract<int64_t>();
+                double val_d = static_cast<double>(val_i);
+                numerical_cancellation_error = (val_i != static_cast<int64_t>(val_d));
+                plot_data.pushBack( PlotData::Point(msg_time, val_d) );
+            }
+            else{
+                plot_data.pushBack( PlotData::Point(msg_time, value.convert<double>() ));
+            }
         } //end of for renamed_value
     }
 
@@ -246,12 +259,10 @@ PlotDataMap DataLoadROS::readDataFromFile(const QString &file_name, bool use_pre
 
         if( plot_pair == plot_map.user_defined.end() )
         {
-            PlotDataAnyPtr temp(new PlotDataAny(key.c_str()));
-            auto res = plot_map.user_defined.insert( std::make_pair( key, temp ) );
-            plot_pair = res.first;
+            plot_pair = plot_map.addUserDefined( key );
         }
-        PlotDataAnyPtr& plot_raw = plot_pair->second;
-        plot_raw->pushBack( PlotDataAny::Point(msg_time, nonstd::any(std::move(msg_instance)) ));
+        PlotDataAny& plot_raw = plot_pair->second;
+        plot_raw.pushBack( PlotDataAny::Point(msg_time, nonstd::any(std::move(msg_instance)) ));
     }
 
     if( !parsed )
@@ -279,11 +290,18 @@ PlotDataMap DataLoadROS::readDataFromFile(const QString &file_name, bool use_pre
     {
       QString message = "You checked the option:\n\n"
           "[If present, use the timestamp in the field header.stamp]\n\n"
-          "But the [header.stamp] of one or more messages was NOT initialized correctly.\n";
+          "But the [header.stamp] of one or more messages were NOT initialized correctly.\n";
       QMessageBox::warning(0, tr("Warning"), message );
     }
 
-    qDebug() << "The loading operation took" << timer.elapsed() << "milliseconds";
+    if( numerical_cancellation_error )
+    {
+        QString message = "During the parsing process, one or more conversions to double failed"
+                          " because of numerical cancellation.\n"
+                          "This happens when the absolute value of a long integer exceed 2^52.\n\n"
+                          "You have been warned... trust no one!";
+        QMessageBox::warning(0, tr("Warning"), message );
+    }
     return plot_map;
 }
 

@@ -24,9 +24,7 @@ public:
 
     virtual void shutdown() override;
 
-    virtual void enableStreaming(bool enable) override;
-
-    virtual bool isStreamingRunning() const override;
+    virtual bool isRunning() const override;
 
     virtual ~DataStreamROS() override;
 
@@ -42,7 +40,6 @@ private:
 
     void topicCallback(const topic_tools::ShapeShifter::ConstPtr& msg, const std::string &topic_name);
 
-    bool _enabled;
     bool _running;
 
     std::shared_ptr<ros::AsyncSpinner> _spinner;

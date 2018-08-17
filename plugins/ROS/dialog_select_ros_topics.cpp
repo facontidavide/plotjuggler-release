@@ -10,6 +10,7 @@
 #include <QHeaderView>
 #include <QDebug>
 #include <QMessageBox>
+#include <QAbstractItemView>
 
 #include "dialog_select_ros_topics.h"
 #include "rule_editing.h"
@@ -21,7 +22,9 @@ DialogSelectRosTopics::DialogSelectRosTopics(const std::vector<std::pair<QString
                                              QWidget *parent) :
     QDialog(parent),
     ui(new Ui::dialogSelectRosTopics),
-    _default_selected_topics(default_selected_topics)
+    _default_selected_topics(default_selected_topics),
+    _select_all(QKeySequence(Qt::CTRL + Qt::Key_A), this),
+    _deselect_all(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_A), this)
 {
 
     auto flags = this->windowFlags();
@@ -55,6 +58,16 @@ DialogSelectRosTopics::DialogSelectRosTopics(const std::vector<std::pair<QString
         ui->listRosTopics->selectRow(0);
     }
     ui->listRosTopics->setFocus();
+
+    _select_all.setContext(Qt::WindowShortcut);
+    _deselect_all.setContext(Qt::WindowShortcut);
+
+    connect( &_select_all, &QShortcut::activated,
+             ui->listRosTopics, &QAbstractItemView::selectAll );
+
+    connect( &_deselect_all, &QShortcut::activated,
+             ui->listRosTopics, &QAbstractItemView::clearSelection );
+
 }
 
 void DialogSelectRosTopics::updateTopicList(std::vector<std::pair<QString, QString> > topic_list )
@@ -258,3 +271,5 @@ void DialogSelectRosTopics::on_maximumSizeHelp_pressed()
                    );
     msgBox.exec();
 }
+
+
