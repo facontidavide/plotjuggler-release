@@ -6,6 +6,7 @@
 #include <QFile>
 #include <QStringList>
 #include <QCheckBox>
+#include <QShortcut>
 #include "PlotJuggler/optional.hpp"
 #include <ros_type_introspection/ros_introspection.hpp>
 
@@ -59,6 +60,9 @@ private:
 
     QStringList _topic_list;
     QStringList _default_selected_topics;
+
+    QShortcut _select_all;
+    QShortcut _deselect_all;
 
     Ui::dialogSelectRosTopics *ui;
 

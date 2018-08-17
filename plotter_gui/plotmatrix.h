@@ -11,7 +11,7 @@ class PlotMatrix: public QFrame
     Q_OBJECT
 
 public:
-    PlotMatrix(QString name, PlotDataMap &datamap, QWidget * parent = NULL );
+    PlotMatrix(QString name, PlotDataMapRef &datamap, QWidget * parent = NULL );
     virtual ~PlotMatrix();
 
     void addRow();
@@ -76,8 +76,7 @@ private:
     unsigned _num_cols;
     bool _horizontal_link;
 
-    PlotDataMap& _mapped_data;
-
+    PlotDataMapRef& _mapped_data;
 
     QString _name;
 
