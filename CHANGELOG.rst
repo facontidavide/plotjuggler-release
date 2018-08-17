@@ -2,6 +2,38 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.8.0 (2018-08-17)
+------------------
+* fixing splash time
+* minor update
+* fix issue #49
+* README and splashscreen updates
+* Update ISSUE_TEMPLATE.md
+* F10 enhancement
+* preparing release 1.8.0
+* (speedup) skip _completer->addToCompletionTree altogether unless Prefix mode is active
+* avoid data copying when loading a datafile
+* fix issue #103
+* workaround for issue #100
+* trying to fix problem with time offset durinh streaming
+* removed enableStreaming from StreamingPlugins
+* several useless replot() calls removed
+* more conservative implementation of setTimeOffset
+* optimization
+* reduced a lot the amount of computation related to addCurve()
+* bug fix
+* Update .appveyor.yml
+* bug fix (_main_tabbed_widget is already included in TabbedPlotWidget::instances())
+* remove bug (crash at deleteDataOfSingleCurve)
+* make PlotData non-copyable
+* change in sthe state publisher API
+* shared_ptr removed. To be tested
+* WIP: changed the way data is shared
+* added suggestion from issue #105
+* skip empty dataMaps in importPlotDataMap() . Issue #105
+* fix issue #102 (grey background)
+* Contributors: Davide Faconti
+
 1.7.3 (2018-08-12)
 ------------------
 * enhancement discussed in #104 Can clear buffer while streaming is active

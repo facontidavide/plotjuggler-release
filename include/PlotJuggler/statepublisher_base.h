@@ -12,11 +12,12 @@
 class StatePublisher{
 
 public:
+
     virtual bool enabled() const = 0;
 
     virtual const char* name() const = 0;
 
-    virtual void updateState(PlotDataMap* datamap, double current_time) = 0;
+    virtual void updateState(double current_time) = 0;
 
     virtual ~StatePublisher() {}
 
@@ -32,8 +33,11 @@ public:
 
     virtual bool xmlLoadState(QDomElement &parent_element ) { return false; }
 
+    void setDataMap(const PlotDataMapRef* datamap) { _datamap = datamap; }
+
 protected:
     QMenu* _menu;
+    const PlotDataMapRef *_datamap;
 };
 
 QT_BEGIN_NAMESPACE
