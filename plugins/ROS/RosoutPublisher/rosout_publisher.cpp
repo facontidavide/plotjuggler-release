@@ -6,7 +6,7 @@
 #include <rosbag/bag.h>
 
 RosoutPublisher::RosoutPublisher():
-    enabled_(false ),
+    _enabled(false ),
     _tablemodel(nullptr)
 {
 
@@ -20,7 +20,7 @@ RosoutPublisher::~RosoutPublisher()
 
 void RosoutPublisher::setEnabled(bool to_enable)
 {
-    enabled_ = to_enable;
+    _enabled = to_enable;
 
     if( enabled())
     {
@@ -70,17 +70,17 @@ void RosoutPublisher::onWindowClosed()
       _log_window->deleteLater();
       _log_window = nullptr;
     }
-    enabled_ = false;
+    _enabled = false;
 }
 
 
-std::vector<const PlotDataAny *> RosoutPublisher::findRosoutTimeseries(PlotDataMap *datamap)
+std::vector<const PlotDataAny *> RosoutPublisher::findRosoutTimeseries()
 {
     std::vector<const PlotDataAny*> logs_timeseries;
 
-    for(const auto& data_it:  datamap->user_defined )
+    for(const auto& data_it: _datamap->user_defined )
     {
-        const std::string&    topic_name = data_it.first;
+        const std::string& topic_name = data_it.first;
 
         // check if I registered this message before
         const RosIntrospection::ShapeShifter* registered_shapeshifted_msg = RosIntrospectionFactory::get().getShapeShifter( topic_name );
@@ -94,7 +94,7 @@ std::vector<const PlotDataAny *> RosoutPublisher::findRosoutTimeseries(PlotDataM
             continue; // it is NOT a rosgraph_msgs::Log
         }
 
-        logs_timeseries.push_back( data_it.second.get() );
+        logs_timeseries.push_back(  &data_it.second );
     }
 
     return logs_timeseries;
@@ -150,18 +150,19 @@ void RosoutPublisher::syncWithTableModel(const std::vector<const PlotDataAny*>& 
             } 
         }
     }
-    std::sort( logs.begin(), logs.end(), [](const rosgraph_msgs::LogConstPtr& a, const rosgraph_msgs::LogConstPtr& b)
+    std::sort( logs.begin(), logs.end(),
+               [](const rosgraph_msgs::LogConstPtr& a, const rosgraph_msgs::LogConstPtr& b)
     {
         return a->header.stamp < b->header.stamp;
     } );
     _tablemodel->push_back( logs );
 }
 
-void RosoutPublisher::updateState(PlotDataMap *datamap, double current_time)
+void RosoutPublisher::updateState(double current_time)
 {
-    if(!enabled_ && !_tablemodel) return;
+    if(!_enabled && !_tablemodel) return;
 
-    std::vector<const PlotDataAny*> logs_timeseries = findRosoutTimeseries(datamap);
+    std::vector<const PlotDataAny*> logs_timeseries = findRosoutTimeseries();
 
     syncWithTableModel(logs_timeseries);
 

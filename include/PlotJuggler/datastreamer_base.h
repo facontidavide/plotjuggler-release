@@ -25,9 +25,7 @@ public:
 
     virtual void shutdown() = 0;
 
-    virtual void enableStreaming(bool enable) = 0;
-
-    virtual bool isStreamingRunning() const = 0;
+    virtual bool isRunning() const = 0;
 
     virtual ~DataStreamer() {}
 
@@ -47,7 +45,12 @@ public:
         return _mutex;
     }
 
-    PlotDataMap& dataMap()
+    PlotDataMapRef& dataMap()
+    {
+        return _data_map;
+    }
+
+    const PlotDataMapRef& dataMap() const
     {
         return _data_map;
     }
@@ -62,7 +65,7 @@ protected:
     QMenu* _menu;
 private:
     std::mutex _mutex;
-    PlotDataMap _data_map;
+    PlotDataMapRef _data_map;
 };
 
 QT_BEGIN_NAMESPACE

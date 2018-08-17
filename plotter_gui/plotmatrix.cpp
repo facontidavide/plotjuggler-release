@@ -9,7 +9,7 @@
 
 static int widget_uid = 0;
 
-PlotMatrix::PlotMatrix(QString name, PlotDataMap& datamap, QWidget *parent ):
+PlotMatrix::PlotMatrix(QString name, PlotDataMapRef &datamap, QWidget *parent ):
     QFrame( parent ),
     _mapped_data(datamap),
     _name(name)
