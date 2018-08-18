@@ -271,9 +271,9 @@ PlotWidget::~PlotWidget()
 
 }
 
-bool PlotWidget::addCurve(const QString &name)
+bool PlotWidget::addCurve(const std::string &name)
 {
-    auto it = _mapped_data.numeric.find( name.toStdString() );
+    auto it = _mapped_data.numeric.find( name );
     if( it == _mapped_data.numeric.end())
     {
         return false;
@@ -287,7 +287,7 @@ bool PlotWidget::addCurve(const QString &name)
     PlotData& data = it->second;
 
     {
-        auto curve = std::shared_ptr< QwtPlotCurve >( new QwtPlotCurve(name) );
+        auto curve = std::make_shared< QwtPlotCurve >( name.c_str() );
 
         TimeseriesQwt* plot_qwt = new TimeseriesQwt( &data, _time_offset );
 
@@ -338,7 +338,7 @@ bool PlotWidget::addCurve(const QString &name)
     return true;
 }
 
-void PlotWidget::removeCurve(const QString &name)
+void PlotWidget::removeCurve(const std::string &name)
 {
     auto it = _curve_list.find(name);
     if( it != _curve_list.end() )
@@ -350,8 +350,10 @@ void PlotWidget::removeCurve(const QString &name)
 
         _point_marker[name]->detach();
         _point_marker.erase( name );
+
+        emit curveListChanged();
     }
-    if( isXYPlot() && _axisX->name() == name.toStdString())
+    if( isXYPlot() && _axisX->name() == name)
     {
         _axisX = nullptr;
         for(auto& it : _curve_list)
@@ -360,8 +362,9 @@ void PlotWidget::removeCurve(const QString &name)
             series->setAlternativeAxisX(_axisX);
         }
         _action_noTransform->trigger();
+        emit curveListChanged();
     }
-    emit curveListChanged();
+
 }
 
 bool PlotWidget::isEmpty() const
@@ -369,7 +372,7 @@ bool PlotWidget::isEmpty() const
     return _curve_list.empty();
 }
 
-const std::map<QString, std::shared_ptr<QwtPlotCurve> > &PlotWidget::curveList() const
+const std::map<std::string, std::shared_ptr<QwtPlotCurve> > &PlotWidget::curveList() const
 {
     return _curve_list;
 }
@@ -426,7 +429,7 @@ void PlotWidget::dropEvent(QDropEvent *event)
             {
                 QString curve_name;
                 stream >> curve_name;
-                bool added = addCurve( curve_name );
+                bool added = addCurve( curve_name.toStdString() );
                 curve_added = curve_added || added;
             }
             if( curve_added )
@@ -500,10 +503,10 @@ QDomElement PlotWidget::xmlSaveState( QDomDocument &doc) const
 
     for(auto& it: _curve_list)
     {
-        QString name = it.first;
+        auto& name = it.first;
         auto& curve = it.second;
         QDomElement curve_el = doc.createElement("curve");
-        curve_el.setAttribute( "name",name);
+        curve_el.setAttribute( "name",name.c_str());
         curve_el.setAttribute( "R", curve->pen().color().red());
         curve_el.setAttribute( "G", curve->pen().color().green());
         curve_el.setAttribute( "B", curve->pen().color().blue());
@@ -546,7 +549,7 @@ bool PlotWidget::xmlLoadState(QDomElement &plot_widget)
 {
     QDomElement curve;
 
-    std::set<QString> added_curve_names;
+    std::set<std::string> added_curve_names;
 
     QDomElement transform = plot_widget.firstChildElement( "transform" );
     if( !transform.isNull()    )
@@ -590,13 +593,13 @@ bool PlotWidget::xmlLoadState(QDomElement &plot_widget)
            !curve.isNull();
            curve = curve.nextSiblingElement( "curve" ) )
     {
-        QString curve_name = curve.attribute("name");
+        std::string curve_name = curve.attribute("name").toStdString();
         int R = curve.attribute("R").toInt();
         int G = curve.attribute("G").toInt();
         int B = curve.attribute("B").toInt();
         QColor color(R,G,B);
 
-        if(  _mapped_data.numeric.find(curve_name.toStdString()) != _mapped_data.numeric.end() )
+        if(  _mapped_data.numeric.find(curve_name) != _mapped_data.numeric.end() )
         {
             auto added = addCurve( curve_name );
             curve_added = curve_added || added;
@@ -607,7 +610,7 @@ bool PlotWidget::xmlLoadState(QDomElement &plot_widget)
         {
             QMessageBox::warning(this, "Warning",
                                  tr("Can't find one or more curves.\n"
-                                    "This message will be shown only once.").arg(curve_name) );
+                                    "This message will be shown only once.") );
             warning_message_shown = true;
         }
     }
@@ -619,7 +622,7 @@ bool PlotWidget::xmlLoadState(QDomElement &plot_widget)
         curve_removed = false;
         for(auto& it: _curve_list)
         {
-            QString curve_name = it.first;
+            auto& curve_name = it.first;
             if( added_curve_names.find( curve_name ) == added_curve_names.end())
             {
                 removeCurve( curve_name );
@@ -723,7 +726,7 @@ void PlotWidget::reloadPlotData()
     for (auto& curve_it: _curve_list)
     {
         std::shared_ptr<QwtPlotCurve>& curve_data = curve_it.second;
-        const std::string curve_name = curve_it.first.toStdString();
+        const auto& curve_name = curve_it.first;
 
         auto it = _mapped_data.numeric.find( curve_name );
         if( it != _mapped_data.numeric.end())
@@ -770,7 +773,7 @@ void PlotWidget::setTrackerPosition(double abs_time)
     if( isXYPlot()){
         for (auto& it: _curve_list)
         {
-            QString name = it.first;
+            auto& name = it.first;
             TimeseriesQwt* series = static_cast<TimeseriesQwt*>( it.second->data() );
             auto pointXY = series->sampleFromTime(abs_time);
             if( pointXY ){
@@ -933,7 +936,7 @@ void PlotWidget::launchRemoveCurveDialog()
 
     for(auto& it: _curve_list)
     {
-        dialog->addCurveName( it.first );
+        dialog->addCurveName( it.first.c_str() );
     }
 
     dialog->exec();
@@ -946,11 +949,11 @@ void PlotWidget::launchRemoveCurveDialog()
 
 void PlotWidget::on_changeColorsDialog_triggered()
 {
-    std::map<QString,QColor> color_by_name;
+    std::map<std::string,QColor> color_by_name;
 
     for(auto& it: _curve_list)
     {
-        const QString& curve_name = it.first;
+        const auto& curve_name = it.first;
         auto& curve = it.second;
         color_by_name.insert(std::make_pair( curve_name, curve->pen().color() ));
     }
@@ -970,7 +973,7 @@ void PlotWidget::on_changeColorsDialog_triggered()
 
 void PlotWidget::on_changeColor(QString curve_name, QColor new_color)
 {
-    auto it = _curve_list.find(curve_name);
+    auto it = _curve_list.find(curve_name.toStdString());
     if( it != _curve_list.end())
     {
         auto& curve = it->second;

@@ -528,6 +528,7 @@ background: white;
     </property>
     <addaction name="actionLoadData"/>
     <addaction name="actionLoadRecentDatafile"/>
+    <addaction name="actionLoadDummyData"/>
     <addaction name="actionReloadPrevious"/>
     <addaction name="actionDeleteAllData"/>
     <addaction name="separator"/>
@@ -662,6 +663,11 @@ background: white;
    </property>
    <property name="toolTip">
     <string>Maximize plots [F10]</string>
+   </property>
+  </action>
+  <action name="actionLoadDummyData">
+   <property name="text">
+    <string>Load Dummy Data</string>
    </property>
   </action>
  </widget>
