@@ -287,19 +287,6 @@ border: 0.5px solid rgb(150, 150, 150);</string>
             </property>
            </widget>
           </item>
-          <item>
-           <spacer name="verticalSpacer">
-            <property name="orientation">
-             <enum>Qt::Vertical</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>20</width>
-              <height>40</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
          </layout>
         </item>
        </layout>
@@ -316,7 +303,7 @@ border: 0.5px solid rgb(150, 150, 150);</string>
       </widget>
      </item>
      <item>
-      <widget class="QTableWidget" name="tableWidget">
+      <widget class="QTableView" name="tableView">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
          <horstretch>0</horstretch>
@@ -360,7 +347,7 @@ border: 1px solid rgb(150, 150, 150);</string>
         <enum>QAbstractItemView::ExtendedSelection</enum>
        </property>
        <property name="selectionBehavior">
-        <enum>QAbstractItemView::SelectItems</enum>
+        <enum>QAbstractItemView::SelectRows</enum>
        </property>
        <property name="showGrid">
         <bool>false</bool>
@@ -374,38 +361,12 @@ border: 1px solid rgb(150, 150, 150);</string>
        <property name="cornerButtonEnabled">
         <bool>false</bool>
        </property>
-       <property name="columnCount">
-        <number>2</number>
-       </property>
        <attribute name="horizontalHeaderVisible">
-        <bool>false</bool>
-       </attribute>
-       <attribute name="horizontalHeaderDefaultSectionSize">
-        <number>100</number>
-       </attribute>
-       <attribute name="horizontalHeaderHighlightSections">
-        <bool>true</bool>
-       </attribute>
-       <attribute name="horizontalHeaderMinimumSectionSize">
-        <number>80</number>
-       </attribute>
-       <attribute name="horizontalHeaderStretchLastSection">
         <bool>false</bool>
        </attribute>
        <attribute name="verticalHeaderVisible">
         <bool>false</bool>
        </attribute>
-       <attribute name="verticalHeaderDefaultSectionSize">
-        <number>16</number>
-       </attribute>
-       <attribute name="verticalHeaderMinimumSectionSize">
-        <number>16</number>
-       </attribute>
-       <attribute name="verticalHeaderStretchLastSection">
-        <bool>false</bool>
-       </attribute>
-       <column/>
-       <column/>
       </widget>
      </item>
     </layout>
