@@ -4,9 +4,9 @@
 #include <QWidget>
 #include <QAction>
 #include <QListWidget>
-#include <QTableWidget>
 #include <QMouseEvent>
 #include <QStandardItemModel>
+#include <QTableView>
 
 #include "tree_completer.h"
 
@@ -30,15 +30,30 @@ public:
 
     void addItem(const QString& item_name);
 
-    void sortColumns();
+    void refreshColumns();
 
-    QList<int> findRowsByName(const QString& text) const;
+    int findRowByName(const std::string &text) const;
 
     void removeRow(int row);
 
+    void rebuildEntireList(const std::vector<std::string> &names);
+
     void updateFilter();
 
-    const QTableWidget * getTable() const;
+    QStandardItemModel *getTable() const
+    {
+        return _model;
+    }
+
+    QTableView *getView() const
+    {
+        return _table_view;
+    }
+
+    bool is2ndColumnHidden() const
+    {
+        return getView()->isColumnHidden(1);
+    }
 
     virtual void keyPressEvent(QKeyEvent * event) override;
 
@@ -76,11 +91,15 @@ private:
 
     bool _completer_need_update;
 
+    QStandardItemModel* _model;
+
+    QTableView* _table_view;
+
 signals:
 
     void hiddenItemsChanged();
 
-    void deleteCurve(QString curve_name);
+    void deleteCurve(const std::string& curve_name);
 
 };
 
