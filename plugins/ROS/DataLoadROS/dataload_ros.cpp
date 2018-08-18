@@ -10,11 +10,12 @@
 #include <rosbag/view.h>
 #include <sys/sysinfo.h>
 #include <QSettings>
+#include <QElapsedTimer>
 
 #include "../dialog_select_ros_topics.h"
 #include "../shape_shifter_factory.hpp"
 #include "../rule_editing.h"
-
+#include "../dialog_with_itemlist.h"
 
 DataLoadROS::DataLoadROS()
 {
@@ -55,6 +56,8 @@ PlotDataMapRef DataLoadROS::readDataFromFile(const QString &file_name, bool use_
                              QString(ex.what()) );
         return PlotDataMapRef();
     }
+    QElapsedTimer timer;
+    timer.start();
 
     rosbag::View bag_view ( *_bag, ros::TIME_MIN, ros::TIME_MAX, true );
     std::vector<const rosbag::ConnectionInfo*> connections = bag_view.getConnections();
@@ -131,7 +134,6 @@ PlotDataMapRef DataLoadROS::readDataFromFile(const QString &file_name, bool use_
     }
 
     const bool use_header_stamp = dialog->checkBoxUseHeaderStamp()->isChecked();
-    bool warning_use_header_stamp_ignored = false;
 
     QProgressDialog progress_dialog;
     progress_dialog.setLabelText("Loading... please wait");
@@ -150,8 +152,12 @@ PlotDataMapRef DataLoadROS::readDataFromFile(const QString &file_name, bool use_
     RenamedValues renamed_value;
     
     bool parsed = true;
-    bool monotonic_time = true;
-    bool numerical_cancellation_error = false;
+    bool warning_use_header_stamp_ignored = false;
+    bool warning_monotonic_time = true;
+    bool Warning_numerical_cancellation = false;
+    std::unordered_set<std::string> problematic_headerstamp;
+    std::unordered_set<std::string> problematic_monotonic;
+    std::unordered_set<std::string> problematic_cancellation;
 
     for(rosbag::MessageInstance msg_instance: bag_view_selected )
     {
@@ -189,6 +195,7 @@ PlotDataMapRef DataLoadROS::readDataFromFile(const QString &file_name, bool use_
                 }
                 else{
                   warning_use_header_stamp_ignored = true;
+                  problematic_cancellation.insert(topic_name);
                 }
             }
         }
@@ -206,11 +213,11 @@ PlotDataMapRef DataLoadROS::readDataFromFile(const QString &file_name, bool use_
 
             PlotData& plot_data = plot_pair->second;
             size_t data_size = plot_data.size();
-            if( monotonic_time  && data_size>0 )
+            if( warning_monotonic_time  && data_size>0 )
             {
               const double last_time = plot_data.at(data_size-1).x;
-              monotonic_time = (msg_time > last_time);
-              if(!monotonic_time)
+              warning_monotonic_time = (msg_time > last_time);
+              if(!warning_monotonic_time)
               {
                 qDebug() << "Not monotonic time in [" << key.c_str()
                          << "]: " << msg_time << " / " << last_time;
@@ -221,19 +228,30 @@ PlotDataMapRef DataLoadROS::readDataFromFile(const QString &file_name, bool use_
             {
                 uint64_t val_i = value.extract<uint64_t>();
                 double val_d = static_cast<double>(val_i);
-                numerical_cancellation_error = (val_i != static_cast<uint64_t>(val_d));
+                bool error = (val_i != static_cast<uint64_t>(val_d));
+                if(error)
+                {
+                    Warning_numerical_cancellation = true;
+                    problematic_cancellation.insert(key);
+                }
                 plot_data.pushBack( PlotData::Point(msg_time, val_d) );
             }
             else if( value.getTypeID() == RosIntrospection::INT64)
             {
                 int64_t val_i = value.extract<int64_t>();
                 double val_d = static_cast<double>(val_i);
-                numerical_cancellation_error = (val_i != static_cast<int64_t>(val_d));
+                bool error = (val_i != static_cast<int64_t>(val_d));
+                if(error)
+                {
+                    Warning_numerical_cancellation = true;
+                    problematic_cancellation.insert(key);
+                }
                 plot_data.pushBack( PlotData::Point(msg_time, val_d) );
             }
             else{
                 plot_data.pushBack( PlotData::Point(msg_time, value.convert<double>() ));
             }
+
         } //end of for renamed_value
     }
 
@@ -265,6 +283,9 @@ PlotDataMapRef DataLoadROS::readDataFromFile(const QString &file_name, bool use_
         plot_raw.pushBack( PlotDataAny::Point(msg_time, nonstd::any(std::move(msg_instance)) ));
     }
 
+    qDebug() << "The loading operation took" << timer.elapsed() << "milliseconds";
+
+
     if( !parsed )
     {
       QMessageBox::warning(0, tr("Warning"),
@@ -272,7 +293,7 @@ PlotDataMapRef DataLoadROS::readDataFromFile(const QString &file_name, bool use_
                               "one or more vectors having more than %1 elements.").arg(max_array_size) );
     }
 
-    if( !monotonic_time )
+    if( !warning_monotonic_time )
     {
       QString message = "The time of one or more fields is not strictly monotonic.\n"
                          "Some plots will not be displayed correctly\n";
@@ -288,19 +309,22 @@ PlotDataMapRef DataLoadROS::readDataFromFile(const QString &file_name, bool use_
 
     if( warning_use_header_stamp_ignored )
     {
-      QString message = "You checked the option:\n\n"
-          "[If present, use the timestamp in the field header.stamp]\n\n"
-          "But the [header.stamp] of one or more messages were NOT initialized correctly.\n";
-      QMessageBox::warning(0, tr("Warning"), message );
+        QString message = "You checked the option:\n\n"
+                          "[If present, use the timestamp in the field header.stamp]\n\n"
+                          "But the [header.stamp] of one or more messages were NOT initialized correctly.\n";
+
+        auto dialog = new DialogWithItemList(0, tr("Warning"), message, problematic_headerstamp );
+        dialog->exec();
     }
 
-    if( numerical_cancellation_error )
+    if( Warning_numerical_cancellation )
     {
         QString message = "During the parsing process, one or more conversions to double failed"
                           " because of numerical cancellation.\n"
                           "This happens when the absolute value of a long integer exceed 2^52.\n\n"
-                          "You have been warned... trust no one!";
-        QMessageBox::warning(0, tr("Warning"), message );
+                          "You have been warned... don't trust the following timeseries";
+        auto dialog = new DialogWithItemList(0, tr("Warning"), message, problematic_cancellation );
+        dialog->exec();
     }
     return plot_map;
 }
