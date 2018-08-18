@@ -39,7 +39,7 @@ void RemoveCurveDialog::on_pushButtonRemove_pressed()
             QListWidgetItem* item = ui->listCurveWidget->item( index );
             if( item->font().strikeOut() && item->isHidden() == false)
             {
-                parent->removeCurve( item->text() );
+                parent->removeCurve( item->text().toStdString() );
                 item->setHidden( true );
             }
         }
