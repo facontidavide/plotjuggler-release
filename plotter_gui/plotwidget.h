@@ -32,7 +32,7 @@ public:
 
     bool isEmpty() const;
 
-    const std::map<QString, std::shared_ptr<QwtPlotCurve> > &curveList() const;
+    const std::map<std::string, std::shared_ptr<QwtPlotCurve> > &curveList() const;
 
     QDomElement xmlSaveState(QDomDocument &doc) const;
 
@@ -81,7 +81,7 @@ public slots:
 
     void on_zoomOutVertical_triggered(bool emit_signal = true);
 
-    void removeCurve(const QString& name);
+    void removeCurve(const std::string &name);
 
     void activateLegent(bool activate);
 
@@ -119,8 +119,8 @@ private slots:
 
 
 private:
-    std::map<QString, std::shared_ptr<QwtPlotCurve> > _curve_list;
-    std::map<QString, QwtPlotMarker*> _point_marker;
+    std::map<std::string, std::shared_ptr<QwtPlotCurve> > _curve_list;
+    std::map<std::string, QwtPlotMarker*> _point_marker;
 
     QAction *_action_removeCurve;
     QAction *_action_removeAllCurves;
@@ -146,7 +146,7 @@ private:
     PlotDataMapRef& _mapped_data;
     TimeseriesQwt::Transform _current_transform;
 
-    bool addCurve(const QString& name);
+    bool addCurve(const std::string &name);
 
     void buildActions();
 
