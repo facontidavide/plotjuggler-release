@@ -24,6 +24,7 @@
 #include <QSettings>
 #include <QWindow>
 #include <QElapsedTimer>
+#include <QHeaderView>
 
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
@@ -72,7 +73,7 @@ MainWindow::MainWindow(const QCommandLineParser &commandline_parser, QWidget *pa
         }
     }
 
-    connect( _curvelist_widget->getTable()->verticalScrollBar(), &QScrollBar::sliderMoved,
+    connect( _curvelist_widget->getView()->verticalScrollBar(), &QScrollBar::sliderMoved,
              this, &MainWindow::updateLeftTableValues );
 
     connect( _curvelist_widget, &FilterableListWidget::hiddenItemsChanged,
@@ -80,6 +81,10 @@ MainWindow::MainWindow(const QCommandLineParser &commandline_parser, QWidget *pa
 
     connect(_curvelist_widget, &FilterableListWidget::deleteCurve,
             this, &MainWindow::deleteDataOfSingleCurve );
+
+    connect(_curvelist_widget->getView()->verticalScrollBar(),
+            &QScrollBar::valueChanged,
+            this, &MainWindow::updateLeftTableValues );
 
     connect( ui->timeSlider, &RealSlider::realValueChanged,
              this, &MainWindow::onTimeSlider_valueChanged );
@@ -125,7 +130,12 @@ MainWindow::MainWindow(const QCommandLineParser &commandline_parser, QWidget *pa
 
     if( _test_option )
     {
+        connect( ui->actionLoadDummyData, &QAction::triggered,
+                 this, &MainWindow::buildDummyData );
         buildDummyData();
+    }
+    else{
+        ui->actionLoadDummyData->setVisible(false);
     }
 
     bool file_loaded = false;
@@ -218,19 +228,23 @@ void MainWindow::onRedoInvoked()
 
 void MainWindow::updateLeftTableValues()
 {
-    const auto& table = _curvelist_widget->getTable();
+    auto table_model = _curvelist_widget->getTable();
+    auto table_view  = _curvelist_widget->getView();
 
-    if( table->isColumnHidden(1) == false)
+    if( _curvelist_widget->is2ndColumnHidden() == false)
     {
-        const int vertical_height = table->visibleRegion().boundingRect().height();
+        table_view->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Fixed);
+        table_view->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Fixed);
+
+        const int vertical_height = table_view->visibleRegion().boundingRect().height();
 
         for (int row = 0; row < _curvelist_widget->rowCount(); row++)
         {
-            int vertical_pos = table->rowViewportPosition(row);
-            if( vertical_pos < 0 || table->isRowHidden(row) ){ continue; }
+            int vertical_pos = table_view->rowViewportPosition(row);
+            if( vertical_pos < 0 || table_view->isRowHidden(row) ){ continue; }
             if( vertical_pos > vertical_height){ break; }
 
-            const std::string name = table->item(row,0)->text().toStdString();
+            const std::string& name = table_model->item(row,0)->text().toStdString();
             auto it = _mapped_plot_data.numeric.find(name);
             if( it !=  _mapped_plot_data.numeric.end())
             {
@@ -266,10 +280,12 @@ void MainWindow::updateLeftTableValues()
                         }
                         if(  num_text[idx] == '.') num_text[idx] = ' ';
                     }
-                    table->item(row,1)->setText(num_text + ' ');
+                    table_model->item(row,1)->setText(num_text + ' ');
                 }
             }
         }
+        table_view->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
+        table_view->horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
     }
 }
 
@@ -528,6 +544,9 @@ void MainWindow::loadPlugins(QString directory_name)
 
 void MainWindow::buildDummyData()
 {
+    PlotDataMapRef datamap;
+
+    static int count = 0;
     size_t SIZE = 1000;
     QElapsedTimer timer;
     timer.start();
@@ -536,13 +555,9 @@ void MainWindow::buildDummyData()
                << "fly/high/mai" << "fly/high/nessun" << "fly/low/ci" << "fly/low/dividera"
                << "data_1" << "data_2" << "data_3" << "data_10";
 
-    for( int i=0; i<5; i++)
+    for( int i=0; i<10; i++)
     {
-        words_list.append(QString("data_vect/%1").arg(i));
-    }
-
-    for(auto& word: words_list){
-        _curvelist_widget->addItem( word );
+        words_list.append(QString("data_vect/%1").arg(count++));
     }
 
     for( const QString& name: words_list)
@@ -552,46 +567,29 @@ void MainWindow::buildDummyData()
         double C =  3* ((double)qrand()/(double)RAND_MAX)  ;
         double D =  20* ((double)qrand()/(double)RAND_MAX)  ;
 
-        auto it = _mapped_plot_data.addNumeric( name.toStdString() );
+        auto it = datamap.addNumeric( name.toStdString() );
         PlotData& plot = it->second;
 
         double t = 0;
         for (unsigned indx=0; indx<SIZE; indx++)
         {
-            t += 0.001;
+            t += 0.01;
             plot.pushBack( PlotData::Point( t,  A*sin(B*t + C) + D*t*0.02 ) ) ;
         }
     }
 
-    //---------------------------------------
-    PlotData& sin_plot =  _mapped_plot_data.addNumeric( "_sin" )->second;
-    PlotData& cos_plot =  _mapped_plot_data.addNumeric( "_cos" )->second;
+    PlotData& sin_plot =  datamap.addNumeric( "_sin" )->second;
+    PlotData& cos_plot =  datamap.addNumeric( "_cos" )->second;
 
     double t = 0;
     for (unsigned indx=0; indx<SIZE; indx++)
     {
-        t += 0.001;
+        t += 0.01;
         sin_plot.pushBack( PlotData::Point( t,  1.0*sin(t*0.4) ) ) ;
         cos_plot.pushBack( PlotData::Point( t,  2.0*cos(t*0.4) ) ) ;
     }
 
-    _curvelist_widget->addItem( QString::fromStdString(sin_plot.name()) );
-    _curvelist_widget->addItem( QString::fromStdString(cos_plot.name()) );
-
-    //--------------------------------------
-    qDebug() << " data created " << timer.elapsed();
-    _curvelist_widget->sortColumns();
-    qDebug() << " data sorted " << timer.elapsed();
-
-    updateTimeSlider();
-
-    _time_offset.set( ui->timeSlider->getMinimum() );
-
-    _curvelist_widget->updateFilter();
-
-    forEachWidget( [](PlotWidget* plot) {
-        plot->reloadPlotData();
-    } );
+    importPlotDataMap(datamap,true);
 }
 
 void MainWindow::onSplitterMoved(int , int )
@@ -723,7 +721,7 @@ void MainWindow::checkAllCurvesFromLayout(const QDomElement& root)
                 _curvelist_widget->addItem( QString::fromStdString( name ) );
                 _mapped_plot_data.addNumeric(name);
             }
-            _curvelist_widget->sortColumns();
+            _curvelist_widget->refreshColumns();
         }
     }
 }
@@ -854,9 +852,9 @@ void MainWindow::onActionSaveLayout()
     }
 }
 
-void MainWindow::deleteDataOfSingleCurve(const QString& curve_name)
+void MainWindow::deleteDataOfSingleCurve(const std::string& curve_name)
 {
-    auto plot_curve = _mapped_plot_data.numeric.find( curve_name.toStdString() );
+    auto plot_curve = _mapped_plot_data.numeric.find( curve_name );
     if( plot_curve == _mapped_plot_data.numeric.end())
     {
         return;
@@ -865,10 +863,31 @@ void MainWindow::deleteDataOfSingleCurve(const QString& curve_name)
     emit requestRemoveCurveByName( curve_name );
     _mapped_plot_data.numeric.erase( plot_curve );
 
-    auto rows_to_remove = _curvelist_widget->findRowsByName( curve_name );
-    for(int row : rows_to_remove)
+    int row = _curvelist_widget->findRowByName( curve_name );
+    if( row != -1 )
     {
         _curvelist_widget->removeRow(row);
+    }
+
+    if( _curvelist_widget->rowCount() == 0)
+    {
+        ui->actionDeleteAllData->setEnabled( false );
+    }
+}
+
+void MainWindow::deleteDataMultipleCurves(const std::vector<std::string> &curves_name)
+{
+    for( auto& name: curves_name)
+    {
+        _mapped_plot_data.numeric.erase(name);
+        emit requestRemoveCurveByName( name );
+    }
+    // it is much faster in many case to rebuild everything from scratch
+    _curvelist_widget->clear();
+
+    for( auto& it: _mapped_plot_data.numeric)
+    {
+        _curvelist_widget->addItem( it.first.c_str() );
     }
 
     if( _curvelist_widget->rowCount() == 0)
@@ -897,7 +916,7 @@ void MainWindow::onDeleteLoadedData()
     {
         for( auto& it: _mapped_plot_data.numeric )
         {
-            emit requestRemoveCurveByName( QString::fromStdString(it.first) );
+            emit requestRemoveCurveByName( it.first );
             it.second.clear();
         }
         for( auto& it: _mapped_plot_data.user_defined )
@@ -1047,6 +1066,7 @@ void MainWindow::importPlotDataMap(PlotDataMapRef& new_data, bool delete_older)
             curvelist_modified = true;
         }
     }
+
     //---------------------------------------------
     importPlotDataMapHelper( new_data.user_defined, _mapped_plot_data.user_defined, delete_older );
     importPlotDataMapHelper( new_data.numeric, _mapped_plot_data.numeric, delete_older );
@@ -1070,10 +1090,7 @@ void MainWindow::importPlotDataMap(PlotDataMapRef& new_data, bool delete_older)
                     data_to_remove.push_back(name);
                 }
             }
-            for (auto& to_remove: data_to_remove )
-            {
-                this->deleteDataOfSingleCurve( QString( to_remove.c_str() ) );
-            }
+            this->deleteDataMultipleCurves( data_to_remove );
         }
     }
 
@@ -1096,7 +1113,7 @@ void MainWindow::importPlotDataMap(PlotDataMapRef& new_data, bool delete_older)
 
     if( curvelist_modified )
     {
-        _curvelist_widget->sortColumns();
+        _curvelist_widget->refreshColumns();
     }
 }
 
@@ -1178,13 +1195,8 @@ void MainWindow::onActionLoadDataFileImpl(QString filename, bool reuse_last_conf
         ui->actionReloadPrevious->setEnabled( true );
 
         try{
-            QElapsedTimer timer;
-            timer.start();
-
             PlotDataMapRef mapped_data = _last_dataloader->readDataFromFile( filename, reuse_last_configuration );
             importPlotDataMap(mapped_data, true);
-
-            qDebug() << "The loading operation took" << timer.elapsed() << "milliseconds";
         }
         catch(std::exception &ex)
         {
@@ -1387,7 +1399,7 @@ std::tuple<double, double, int> MainWindow::calculateVisibleRangeX()
     {
         for (auto& it: widget->curveList())
         {
-            const auto& curve_name = it.first.toStdString();
+            const auto& curve_name = it.first;
 
             const auto& data = _mapped_plot_data.numeric.find(curve_name)->second;
             if(data.size() >=1)
