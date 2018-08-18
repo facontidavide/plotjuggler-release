@@ -102,7 +102,9 @@ private slots:
 
     void updateLeftTableValues();
 
-    void deleteDataOfSingleCurve(const QString &curve_name);
+    void deleteDataOfSingleCurve(const std::string &curve_name);
+
+    void deleteDataMultipleCurves(const std::vector<std::string> &curves_name);
 
     void on_pushButtonRemoveTimeOffset_toggled(bool checked);
 
@@ -121,6 +123,8 @@ private slots:
     void updateTimeSlider();
 
     void updateTimeOffset();
+
+    void buildDummyData();
 
 private:
 
@@ -144,8 +148,6 @@ private:
     void forEachWidget(std::function<void(PlotWidget*, PlotMatrix*, int, int)> op);
 
     void forEachWidget(std::function<void(PlotWidget*)> op);
-
-    void buildDummyData();
 
     PlotDataMapRef  _mapped_plot_data;
 
@@ -208,7 +210,7 @@ protected:
 
     QTimer *_replot_timer;
 signals:
-    void requestRemoveCurveByName(const QString& name);
+    void requestRemoveCurveByName(const std::string& name);
 
     void activateStreamingMode( bool active);
 
