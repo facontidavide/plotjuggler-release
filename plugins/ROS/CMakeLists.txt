@@ -21,12 +21,14 @@ SET( COMMON_SRC
     qnodedialog.cpp
     dialog_select_ros_topics.h
     dialog_select_ros_topics.cpp
+    dialog_with_itemlist.h
     )
 
 QT5_WRAP_UI ( COMMON_UI_SRC
     qnodedialog.ui
     rule_editing.ui
     dialog_select_ros_topics.ui
+    dialog_with_itemlist.ui
     )
 
 add_library( commonROS STATIC ${COMMON_SRC} ${COMMON_UI_SRC} )
