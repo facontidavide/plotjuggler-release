@@ -4,6 +4,7 @@
 #include <QInputDialog>
 #include <QMouseEvent>
 #include <QFileDialog>
+#include <QApplication>
 #include "qwt_plot_renderer.h"
 #include "tabbedplotwidget.h"
 #include "ui_tabbedplotwidget.h"
@@ -40,7 +41,7 @@ TabbedPlotWidget::TabbedPlotWidget(QString name,
 
     _horizontal_link = true;
 
-    ui->tabWidget->tabBar()->installEventFilter( this );
+    tabWidget()->tabBar()->installEventFilter( this );
 
     _action_renameTab = new QAction(tr("Rename tab"), this);
     connect( _action_renameTab, &QAction::triggered, this, &TabbedPlotWidget::on_renameCurrentTab);
@@ -72,7 +73,7 @@ TabbedPlotWidget::TabbedPlotWidget(QString name,
 
 PlotMatrix *TabbedPlotWidget::currentTab()
 {
-    return static_cast<PlotMatrix*>( ui->tabWidget->currentWidget() );
+    return static_cast<PlotMatrix*>( tabWidget()->currentWidget() );
 }
 
 QTabWidget *TabbedPlotWidget::tabWidget()
@@ -80,22 +81,28 @@ QTabWidget *TabbedPlotWidget::tabWidget()
     return ui->tabWidget;
 }
 
+const QTabWidget* TabbedPlotWidget::tabWidget() const
+{
+    return ui->tabWidget;
+}
+
+
 void TabbedPlotWidget::addTab( PlotMatrix* tab)
 {
     if( !tab )
     {
         tab = new PlotMatrix("plot", _mapped_data, this);
-        ui->tabWidget->addTab( tab, QString("plot") );
+        tabWidget()->addTab( tab, QString("plot") );
 
         QApplication::processEvents();
         emit matrixAdded( tab );
         tab->addColumn();
     }
     else{
-        ui->tabWidget->addTab( tab, tab->name() );
+        tabWidget()->addTab( tab, tab->name() );
     }
 
-    ui->tabWidget->setCurrentWidget( tab );
+    tabWidget()->setCurrentWidget( tab );
 
     tab->setHorizontalLink( _horizontal_link );
 }
@@ -107,17 +114,17 @@ QDomElement TabbedPlotWidget::xmlSaveState(QDomDocument &doc) const
     tabbed_area.setAttribute("name",   _name);
     tabbed_area.setAttribute("parent", _parent_type);
 
-    for(int i=0; i< ui->tabWidget->count(); i++)
+    for(int i=0; i< tabWidget()->count(); i++)
     {
-        PlotMatrix* widget = static_cast<PlotMatrix*>( ui->tabWidget->widget(i) );
+        PlotMatrix* widget = static_cast<PlotMatrix*>( tabWidget()->widget(i) );
         QDomElement element = widget->xmlSaveState(doc);
 
-        element.setAttribute("tab_name",  ui->tabWidget->tabText(i) );
+        element.setAttribute("tab_name",  tabWidget()->tabText(i) );
         tabbed_area.appendChild( element );
     }
 
     QDomElement current_plotmatrix =  doc.createElement( "currentPlotMatrix" );
-    current_plotmatrix.setAttribute( "index", ui->tabWidget->currentIndex() );
+    current_plotmatrix.setAttribute( "index", tabWidget()->currentIndex() );
     tabbed_area.appendChild( current_plotmatrix );
 
     return tabbed_area;
@@ -125,7 +132,7 @@ QDomElement TabbedPlotWidget::xmlSaveState(QDomDocument &doc) const
 
 bool TabbedPlotWidget::xmlLoadState(QDomElement &tabbed_area)
 {
-    int num_tabs =  ui->tabWidget->count();
+    int num_tabs =  tabWidget()->count();
     int index = 0;
 
     QDomElement plotmatrix_el;
@@ -140,14 +147,14 @@ bool TabbedPlotWidget::xmlLoadState(QDomElement &tabbed_area)
             this->addTab( NULL );
             num_tabs++;
         }
-        PlotMatrix* plot_matrix = static_cast<PlotMatrix*>(  ui->tabWidget->widget(index) );
+        PlotMatrix* plot_matrix = static_cast<PlotMatrix*>(  tabWidget()->widget(index) );
         bool success = plot_matrix->xmlLoadState( plotmatrix_el );
 
         // read tab name
         if( plotmatrix_el.hasAttribute("tab_name"))
         {
             QString tab_name = plotmatrix_el.attribute("tab_name" );
-            ui->tabWidget->setTabText( index, tab_name );
+            tabWidget()->setTabText( index, tab_name );
             plot_matrix->setName( tab_name );
         }
 
@@ -161,16 +168,16 @@ bool TabbedPlotWidget::xmlLoadState(QDomElement &tabbed_area)
 
     // remove if tabs are too much
     while( num_tabs > index ){
-        ui->tabWidget->removeTab( num_tabs-1 );
+        tabWidget()->removeTab( num_tabs-1 );
         num_tabs--;
     }
 
     QDomElement current_plotmatrix =  tabbed_area.firstChildElement( "currentPlotMatrix" );
     int current_index = current_plotmatrix.attribute( "index" ).toInt();
 
-    if(current_index>=0 && current_index < ui->tabWidget->count())
+    if(current_index>=0 && current_index < tabWidget()->count())
     {
-        ui->tabWidget->setCurrentIndex( current_index );
+        tabWidget()->setCurrentIndex( current_index );
         currentTab()->replot();
     }
     return true;
@@ -191,26 +198,26 @@ TabbedPlotWidget::~TabbedPlotWidget(){
 
 void TabbedPlotWidget::on_renameCurrentTab()
 {
-    int idx = ui->tabWidget->tabBar()->currentIndex ();
+    int idx = tabWidget()->tabBar()->currentIndex ();
 
     bool ok = true;
     QString newName = QInputDialog::getText (
                 this, tr ("Change Name of the selected tab"),
                 tr ("Insert New Tab Name"),
                 QLineEdit::Normal,
-                ui->tabWidget->tabText (idx),
+                tabWidget()->tabText (idx),
                 &ok);
 
     if (ok) {
-        ui->tabWidget->setTabText (idx, newName);
+        tabWidget()->setTabText (idx, newName);
         currentTab()->setName( newName );
     }
 }
 
 void TabbedPlotWidget::on_savePlotsToFile()
 {
-    int idx = ui->tabWidget->tabBar()->currentIndex();
-    PlotMatrix* matrix = static_cast<PlotMatrix*>( ui->tabWidget->widget(idx) );
+    int idx = tabWidget()->tabBar()->currentIndex();
+    PlotMatrix* matrix = static_cast<PlotMatrix*>( tabWidget()->widget(idx) );
 
     QFileDialog saveDialog;
     saveDialog.setAcceptMode(QFileDialog::AcceptSave);
@@ -237,9 +244,9 @@ void TabbedPlotWidget::on_savePlotsToFile()
             int delta_X = pixmap.width() /  matrix->colsCount();
             int delta_Y = pixmap.height() /  matrix->rowsCount();
 
-            for (int c=0; c< matrix->colsCount(); c++)
+            for (unsigned c=0; c< matrix->colsCount(); c++)
             {
-                for (int r=0; r< matrix->rowsCount(); r++)
+                for (unsigned r=0; r< matrix->rowsCount(); r++)
                 {
                     PlotWidget* widget = matrix->plotAt(r,c);
                     QRect rect(delta_X*c, delta_Y*r, delta_X, delta_Y);
@@ -310,7 +317,7 @@ void TabbedPlotWidget::on_pushRemoveEmpty_pressed()
 
 void TabbedPlotWidget::on_tabWidget_currentChanged(int index)
 {
-    if( ui->tabWidget->count() == 0)
+    if( tabWidget()->count() == 0)
     {
         if( _parent_type.compare("main_window") == 0)
         {
@@ -321,7 +328,7 @@ void TabbedPlotWidget::on_tabWidget_currentChanged(int index)
         }
     }
 
-    PlotMatrix* tab = static_cast<PlotMatrix*>( ui->tabWidget->widget(index) );
+    PlotMatrix* tab = static_cast<PlotMatrix*>( tabWidget()->widget(index) );
     if( tab )
     {
         tab->replot();
@@ -330,21 +337,21 @@ void TabbedPlotWidget::on_tabWidget_currentChanged(int index)
 
 void TabbedPlotWidget::on_tabWidget_tabCloseRequested(int index)
 {
-    PlotMatrix* tab = static_cast<PlotMatrix*>( ui->tabWidget->widget(index) );
+    PlotMatrix* tab = static_cast<PlotMatrix*>( tabWidget()->widget(index) );
 
-    bool ask_confirmation = true;
+    bool close_confirmed = true;
     if( tab->plotCount() == 1 )
     {
         if( tab->plotAt(0)->isEmpty()){
-            ask_confirmation = false;
+            close_confirmed = false;
         }
     }
 
     QMessageBox::StandardButton do_remove = QMessageBox::Yes;
 
-    if( ask_confirmation )
+    if( close_confirmed )
     {
-        ui->tabWidget->setCurrentIndex( index );
+        tabWidget()->setCurrentIndex( index );
         QApplication::processEvents();
 
         do_remove = QMessageBox::question(0, tr("Warning"),
@@ -356,10 +363,20 @@ void TabbedPlotWidget::on_tabWidget_tabCloseRequested(int index)
     {
         // first add then delete.
         // Otherwise currentPlotGrid might be empty
-        if( ui->tabWidget->count() == 1){
+        if( tabWidget()->count() == 1){
             on_addTabButton_pressed();
         }
-        ui->tabWidget->removeTab( index );
+
+        PlotMatrix* matrix = static_cast<PlotMatrix*>( tabWidget()->widget(index) );
+
+        for(unsigned p=0; p< matrix->plotCount(); p++)
+        {
+            PlotWidget* plot = matrix->plotAt(p);
+            plot->detachAllCurves();
+            plot->deleteLater();
+        }
+
+        tabWidget()->removeTab( index );
         emit undoableChangeHappened();
     }
 }
@@ -368,9 +385,9 @@ void TabbedPlotWidget::on_buttonLinkHorizontalScale_toggled(bool checked)
 {
     _horizontal_link = checked;
 
-    for (int i = 0; i < ui->tabWidget->count(); i++)
+    for (int i = 0; i < tabWidget()->count(); i++)
     {
-        PlotMatrix* tab = static_cast<PlotMatrix*>( ui->tabWidget->widget(i) );
+        PlotMatrix* tab = static_cast<PlotMatrix*>( tabWidget()->widget(i) );
         tab->setHorizontalLink( _horizontal_link );
     }
 }
@@ -380,7 +397,7 @@ void TabbedPlotWidget::on_requestTabMovement(const QString & destination_name)
     TabbedPlotWidget* destination_widget = TabbedPlotWidget::_instances[destination_name];
 
     PlotMatrix* tab_to_move = currentTab();
-    int index = ui->tabWidget->tabBar()->currentIndex ();
+    int index = tabWidget()->tabBar()->currentIndex ();
 
     const QString& tab_name =  this->tabWidget()->tabText(index);
 
@@ -399,7 +416,7 @@ void TabbedPlotWidget::on_moveTabIntoNewWindow()
 
 bool TabbedPlotWidget::eventFilter(QObject *obj, QEvent *event)
 {
-    QTabBar* tab_bar = ui->tabWidget->tabBar();
+    QTabBar* tab_bar = tabWidget()->tabBar();
 
     if (obj == tab_bar )
     {
@@ -459,9 +476,9 @@ bool TabbedPlotWidget::eventFilter(QObject *obj, QEvent *event)
 
 void TabbedPlotWidget::on_pushButtonShowLabel_toggled(bool checked)
 {    
-    for(int i=0; i< ui->tabWidget->count(); i++)
+    for(int i=0; i< tabWidget()->count(); i++)
     {
-        PlotMatrix* matrix = static_cast<PlotMatrix*>( ui->tabWidget->widget(i) );
+        PlotMatrix* matrix = static_cast<PlotMatrix*>( tabWidget()->widget(i) );
 
         for(unsigned p=0; p< matrix->plotCount(); p++)
         {
