@@ -28,6 +28,8 @@ public:
 
     QTabWidget* tabWidget();
 
+    const QTabWidget* tabWidget() const;
+
     void addTab(PlotMatrix *tab = NULL);
 
     QDomElement xmlSaveState(QDomDocument &doc) const;
