@@ -2,6 +2,11 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.8.2 (2018-08-19)
+------------------
+* bug fix (crash from zombie PlotMatrix)
+* Contributors: Davide Faconti
+
 1.8.1 (2018-08-18)
 ------------------
 * message moved back to the ROS plugin
