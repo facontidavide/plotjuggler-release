@@ -13,7 +13,7 @@ CurveColorPick::CurveColorPick(const std::map<std::string, QColor> &mapped_color
 
     for(auto& it : _mapped_colors)
     {
-        QListWidgetItem* item = new QListWidgetItem( it.first.c_str() );
+        QListWidgetItem* item = new QListWidgetItem( QString::fromStdString( it.first) );
         item->setForeground( it.second );
         ui->listWidget->addItem( item );
     }
