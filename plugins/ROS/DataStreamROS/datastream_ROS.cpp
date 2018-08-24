@@ -82,7 +82,7 @@ void DataStreamROS::topicCallback(const topic_tools::ShapeShifter::ConstPtr& msg
 
     if(_use_header_timestamp)
     {
-        const auto header_stamp = FlatContainedContainHeaderStamp(renamed_value);
+        const auto header_stamp = FlatContainerContainHeaderStamp(renamed_value);
         if(header_stamp){
             const double time = header_stamp.value();
             if( time > 0 )

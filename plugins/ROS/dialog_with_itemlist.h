@@ -42,6 +42,12 @@ public:
         delete ui;
     }
 
+    static void warning(const QString& message, std::unordered_set<std::string> list)
+    {
+      auto dialog = new DialogWithItemList(0, tr("Warning"), message, list );
+      dialog->exec();
+      dialog->deleteLater();
+    }
 
 private slots:
     void on_buttonBox_clicked(QAbstractButton *button)
