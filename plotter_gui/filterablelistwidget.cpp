@@ -124,7 +124,7 @@ void FilterableListWidget::refreshColumns()
 
 int FilterableListWidget::findRowByName(const std::string &text) const
 {
-    auto item_list = _model->findItems( text.c_str(), Qt::MatchExactly);
+    auto item_list = _model->findItems( QString::fromStdString( text ), Qt::MatchExactly);
     if( item_list.isEmpty())
     {
         return -1;
