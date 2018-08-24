@@ -10,6 +10,7 @@
 #include <QAction>
 #include <QMessageBox>
 #include <QMenu>
+#include <iostream>
 #include <limits>
 #include "removecurvedialog.h"
 #include "curvecolorpick.h"
@@ -286,54 +287,52 @@ bool PlotWidget::addCurve(const std::string &name)
 
     PlotData& data = it->second;
 
+    auto curve = std::make_shared< QwtPlotCurve >( QString::fromStdString( name ) );
+
+    TimeseriesQwt* plot_qwt = new TimeseriesQwt( &data, _time_offset );
+
+    curve->setPaintAttribute( QwtPlotCurve::ClipPolygons, true );
+    curve->setPaintAttribute( QwtPlotCurve::FilterPointsAggressive, true );
+
+    plot_qwt->setAlternativeAxisX( _axisX );
+
+    if( _current_transform != TimeseriesQwt::noTransform)
     {
-        auto curve = std::make_shared< QwtPlotCurve >( name.c_str() );
-
-        TimeseriesQwt* plot_qwt = new TimeseriesQwt( &data, _time_offset );
-
-        curve->setPaintAttribute( QwtPlotCurve::ClipPolygons, true );
-        curve->setPaintAttribute( QwtPlotCurve::FilterPointsAggressive, true );
-
-        plot_qwt->setAlternativeAxisX( _axisX );
-
-        if( _current_transform != TimeseriesQwt::noTransform)
-        {
-            plot_qwt->setTransform( _current_transform );
-        }
-
-        curve->setData( plot_qwt );
-
-        if( _show_line_and_points ) {
-            curve->setStyle( QwtPlotCurve::LinesAndDots);
-        }
-        else{
-            curve->setStyle( QwtPlotCurve::Lines);
-        }
-
-        QColor color = data.getColorHint();
-        if( color == Qt::black)
-        {
-            color = randomColorHint();
-            data.setColorHint(color);
-        }
-        curve->setPen( color,  0.8 );
-        curve->setRenderHint( QwtPlotItem::RenderAntialiased, true );
-
-        curve->attach( this );
-        _curve_list.insert( std::make_pair(name, curve));
-
-        auto marker = new QwtPlotMarker;
-        _point_marker.insert( std::make_pair(name, marker) );
-        marker->attach( this );
-        marker->setVisible( isXYPlot() );
-
-        QwtSymbol *sym = new QwtSymbol(
-                    QwtSymbol::Diamond,
-                    Qt::red, color,
-                    QSize(10,10));
-
-        marker->setSymbol(sym);
+        plot_qwt->setTransform( _current_transform );
     }
+
+    curve->setData( plot_qwt );
+
+    if( _show_line_and_points ) {
+        curve->setStyle( QwtPlotCurve::LinesAndDots);
+    }
+    else{
+        curve->setStyle( QwtPlotCurve::Lines);
+    }
+
+    QColor color = data.getColorHint();
+    if( color == Qt::black)
+    {
+        color = randomColorHint();
+        data.setColorHint(color);
+    }
+    curve->setPen( color,  0.8 );
+    curve->setRenderHint( QwtPlotItem::RenderAntialiased, true );
+
+    curve->attach( this );
+    _curve_list.insert( std::make_pair(name, curve));
+
+    auto marker = new QwtPlotMarker;
+    _point_marker.insert( std::make_pair(name, marker) );
+    marker->attach( this );
+    marker->setVisible( isXYPlot() );
+
+    QwtSymbol *sym = new QwtSymbol(
+                QwtSymbol::Diamond,
+                Qt::red, color,
+                QSize(10,10));
+
+    marker->setSymbol(sym);
 
     return true;
 }
@@ -345,11 +344,17 @@ void PlotWidget::removeCurve(const std::string &name)
     {
         auto& curve = it->second;
         curve->detach();
-        replot();
         _curve_list.erase( it );
 
-        _point_marker[name]->detach();
-        _point_marker.erase( name );
+        auto marker_it = _point_marker.find(name);
+        if( marker_it != _point_marker.end() )
+        {
+            auto marker = marker_it->second;
+            if( marker ){
+                marker->detach();
+            }
+            _point_marker.erase(marker_it);
+        }
 
         emit curveListChanged();
     }
@@ -506,7 +511,7 @@ QDomElement PlotWidget::xmlSaveState( QDomDocument &doc) const
         auto& name = it.first;
         auto& curve = it.second;
         QDomElement curve_el = doc.createElement("curve");
-        curve_el.setAttribute( "name",name.c_str());
+        curve_el.setAttribute( "name", QString::fromStdString( name ));
         curve_el.setAttribute( "R", curve->pen().color().red());
         curve_el.setAttribute( "G", curve->pen().color().green());
         curve_el.setAttribute( "B", curve->pen().color().blue());
@@ -531,7 +536,7 @@ QDomElement PlotWidget::xmlSaveState( QDomDocument &doc) const
 
         if( _axisX ){
             transform.setAttribute("value", "XYPlot" );
-            transform.setAttribute("axisX",  _axisX->name().c_str() );
+            transform.setAttribute("axisX",  QString::fromStdString( _axisX->name() ) );
         }
         else{
             transform.setAttribute("value", "noTransform" );
@@ -587,7 +592,7 @@ bool PlotWidget::xmlLoadState(QDomElement &plot_widget)
 
     static bool warning_message_shown = false;
 
-     bool curve_added = false;
+    bool curve_added = false;
 
     for (  curve = plot_widget.firstChildElement( "curve" )  ;
            !curve.isNull();
@@ -674,7 +679,7 @@ bool PlotWidget::xmlLoadState(QDomElement &plot_widget)
         rect.setLeft( rectangle.attribute("left").toDouble());
         rect.setRight( rectangle.attribute("right").toDouble());
         this->setScale( rect, false);
-    }   
+    }
 
     return true;
 }
@@ -936,7 +941,7 @@ void PlotWidget::launchRemoveCurveDialog()
 
     for(auto& it: _curve_list)
     {
-        dialog->addCurveName( it.first.c_str() );
+        dialog->addCurveName( QString::fromStdString( it.first ) );
     }
 
     dialog->exec();
@@ -1173,7 +1178,7 @@ void PlotWidget::on_convertToXY_triggered(bool)
 
     QFont font_footer;
     font_footer.setPointSize(10);
-    QwtText text( _axisX->name().c_str() );
+    QwtText text( QString::fromStdString( _axisX->name()) );
     text.setFont(font_footer);
 
     this->setFooter( text );
