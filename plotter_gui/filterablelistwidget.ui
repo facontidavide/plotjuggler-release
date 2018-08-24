@@ -367,6 +367,12 @@ border: 1px solid rgb(150, 150, 150);</string>
        <attribute name="verticalHeaderVisible">
         <bool>false</bool>
        </attribute>
+       <attribute name="verticalHeaderDefaultSectionSize">
+        <number>25</number>
+       </attribute>
+       <attribute name="verticalHeaderMinimumSectionSize">
+        <number>16</number>
+       </attribute>
       </widget>
      </item>
     </layout>
