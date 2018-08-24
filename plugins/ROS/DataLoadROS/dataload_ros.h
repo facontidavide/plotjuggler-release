@@ -45,6 +45,11 @@ private:
 
     bool _use_renaming_rules;
 
+    std::vector<std::pair<QString, QString>> getAndRegisterAllTopics();
+
+    void storeMessageInstancesAsUserDefined(PlotDataMapRef& plot_map,
+                                            const std::string &prefix,
+                                            bool use_header_stamp);
 };
 
 #endif // DATALOAD_CSV_H
