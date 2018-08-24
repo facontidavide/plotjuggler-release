@@ -211,7 +211,7 @@ void DialogSelectRosTopics::closeEvent(QCloseEvent *event)
     settings.setValue("DialogSelectRosTopics.geometry", saveGeometry());
 }
 
-nonstd::optional<double> FlatContainedContainHeaderStamp(const RosIntrospection::RenamedValues& renamed_value)
+nonstd::optional<double> FlatContainerContainHeaderStamp(const RosIntrospection::RenamedValues& renamed_value)
 {
     const char* ID = "/header/stamp";
     const int renamed_count = renamed_value.size();
