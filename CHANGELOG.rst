@@ -2,6 +2,15 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.8.4 (2018-09-17)
+------------------
+* add tooltip
+* fix issue #109
+* CMakeLists.txt add mac homebrew qt5 install directory (#111)
+* Merge pull request #107 from v-lopez/master
+* Fix dragging/deletion of hidden items
+* Contributors: Andrew Hundt, Davide Faconti, Victor Lopez
+
 1.8.3 (2018-08-24)
 ------------------
 * bug fix (crash when detaching a _point_marker)

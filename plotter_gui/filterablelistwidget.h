@@ -88,6 +88,8 @@ private:
     bool eventFilter(QObject *object, QEvent *event);
 
     void updateTreeModel();
+    
+    QModelIndexList getNonHiddenSelectedRows();
 
     bool _completer_need_update;
 
@@ -99,7 +101,7 @@ signals:
 
     void hiddenItemsChanged();
 
-    void deleteCurve(const std::string& curve_name);
+    void deleteCurves(const std::vector<std::string>& curve_names);
 
 };
 
