@@ -202,7 +202,7 @@ bool FilterableListWidget::eventFilter(QObject *object, QEvent *event)
             QByteArray mdata;
             QDataStream stream(&mdata, QIODevice::WriteOnly);
 
-            for(const auto& selected_index: _table_view->selectionModel()->selectedRows(0))
+            for(const auto& selected_index: getNonHiddenSelectedRows())
             {
                 auto item = _model->item( selected_index.row(), 0 );
                 stream << item->text();
@@ -214,7 +214,7 @@ bool FilterableListWidget::eventFilter(QObject *object, QEvent *event)
             }
             else
             {
-                if( _table_view->selectionModel()->selectedRows().size() != 1)
+                if(getNonHiddenSelectedRows().size() != 1)
                 {
                     return false;
                 }
@@ -244,6 +244,19 @@ bool FilterableListWidget::eventFilter(QObject *object, QEvent *event)
     }
 
     return QWidget::eventFilter(object,event);
+}
+
+QModelIndexList FilterableListWidget::getNonHiddenSelectedRows()
+{
+    QModelIndexList non_hidden_list;
+    for (const auto &selected_index : _table_view->selectionModel()->selectedRows(0))
+    {
+        if (!_table_view->isRowHidden(selected_index.row()))
+        {
+            non_hidden_list.append(selected_index);
+        }
+    }
+    return non_hidden_list;
 }
 
 
@@ -371,15 +384,16 @@ void FilterableListWidget::removeSelectedCurves()
                                   QMessageBox::Yes | QMessageBox::No,
                                   QMessageBox::No );
 
-    if( reply == QMessageBox::Yes ) {
-
-        auto selected_rows = _table_view->selectionModel()->selectedRows(0);
-        while( selected_rows.size() > 0 )
+    if (reply == QMessageBox::Yes)
+    {
+        std::vector<std::string> curve_names;
+        auto selected_rows = getNonHiddenSelectedRows();
+        for (int i = selected_rows.size() - 1; i >= 0; i--)
         {
-            auto item = _model->item( selected_rows.front().row(), 0 );
-            selected_rows = _table_view->selectionModel()->selectedRows(0);
-            emit deleteCurve( item->text().toStdString() );
+            auto item = _model->item(selected_rows.at(i).row(), 0);
+            curve_names.push_back( item->text().toStdString() );
         }
+        emit deleteCurves(curve_names);
     }
 
     // rebuild the tree model

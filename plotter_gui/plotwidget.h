@@ -152,8 +152,6 @@ private:
 
     void buildLegend();
 
-    int   _fps_counter;
-    QTime _fps_timeStamp;
     bool _show_line_and_points;
 
     void setDefaultRangeX();
