@@ -79,8 +79,8 @@ MainWindow::MainWindow(const QCommandLineParser &commandline_parser, QWidget *pa
     connect( _curvelist_widget, &FilterableListWidget::hiddenItemsChanged,
              this, &MainWindow::updateLeftTableValues );
 
-    connect(_curvelist_widget, &FilterableListWidget::deleteCurve,
-            this, &MainWindow::deleteDataOfSingleCurve );
+    connect(_curvelist_widget, &FilterableListWidget::deleteCurves,
+            this, &MainWindow::deleteDataMultipleCurves );
 
     connect(_curvelist_widget->getView()->verticalScrollBar(),
             &QScrollBar::valueChanged,
@@ -435,7 +435,7 @@ void MainWindow::loadPlugins(QString directory_name)
     for (QString filename: pluginsDir.entryList(QDir::Files))
     {
         QFileInfo fileinfo(filename);
-        if( fileinfo.suffix() != "so" && fileinfo.suffix() != "dll"){
+        if( fileinfo.suffix() != "so" && fileinfo.suffix() != "dll" && fileinfo.suffix() != "dylib"){
             continue;
         }
 
@@ -852,50 +852,35 @@ void MainWindow::onActionSaveLayout()
     }
 }
 
-void MainWindow::deleteDataOfSingleCurve(const std::string& curve_name)
+void MainWindow::deleteDataMultipleCurves(const std::vector<std::string> &curve_names)
 {
-    auto plot_curve = _mapped_plot_data.numeric.find( curve_name );
-    if( plot_curve == _mapped_plot_data.numeric.end())
+    for( const auto& curve_name: curve_names )
     {
-        return;
+        auto plot_curve = _mapped_plot_data.numeric.find( curve_name );
+        if( plot_curve == _mapped_plot_data.numeric.end())
+        {
+            return;
+        }
+
+        emit requestRemoveCurveByName( curve_name );
+        _mapped_plot_data.numeric.erase( plot_curve );
+
+        int row = _curvelist_widget->findRowByName( curve_name );
+        if( row != -1 )
+        {
+            _curvelist_widget->removeRow(row);
+        }
+
+        if( _curvelist_widget->rowCount() == 0)
+        {
+            ui->actionDeleteAllData->setEnabled( false );
+        }
     }
 
-    emit requestRemoveCurveByName( curve_name );
-    _mapped_plot_data.numeric.erase( plot_curve );
-
-    int row = _curvelist_widget->findRowByName( curve_name );
-    if( row != -1 )
-    {
-        _curvelist_widget->removeRow(row);
-    }
-
-    if( _curvelist_widget->rowCount() == 0)
-    {
-        ui->actionDeleteAllData->setEnabled( false );
-    }
+    forEachWidget( [](PlotWidget* plot) {
+        plot->replot();
+    } );
 }
-
-void MainWindow::deleteDataMultipleCurves(const std::vector<std::string> &curves_name)
-{
-    for( auto& name: curves_name)
-    {
-        _mapped_plot_data.numeric.erase(name);
-        emit requestRemoveCurveByName( name );
-    }
-    // it is much faster in many case to rebuild everything from scratch
-    _curvelist_widget->clear();
-
-    for( auto& it: _mapped_plot_data.numeric)
-    {
-        _curvelist_widget->addItem( QString::fromStdString(it.first) );
-    }
-
-    if( _curvelist_widget->rowCount() == 0)
-    {
-        ui->actionDeleteAllData->setEnabled( false );
-    }
-}
-
 
 void MainWindow::onDeleteLoadedData()
 {
