@@ -102,9 +102,7 @@ private slots:
 
     void updateLeftTableValues();
 
-    void deleteDataOfSingleCurve(const std::string &curve_name);
-
-    void deleteDataMultipleCurves(const std::vector<std::string> &curves_name);
+    void deleteDataMultipleCurves(const std::vector<std::string> &curve_names);
 
     void on_pushButtonRemoveTimeOffset_toggled(bool checked);
 
