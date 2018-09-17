@@ -64,8 +64,9 @@ PlotWidget::PlotWidget(PlotDataMapRef &datamap, QWidget *parent):
     _legend( 0 ),
     _grid( 0 ),
     _mapped_data( datamap ),
-    _show_line_and_points(false),
     _current_transform( TimeseriesQwt::noTransform ),
+    _show_line_and_points(false),
+    _axisX(nullptr),
     _time_offset(0.0)
 {
     this->setAcceptDrops( true );
@@ -232,6 +233,16 @@ void PlotWidget::canvasContextMenuTriggered(const QPoint &pos)
     _action_removeCurve->setEnabled( ! _curve_list.empty() );
     _action_removeAllCurves->setEnabled( ! _curve_list.empty() );
     _action_changeColorsDialog->setEnabled(  ! _curve_list.empty() );
+    _action_phaseXY->setEnabled( _axisX != nullptr );
+
+    if( !_axisX )
+    {
+        menu.setToolTipsVisible(true);
+        _action_phaseXY->setToolTip(
+                    "To show a XY plot, you must first provide the X axis.\n"
+                    "Drag andn drop a curve using the RIGHT mouse\n"
+                    "button instead of the left one." );
+    }
 
     menu.exec( canvas()->mapToGlobal(pos) );
 }
@@ -358,7 +369,7 @@ void PlotWidget::removeCurve(const std::string &name)
 
         emit curveListChanged();
     }
-    if( isXYPlot() && _axisX->name() == name)
+    if( _axisX && _axisX->name() == name)
     {
         _axisX = nullptr;
         for(auto& it : _curve_list)
@@ -369,7 +380,6 @@ void PlotWidget::removeCurve(const std::string &name)
         _action_noTransform->trigger();
         emit curveListChanged();
     }
-
 }
 
 bool PlotWidget::isEmpty() const
@@ -470,9 +480,9 @@ void PlotWidget::detachAllCurves()
     for(auto& it: _curve_list)   { it.second->detach(); }
     for(auto& it: _point_marker) { it.second->detach(); }
 
+    _axisX = nullptr;
     if( isXYPlot() )
     {
-        _axisX = nullptr;
         _action_noTransform->trigger();
     }
 
@@ -1332,34 +1342,6 @@ bool PlotWidget::eventFilter(QObject *obj, QEvent *event)
     {
         //        QKeyEvent *key_event = static_cast<QKeyEvent*>(event);
         //        qDebug() << key_event->key();
-    }break;
-        //---------------------------------
-    case QEvent::Paint :
-    {
-        if ( obj == this->canvas())
-        {
-            if ( !_fps_timeStamp.isValid() )
-            {
-                _fps_timeStamp.start();
-                _fps_counter = 0;
-            }
-            else{
-                _fps_counter++;
-
-                const double elapsed = _fps_timeStamp.elapsed() / 1000.0;
-                if ( elapsed >= 1 )
-                {
-                    QFont font_title;
-                    font_title.setPointSize(9);
-                    QwtText fps;
-                    fps.setText( QString::number( qRound( _fps_counter / elapsed ) ) );
-                    fps.setFont(font_title);
-                    //qDebug() << _fps_counter / elapsed ;
-                    _fps_counter = 0;
-                    _fps_timeStamp.start();
-                }
-            }
-        }
     }break;
 
     case QEvent::DragEnter: {
