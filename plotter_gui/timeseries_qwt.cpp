@@ -9,6 +9,7 @@ bool if_xy_plot_failed_show_dialog = true;
 
 TimeseriesQwt::TimeseriesQwt(const PlotData *base, double time_offset):
     _plot_data(base),
+    _alternative_X_axis(nullptr),
     _subsample(1),
     _transform( noTransform ),
     _time_offset(time_offset)
@@ -245,11 +246,8 @@ nonstd::optional<QPointF> TimeseriesQwt::sampleFromTime(double t)
 
 void TimeseriesQwt::setTransform(TimeseriesQwt::Transform trans)
 {
-    if(trans != _transform)
-    {
-        _transform = trans;
-        updateData();
-    }
+    _transform = trans;
+    updateData();
 }
 
 void TimeseriesQwt::setTimeOffset(double new_offset)
