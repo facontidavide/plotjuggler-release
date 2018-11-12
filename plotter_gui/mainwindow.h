@@ -100,7 +100,7 @@ private slots:
 
     void onTimeSlider_valueChanged(double value);
 
-    void updateLeftTableValues();
+    void onUpdateLeftTableValues();
 
     void deleteDataMultipleCurves(const std::vector<std::string> &curve_names);
 
