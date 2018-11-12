@@ -22,6 +22,14 @@ DataLoadROS::DataLoadROS()
     _extensions.push_back( "bag");
 }
 
+void StrCat(const std::string& a, const std::string& b,  std::string& out)
+{
+   out.clear();
+   out.reserve(a.size() + b.size());
+   out.assign(a);
+   out.append(b);
+}
+
 const std::vector<const char*> &DataLoadROS::compatibleFileExtensions() const
 {
     return _extensions;
@@ -63,10 +71,11 @@ void DataLoadROS::storeMessageInstancesAsUserDefined(PlotDataMapRef& plot_map,
 
   RenamedValues renamed_value;
 
+  std::string prefixed_name;
+
   for(const rosbag::MessageInstance& msg_instance: bag_view )
   {
       const std::string& topic_name  = msg_instance.getTopic();
-      const std::string key = prefix + topic_name;
       double msg_time = msg_instance.getTime().toSec();
 
       if(use_header_stamp)
@@ -80,12 +89,17 @@ void DataLoadROS::storeMessageInstancesAsUserDefined(PlotDataMapRef& plot_map,
               }
           }
       }
+      if( prefix.empty() == false)
+      {
+          StrCat(prefix, topic_name, prefixed_name);
+      }
+      const std::string* key_ptr = prefix.empty() ? &topic_name : &prefixed_name;
 
-      auto plot_pair = plot_map.user_defined.find( key );
+      auto plot_pair = plot_map.user_defined.find( *key_ptr );
 
       if( plot_pair == plot_map.user_defined.end() )
       {
-          plot_pair = plot_map.addUserDefined( key );
+          plot_pair = plot_map.addUserDefined( *key_ptr );
       }
       PlotDataAny& plot_raw = plot_pair->second;
       plot_raw.pushBack( PlotDataAny::Point(msg_time, nonstd::any(std::move(msg_instance)) ));
@@ -190,7 +204,7 @@ PlotDataMapRef DataLoadROS::readDataFromFile(const QString &file_name, bool use_
     std::unordered_set<std::string> warning_cancellation;
     std::unordered_set<std::string> warning_max_arraysize;
     int msg_count = 0;
-
+    std::string prefixed_name;
     QElapsedTimer timer;
     timer.start();
 
@@ -243,13 +257,20 @@ PlotDataMapRef DataLoadROS::readDataFromFile(const QString &file_name, bool use_
 
         for(const auto& it: renamed_values )
         {
-            const std::string key = prefix + it.first;
+            const auto& field_name = it.first;
+
+            if( prefix.empty() == false)
+            {
+                StrCat(prefix, field_name, prefixed_name);
+            }
+            const std::string* key_ptr = prefix.empty() ? &field_name : &prefixed_name;
+
             const RosIntrospection::Variant& value = it.second;
 
-            auto plot_pair = plot_map.numeric.find( key );
+            auto plot_pair = plot_map.numeric.find( *key_ptr );
             if( (plot_pair == plot_map.numeric.end()) )
             {
-                plot_pair = plot_map.addNumeric( key );
+                plot_pair = plot_map.addNumeric( *key_ptr );
             }
 
             PlotData& plot_data = plot_pair->second;
@@ -259,7 +280,7 @@ PlotDataMapRef DataLoadROS::readDataFromFile(const QString &file_name, bool use_
               const double last_time = plot_data.back().x;
               if( msg_time < last_time)
               {
-                warning_monotonic.insert(key);
+                warning_monotonic.insert(*key_ptr);
               }
             }
 
@@ -270,7 +291,7 @@ PlotDataMapRef DataLoadROS::readDataFromFile(const QString &file_name, bool use_
                 bool error = (val_i != static_cast<uint64_t>(val_d));
                 if(error)
                 {
-                    warning_cancellation.insert(key);
+                    warning_cancellation.insert(*key_ptr);
                 }
                 plot_data.pushBack( PlotData::Point(msg_time, val_d) );
             }
@@ -281,14 +302,13 @@ PlotDataMapRef DataLoadROS::readDataFromFile(const QString &file_name, bool use_
                 bool error = (val_i != static_cast<int64_t>(val_d));
                 if(error)
                 {
-                    warning_cancellation.insert(key);
+                    warning_cancellation.insert(*key_ptr);
                 }
                 plot_data.pushBack( PlotData::Point(msg_time, val_d) );
             }
             else{
                 plot_data.pushBack( PlotData::Point(msg_time, value.convert<double>() ));
             }
-
         } //end of for renamed_value
     }
 
