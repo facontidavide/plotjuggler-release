@@ -1,11 +1,13 @@
 #include "removecurvedialog.h"
 #include "ui_removecurvedialog.h"
+#include "plotwidget.h"
 #include <QDebug>
 #include "plotwidget.h"
 
-RemoveCurveDialog::RemoveCurveDialog(QWidget *parent) :
+RemoveCurveDialog::RemoveCurveDialog(PlotWidget *parent) :
     QDialog(parent),
-    ui(new Ui::RemoveCurveDialog)
+    ui(new Ui::RemoveCurveDialog),
+    _parent(parent)
 {
     ui->setupUi(this);
 }
@@ -15,9 +17,11 @@ RemoveCurveDialog::~RemoveCurveDialog()
     delete ui;
 }
 
-void RemoveCurveDialog::addCurveName(const QString &name)
+void RemoveCurveDialog::addCurveName(const QString &name, const QColor &color )
 {
-    ui->listCurveWidget->addItem( new QListWidgetItem( name ) );
+    QListWidgetItem* item = new QListWidgetItem( name );
+    item->setForeground(color);
+    ui->listCurveWidget->addItem(item);
 }
 
 void RemoveCurveDialog::on_listCurveWidget_itemClicked(QListWidgetItem *item)
@@ -31,20 +35,21 @@ void RemoveCurveDialog::on_listCurveWidget_itemClicked(QListWidgetItem *item)
 
 void RemoveCurveDialog::on_pushButtonRemove_pressed()
 {
-    PlotWidget* parent = dynamic_cast<PlotWidget*>( this->parentWidget() );
-    if( parent ) // this should always be true...
+
+  for(int index = 0; index < ui->listCurveWidget->count(); ++index)
+  {
+    QListWidgetItem* item = ui->listCurveWidget->item( index );
+    if( item->font().strikeOut() && item->isHidden() == false)
     {
-        for(int index = 0; index <ui->listCurveWidget->count(); ++index)
-        {
-            QListWidgetItem* item = ui->listCurveWidget->item( index );
-            if( item->font().strikeOut() && item->isHidden() == false)
-            {
-                parent->removeCurve( item->text().toStdString() );
-                item->setHidden( true );
-            }
-        }
+      _parent->removeCurve( item->text().toStdString() );
+      item->setHidden( true );
     }
-    closeIfEmpty();
+  }
+  if( ui->listCurveWidget->count() > 0)
+  {
+    _parent->replot();
+  }
+  closeIfEmpty();
 }
 
 void RemoveCurveDialog::on_pushButtonSelectAll_pressed()
