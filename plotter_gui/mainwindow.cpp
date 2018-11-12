@@ -11,6 +11,7 @@
 #include <QFileDialog>
 #include <QInputDialog>
 #include <QMenu>
+#include <QGroupBox>
 #include <QMessageBox>
 #include <QMimeData>
 #include <QMouseEvent>
@@ -74,17 +75,17 @@ MainWindow::MainWindow(const QCommandLineParser &commandline_parser, QWidget *pa
     }
 
     connect( _curvelist_widget->getView()->verticalScrollBar(), &QScrollBar::sliderMoved,
-             this, &MainWindow::updateLeftTableValues );
+             this, &MainWindow::onUpdateLeftTableValues );
 
     connect( _curvelist_widget, &FilterableListWidget::hiddenItemsChanged,
-             this, &MainWindow::updateLeftTableValues );
+             this, &MainWindow::onUpdateLeftTableValues );
 
     connect(_curvelist_widget, &FilterableListWidget::deleteCurves,
             this, &MainWindow::deleteDataMultipleCurves );
 
     connect(_curvelist_widget->getView()->verticalScrollBar(),
             &QScrollBar::valueChanged,
-            this, &MainWindow::updateLeftTableValues );
+            this, &MainWindow::onUpdateLeftTableValues );
 
     connect( ui->timeSlider, &RealSlider::realValueChanged,
              this, &MainWindow::onTimeSlider_valueChanged );
@@ -226,7 +227,7 @@ void MainWindow::onRedoInvoked()
 }
 
 
-void MainWindow::updateLeftTableValues()
+void MainWindow::onUpdateLeftTableValues()
 {
     auto table_model = _curvelist_widget->getTable();
     auto table_view  = _curvelist_widget->getView();
@@ -310,7 +311,7 @@ void MainWindow::onTimeSlider_valueChanged(double relative_time)
 void MainWindow::onTrackerTimeUpdated(double absolute_time, bool do_replot)
 {
     updatedDisplayTime();
-    updateLeftTableValues();
+    onUpdateLeftTableValues();
 
     for ( auto& it: _state_publisher)
     {
@@ -562,7 +563,7 @@ void MainWindow::buildDummyData()
 
     for( const QString& name: words_list)
     {
-        double A =  6* ((double)qrand()/(double)RAND_MAX)  - 3;
+        double A =  6* ((double)qrand()/(double)RAND_MAX) - 3;
         double B =  3* ((double)qrand()/(double)RAND_MAX)  ;
         double C =  3* ((double)qrand()/(double)RAND_MAX)  ;
         double D =  20* ((double)qrand()/(double)RAND_MAX)  ;
@@ -795,40 +796,39 @@ void MainWindow::onActionSaveLayout()
     savePluginState(doc);
     //--------------------------
 
-    QDomElement root = doc.namedItem("root").toElement();
-
-    if( !_loaded_datafile.isEmpty() || _current_streamer )
-    {
-        auto reply = QMessageBox::question(0, tr("Hey!"),
-                                           tr("Do you want the layout to remember the source of your data,\n"
-                                              "i.e. the Datafile used or the Streaming Plugin loaded ?"),
-                                           QMessageBox::Yes | QMessageBox::No, QMessageBox::No );
-        if( reply == QMessageBox::Yes )
-        {
-            if( _loaded_datafile.isEmpty() == false)
-            {
-                QDomElement previously_loaded_datafile =  doc.createElement( "previouslyLoadedDatafile" );
-                previously_loaded_datafile.setAttribute("filename", _loaded_datafile );
-                root.appendChild( previously_loaded_datafile );
-            }
-        }
-        if( _current_streamer )
-        {
-            QDomElement loaded_streamer =  doc.createElement( "previouslyLoadedStreamer" );
-            QString streamer_name = _current_streamer->name();
-            streamer_name.replace(" ", "_");
-            loaded_streamer.setAttribute("name", streamer_name );
-            root.appendChild( loaded_streamer );
-        }
-    }
-    //------------------------------------
-
     QSettings settings;
 
     QString directory_path  = settings.value("MainWindow.lastLayoutDirectory",
                                              QDir::currentPath() ).toString();
 
     QFileDialog saveDialog;
+    saveDialog.setOption(QFileDialog::DontUseNativeDialog, true);
+
+    QGridLayout *save_layout = static_cast<QGridLayout*>(saveDialog.layout());
+
+    QFrame* frame = new QFrame;
+    frame->setFrameStyle(QFrame::Box | QFrame::Plain);
+    frame->setLineWidth(1);
+
+    QVBoxLayout *vbox = new QVBoxLayout;
+    QLabel* title = new QLabel("Save Layout options");
+    title->setStyleSheet("font-weight: bold");
+    QFrame* separator = new QFrame;
+    separator->setFrameStyle(QFrame::HLine | QFrame::Plain);
+    QCheckBox* checkbox = new QCheckBox("save data source");
+    checkbox->setToolTip("Do you want the layout to remember the source of your data,\n"
+                         "i.e. the Datafile used or the Streaming Plugin loaded ?");
+    checkbox->setFocusPolicy( Qt::NoFocus );
+    checkbox->setChecked( settings.value("MainWindow.saveLayoutDataSource", true).toBool() );
+    vbox->addWidget(title);
+    vbox->addWidget(separator);
+    vbox->addWidget(checkbox);
+    frame->setLayout(vbox);
+
+    int rows = save_layout->rowCount();
+    int col = save_layout->columnCount();
+    save_layout->addWidget(frame, 0, col, rows, 1, Qt::AlignTop);
+
     saveDialog.setAcceptMode(QFileDialog::AcceptSave);
     saveDialog.setDefaultSuffix("xml");
     saveDialog.setNameFilter("XML (*.xml)");
@@ -842,8 +842,33 @@ void MainWindow::onActionSaveLayout()
 
     QString fileName = saveDialog.selectedFiles().first();
 
-    if (fileName.isEmpty())
+    if (fileName.isEmpty()){
         return;
+    }
+
+    directory_path = QFileInfo(fileName).absolutePath();
+    settings.setValue("MainWindow.lastLayoutDirectory", directory_path);
+    settings.setValue("MainWindow.saveLayoutDataSource", checkbox->isChecked() );
+
+    if( checkbox->isChecked() )
+    {
+        QDomElement root = doc.namedItem("root").toElement();
+        if( _loaded_datafile.isEmpty() == false)
+        {
+            QDomElement previously_loaded_datafile =  doc.createElement( "previouslyLoadedDatafile" );
+            previously_loaded_datafile.setAttribute("filename", _loaded_datafile );
+            root.appendChild( previously_loaded_datafile );
+        }
+
+        if( _current_streamer )
+        {
+            QDomElement loaded_streamer =  doc.createElement( "previouslyLoadedStreamer" );
+            QString streamer_name = _current_streamer->name();
+            streamer_name.replace(" ", "_");
+            loaded_streamer.setAttribute("name", streamer_name );
+            root.appendChild( loaded_streamer );
+        }
+    }
 
     QFile file(fileName);
     if (file.open(QIODevice::WriteOnly)) {
