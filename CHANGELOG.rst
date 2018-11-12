@@ -2,6 +2,23 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.9.0 (2018-11-12)
+------------------
+* version bump
+* Spurious DragLeave fixed? (The worst and most annoying bug of PlotJuggler)
+* adjust font size in left panel
+* CMAKE_INSTALL_PREFIX flag fix for non-ROS user (#114)
+* adding improvements from @aeudes , issue #119
+  1) Improved RemoveCurve dialog (colors and immediate replot)
+  2) Fixed QMenu actions zoom horizontally and vertically
+  3) Fix issue with panner and added Mouse Middle Button
+* minor changes
+* Merge branch 'master' of https://github.com/facontidavide/PlotJuggler
+* speed up loading rosbags (5%-10%)
+* custom qFileDialog to save the Layout
+* minor changes
+* Contributors: Davide Faconti, Mat&I
+
 1.8.4 (2018-09-17)
 ------------------
 * add tooltip
