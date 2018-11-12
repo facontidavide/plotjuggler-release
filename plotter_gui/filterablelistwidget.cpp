@@ -40,14 +40,13 @@ FilterableListWidget::FilterableListWidget(QWidget *parent) :
     _completer( new TreeModelCompleter(this) )
 {
     ui->setupUi(this);
-    _table_view = ui->tableView;
-    _table_view->viewport()->installEventFilter( this );
+    ui->tableView->viewport()->installEventFilter( this );
 
     _model = new QStandardItemModel(0, 2, this);
-    _table_view->setModel( _model );
-    _table_view->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
-    _table_view->horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
-    _table_view->horizontalHeader()->resizeSection(1, 120);
+    ui->tableView->setModel( _model );
+    ui->tableView->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
+    ui->tableView->horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
+    ui->tableView->horizontalHeader()->resizeSection(1, 120);
 
     ui->widgetOptions->setVisible(false);
 
@@ -98,6 +97,9 @@ void FilterableListWidget::clear()
 void FilterableListWidget::addItem(const QString &item_name)
 {
     auto item = new CustomSortedTableItem(item_name);
+    QFont font = item->font();
+    font.setPointSize(9);
+    item->setFont(font);
     const int row = rowCount();
     _model->setRowCount(row+1);
     _model->setItem(row, 0, item);
@@ -105,7 +107,9 @@ void FilterableListWidget::addItem(const QString &item_name)
     auto val_cell = new QStandardItem("-");
     val_cell->setTextAlignment(Qt::AlignRight);
     val_cell->setFlags( Qt::NoItemFlags | Qt::ItemIsEnabled );
-    val_cell->setFont(  QFontDatabase::systemFont(QFontDatabase::FixedFont) );
+    font = QFontDatabase::systemFont(QFontDatabase::FixedFont);
+    font.setPointSize(9);
+    val_cell->setFont( font );
 
     _model->setItem(row, 1, val_cell );
 
@@ -117,7 +121,7 @@ void FilterableListWidget::addItem(const QString &item_name)
 
 void FilterableListWidget::refreshColumns()
 {
-    _table_view->sortByColumn(0,Qt::AscendingOrder);
+    ui->tableView->sortByColumn(0,Qt::AscendingOrder);
     updateFilter();
 }
 
@@ -155,12 +159,12 @@ bool FilterableListWidget::eventFilter(QObject *object, QEvent *event)
     QObject *obj = object;
     while ( obj != NULL )
     {
-        if( obj == _table_view || obj == ui->lineEdit ) break;
+        if( obj == ui->tableView || obj == ui->lineEdit ) break;
         obj = obj->parent();
     }
 
     //Ignore obj different than tableView
-    if(obj != _table_view)
+    if(obj != ui->tableView)
     {
         return QWidget::eventFilter(object,event);
     }
@@ -192,8 +196,8 @@ bool FilterableListWidget::eventFilter(QObject *object, QEvent *event)
 
         if ((mouse_event->buttons() == Qt::LeftButton ||
              mouse_event->buttons() == Qt::RightButton) &&
-                distance_from_click >= QApplication::startDragDistance() &&
-                _dragging == false)
+            distance_from_click >= QApplication::startDragDistance() &&
+            !_dragging)
         {
             _dragging = true;
             QDrag *drag = new QDrag(this);
@@ -202,10 +206,9 @@ bool FilterableListWidget::eventFilter(QObject *object, QEvent *event)
             QByteArray mdata;
             QDataStream stream(&mdata, QIODevice::WriteOnly);
 
-            for(const auto& selected_index: getNonHiddenSelectedRows())
+            for(const auto& curve_name: getNonHiddenSelectedRows())
             {
-                auto item = _model->item( selected_index.row(), 0 );
-                stream << item->text();
+                stream << QString::fromStdString(curve_name);
             }
 
             if( !_newX_modifier )
@@ -246,17 +249,23 @@ bool FilterableListWidget::eventFilter(QObject *object, QEvent *event)
     return QWidget::eventFilter(object,event);
 }
 
-QModelIndexList FilterableListWidget::getNonHiddenSelectedRows()
+std::vector<std::string> FilterableListWidget::getNonHiddenSelectedRows()
 {
-    QModelIndexList non_hidden_list;
-    for (const auto &selected_index : _table_view->selectionModel()->selectedRows(0))
+    std::vector<std::string> non_hidden_list;
+    for (const auto &selected_index : ui->tableView->selectionModel()->selectedRows(0))
     {
-        if (!_table_view->isRowHidden(selected_index.row()))
+        if (!ui->tableView->isRowHidden(selected_index.row()))
         {
-            non_hidden_list.append(selected_index);
+            auto item = _model->item( selected_index.row(), 0 );
+            non_hidden_list.push_back(item->text().toStdString());
         }
     }
     return non_hidden_list;
+}
+
+QTableView *FilterableListWidget::getView() const
+{
+    return ui->tableView;
 }
 
 
@@ -349,9 +358,9 @@ void FilterableListWidget::on_lineEdit_textChanged(const QString &search_string)
         }
         if( !toHide ) visible_count++;
 
-        if( toHide != _table_view->isRowHidden(row) ) updated = true;
+        if( toHide != ui->tableView->isRowHidden(row) ) updated = true;
 
-        _table_view->setRowHidden(row, toHide );
+        ui->tableView->setRowHidden(row, toHide );
     }
     ui->labelNumberDisplayed->setText( QString::number( visible_count ) + QString(" of ") + QString::number( item_count ) );
 
@@ -368,10 +377,10 @@ void FilterableListWidget::on_pushButtonSettings_toggled(bool checked)
 void FilterableListWidget::on_checkBoxHideSecondColumn_toggled(bool checked)
 {
     if(checked){
-        _table_view->hideColumn(1);
+        ui->tableView->hideColumn(1);
     }
     else{
-        _table_view->showColumn(1);
+        ui->tableView->showColumn(1);
     }
     emit hiddenItemsChanged();
 }
@@ -386,14 +395,7 @@ void FilterableListWidget::removeSelectedCurves()
 
     if (reply == QMessageBox::Yes)
     {
-        std::vector<std::string> curve_names;
-        auto selected_rows = getNonHiddenSelectedRows();
-        for (int i = selected_rows.size() - 1; i >= 0; i--)
-        {
-            auto item = _model->item(selected_rows.at(i).row(), 0);
-            curve_names.push_back( item->text().toStdString() );
-        }
-        emit deleteCurves(curve_names);
+        emit deleteCurves(getNonHiddenSelectedRows());
     }
 
     // rebuild the tree model

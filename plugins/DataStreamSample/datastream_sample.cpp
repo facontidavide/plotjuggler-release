@@ -44,6 +44,7 @@ DataStreamSample::DataStreamSample()
         dataMap().addNumeric(name_str);
         _parameters.insert( std::make_pair( name_str, param) );
     }
+    dataMap().addNumeric("empty");
 }
 
 bool DataStreamSample::start()
@@ -88,6 +89,7 @@ void DataStreamSample::pushSingleCycle()
     auto now =  high_resolution_clock::now();
     for (auto& it: dataMap().numeric )
     {
+        if( it.first == "empty") continue;
         auto par = _parameters[it.first];
 
         auto& plot = it.second;

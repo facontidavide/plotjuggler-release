@@ -180,7 +180,6 @@ void TimeseriesQwt::updateData()
 
 PlotData::RangeTimeOpt TimeseriesQwt::getVisualizationRangeX()
 {   
-    // std::lock_guard<std::mutex> lock(_mutex);
     if( this->size() < 2 )
         return  PlotData::RangeTimeOpt();
     else{
