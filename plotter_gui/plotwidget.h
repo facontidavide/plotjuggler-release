@@ -75,6 +75,8 @@ public slots:
 
     void detachAllCurves();
 
+    void on_panned(int dx, int dy);
+
     void zoomOut(bool emit_signal);
 
     void on_zoomOutHorizontal_triggered(bool emit_signal = true);
@@ -137,7 +139,8 @@ private:
 
     PlotZoomer* _zoomer;
     PlotMagnifier* _magnifier;
-    QwtPlotPanner* _panner;
+    QwtPlotPanner* _panner1;
+    QwtPlotPanner* _panner2;
 
     CurveTracker* _tracker;
     QwtPlotLegendItem* _legend;
@@ -145,6 +148,14 @@ private:
 
     PlotDataMapRef& _mapped_data;
     TimeseriesQwt::Transform _current_transform;
+
+    struct DragInfo{
+        enum{ NONE, CURVES, NEW_X, SWAP_PLOTS} mode;
+        std::vector<QString> curves;
+        QObject* source;
+    };
+
+    DragInfo _dragging;
 
     bool addCurve(const std::string &name);
 
@@ -156,14 +167,13 @@ private:
 
     void setDefaultRangeX();
 
-    const PlotData* _axisX;
+    const PlotData* _axisX = nullptr;
 
     double _time_offset;
 
     PlotData::RangeValue _custom_Y_limits;
 
     AxisLimitsDialog* _axis_limits_dialog;
-
 };
 
 #endif
