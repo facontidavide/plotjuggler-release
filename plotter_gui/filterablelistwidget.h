@@ -45,10 +45,7 @@ public:
         return _model;
     }
 
-    QTableView *getView() const
-    {
-        return _table_view;
-    }
+    QTableView* getView() const;
 
     bool is2ndColumnHidden() const
     {
@@ -89,13 +86,12 @@ private:
 
     void updateTreeModel();
     
-    QModelIndexList getNonHiddenSelectedRows();
+    std::vector<std::string> getNonHiddenSelectedRows();
 
     bool _completer_need_update;
 
     QStandardItemModel* _model;
 
-    QTableView* _table_view;
 
 signals:
 
