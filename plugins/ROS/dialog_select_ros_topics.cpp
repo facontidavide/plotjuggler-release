@@ -272,4 +272,30 @@ void DialogSelectRosTopics::on_maximumSizeHelp_pressed()
     msgBox.exec();
 }
 
+void DialogSelectRosTopics::on_lineEditFilter_textChanged(const QString& search_string)
+{
+    int visible_count = 0;
+    bool updated = false;
+
+    QStringList spaced_items = search_string.split(' ');
+
+    for (int row=0; row < ui->listRosTopics->rowCount(); row++)
+    {
+        auto item = ui->listRosTopics->item(row,0);
+        QString name = item->text();
+        int pos = 0;
+        bool toHide = false;
+
+        for (const auto& item: spaced_items)
+        {
+            if( !name.contains(item) )
+            {
+                toHide = true;
+                break;
+            }
+        }
+        ui->listRosTopics->setRowHidden(row, toHide );
+    }
+}
+
 

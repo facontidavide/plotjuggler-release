@@ -5,35 +5,42 @@ QT5_ADD_RESOURCES (RES_SRC  resource.qrc )
 
 QT5_WRAP_UI ( UI_SRC
     aboutdialog.ui
+    axis_limits_dialog.ui
     mainwindow.ui
     removecurvedialog.ui
-    busydialog.ui
     curvecolorpick.ui
     filterablelistwidget.ui
     tabbedplotwidget.ui
-    axis_limits_dialog.ui
+
+    transforms/function_editor.ui
+    transforms/transform_selector.ui
+
     ../common/selectlistdialog.ui
     )
 
 SET( PLOTTER_SRC
     aboutdialog.cpp
     axis_limits_dialog.cpp
+    customtracker.cpp
+    curvecolorpick.cpp
+    filterablelistwidget.cpp
     main.cpp
     mainwindow.cpp
     plotwidget.cpp
     plotmatrix.cpp
-    removecurvedialog.cpp
     plotmagnifier.cpp
+    point_series_xy.cpp
     plotzoomer.cpp
-    busydialog.cpp
-    busytaskdialog.cpp
-    customtracker.cpp
-    curvecolorpick.cpp
-    timeseries_qwt.cpp
-    filterablelistwidget.cpp
-    tabbedplotwidget.cpp
+    removecurvedialog.cpp
     subwindow.cpp
+    timeseries_qwt.cpp
+    tabbedplotwidget.cpp
     tree_completer.h
+
+    transforms/custom_function.cpp
+    transforms/custom_timeseries.cpp
+    transforms/function_editor.cpp
+    transforms/transform_selector.cpp
 
     mainwindow.h
     realslider.h
