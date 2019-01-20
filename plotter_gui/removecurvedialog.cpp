@@ -5,9 +5,9 @@
 #include "plotwidget.h"
 
 RemoveCurveDialog::RemoveCurveDialog(PlotWidget *parent) :
-    QDialog(parent),
-    ui(new Ui::RemoveCurveDialog),
-    _parent(parent)
+ QDialog(parent),
+ ui(new Ui::RemoveCurveDialog),
+ _parent(parent)
 {
     ui->setupUi(this);
 }
@@ -24,43 +24,24 @@ void RemoveCurveDialog::addCurveName(const QString &name, const QColor &color )
     ui->listCurveWidget->addItem(item);
 }
 
-void RemoveCurveDialog::on_listCurveWidget_itemClicked(QListWidgetItem *item)
-{
-    QFont f = item->font();
-    f.setStrikeOut( !f.strikeOut() );
-    item->setFont( f );
-    qDebug() << "on_listWidget_itemClicked";
-    item->font().setStrikeOut( true );
-}
-
 void RemoveCurveDialog::on_pushButtonRemove_pressed()
 {
+    auto selected_items = ui->listCurveWidget->selectedItems();
 
-  for(int index = 0; index < ui->listCurveWidget->count(); ++index)
-  {
-    QListWidgetItem* item = ui->listCurveWidget->item( index );
-    if( item->font().strikeOut() && item->isHidden() == false)
+    for(const auto item: selected_items)
     {
-      _parent->removeCurve( item->text().toStdString() );
-      item->setHidden( true );
+        if( item->isHidden() == false)
+        {
+            _parent->removeCurve( item->text().toStdString() );
+            item->setHidden( true );
+        }
     }
-  }
-  if( ui->listCurveWidget->count() > 0)
-  {
-    _parent->replot();
-  }
-  closeIfEmpty();
-}
 
-void RemoveCurveDialog::on_pushButtonSelectAll_pressed()
-{
-    for(int index = 0; index <ui->listCurveWidget->count(); ++index)
+    if( ui->listCurveWidget->count() > 0)
     {
-        QListWidgetItem* item = ui->listCurveWidget->item( index );
-        QFont f = item->font();
-        f.setStrikeOut( true );
-        item->setFont( f );
+        _parent->replot();
     }
+    closeIfEmpty();
 }
 
 void RemoveCurveDialog::closeIfEmpty()
