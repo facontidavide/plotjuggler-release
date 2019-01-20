@@ -47,6 +47,8 @@ std::vector<std::pair<QString,QString>> DataLoadROS::getAndRegisterAllTopics()
   std::vector<std::pair<QString,QString>> all_topics;
   rosbag::View bag_view ( *_bag, ros::TIME_MIN, ros::TIME_MAX, true );
 
+  RosIntrospectionFactory::reset();
+
   for(auto& conn: bag_view.getConnections() )
   {
       const auto&  topic      =  conn->topic;
