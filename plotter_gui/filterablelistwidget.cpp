@@ -16,13 +16,13 @@
 #include <QStandardItem>
 #include <QItemSelectionModel>
 
-class CustomSortedTableItem: public QStandardItem
+class SortedTableItem: public QStandardItem
 {
 
 public:
-    CustomSortedTableItem(const QString& name): QStandardItem(name), str(name.toStdString()) {}
+    SortedTableItem(const QString& name): QStandardItem(name), str(name.toStdString()) {}
 
-    bool operator< (const CustomSortedTableItem &other) const
+    bool operator< (const SortedTableItem &other) const
     {
         return doj::alphanum_impl(this->str.c_str(),
                                   other.str.c_str()) < 0;
@@ -34,19 +34,26 @@ private:
 
 //-------------------------------------------------
 
-FilterableListWidget::FilterableListWidget(QWidget *parent) :
+FilterableListWidget::FilterableListWidget(const CustomPlotMap &mapped_math_plots,
+                                           QWidget *parent) :
     QWidget(parent),
     ui(new Ui::FilterableListWidget),
-    _completer( new TreeModelCompleter(this) )
+    _completer( new TreeModelCompleter(this) ),
+    _custom_plots(mapped_math_plots)
 {
     ui->setupUi(this);
     ui->tableView->viewport()->installEventFilter( this );
 
     _model = new QStandardItemModel(0, 2, this);
-    ui->tableView->setModel( _model );
-    ui->tableView->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
-    ui->tableView->horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
-    ui->tableView->horizontalHeader()->resizeSection(1, 120);
+
+    for(auto table_view: {ui->tableView, ui->tableViewCustom})
+    {
+        table_view->viewport()->installEventFilter( this );
+        table_view->setModel( _model );
+        table_view->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
+        table_view->horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
+        table_view->horizontalHeader()->resizeSection(1, 120);
+    }
 
     ui->widgetOptions->setVisible(false);
 
@@ -74,6 +81,12 @@ FilterableListWidget::FilterableListWidget(QWidget *parent) :
 
     _completer_need_update = ui->radioPrefix->isChecked();
     ui->lineEdit->setCompleter( _completer_need_update ? _completer : nullptr );
+
+    ui->splitter->setStretchFactor(0,5);
+    ui->splitter->setStretchFactor(1,1);
+
+    connect(  ui->tableViewCustom->selectionModel(), &QItemSelectionModel::selectionChanged,
+              this, &FilterableListWidget::onCustomSelectionChanged );
 }
 
 FilterableListWidget::~FilterableListWidget()
@@ -93,10 +106,14 @@ void FilterableListWidget::clear()
     ui->labelNumberDisplayed->setText( "0 of 0");
 }
 
-
 void FilterableListWidget::addItem(const QString &item_name)
 {
-    auto item = new CustomSortedTableItem(item_name);
+    if( _model->findItems(item_name).size() > 0)
+    {
+        return;
+    }
+
+    auto item = new SortedTableItem(item_name);
     QFont font = item->font();
     font.setPointSize(9);
     item->setFont(font);
@@ -122,6 +139,7 @@ void FilterableListWidget::addItem(const QString &item_name)
 void FilterableListWidget::refreshColumns()
 {
     ui->tableView->sortByColumn(0,Qt::AscendingOrder);
+    ui->tableViewCustom->sortByColumn(0,Qt::AscendingOrder);
     updateFilter();
 }
 
@@ -156,18 +174,20 @@ void FilterableListWidget::keyPressEvent(QKeyEvent *event)
 
 bool FilterableListWidget::eventFilter(QObject *object, QEvent *event)
 {
-    QObject *obj = object;
-    while ( obj != NULL )
+    auto obj = object;
+    while ( obj && obj != ui->tableView && obj != ui->tableViewCustom )
     {
-        if( obj == ui->tableView || obj == ui->lineEdit ) break;
         obj = obj->parent();
     }
 
-    //Ignore obj different than tableView
-    if(obj != ui->tableView)
+    //Ignore obj different than tableViews
+    if(!obj)
     {
         return QWidget::eventFilter(object,event);
     }
+
+    bool modifier_pressed = (QGuiApplication::keyboardModifiers() == Qt::ShiftModifier ||
+                             QGuiApplication::keyboardModifiers() == Qt::ControlModifier);
 
     if(event->type() == QEvent::MouseButtonPress)
     {
@@ -175,6 +195,18 @@ bool FilterableListWidget::eventFilter(QObject *object, QEvent *event)
 
         _dragging = false;
         _drag_start_pos = mouse_event->pos();
+
+        if( !modifier_pressed )
+        {
+            if( obj == ui->tableView)
+            {
+                ui->tableViewCustom->clearSelection() ;
+            }
+            if( obj == ui->tableViewCustom)
+            {
+                ui->tableView->clearSelection() ;
+            }
+        }
 
         if(mouse_event->button() == Qt::LeftButton )
         {
@@ -252,22 +284,30 @@ bool FilterableListWidget::eventFilter(QObject *object, QEvent *event)
 std::vector<std::string> FilterableListWidget::getNonHiddenSelectedRows()
 {
     std::vector<std::string> non_hidden_list;
-    for (const auto &selected_index : ui->tableView->selectionModel()->selectedRows(0))
+
+    for(auto table_view: {ui->tableView, ui->tableViewCustom})
     {
-        if (!ui->tableView->isRowHidden(selected_index.row()))
+        for (const auto &selected_index : table_view->selectionModel()->selectedRows(0))
         {
-            auto item = _model->item( selected_index.row(), 0 );
-            non_hidden_list.push_back(item->text().toStdString());
+            if (!table_view->isRowHidden(selected_index.row()))
+            {
+                auto item = _model->item( selected_index.row(), 0 );
+                non_hidden_list.push_back(item->text().toStdString());
+            }
         }
     }
     return non_hidden_list;
 }
 
-QTableView *FilterableListWidget::getView() const
+QTableView *FilterableListWidget::getTableView() const
 {
     return ui->tableView;
 }
 
+QTableView *FilterableListWidget::getCustomView() const
+{
+    return ui->tableViewCustom;
+}
 
 void FilterableListWidget::on_radioContains_toggled(bool checked)
 {
@@ -309,7 +349,7 @@ void FilterableListWidget::on_radioPrefix_toggled(bool checked)
     }
 }
 
-void FilterableListWidget::on_checkBoxCaseSensitive_toggled(bool checked)
+void FilterableListWidget::on_checkBoxCaseSensitive_toggled(bool )
 {
     updateFilter();
 }
@@ -326,7 +366,7 @@ void FilterableListWidget::on_lineEdit_textChanged(const QString &search_string)
         cs = Qt::CaseSensitive;
     }
     QRegExp regexp( search_string,  cs, QRegExp::Wildcard );
-    QRegExpValidator v(regexp, 0);
+    QRegExpValidator v(regexp, nullptr);
 
     QStringList spaced_items = search_string.split(' ');
 
@@ -337,32 +377,41 @@ void FilterableListWidget::on_lineEdit_textChanged(const QString &search_string)
         int pos = 0;
         bool toHide = false;
 
-        if( ui->radioRegExp->isChecked())
+        if( search_string.isEmpty() == false )
         {
-            toHide = v.validate( name, pos ) != QValidator::Acceptable;
-        }
-        else if( ui->radioPrefix->isChecked())
-        {
-            toHide = !name.startsWith( search_string, cs ) ;
-        }
-        else if( ui->radioContains->isChecked())
-        {
-            for (const auto& item: spaced_items)
+            if( ui->radioRegExp->isChecked())
             {
-                if( name.contains(item, cs) == false )
+                toHide = v.validate( name, pos ) != QValidator::Acceptable;
+            }
+            else if( ui->radioPrefix->isChecked())
+            {
+                toHide = !name.startsWith( search_string, cs ) ;
+            }
+            else if( ui->radioContains->isChecked())
+            {
+                for (const auto& item: spaced_items)
                 {
-                    toHide = true;
-                    break;
+                    if( name.contains(item, cs) == false )
+                    {
+                        toHide = true;
+                        break;
+                    }
                 }
             }
+            if( !toHide ) visible_count++;
         }
-        if( !toHide ) visible_count++;
 
         if( toHide != ui->tableView->isRowHidden(row) ) updated = true;
 
-        ui->tableView->setRowHidden(row, toHide );
+        const auto name_std = name.toStdString();
+        const bool is_custom_plot = _custom_plots.count(name_std) > 0;
+
+
+        ui->tableView->setRowHidden(row, toHide || is_custom_plot );
+        ui->tableViewCustom->setRowHidden(row, toHide || !is_custom_plot );
     }
-    ui->labelNumberDisplayed->setText( QString::number( visible_count ) + QString(" of ") + QString::number( item_count ) );
+    ui->labelNumberDisplayed->setText( QString::number( visible_count ) + QString(" of ") +
+                                       QString::number( item_count ) );
 
     if(updated){
         emit hiddenItemsChanged();
@@ -376,11 +425,14 @@ void FilterableListWidget::on_pushButtonSettings_toggled(bool checked)
 
 void FilterableListWidget::on_checkBoxHideSecondColumn_toggled(bool checked)
 {
-    if(checked){
-        ui->tableView->hideColumn(1);
-    }
-    else{
-        ui->tableView->showColumn(1);
+    for(auto table_view: {ui->tableView, ui->tableViewCustom})
+    {
+        if(checked){
+            table_view->hideColumn(1);
+        }
+        else{
+            table_view->showColumn(1);
+        }
     }
     emit hiddenItemsChanged();
 }
@@ -388,7 +440,7 @@ void FilterableListWidget::on_checkBoxHideSecondColumn_toggled(bool checked)
 void FilterableListWidget::removeSelectedCurves()
 {
     QMessageBox::StandardButton reply;
-    reply = QMessageBox::question(0, tr("Warning"),
+    reply = QMessageBox::question(nullptr, tr("Warning"),
                                   tr("Do you really want to remove these data?\n"),
                                   QMessageBox::Yes | QMessageBox::No,
                                   QMessageBox::No );
@@ -417,4 +469,71 @@ void FilterableListWidget::removeRow(int row)
     _model->removeRow(row);
 }
 
+void FilterableListWidget::on_buttonAddCustom_clicked()
+{
+    auto curve_names = getNonHiddenSelectedRows();
+    if( curve_names.empty() )
+    {
+        emit createMathPlot("");
+    }
+    else
+    {
+        createMathPlot( curve_names.front() );
+    }
+    on_lineEdit_textChanged( ui->lineEdit->text() );
+}
 
+//void FilterableListWidget::on_buttonRefreshAll_clicked()
+//{
+//    for(auto& it: _mapped_math_plots)
+//    {
+//        emit refreshMathPlot( it.second->name() );
+//    }
+//}
+
+void FilterableListWidget::onCustomSelectionChanged(const QItemSelection&, const QItemSelection &)
+{
+    int selected_items = 0;
+
+    for (const auto &index : ui->tableViewCustom->selectionModel()->selectedRows(0))
+    {
+        if (! ui->tableViewCustom->isRowHidden(index.row()) )
+        {
+            selected_items++;
+        }
+    }
+
+    bool enabled = selected_items == 1;
+    ui->buttonEditCustom->setEnabled( enabled );
+    ui->buttonEditCustom->setToolTip( enabled ? "Edit the selected custom timeserie" :
+                                                "Select a single custom Timeserie to Edit it");
+}
+
+void FilterableListWidget::on_buttonEditCustom_clicked()
+{
+    int selected_count = 0;
+    QModelIndex selected_index;
+    auto table_view = ui->tableViewCustom;
+
+    for (QModelIndex index : table_view->selectionModel()->selectedRows(0))
+    {
+        if (!table_view->isRowHidden( index.row()) )
+        {
+            selected_count++;
+            selected_index = index;
+        }
+    }
+    if( selected_count != 1)
+    {
+        return;
+    }
+
+    auto item = _model->item( selected_index.row(), 0 );
+    editMathPlot( item->text().toStdString() );
+}
+
+void FilterableListWidget::clearSelections()
+{
+    ui->tableViewCustom->clearSelection();
+    ui->tableView->clearSelection();
+}
