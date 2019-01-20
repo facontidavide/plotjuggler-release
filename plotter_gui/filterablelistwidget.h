@@ -7,10 +7,12 @@
 #include <QMouseEvent>
 #include <QStandardItemModel>
 #include <QTableView>
+#include <QItemSelection>
 
+#include "transforms/custom_function.h"
 #include "tree_completer.h"
 
-class CustomSortedTableItem;
+class SortedTableItem;
 
 namespace Ui {
 class FilterableListWidget;
@@ -21,8 +23,10 @@ class FilterableListWidget : public QWidget
     Q_OBJECT
 
 public:
-    explicit FilterableListWidget(QWidget *parent = 0);
-    ~FilterableListWidget();
+    explicit FilterableListWidget(const CustomPlotMap& mapped_math_plots,
+                                  QWidget *parent);
+
+    ~FilterableListWidget() override;
 
     int rowCount() const;
 
@@ -40,16 +44,18 @@ public:
 
     void updateFilter();
 
-    QStandardItemModel *getTable() const
+    QStandardItemModel *getTableModel() const
     {
         return _model;
     }
 
-    QTableView* getView() const;
+    QTableView* getTableView() const;
+
+    QTableView* getCustomView() const;
 
     bool is2ndColumnHidden() const
     {
-        return getView()->isColumnHidden(1);
+        return getTableView()->isColumnHidden(1);
     }
 
     virtual void keyPressEvent(QKeyEvent * event) override;
@@ -72,6 +78,16 @@ private slots:
 
     void removeSelectedCurves();
 
+    void on_buttonAddCustom_clicked();
+
+    void on_buttonEditCustom_clicked();
+
+    void onCustomSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
+
+public slots:
+
+    void clearSelections();
+
 private:
 
     Ui::FilterableListWidget *ui;
@@ -92,10 +108,15 @@ private:
 
     QStandardItemModel* _model;
 
+    const CustomPlotMap& _custom_plots;
 
 signals:
 
     void hiddenItemsChanged();
+
+    void createMathPlot(const std::string& linked_plot);
+    void editMathPlot(const std::string& plot_name);
+    void refreshMathPlot(const std::string& curve_name);
 
     void deleteCurves(const std::vector<std::string>& curve_names);
 
