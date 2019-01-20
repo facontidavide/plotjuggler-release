@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
 <name>plotjuggler</name>
-<version>1.9.0</version>
+<version>2.0.0</version>
 <description>PlotJuggler: juggle with data</description>
 
 <maintainer email="davide.faconti@gmail.com">Davide Faconti</maintainer>
@@ -19,9 +19,11 @@
 <build_depend>roscpp_serialization</build_depend>
 <build_depend>rostime</build_depend>
 <build_depend>topic_tools</build_depend>
+<build_depend>tf</build_depend>
 <build_depend>ros_type_introspection</build_depend>
 <build_depend>qtbase5-dev</build_depend>
 <build_depend>libqt5-svg-dev</build_depend>
+<build_depend>qtdeclarative5-dev</build_depend>
 <build_depend>binutils</build_depend>
 
 <run_depend>rosbag</run_depend>
@@ -33,7 +35,9 @@
 <run_depend>ros_type_introspection</run_depend>
 <run_depend>qtbase5-dev</run_depend>
 <run_depend>libqt5-svg-dev</run_depend>
+<run_depend>qtdeclarative5-dev</run_depend>
 <run_depend>binutils</run_depend>
+<run_depend>tf</run_depend>
 
 <!-- The export tag contains other, unspecified, tags -->
 <export>
