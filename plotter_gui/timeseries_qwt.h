@@ -1,69 +1,61 @@
 #ifndef PLOTDATA_QWT_H
 #define PLOTDATA_QWT_H
 
-#include <QColor>
-#include <qwt_series_data.h>
-#include <qwt_plot_marker.h>
+#include "series_data.h"
 #include "PlotJuggler/plotdata.h"
 
-class TimeseriesQwt: public QwtSeriesData<QPointF>
+class TimeseriesQwt: public DataSeriesBase
 {
 public:
 
-    TimeseriesQwt(const PlotData* base, double time_offset);
+    TimeseriesQwt(const PlotData *source_data, const PlotData* transformed_data);
 
-    virtual ~TimeseriesQwt() {}
+    PlotData::RangeValueOpt getVisualizationRangeY(PlotData::RangeTime range_X) override;
 
-    virtual QPointF sample( size_t i ) const override;
+    nonstd::optional<QPointF> sampleFromTime(double t) override;
 
-    virtual QRectF boundingRect() const override;
+protected:
+    const PlotData*  _source_data;
+    PlotData   _cached_data;
+};
 
-    virtual size_t size() const override;
+//---------------------------------------------------------
 
-    const PlotData* data() const { return _plot_data; }
+class Timeseries_NoTransform: public TimeseriesQwt
+{
+public:
+    Timeseries_NoTransform(const PlotData* source_data):
+        TimeseriesQwt( source_data, source_data )
+    {
+        updateCache();
+    }
 
-    void setSubsampleFactor();
+     bool updateCache() override;
 
-    void updateData();
+};
 
-    PlotData::RangeTimeOpt getVisualizationRangeX();
+class Timeseries_1stDerivative: public TimeseriesQwt
+{
+public:
+    Timeseries_1stDerivative(const PlotData* source_data):
+        TimeseriesQwt(source_data, &_cached_data)
+    {
+        updateCache();
+    }
 
-    PlotData::RangeValueOpt getVisualizationRangeY(int first_index, int last_index );
+     bool updateCache() override;
+};
 
-    void setAlternativeAxisX(const PlotData* new_x_data);
+class Timeseries_2ndDerivative: public TimeseriesQwt
+{
+public:
+    Timeseries_2ndDerivative(const PlotData* source_data):
+        TimeseriesQwt(source_data, &_cached_data)
+    {
+        updateCache();
+    }
 
-    nonstd::optional<QPointF> sampleFromTime(double t);
-
-    typedef enum{
-      noTransform,
-      firstDerivative,
-      secondDerivative,
-      XYPlot
-    } Transform;
-
-    void setTransform(Transform trans);
-
-    Transform transform() const { return _transform; }
-
-    double timeOffset() const { return _time_offset; }
-
-public slots:
-
-    void setTimeOffset(double offset);
-
-private:
-    const PlotData* _plot_data;
-    const PlotData* _alternative_X_axis;
-
-    std::vector<QPointF> _cached_transformed_curve;
-
-    unsigned _subsample;
-
-    Transform _transform;
-
-    QRectF _bounding_box;
-
-    double _time_offset;
+     bool updateCache() override;
 };
 
 
