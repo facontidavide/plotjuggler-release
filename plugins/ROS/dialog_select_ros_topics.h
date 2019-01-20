@@ -54,6 +54,8 @@ private slots:
 
     void on_maximumSizeHelp_pressed();
 
+    void on_lineEditFilter_textChanged(const QString &search_string);
+
 private:
 
     void closeEvent(QCloseEvent *event) override;

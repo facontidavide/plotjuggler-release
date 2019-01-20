@@ -19,6 +19,7 @@
 #include "PlotJuggler/dataloader_base.h"
 #include "PlotJuggler/statepublisher_base.h"
 #include "PlotJuggler/datastreamer_base.h"
+#include "transforms/custom_function.h"
 
 namespace Ui {
 class MainWindow;
@@ -118,17 +119,25 @@ private slots:
 
     void on_minimizeView();
 
+    void addMathPlot(const std::string &linked_name);
+
+    void editMathPlot(const std::string &plot_name);
+
+    void onRefreshMathPlot(const std::string &plot_name);
+
     void updateTimeSlider();
 
     void updateTimeOffset();
 
     void buildDummyData();
 
+    void on_actionFunction_editor_triggered();
+
 private:
 
     Ui::MainWindow *ui;
 
-    TabbedPlotWidget *      _main_tabbed_widget;
+    TabbedPlotWidget *_main_tabbed_widget;
 
     QShortcut _undo_shortcut;
     QShortcut _redo_shortcut;
@@ -148,6 +157,8 @@ private:
     void forEachWidget(std::function<void(PlotWidget*)> op);
 
     PlotDataMapRef  _mapped_plot_data;
+
+    CustomPlotMap _custom_plots;
 
     void rearrangeGridLayout();
 
@@ -201,6 +212,8 @@ private:
     void savePluginState(QDomDocument &doc);
 
     std::tuple<double,double,int> calculateVisibleRangeX();
+
+    void addOrEditMathPlot(const std::string &name, bool edit);
     
 protected:
 

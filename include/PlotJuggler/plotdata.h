@@ -37,7 +37,7 @@ public:
     Value y;
     Point( Time _x, Value _y):
         x(_x), y(_y) {}
-    Point() = default;
+    Point() = default;   
   };
 
   enum{
@@ -48,6 +48,10 @@ public:
   typedef Time    TimeType;
 
   typedef Value   ValueType;
+
+  typedef typename std::deque<Point>::iterator Iterator;
+
+  typedef typename std::deque<Point>::const_iterator ConstIterator;
 
   PlotDataGeneric(const std::string& name);
 
@@ -74,6 +78,10 @@ public:
 
   Point &at(size_t index);
 
+  const Point& operator[](size_t index) const { return at(index); }
+
+  Point& operator[](size_t index) { return at(index); }
+
   void clear();
 
   void pushBack(Point p);
@@ -89,6 +97,16 @@ public:
   const Point& front() const { return _points.front(); }
 
   const Point& back() const { return _points.back(); }
+
+  ConstIterator begin() const { return _points.begin(); }
+
+  ConstIterator end() const { return _points.end(); }
+
+  Iterator begin() { return _points.begin(); }
+
+  Iterator end() { return _points.end(); }
+
+  void resize(size_t new_size) { _points.resize(new_size); }
 
   void popFront() { _points.pop_front(); }
 

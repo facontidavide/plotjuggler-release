@@ -10,7 +10,10 @@ class RosIntrospectionFactory{
 public:
   static RosIntrospectionFactory &get();
 
-  static void registerMessage(const std::string& topic_name, const std::string &md5sum, const std::string& datatype, const std::string& definition );
+  static void registerMessage(const std::string& topic_name,
+                              const std::string &md5sum,
+                              const std::string& datatype,
+                              const std::string& definition );
 
   static const RosIntrospection::ShapeShifter* getShapeShifter(const std::string& topic_name);
 
@@ -21,7 +24,9 @@ public:
       return get()._parser;
   }
 
-  static bool isRegistered(const std::string& topic_name) { return get()._topics.count(topic_name) != 0; }
+  static bool isRegistered(const std::string& topic_name);
+
+  static void reset();
 
 private:
   RosIntrospectionFactory() = default;
@@ -65,6 +70,16 @@ inline const RosIntrospection::ShapeShifter* RosIntrospectionFactory::getShapeSh
 inline const std::set<std::string> &RosIntrospectionFactory::getTopicList()
 {
   return get()._topics;
+}
+
+bool RosIntrospectionFactory::isRegistered(const std::string &topic_name)
+{
+    return get()._topics.count(topic_name) != 0;
+}
+
+void RosIntrospectionFactory::reset()
+{
+    get()._topics.clear();
 }
 
 #endif // SHAPE_SHIFTER_FACTORY_HPP
