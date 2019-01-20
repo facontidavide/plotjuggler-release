@@ -4,13 +4,33 @@ ROS Indigo/Kinetic build (Travis): [![Build Status](https://travis-ci.org/facont
 
 [![Join the chat at https://gitter.im/PlotJuggler/Lobby](https://badges.gitter.im/PlotJuggler/Lobby.svg)](https://gitter.im/PlotJuggler/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-# PlotJuggler 1.9.0
+# PlotJuggler 2.0 (Beta)
 
-QT5 based application to display time series in plots. 
+QT5 based application to display time series in plots, using an intuitive "drag and drop" interface.
+
+It can be used either to:
+
+- load __static data from file__ or 
+- connect to live __streaming__ of data.
+
+Its functionality can be easily extended through __plugins__.
 
 To understand what PlotJuggler can do for you, take a look to the following video [PlotJuggler on Vimeo](https://vimeo.com/214389001) 
 
 ![PlotJuggler](docs/images/PlotJuggler.gif)
+
+## New in version 2.X
+
+It is now possible to create custom timeseries! Simply write your own
+JavaScript function and apply it to one of more existing timeseries.
+
+Many thanks to [@1r0b1n0](https://github.com/1r0b1n0), who developed the
+initial version of this feature, and to our first __sponsor__, 
+a robotics company that made a donation, but prefers to remain anonymous for the time being.
+
+Watch this video to learn how to use it.
+
+[![Custom timeseries](docs/images/custom_functions.png)](https://vimeo.com/311245098)
 
 # How to build (non ROS users)
 
@@ -18,13 +38,14 @@ Clone the repository as usual:
 
       git clone https://github.com/facontidavide/PlotJuggler.git
 
-The only binary dependency that you need installed in your system is Qt5. On Ubuntu the debians can be installed with the command:
+The only binary dependency that you need installed in your system is Qt5. 
+On Ubuntu the debians can be installed with the command:
 
-    sudo apt-get -y install qtbase5-dev libqt5svg5-dev
+    sudo apt-get -y install qtbase5-dev libqt5svg5-dev qtdeclarative5-dev
     
 On Fedora:
 
-    sudo dnf install qt5-qtbase-devel qt5-qtsvg-devel
+    sudo dnf install qt5-qtbase-devel qt5-qtsvg-devel qt5-qtdeclarative-devel
     
 Then compile using cmake (qmake is NOT supported):
 
@@ -43,7 +64,8 @@ Then compile using cmake (qmake is NOT supported):
  
     sudo apt-get install ros-kinetic-plotjuggler 
 
-Nevertheless, if you want to compile it from source, for instance to try the very latest version on the master branch, you __must__ build PlotJuggler using __catkin__, otherwise the ROS related plugins will not be included.
+Nevertheless, if you want to compile it from source, for instance to try the very latest version on the master branch, 
+you __must__ build PlotJuggler using __catkin__, otherwise the ROS related plugins will not be included.
 
 Follow these instructions:
 

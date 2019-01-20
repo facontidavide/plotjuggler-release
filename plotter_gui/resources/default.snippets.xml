@@ -1,0 +1,37 @@
+<snippets>
+  <snippet name="1st_derivative">
+    <global>var prevX = 0
+var prevY = 0</global>
+    <equation>dx = time - prevX
+dy = value - prevY
+prevX = time
+prevY = value
+
+return dy/dx</equation>
+  </snippet>
+  <snippet name="1st_order_lowpass">
+    <global>var prevY = 0
+var alpha = 0.1</global>
+    <equation>prevY = alpha * value + (1.-alpha) * prevY
+
+return prevY</equation>
+  </snippet>
+  <snippet name="sum_A_B">
+    <global></global>
+    <equation>return $$PLOT_A$$ + $$PLOT_B$$</equation>
+  </snippet>
+  <snippet name="yaw_from_quaternion">
+    <global>// source: https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
+
+function quaternionToYaw(x, y, z, w)
+{
+  // yaw (z-axis rotation)
+  t1 = 2.0 * (w * z + x * y);
+  t2 = 1.0 - 2.0 * (y * y + z * z);
+  yaw = Math.atan2(t1, t2);
+
+  return yaw
+}</global>
+    <equation>return quaternionToYaw($$x$$, $$y$$, $$z$$, $$w$$); </equation>
+  </snippet>
+</snippets>
