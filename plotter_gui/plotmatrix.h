@@ -11,7 +11,7 @@ class PlotMatrix: public QFrame
     Q_OBJECT
 
 public:
-    PlotMatrix(QString name, PlotDataMapRef &datamap, QWidget * parent = NULL );
+    PlotMatrix(QString name, PlotDataMapRef &datamap, QWidget * parent = nullptr );
     virtual ~PlotMatrix();
 
     void addRow();

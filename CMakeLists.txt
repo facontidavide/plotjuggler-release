@@ -6,8 +6,8 @@ if( CATKIN_DEVEL_PREFIX OR catkin_FOUND OR CATKIN_BUILD_BINARY_PACKAGE)
     set(COMPILING_WITH_CATKIN 1)
 endif()
 
-SET(PLOTJUGGLER_VERSION_MAJOR 1)
-SET(PLOTJUGGLER_VERSION_MINOR 9)
+SET(PLOTJUGGLER_VERSION_MAJOR 2)
+SET(PLOTJUGGLER_VERSION_MINOR 0)
 SET(PLOTJUGGLER_VERSION_PATCH 0)
 
 add_definitions(
@@ -30,7 +30,8 @@ if(APPLE AND EXISTS /usr/local/opt/qt5)
     set(CMAKE_MACOSX_RPATH 1)
 endif()
 
-find_package(Qt5 REQUIRED COMPONENTS Core Widgets PrintSupport Concurrent Xml)
+
+find_package(Qt5 REQUIRED COMPONENTS Core Widgets PrintSupport Concurrent Xml Qml)
 find_package(Qt5 QUIET COMPONENTS Svg)
 find_package(Qt5 QUIET COMPONENTS WebSockets)
 
@@ -39,7 +40,9 @@ set( QT_LINK_LIBRARIES
     Qt5::Widgets
     Qt5::PrintSupport
     Qt5::Xml
-    Qt5::Concurrent)
+    Qt5::Concurrent
+    Qt5::Qml
+    )
 
 if( NOT Qt5Svg_FOUND)
     message(STATUS "Can't find Qt5Svg in your system. Have you tried [sudo apt-get install libqt5svg5-dev] ?")
@@ -73,10 +76,11 @@ if(COMPILING_WITH_CATKIN)
         ros_type_introspection
         rostime
         topic_tools
+        tf
         )
     catkin_package(
         INCLUDE_DIRS include
-        CATKIN_DEPENDS ros_type_introspection
+        CATKIN_DEPENDS ros_type_introspection tf
         DEPENDS
         )
 
