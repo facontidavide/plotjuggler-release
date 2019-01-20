@@ -27,6 +27,9 @@ const char* DEFAULT_RULES =
         "  <rule pattern=\"transforms.#/transform/translation\" alias=\"transforms.#/child_frame_id\"  substitution=\"@/translation\" />\n"
         "</RosType>\n"
         "\n"
+        "<RosType name=\"pal_statistics_msgs/Statistics\">\n"
+        "  <rule pattern=\"statistics.#/value\" alias=\"statistics.#/name\" substitution=\"@\" />\n"
+        "</RosType>\n"
         "</SubstitutionRules>\n"
         ;
 

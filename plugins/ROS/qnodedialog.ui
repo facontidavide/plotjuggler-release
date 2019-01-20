@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>295</width>
-    <height>170</height>
+    <height>182</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -44,6 +44,9 @@
    </item>
    <item>
     <widget class="QCheckBox" name="checkBoxUseEnvironment">
+     <property name="focusPolicy">
+      <enum>Qt::NoFocus</enum>
+     </property>
      <property name="text">
       <string>Use environment variables</string>
      </property>
@@ -72,6 +75,9 @@
        <property name="enabled">
         <bool>true</bool>
        </property>
+       <property name="focusPolicy">
+        <enum>Qt::NoFocus</enum>
+       </property>
        <property name="text">
         <string>Cancel</string>
        </property>
@@ -79,6 +85,9 @@
      </item>
      <item>
       <widget class="QPushButton" name="pushButtonConnect">
+       <property name="focusPolicy">
+        <enum>Qt::NoFocus</enum>
+       </property>
        <property name="text">
         <string>Connect</string>
        </property>

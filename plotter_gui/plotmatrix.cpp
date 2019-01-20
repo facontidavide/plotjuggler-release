@@ -393,7 +393,7 @@ void PlotMatrix::on_singlePlotScaleChanged(PlotWidget *modified_plot, QRectF new
                 QRectF bound_act = plot->currentBoundingRect();
                 bound_act.setLeft( new_range.left() );
                 bound_act.setRight( new_range.right() );
-                plot->setScale( bound_act, false );
+                plot->setZoomRectangle( bound_act, false );
                 plot->replot();
             }
         }

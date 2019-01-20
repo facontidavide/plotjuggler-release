@@ -19,6 +19,8 @@
 #include "timeseries_qwt.h"
 #include "customtracker.h"
 #include "axis_limits_dialog.h"
+#include "transforms/transform_selector.h"
+#include "transforms/custom_function.h"
 #include <qwt_plot_legenditem.h>
 
 class PlotWidget : public QwtPlot
@@ -27,12 +29,13 @@ class PlotWidget : public QwtPlot
 
 public:
 
-    PlotWidget(PlotDataMapRef& datamap, QWidget *parent=0);
-    virtual ~PlotWidget();
+    PlotWidget(PlotDataMapRef& datamap, QWidget *parent=nullptr);
+
+    virtual ~PlotWidget() override;
 
     bool isEmpty() const;
 
-    const std::map<std::string, std::shared_ptr<QwtPlotCurve> > &curveList() const;
+    const std::map<std::string, QwtPlotCurve*> &curveList() const;
 
     QDomElement xmlSaveState(QDomDocument &doc) const;
 
@@ -44,7 +47,7 @@ public:
 
     PlotData::RangeValue getMaximumRangeY( PlotData::RangeTime range_X, bool absolute_time ) const;
 
-    void setScale( QRectF rect, bool emit_signal );
+    void setZoomRectangle( QRectF rect, bool emit_signal );
 
     void reloadPlotData( );
 
@@ -66,12 +69,13 @@ signals:
     void undoableChange();
     void trackerMoved(QPointF pos);
     void curveListChanged();
+    void curvesDropped();
 
 public slots:
 
-    void updateCurves();
+    void replot() override;
 
-    void replot() ;
+    void updateCurves();
 
     void detachAllCurves();
 
@@ -99,13 +103,11 @@ public slots:
 
 private slots:
 
-    void on_noTransform_triggered(bool checked );
-
-    void on_1stDerivativeTransform_triggered(bool checked);
-
-    void on_2ndDerivativeTransform_triggered(bool checked);
+    void on_changeToBuiltinTransforms(QString new_transform);
 
     void on_convertToXY_triggered(bool checked);
+
+    void on_customTransformsDialog();
 
     void on_savePlotToFile();
 
@@ -113,15 +115,20 @@ private slots:
 
 private slots:
     void launchRemoveCurveDialog();
+
     void canvasContextMenuTriggered(const QPoint &pos);
+
     void on_changeColorsDialog_triggered();
+
     void on_changeColor(QString curve_name, QColor new_color);
+
     void on_showPoints_triggered(bool checked);
+
     void on_externallyResized(const QRectF &new_rect);
 
-
 private:
-    std::map<std::string, std::shared_ptr<QwtPlotCurve> > _curve_list;
+
+    std::map<std::string, QwtPlotCurve* > _curve_list;
     std::map<std::string, QwtPlotMarker*> _point_marker;
 
     QAction *_action_removeCurve;
@@ -134,6 +141,7 @@ private:
     QAction *_action_1stDerivativeTransform;
     QAction *_action_2ndDerivativeTransform;
     QAction *_action_phaseXY;
+    QAction *_action_custom_transform;
     QAction *_action_saveToFile;
     QAction *_action_editLimits;
 
@@ -147,7 +155,8 @@ private:
     QwtPlotGrid* _grid;
 
     PlotDataMapRef& _mapped_data;
-    TimeseriesQwt::Transform _current_transform;
+    QString _default_transform;
+    std::map<std::string, QString> _curves_transform;
 
     struct DragInfo{
         enum{ NONE, CURVES, NEW_X, SWAP_PLOTS} mode;
@@ -163,17 +172,26 @@ private:
 
     void buildLegend();
 
+    void updateAvailableTransformers();
+
     bool _show_line_and_points;
 
     void setDefaultRangeX();
-
-    const PlotData* _axisX = nullptr;
+    
+    DataSeriesBase* createSeriesData(const QString& ID, const PlotData *data);
 
     double _time_offset;
+
+    const PlotData* _axisX = nullptr;
 
     PlotData::RangeValue _custom_Y_limits;
 
     AxisLimitsDialog* _axis_limits_dialog;
+
+    TransformSelector* _transform_select_dialog;
+
+    SnippetsMap _snippets;
+    void transformCustomCurves();
 };
 
 #endif
