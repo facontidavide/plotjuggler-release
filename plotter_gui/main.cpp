@@ -4,29 +4,45 @@
 #include <QThread>
 #include <QCommandLineParser>
 #include <QDesktopWidget>
+#include <QFontDatabase>
+#include <QSettings>
 
 QString getFunnySubtitle(){
 
-    qsrand(time(NULL));
+    qsrand(time(nullptr));
+
     int n = qrand() % 15;
+    QSettings settings;
+    // do not repeat it twice in a row
+    while( settings.value("previousFunnySubtitle").toInt() == n)
+    {
+        n = qrand() % 18;
+    }
+    settings.setValue("previousFunnySubtitle", n);
+
     switch(n)
     {
-    case 0: return "Now with less bugs than usual";
+    case 0: return "PlotJuggler does it better";
     case 1: return "Talk is cheap, show me the data!";
     case 2: return "The visualization tool that you deserve";
-    case 3: return "Timeseries, timeseries everywhere!";
+    case 3: return "Who needs Matlab?";
     case 4: return "Changing the world, one plot at a time";
     case 5: return "\"Harry Plotter\" was also an option";
-    case 6: return "Add data and mix vigorously";
-    case 7: return "Splashscreens make any app look better";
+    case 6: return "I like the smell of plots in the morning";
+    case 7: return "Timeseries, timeseries everywhere...";
     case 8: return "I didn't find a better name...";
     case 9: return "\"It won't take long to code that\"..\n"
                 "Davide, 2014";
     case 10: return "Visualize data responsibly";
-    case 11: return "I don't always visualize data,\n"
+    case 11: return "How could you live without it?";
+    case 12: return "This time you will find that nasty bug!";
+    case 13: return "Now, with less bugs than usual!";
+    case 14: return "You log them, I visualize them";
+    case 15: return "The fancy timeseries visualization tool";
+
+    default: return "I don't always visualize data,\n"
                     "but when I do, I use PlotJuggler";
     }
-    return "Juggle with data";
 }
 
 int main(int argc, char *argv[])
@@ -37,11 +53,13 @@ int main(int argc, char *argv[])
     app.setOrganizationName("IcarusTechnology");
     app.setApplicationName("PlotJuggler");
 
-    qApp->setStyleSheet(QString("QToolTip {\n"
-                                "   border: 1px solid black;\n"
-                                "   border-radius: 4px;\n"
-                                "   background: white;\n"
-                                "   color: black; }" ));
+    // Load an application style
+    QFile styleFile( "://style/stylesheet.qss" );
+    styleFile.open( QFile::ReadOnly );
+
+    // Apply the loaded stylesheet
+    QString style( styleFile.readAll() );
+    app.setStyleSheet( style );
 
     QString VERSION_STRING = QString("%1.%2.%3").
             arg(PJ_MAJOR_VERSION).
@@ -96,19 +114,28 @@ int main(int argc, char *argv[])
     if( parser.isSet(nosplash_option) == false)
     // if(false) // if you uncomment this line, a kitten will die somewhere in the world.
     {
-        QPixmap main_pixmap(":/splash/resources/splash.jpg");
+        QPixmap main_pixmap(":/splash/resources/splash_2.jpg");
+
+        int font_id = QFontDatabase::addApplicationFont("://resources/DejaVuSans-ExtraLight.ttf");
+        QString family = QFontDatabase::applicationFontFamilies(font_id).at(0);
+        QFont font(family);
+        font.setStyleStrategy(QFont::PreferAntialias);
 
         QPainter painter;
         painter.begin( &main_pixmap);
-        painter.setPen(QColor(77, 77, 77));
+        painter.setPen(QColor(255, 255, 255));
+        painter.setRenderHint(QPainter::TextAntialiasing, true);
 
         QString subtitle = getFunnySubtitle();
-        int font_size = 34;
+        int font_size = 25;
+        int text_width = main_pixmap.width() - 100;
         do{
-            painter.setFont( QFont("Arial", font_size-- ) );
-        }while(font_size > 22 && painter.fontMetrics().width(subtitle) > 600 );
+            painter.setFont( QFont(family, font_size--) );
+        }while(font_size > 20 && painter.fontMetrics().width(subtitle) > text_width );
 
-        painter.drawText( QRect(20, 130, 620, 200),
+        QPoint topleft(50, main_pixmap.height()-90);
+        QSize rect_size(text_width,90);
+        painter.drawText( QRect(topleft, rect_size),
                           Qt::AlignHCenter | Qt::AlignVCenter, subtitle );
         painter.end();
 
@@ -122,17 +149,15 @@ int main(int argc, char *argv[])
         app.processEvents();
         splash.raise();
 
-        const auto deadline = QDateTime::currentDateTime().addMSecs( 100*(20 + subtitle.size()*0.4) );
+        const auto deadline = QDateTime::currentDateTime().addMSecs( 100*(30 + subtitle.size()*0.4) );
 
         MainWindow w( parser );
-
         while( QDateTime::currentDateTime() < deadline && !splash.isHidden() )
         {
             app.processEvents();
             QThread::msleep(100);
             splash.raise();
         }
-
         splash.close();
         w.show();
         return app.exec();
@@ -142,6 +167,5 @@ int main(int argc, char *argv[])
         w.show();
         return app.exec();
     }
-
-    return -1;
+    return 0;
 }
