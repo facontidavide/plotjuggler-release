@@ -394,6 +394,7 @@ void PlotMatrix::on_singlePlotScaleChanged(PlotWidget *modified_plot, QRectF new
                 bound_act.setLeft( new_range.left() );
                 bound_act.setRight( new_range.right() );
                 plot->setZoomRectangle( bound_act, false );
+                plot->on_zoomOutVertical_triggered(false);
                 plot->replot();
             }
         }
