@@ -24,7 +24,7 @@ public:
         return _transformed_data->size();
     }
 
-    QRectF boundingRect() const override final
+    QRectF boundingRect() const override
     {
         QRectF box = _bounding_box;
         box.setLeft(  _bounding_box.left()  - _time_offset );
@@ -46,7 +46,7 @@ public:
 
     virtual bool updateCache() = 0;
 
-    PlotData::RangeTimeOpt getVisualizationRangeX()
+    virtual PlotData::RangeTimeOpt getVisualizationRangeX()
     {
         if( this->size() < 2 )
             return  PlotData::RangeTimeOpt();

@@ -175,12 +175,16 @@ void CurveTracker::setPosition(const QPointF& position)
         }
     }
 
-    QColor c( "#FFFFFF" );
-    mark_text.setBorderPen( QPen( c, 2 ) );
-    c.setAlpha( 220 );
-    mark_text.setBackgroundBrush( c );
+    QColor col( "#FFFFFF" );
+    mark_text.setBorderPen( QPen( col, 2 ) );
+    col.setAlpha( 220 );
+    mark_text.setBackgroundBrush( col );
     mark_text.setText( text_marker_info );
-    mark_text.setFont(  QFontDatabase::systemFont(QFontDatabase::FixedFont) );
+
+    QFont font = QFontDatabase::systemFont(QFontDatabase::FixedFont);
+    font.setPointSize( 9 );
+
+    mark_text.setFont( font );
     mark_text.setRenderFlags( _param == VALUE ? Qt::AlignCenter : Qt::AlignLeft);
 
     _text_marker->setLabel(mark_text);
