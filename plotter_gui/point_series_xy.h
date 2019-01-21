@@ -8,6 +8,19 @@ class PointSeriesXY: public DataSeriesBase
 public:
     PointSeriesXY(const PlotData* y_axis, const PlotData* x_axis);
 
+    virtual QPointF sample( size_t i ) const override
+    {
+        const auto& p = _cached_curve.at(i);
+        return QPointF(p.x, p.y);
+    }
+
+    QRectF boundingRect() const override
+    {
+        return _bounding_box;
+    }
+
+    PlotData::RangeTimeOpt getVisualizationRangeX() override;
+
     nonstd::optional<QPointF> sampleFromTime(double t) override;
 
     PlotData::RangeValueOpt getVisualizationRangeY(PlotData::RangeTime range_X) override;
