@@ -13,17 +13,27 @@ PointSeriesXY::PointSeriesXY(const PlotData *y_axis, const PlotData *x_axis):
     }
 }
 
+PlotData::RangeTimeOpt PointSeriesXY::getVisualizationRangeX()
+{
+    if( this->size() < 2 )
+        return  PlotData::RangeTimeOpt();
+    else{
+        return PlotData::RangeTimeOpt( { _bounding_box.left() ,
+                                         _bounding_box.right()} );
+    }
+}
+
 nonstd::optional<QPointF> PointSeriesXY::sampleFromTime(double t)
 {
     if( _cached_curve.size() == 0 )
     {
-        return nonstd::optional<QPointF>();
+        return {};
     }
 
     int index = _y_axis->getIndexFromX(t);
     if(index <0)
     {
-        return nonstd::optional<QPointF>();
+        return {};
     }
     const auto& p = _cached_curve.at( size_t(index) );
     return QPointF(p.x, p.y);
