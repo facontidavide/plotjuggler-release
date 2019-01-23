@@ -26,7 +26,7 @@
 #include <QWindow>
 #include <QElapsedTimer>
 #include <QHeaderView>
-#include <QJSEngine>
+
 
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
@@ -506,6 +506,7 @@ void MainWindow::loadPlugins(QString directory_name)
                     _state_publisher.insert( std::make_pair(plugin_name, publisher) );
 
                     QAction* activatePublisher = new QAction(tr("Start: ") + plugin_name , this);
+                    activatePublisher->setProperty("starter_button", true);
                     activatePublisher->setCheckable(true);
                     activatePublisher->setChecked(false);
                     ui->menuPublishers->setEnabled(true);
@@ -516,7 +517,16 @@ void MainWindow::loadPlugins(QString directory_name)
                     ui->menuPublishers->addSeparator();
 
                     connect(activatePublisher, &QAction::toggled,
-                            [=](bool enable) { publisher->setEnabled( enable ); } );
+                            [=](bool enable)
+                    {
+                        publisher->setEnabled( enable );
+                        if( publisher->enabled() == false )
+                        {
+                            auto prev = activatePublisher->blockSignals(true);
+                            activatePublisher->setChecked(false);
+                            activatePublisher->blockSignals(false);
+                        }
+                    } );
 
                 }
             }
@@ -639,10 +649,11 @@ void MainWindow::onPlotAdded(PlotWidget* plot)
              plot, &PlotWidget::removeCurve) ;
 
     connect( plot, &PlotWidget::curveListChanged,
-             this, &MainWindow::updateTimeSlider) ;
-
-    connect( plot, &PlotWidget::curveListChanged,
-             this, &MainWindow::updateTimeOffset) ;
+             this, [this]()
+    {
+        updateTimeOffset();
+        updateTimeSlider();
+    });
 
     connect( &_time_offset, SIGNAL( valueChanged(double)),
              plot, SLOT(on_changeTimeOffset(double)) );
@@ -989,15 +1000,7 @@ void MainWindow::onDeleteLoadedData()
     }
     else
     {
-        forEachWidget( [](PlotWidget* plot) {
-            plot->detachAllCurves();
-        } );
-        _mapped_plot_data.numeric.clear();
-        _mapped_plot_data.user_defined.clear();
-        _custom_plots.clear();
-
-        _curvelist_widget->clear();
-
+        deleteAllDataImpl();
         ui->actionDeleteAllData->setEnabled( false );
     }
 }
@@ -1107,11 +1110,54 @@ void importPlotDataMapHelper(std::unordered_map<std::string,T>& source,
     }
 }
 
+void MainWindow::deleteAllDataImpl()
+{
+    forEachWidget( [](PlotWidget* plot) {
+        plot->detachAllCurves();
+    } );
+    _mapped_plot_data.numeric.clear();
+    _mapped_plot_data.user_defined.clear();
+    _custom_plots.clear();
+    _curvelist_widget->clear();
+
+    bool stopped = false;
+    for (QAction* action: ui->menuPublishers->actions())
+    {
+        auto is_start_button = action->property("starter_button");
+        if( is_start_button.isValid() && is_start_button.toBool() && action->isChecked() )
+        {
+            action->setChecked( false );
+            stopped = true;
+        }
+    }
+
+    if( stopped )
+    {
+        QMessageBox::warning(this, "State publishers stopped",
+                             "All the state publishers have been stopped because old data has been deleted.");
+    }
+}
+
+
 void MainWindow::importPlotDataMap(PlotDataMapRef& new_data, bool delete_older)
 {
     if( new_data.user_defined.empty() && new_data.numeric.empty() )
     {
         return;
+    }
+
+    if( delete_older && _mapped_plot_data.numeric.size() > 0)
+    {
+        QMessageBox::StandardButton reply;
+        reply = QMessageBox::question(nullptr, tr("Warning"),
+                                      tr("Do you want to remove the previously loaded data?\n"),
+                                      QMessageBox::Yes | QMessageBox::No,
+                                      QMessageBox::Yes );
+        if( reply == QMessageBox::Yes )
+        {
+            deleteAllDataImpl();
+
+        }
     }
 
     bool curvelist_modified = false;
@@ -1124,51 +1170,11 @@ void MainWindow::importPlotDataMap(PlotDataMapRef& new_data, bool delete_older)
             curvelist_modified = true;
         }
     }
-    _curvelist_widget->refreshColumns();
 
     //---------------------------------------------
     importPlotDataMapHelper( new_data.user_defined, _mapped_plot_data.user_defined, delete_older );
     importPlotDataMapHelper( new_data.numeric, _mapped_plot_data.numeric, delete_older );
     //---------------------------------------------
-
-    if( delete_older && _mapped_plot_data.numeric.size() > new_data.numeric.size() )
-    {
-        QMessageBox::StandardButton reply;
-        reply = QMessageBox::question(nullptr, tr("Warning"),
-                                      tr("Do you want to remove the previously loaded data?\n"),
-                                      QMessageBox::Yes | QMessageBox::No,
-                                      QMessageBox::Yes );
-        if( reply == QMessageBox::Yes )
-        {
-            std::vector<std::string> data_to_remove;
-
-            for (auto& it: _mapped_plot_data.numeric )
-            {
-                auto& name = it.first;
-                if( new_data.numeric.find( name ) == new_data.numeric.end() ){
-                    data_to_remove.push_back(name);
-                }
-            }
-            this->deleteDataMultipleCurves( data_to_remove );
-        }
-    }
-
-    if( delete_older && _mapped_plot_data.user_defined.size() > new_data.user_defined.size() )
-    {
-        std::vector<std::string> data_to_remove;
-
-        for (auto& it: _mapped_plot_data.user_defined )
-        {
-            auto& name = it.first;
-            if( new_data.user_defined.find( name ) == new_data.user_defined.end() ){
-                data_to_remove.push_back(name);
-            }
-        }
-        for (auto& to_remove: data_to_remove )
-        {
-            _mapped_plot_data.user_defined.erase( to_remove );
-        }
-    }
 
     if( curvelist_modified )
     {
