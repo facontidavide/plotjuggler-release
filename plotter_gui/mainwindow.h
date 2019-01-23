@@ -215,6 +215,8 @@ private:
 
     void addOrEditMathPlot(const std::string &name, bool edit);
     
+    void deleteAllDataImpl();
+
 protected:
 
     MonitoredValue _time_offset;

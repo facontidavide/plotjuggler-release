@@ -229,7 +229,7 @@ void DataStreamROS::saveIntoRosbag()
 {
     std::lock_guard<std::mutex> lock( mutex() );
     if( dataMap().user_defined.empty()){
-        QMessageBox::warning(0, tr("Warning"), tr("Your buffer is empty. Nothing to save.\n") );
+        QMessageBox::warning(nullptr, tr("Warning"), tr("Your buffer is empty. Nothing to save.\n") );
         return;
     }
 
