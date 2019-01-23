@@ -7,7 +7,8 @@
 
 RosoutPublisher::RosoutPublisher():
     _enabled(false ),
-    _tablemodel(nullptr)
+    _tablemodel(nullptr),
+    _log_window(nullptr)
 {
 
 }
