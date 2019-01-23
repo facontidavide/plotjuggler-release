@@ -17,7 +17,7 @@ public:
 
   static const RosIntrospection::ShapeShifter* getShapeShifter(const std::string& topic_name);
 
-  static const std::set<std::string> &getTopicList();
+  static std::vector<const std::string*> getTopicList();
 
   static RosIntrospection::Parser& parser()
   {
@@ -31,7 +31,6 @@ public:
 private:
   RosIntrospectionFactory() = default;
   std::map<std::string, RosIntrospection::ShapeShifter> _ss_map;
-  std::set<std::string> _topics;
   RosIntrospection::Parser _parser;
 
 };
@@ -50,12 +49,12 @@ inline void RosIntrospectionFactory::registerMessage(const std::string &topic_na
                                                  const std::string &definition)
 {
     auto& instance = get();
-    if( instance._ss_map.find(topic_name) == instance._ss_map.end() )
+    auto it = instance._ss_map.find(topic_name);
+    if( it == instance._ss_map.end() || it->second.getMD5Sum() != md5sum )
     {
         RosIntrospection::ShapeShifter msg;
         msg.morph(md5sum, datatype,definition);
         instance._ss_map.insert( std::make_pair(topic_name, std::move(msg) ));
-        instance._topics.insert( topic_name );
         parser().registerMessageDefinition( topic_name, RosIntrospection::ROSType(datatype), definition);
     }
 }
@@ -67,19 +66,27 @@ inline const RosIntrospection::ShapeShifter* RosIntrospectionFactory::getShapeSh
     return ( it == instance._ss_map.end()) ? nullptr :  &(it->second);
 }
 
-inline const std::set<std::string> &RosIntrospectionFactory::getTopicList()
+inline std::vector<const std::string*> RosIntrospectionFactory::getTopicList()
 {
-  return get()._topics;
+    std::vector<const std::string*> out;
+    auto& instance = get();
+    out.reserve( instance._ss_map.size() );
+
+    for (const auto& ss: instance._ss_map)
+    {
+        out.push_back( &(ss.first) );
+    }
+    return out;
 }
 
 bool RosIntrospectionFactory::isRegistered(const std::string &topic_name)
 {
-    return get()._topics.count(topic_name) != 0;
+    return get()._ss_map.count(topic_name) != 0;
 }
 
 void RosIntrospectionFactory::reset()
 {
-    get()._topics.clear();
+    get()._ss_map.clear();
 }
 
 #endif // SHAPE_SHIFTER_FACTORY_HPP
