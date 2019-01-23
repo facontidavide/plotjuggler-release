@@ -18,7 +18,7 @@ class  TopicPublisherROS: public QObject, StatePublisher
 
 public:
     TopicPublisherROS();
-    virtual ~TopicPublisherROS();
+    virtual ~TopicPublisherROS() override;
 
     virtual void updateState(double current_time) override;
 
@@ -26,7 +26,7 @@ public:
 
     virtual bool enabled() const override { return enabled_; }
 
-    void setParentMenu(QMenu *menu);
+    void setParentMenu(QMenu *menu) override;
 
 public slots:
     virtual void setEnabled(bool enabled) override;
@@ -45,6 +45,7 @@ private:
     QAction* _select_topics_to_publish;
     bool _filter_topics;
     std::set<std::string> _topics_to_publish;
+    std::unordered_map<const PlotDataAny*, int> _previous_published_msg;
 
 };
 
