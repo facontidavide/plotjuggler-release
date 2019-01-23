@@ -2,6 +2,15 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.0.2 (2019-01-23)
+------------------
+* should solve issue #127 : stop publishers when data reloaded or deleted
+* fixing issues whe disabling an already disabled publisher
+* solved problem with time slider (issue #125)
+* fix issue #126
+* StatePublisher improved
+* Contributors:  Davide Faconti
+
 2.0.1 (2019-01-21)
 ------------------
 * important bug fix. Removed offset in X axis of PlotXY
