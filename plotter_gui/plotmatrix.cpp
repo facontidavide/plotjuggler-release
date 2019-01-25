@@ -4,6 +4,7 @@
 #include <qwt_plot_canvas.h>
 #include <qwt_scale_widget.h>
 #include <qwt_scale_draw.h>
+#include <QSettings>
 #include "plotmatrix.h"
 #include "customtracker.h"
 
@@ -18,6 +19,9 @@ PlotMatrix::PlotMatrix(QString name, PlotDataMapRef &datamap, QWidget *parent ):
     _num_cols = 0;
     _layout = new QGridLayout( this );
     _horizontal_link = true;
+    QSettings settings;
+
+    _legend_point_size = settings.value("PlotMatrix/legend_point_size", 9).toInt();
     updateLayout();
 }
 
@@ -30,6 +34,11 @@ PlotWidget* PlotMatrix::addPlotWidget(unsigned row, unsigned col)
 
     connect( plot, &PlotWidget::rectChanged,
              this, &PlotMatrix::on_singlePlotScaleChanged);
+
+    connect( plot, &PlotWidget::legendSizeChanged,
+             this, &PlotMatrix::on_legendSizeChanged);
+
+    plot->setLegendSize( _legend_point_size );
 
     plot->setAttribute(Qt::WA_DeleteOnClose);
 
@@ -400,6 +409,20 @@ void PlotMatrix::on_singlePlotScaleChanged(PlotWidget *modified_plot, QRectF new
         }
     }
     emit undoableChange();
+}
+
+void PlotMatrix::on_legendSizeChanged(int point_size)
+{
+    _legend_point_size = point_size;
+
+    QSettings settings;
+    settings.setValue("PlotMatrix/legend_point_size", _legend_point_size);
+
+    for ( unsigned i = 0; i< plotCount(); i++ )
+    {
+        PlotWidget *plot = plotAt(i);
+        plot->setLegendSize(point_size);
+    }
 }
 
 void PlotMatrix::alignAxes( unsigned rowOrColumn, QwtPlot::Axis axisId )

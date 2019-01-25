@@ -57,11 +57,13 @@ public:
 
     void changeBackgroundColor(QColor color);
 
+    void setLegendSize(int size);
+
 protected:
-    virtual void dragEnterEvent(QDragEnterEvent *event) override;
-    virtual void dropEvent(QDropEvent *event) override;
-    virtual bool eventFilter(QObject *obj, QEvent *event) override;
-    virtual void dragLeaveEvent(QDragLeaveEvent *event) override;
+    void dragEnterEvent(QDragEnterEvent *event) override;
+    void dropEvent(QDropEvent *event) override;
+    bool eventFilter(QObject *obj, QEvent *event) override;
+    void dragLeaveEvent(QDragLeaveEvent *event) override;
 
 signals:
     void swapWidgetsRequested(PlotWidget* source, PlotWidget* destination);
@@ -70,6 +72,7 @@ signals:
     void trackerMoved(QPointF pos);
     void curveListChanged();
     void curvesDropped();
+    void legendSizeChanged(int new_size);
 
 public slots:
 
