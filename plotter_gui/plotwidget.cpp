@@ -22,6 +22,7 @@
 #include <memory>
 #include <qwt_text.h>
 #include <QActionGroup>
+#include <QWheelEvent>
 #include <QFileDialog>
 #include <QSettings>
 #include <QtXml/QDomElement>
@@ -1394,6 +1395,30 @@ bool PlotWidget::eventFilter(QObject *obj, QEvent *event)
 {
     switch( event->type() )
     {
+    case QEvent::Wheel:
+    {
+        auto mouse_event = dynamic_cast<QWheelEvent*>(event);
+        bool ctrl_modifier = mouse_event->modifiers() == Qt::ControlModifier;
+        auto legend_rect = _legend->geometry( canvas()->rect() );
+
+        if ( ctrl_modifier
+             && legend_rect.contains( mouse_event->pos() )
+             && _legend->isVisible() )
+        {
+            int point_size = _legend->font().pointSize();
+            if( mouse_event->delta() > 0 && point_size < 12)
+            {
+                emit legendSizeChanged(point_size+1);
+            }
+            if( mouse_event->delta() < 0 && point_size > 6)
+            {
+                emit legendSizeChanged(point_size-1);
+            }
+            return true;
+        }
+        // TODO use it for something else?
+        return false;
+    }
 
     case QEvent::MouseButtonPress:
     {
@@ -1564,4 +1589,12 @@ void PlotWidget::changeBackgroundColor(QColor color)
         this->setCanvasBackground( color );
         this->replot();
     }
+}
+
+void PlotWidget::setLegendSize(int size)
+{
+    auto font = _legend->font();
+    font.setPointSize( size );
+    _legend->setFont( font );
+    replot();
 }
