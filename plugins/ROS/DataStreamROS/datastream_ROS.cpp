@@ -401,6 +401,7 @@ bool DataStreamROS::start()
     _use_header_timestamp = dialog.checkBoxUseHeaderStamp()->isChecked();
     _max_array_size = dialog.maxArraySize();
     //-------------------------
+    setMaxArrayPolicy( _parser.get(), dialog.discardEntireArrayIfTooLarge() );
 
     subscribe();
 
@@ -414,6 +415,7 @@ bool DataStreamROS::start()
     _periodic_timer->setInterval(500);
     _roscore_disconnection_already_notified = false;
     _periodic_timer->start();
+
     return true;
 }
 
