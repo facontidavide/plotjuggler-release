@@ -89,7 +89,7 @@
     </widget>
    </item>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,1,0,0">
+    <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,1,0,0,0,0,0">
      <item>
       <widget class="QLabel" name="label">
        <property name="text">
@@ -105,6 +105,9 @@
          <height>16777215</height>
         </size>
        </property>
+       <property name="toolTip">
+        <string>MAX size of an array</string>
+       </property>
        <property name="whatsThis">
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;It any field of a message contains a vector which size is larger than this number, the entire vector will we skipped.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
@@ -112,7 +115,7 @@
         <number>10</number>
        </property>
        <property name="maximum">
-        <number>1000</number>
+        <number>10000</number>
        </property>
        <property name="value">
         <number>100</number>
@@ -141,6 +144,45 @@
         </size>
        </property>
       </spacer>
+     </item>
+     <item>
+      <widget class="QLabel" name="labelBigNumber">
+       <property name="styleSheet">
+        <string notr="true"/>
+       </property>
+       <property name="text">
+        <string>If larger:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QRadioButton" name="radioMaxDiscard">
+       <property name="focusPolicy">
+        <enum>Qt::NoFocus</enum>
+       </property>
+       <property name="toolTip">
+        <string>If the size of an array exceeds MAX, discard the entire array.</string>
+       </property>
+       <property name="text">
+        <string>discard</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QRadioButton" name="radioMaxClamp">
+       <property name="focusPolicy">
+        <enum>Qt::NoFocus</enum>
+       </property>
+       <property name="toolTip">
+        <string>If the size of an array exceeds MAX, keep only the kist MAX elements.</string>
+       </property>
+       <property name="text">
+        <string>clamp</string>
+       </property>
+      </widget>
      </item>
     </layout>
    </item>
