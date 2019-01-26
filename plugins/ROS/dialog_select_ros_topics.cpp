@@ -38,6 +38,16 @@ DialogSelectRosTopics::DialogSelectRosTopics(const std::vector<std::pair<QString
     ui->spinBoxArraySize->setValue( settings.value( "DialogSelectRosTopics.maxArraySize", 100).toInt() );
     restoreGeometry(settings.value("DialogSelectRosTopics.geometry").toByteArray());
 
+    bool discard_max = settings.value("DialogSelectRosTopics.maxArrayDiscard", true).toBool();
+
+    if( discard_max )
+    {
+        ui->radioMaxDiscard->setChecked(true);
+    }
+    else{
+        ui->radioMaxClamp->setChecked(true);
+    }
+
     if( _default_selected_topics.isEmpty())
     {
         QString default_topics = settings.value("DialogSelectRosTopics.selectedItems", "" ).toString();
@@ -68,6 +78,15 @@ DialogSelectRosTopics::DialogSelectRosTopics(const std::vector<std::pair<QString
     connect( &_deselect_all, &QShortcut::activated,
              ui->listRosTopics, &QAbstractItemView::clearSelection );
 
+    on_spinBoxArraySize_valueChanged( ui->spinBoxArraySize->value() );
+
+    if( ! has_setMaxArrayPolicy<RosIntrospection::Parser>::value)
+    {
+        ui->radioMaxDiscard->setChecked(true);
+        ui->radioMaxClamp->setEnabled(false);
+        ui->radioMaxClamp->setToolTip("To enable this policy you must link to an up-to-date "
+                                      "version of ros_type_introspection");
+    }
 }
 
 void DialogSelectRosTopics::updateTopicList(std::vector<std::pair<QString, QString> > topic_list )
@@ -160,6 +179,11 @@ const QCheckBox* DialogSelectRosTopics::checkBoxUseRenamingRules()
     return ui->checkBoxEnableRules;
 }
 
+bool DialogSelectRosTopics::discardEntireArrayIfTooLarge()
+{
+    return ui->radioMaxDiscard->isChecked();
+}
+
 QString DialogSelectRosTopics::prefix()
 {
     return (ui->checkBoxPrefix->isChecked()) ? ui->linePrefix->text() : QString();
@@ -184,6 +208,7 @@ void DialogSelectRosTopics::on_buttonBox_accepted()
     settings.setValue("DialogSelectRosTopics.geometry", saveGeometry());
     settings.setValue("DialogSelectRosTopics.selectedItems", selected_topics );
     settings.setValue("DialogSelectRosTopics.maxArraySize", ui->spinBoxArraySize->value());
+    settings.setValue("DialogSelectRosTopics.maxArrayDiscard", discardEntireArrayIfTooLarge());
 }
 
 void DialogSelectRosTopics::on_listRosTopics_itemSelectionChanged()
@@ -257,9 +282,8 @@ void DialogSelectRosTopics::on_maximumSizeHelp_pressed()
     QMessageBox msgBox;
     msgBox.setWindowTitle("Help");
     msgBox.setText("Maximum Size of Arrays:\n\n"
-                   "Arrays which size is larger than the maximum, are simple skipped. "
-                   "Nevertheless, they are still stored in memory and they can be republished!\n\n"
-                   "This parameter is used to prevent the user from loading huge arrays, "
+                   "If the size of an Arrays is larger than this maximum value, the entire array is skipped.\n\n"
+                   "This parameter is used to prevent the user from loading HUGE arrays, "
                    "such as images, pointclouds, maps, etc.\n"
                    "The term 'array' refers to the array in a message field,\n\n"
                    " See http://wiki.ros.org/msg.\n\n"
@@ -295,6 +319,17 @@ void DialogSelectRosTopics::on_lineEditFilter_textChanged(const QString& search_
             }
         }
         ui->listRosTopics->setRowHidden(row, toHide );
+    }
+}
+
+void DialogSelectRosTopics::on_spinBoxArraySize_valueChanged(int value)
+{
+    if( value > 1000 )
+    {
+        ui->spinBoxArraySize->setStyleSheet("QSpinBox { color: red; }");
+    }
+    else{
+        ui->spinBoxArraySize->setStyleSheet("QSpinBox { color: black; }");
     }
 }
 
