@@ -94,6 +94,10 @@ QRadioButton{
     color: black;
 }
 
+QRadioButton:disabled {
+    color: grey;
+}
+
 QRadioButton::indicator {
     border: none;
     outline: none;
