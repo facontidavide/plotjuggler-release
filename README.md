@@ -1,3 +1,26 @@
+## plotjuggler (melodic) - 2.0.3-0
+
+The packages in the `plotjuggler` repository were released into the `melodic` distro by running `/usr/bin/bloom-release plotjuggler --rosdistro melodic` on `Sat, 26 Jan 2019 17:25:22 -0000`
+
+The `plotjuggler` package was released.
+
+Version of package(s) in repository `plotjuggler`:
+
+- upstream repository: https://github.com/facontidavide/PlotJuggler.git
+- release repository: https://github.com/facontidavide/plotjuggler-release.git
+- rosdistro version: `2.0.2-1`
+- old version: `2.0.2-1`
+- new version: `2.0.3-0`
+
+Versions of tools used:
+
+- bloom version: `0.7.1`
+- catkin_pkg version: `0.4.10`
+- rosdep version: `0.14.0`
+- rosdistro version: `0.7.2`
+- vcstools version: `0.1.40`
+
+
 ## plotjuggler (lunar) - 2.0.3-0
 
 The packages in the `plotjuggler` repository were released into the `lunar` distro by running `/usr/bin/bloom-release plotjuggler --rosdistro lunar` on `Sat, 26 Jan 2019 16:30:16 -0000`
