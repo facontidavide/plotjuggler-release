@@ -2,6 +2,14 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.0.3 (2019-01-25)
+------------------
+* adding descard/clamp policy to large arrays
+* fix problem with table view resizing
+* make size of fonts modifiable with CTRL + Wheel (issue #106)
+* Update .travis.yml
+* Contributors: Davide Faconti
+
 2.0.2 (2019-01-23)
 ------------------
 * should solve issue #127 : stop publishers when data reloaded or deleted
