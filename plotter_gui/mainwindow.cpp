@@ -295,8 +295,8 @@ void MainWindow::onUpdateLeftTableValues()
                     // table_model->item(row,1)->setText(num_text + ' ');
                 }
             }
-            table_view->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
-            table_view->horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
+            table_view->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
+            table_view->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
         }
     }
 }
