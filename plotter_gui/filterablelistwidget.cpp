@@ -14,6 +14,7 @@
 #include <QPainter>
 #include <QCompleter>
 #include <QStandardItem>
+#include <QWheelEvent>
 #include <QItemSelectionModel>
 
 class SortedTableItem: public QStandardItem
@@ -39,7 +40,8 @@ FilterableListWidget::FilterableListWidget(const CustomPlotMap &mapped_math_plot
     QWidget(parent),
     ui(new Ui::FilterableListWidget),
     _completer( new TreeModelCompleter(this) ),
-    _custom_plots(mapped_math_plots)
+    _custom_plots(mapped_math_plots),
+    _point_size(9)
 {
     ui->setupUi(this);
     ui->tableView->viewport()->installEventFilter( this );
@@ -50,9 +52,8 @@ FilterableListWidget::FilterableListWidget(const CustomPlotMap &mapped_math_plot
     {
         table_view->viewport()->installEventFilter( this );
         table_view->setModel( _model );
-        table_view->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
-        table_view->horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
-        table_view->horizontalHeader()->resizeSection(1, 120);
+        table_view->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
+        table_view->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
     }
 
     ui->widgetOptions->setVisible(false);
@@ -78,6 +79,8 @@ FilterableListWidget::FilterableListWidget(const CustomPlotMap &mapped_math_plot
 
         ui->radioContains->setChecked(true);
     }
+
+    _point_size = settings.value("FilterableListWidget/table_point_size", 9).toInt();
 
     _completer_need_update = ui->radioPrefix->isChecked();
     ui->lineEdit->setCompleter( _completer_need_update ? _completer : nullptr );
@@ -114,8 +117,8 @@ void FilterableListWidget::addItem(const QString &item_name)
     }
 
     auto item = new SortedTableItem(item_name);
-    QFont font = item->font();
-    font.setPointSize(9);
+    QFont font = QFontDatabase::systemFont(QFontDatabase::GeneralFont);
+    font.setPointSize(_point_size);
     item->setFont(font);
     const int row = rowCount();
     _model->setRowCount(row+1);
@@ -125,7 +128,7 @@ void FilterableListWidget::addItem(const QString &item_name)
     val_cell->setTextAlignment(Qt::AlignRight);
     val_cell->setFlags( Qt::NoItemFlags | Qt::ItemIsEnabled );
     font = QFontDatabase::systemFont(QFontDatabase::FixedFont);
-    font.setPointSize(9);
+    font.setPointSize( _point_size );
     val_cell->setFont( font );
 
     _model->setItem(row, 1, val_cell );
@@ -186,8 +189,8 @@ bool FilterableListWidget::eventFilter(QObject *object, QEvent *event)
         return QWidget::eventFilter(object,event);
     }
 
-    bool modifier_pressed = (QGuiApplication::keyboardModifiers() == Qt::ShiftModifier ||
-                             QGuiApplication::keyboardModifiers() == Qt::ControlModifier);
+    bool shift_modifier_pressed = (QGuiApplication::keyboardModifiers() == Qt::ShiftModifier);
+    bool ctrl_modifier_pressed  = (QGuiApplication::keyboardModifiers() == Qt::ControlModifier);
 
     if(event->type() == QEvent::MouseButtonPress)
     {
@@ -196,7 +199,7 @@ bool FilterableListWidget::eventFilter(QObject *object, QEvent *event)
         _dragging = false;
         _drag_start_pos = mouse_event->pos();
 
-        if( !modifier_pressed )
+        if( !shift_modifier_pressed && !ctrl_modifier_pressed )
         {
             if( obj == ui->tableView)
             {
@@ -276,6 +279,52 @@ bool FilterableListWidget::eventFilter(QObject *object, QEvent *event)
             drag->exec(Qt::CopyAction | Qt::MoveAction);
         }
         return true;
+    }
+    else if(event->type() == QEvent::Wheel)
+    {
+        QWheelEvent *wheel_event = dynamic_cast<QWheelEvent*>(event);
+        int prev_size = _point_size;
+        if( ctrl_modifier_pressed )
+        {
+            if( _point_size > 6 && wheel_event->delta() < 0 )
+            {
+                _point_size--;
+            }
+            else if( _point_size < 14 && wheel_event->delta() > 0 )
+            {
+                _point_size++;
+            }
+            if( _point_size != prev_size)
+            {
+                auto horizontal = ui->tableView->horizontalHeader();
+                horizontal->setSectionResizeMode(0, QHeaderView::Fixed);
+                horizontal->setSectionResizeMode(1, QHeaderView::Fixed);
+
+                auto vertical = ui->tableView->verticalHeader();
+                vertical->setSectionResizeMode(0, QHeaderView::Fixed);
+                vertical->setSectionResizeMode(1, QHeaderView::Fixed);
+
+                for (int row=0; row< rowCount(); row++)
+                {
+                    for (int col=0; col< 2; col++)
+                    {
+                        auto item = _model->item( row, col );
+                        auto font = item->font();
+                        font.setPointSize( _point_size );
+                        item->setFont( font );
+                    }
+                }
+
+                horizontal->setSectionResizeMode(0, QHeaderView::ResizeToContents);
+                horizontal->setSectionResizeMode(1, QHeaderView::Stretch);
+                vertical->setSectionResizeMode(0, QHeaderView::ResizeToContents);
+                vertical->setSectionResizeMode(1, QHeaderView::ResizeToContents);
+
+                QSettings settings;
+                settings.setValue("FilterableListWidget/table_point_size", _point_size);
+            }
+            return true;
+        }
     }
 
     return QWidget::eventFilter(object,event);
