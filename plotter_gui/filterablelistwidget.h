@@ -98,7 +98,7 @@ private:
 
     TreeModelCompleter* _completer;
 
-    bool eventFilter(QObject *object, QEvent *event);
+    bool eventFilter(QObject *object, QEvent *event) override;
 
     void updateTreeModel();
     
@@ -110,6 +110,7 @@ private:
 
     const CustomPlotMap& _custom_plots;
 
+    int _point_size;
 signals:
 
     void hiddenItemsChanged();
@@ -119,6 +120,7 @@ signals:
     void refreshMathPlot(const std::string& curve_name);
 
     void deleteCurves(const std::vector<std::string>& curve_names);
+
 
 };
 
