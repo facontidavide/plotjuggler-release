@@ -65,6 +65,8 @@ private slots:
     //  void swapWidgetByName(QString name_a, QString name_b);
     void on_singlePlotScaleChanged(PlotWidget* modified_plot, QRectF range);
 
+    void on_legendSizeChanged(int point_size);
+
 private:
     void alignAxes(unsigned rowOrColumn, QwtPlot::Axis axisId );
     void alignScaleBorder( unsigned rowOrColumn, QwtPlot::Axis axisId );
@@ -79,6 +81,7 @@ private:
     PlotDataMapRef& _mapped_data;
 
     QString _name;
+    int _legend_point_size;
 
 signals:
     void plotAdded(PlotWidget*);

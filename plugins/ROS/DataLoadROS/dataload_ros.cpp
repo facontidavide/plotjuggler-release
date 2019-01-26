@@ -122,7 +122,7 @@ PlotDataMapRef DataLoadROS::readDataFromFile(const QString &file_name, bool use_
     }
     catch( rosbag::BagException&  ex)
     {
-        QMessageBox::warning(0, tr("Error"),
+        QMessageBox::warning(nullptr, tr("Error"),
                              QString("rosbag::open thrown an exception:\n")+
                              QString(ex.what()) );
         return PlotDataMapRef();
@@ -209,6 +209,8 @@ PlotDataMapRef DataLoadROS::readDataFromFile(const QString &file_name, bool use_
     std::string prefixed_name;
     QElapsedTimer timer;
     timer.start();
+
+    setMaxArrayPolicy( _parser.get(), dialog->discardEntireArrayIfTooLarge() );
 
     for(const rosbag::MessageInstance& msg_instance: bag_view_selected )
     {
@@ -320,8 +322,14 @@ PlotDataMapRef DataLoadROS::readDataFromFile(const QString &file_name, bool use_
 
     if( !warning_max_arraysize.empty() )
     {
-      QString message = QString("The following topics contain arrays with more than %1 elements.\n"
-                                "They were trunkated to the maximum array size %1\n").arg(max_array_size);
+      QString message = QString("The following topics contain arrays with more than %1 elements.\n").arg(max_array_size);
+      if( dialog->discardEntireArrayIfTooLarge() )
+      {
+          message += tr("The fields containing thes extra large arrays have been discarded\n");
+      }
+      else{
+          message += tr("These arrays were trunkated to the maximum size %1\n").arg(max_array_size);
+      }
       DialogWithItemList::warning( message, warning_max_arraysize );
     }
 
