@@ -354,7 +354,7 @@ void TabbedPlotWidget::on_tabWidget_tabCloseRequested(int index)
         tabWidget()->setCurrentIndex( index );
         QApplication::processEvents();
 
-        do_remove = QMessageBox::question(0, tr("Warning"),
+        do_remove = QMessageBox::question( this, tr("Warning"),
                                           tr("Do you really want to destroy this tab?\n"),
                                           QMessageBox::Yes | QMessageBox::No,
                                           QMessageBox::No );
