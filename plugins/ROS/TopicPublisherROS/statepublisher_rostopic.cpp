@@ -19,8 +19,7 @@
 
 TopicPublisherROS::TopicPublisherROS():
     enabled_(false ),
-    _node(nullptr),
-    _filter_topics(false)
+    _node(nullptr)
 {
 }
 
@@ -82,12 +81,13 @@ void TopicPublisherROS::ChangeFilter(bool)
     for (const auto& topic: all_topics)
     {
         auto cb = new QCheckBox(dialog);
-        if( _filter_topics == false )
+        auto filter_it = _topics_to_publish.find( *topic );
+        if( filter_it == _topics_to_publish.end() )
         {
             cb->setChecked( true );
         }
         else{
-            cb->setChecked( _topics_to_publish.count(*topic) != 0 );
+            cb->setChecked( filter_it->second );
         }
         cb->setFocusPolicy(Qt::NoFocus);
         grid_layout->addRow( new QLabel( QString::fromStdString(*topic)), cb);
@@ -122,18 +122,14 @@ void TopicPublisherROS::ChangeFilter(bool)
         _topics_to_publish.clear();
         for(const auto& it: checkbox )
         {
-            if( it.second->isChecked() )
-            {
-                _topics_to_publish.insert(it.first);
-            }
+            _topics_to_publish.insert( {it.first, it.second->isChecked() } );
         }
-        _filter_topics = true;
 
         //remove already created publisher if not needed anymore
-        for (auto it= _publishers.begin(); it != _publishers.end(); /* no increment */)
+        for (auto it = _publishers.begin(); it != _publishers.end(); /* no increment */)
         {
             const std::string& topic_name = it->first;
-            if( _topics_to_publish.count(topic_name) == 0)
+            if( !toPublish(topic_name) )
             {
                 it = _publishers.erase(it);
             }
@@ -155,7 +151,7 @@ void TopicPublisherROS::broadcastTF(double current_time)
         const std::string& topic_name = data_it.first;
         const PlotDataAny& plot_any = data_it.second;
 
-        if( _filter_topics && _topics_to_publish.count(topic_name) == 0)
+        if( !toPublish(topic_name) )
         {
             continue;// Not selected
         }
@@ -224,6 +220,18 @@ void TopicPublisherROS::broadcastTF(double current_time)
     _tf_publisher->sendTransform(transforms_vector);
 }
 
+bool TopicPublisherROS::toPublish(const std::string &topic_name)
+{
+    auto it = _topics_to_publish.find( topic_name );
+    if( it == _topics_to_publish.end() ){
+
+        return false;
+    }
+    else {
+        return it->second;
+    }
+}
+
 
 
 void TopicPublisherROS::updateState(double current_time)
@@ -242,7 +250,7 @@ void TopicPublisherROS::updateState(double current_time)
     {
         const std::string& topic_name = data_it.first;
         const PlotDataAny& plot_any = data_it.second;
-        if( _filter_topics && _topics_to_publish.count(topic_name) == 0)
+        if( !toPublish(topic_name) )
         {
             continue;// Not selected
         }
@@ -251,7 +259,8 @@ void TopicPublisherROS::updateState(double current_time)
         {
             continue;// Not registered, just skip
         }
-        if( shapeshifted->getDataType() == "tf/tfMessage")
+        if( shapeshifted->getDataType() == "tf/tfMessage" ||
+            shapeshifted->getDataType() == "tf2_msgs/TFMessage"  )
         {
             continue;
         }
@@ -329,5 +338,5 @@ void TopicPublisherROS::updateState(double current_time)
         const ros::Publisher& publisher = publisher_it->second;
         publisher.publish( shapeshifted_msg );
     }
-//    qDebug() << "----------------------------------";
+    qDebug() << skipped << " + " << sent_count << " = " << _datamap->user_defined.size();
 }
