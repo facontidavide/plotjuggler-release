@@ -55,7 +55,7 @@ private slots:
 
     void onActionLoadLayout(bool reload_previous = false);
 
-    void onActionLoadLayoutFromFile(QString filename, bool load_data);
+    void onActionLoadLayoutFromFile(QString filename);
 
     void onActionLoadDataFile();
 
@@ -77,7 +77,7 @@ private slots:
 
     void onFloatingWindowDestroyed(QObject*object);
 
-    void onCreateFloatingWindow(PlotMatrix* first_tab = NULL);
+    void onCreateFloatingWindow(PlotMatrix* first_tab = nullptr);
 
     void onSwapPlots(PlotWidget* source, PlotWidget* destination);
 
@@ -85,7 +85,7 @@ private slots:
 
     void on_ToggleStreaming();
 
-    void updateDataAndReplot();
+    void updateDataAndReplot(bool replot_hidden_tabs);
 
     void on_streamingSpinBox_valueChanged(int value);
 
