@@ -43,9 +43,11 @@ private:
 
     QAction* _current_time;
     QAction* _select_topics_to_publish;
-    bool _filter_topics;
-    std::set<std::string> _topics_to_publish;
+
+    std::unordered_map<std::string,bool> _topics_to_publish;
     std::unordered_map<const PlotDataAny*, int> _previous_published_msg;
+
+    bool toPublish(const std::string& topic_name);
 
 };
 
