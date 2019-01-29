@@ -2,6 +2,16 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.0.4 (2019-01-29)
+------------------
+* add parent to message boxes
+* ask confirmation at closeEvent()
+* fix problem with selection of second column
+* fix issue 132
+* simplification
+* minor bug fixed in filter of StatePublisher
+* Contributors: Davide Facont, Davide Faconti
+
 2.0.3 (2019-01-25)
 ------------------
 * adding descard/clamp policy to large arrays
