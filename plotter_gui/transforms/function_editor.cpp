@@ -387,7 +387,7 @@ bool AddCustomPlotDialog::addToSaved(const QString& name, const SnippetData& sni
 {
     if( _snipped_saved.count(name) )
     {
-        QMessageBox msgBox;
+        QMessageBox msgBox(this);
         msgBox.setWindowTitle("Warning");
         msgBox.setText(tr("A function with the same name exists already in the list of saved functions.\n"));
         msgBox.addButton(QMessageBox::Cancel);

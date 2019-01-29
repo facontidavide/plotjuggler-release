@@ -1,6 +1,8 @@
 #include "subwindow.h"
 #include <QDebug>
 #include <QSettings>
+#include <QMessageBox>
+#include <QCloseEvent>
 
 SubWindow::SubWindow(QString name, PlotMatrix *first_tab, PlotDataMapRef &mapped_data, QMainWindow *parent_window) :
   QMainWindow(parent_window)
@@ -27,5 +29,15 @@ SubWindow::~SubWindow()
 
 void SubWindow::closeEvent(QCloseEvent *event)
 {
-    QMainWindow::closeEvent(event);
+    QMessageBox::StandardButton reply;
+    reply = QMessageBox::question(this, tr("Warning"),
+                                  tr("Are you sure that you want to destroy this window?\n"),
+                                  QMessageBox::Yes | QMessageBox::No,
+                                  QMessageBox::Yes );
+
+    if (reply != QMessageBox::Yes) {
+        event->ignore();
+    } else {
+        event->accept();
+    }
 }
