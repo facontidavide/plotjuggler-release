@@ -1195,7 +1195,7 @@ void PlotWidget::on_convertToXY_triggered(bool)
 {
     if( !_axisX )
     {
-        QMessageBox::warning(nullptr, tr("Warning"),
+        QMessageBox::warning(this, tr("Warning"),
                              tr("To show a XY plot, you must first provide an alternative X axis.\n"
                                 "You can do this drag'n dropping a curve using the RIGHT mouse button "
                                 "instead of the left mouse button.") );
@@ -1278,7 +1278,7 @@ void PlotWidget::transformCustomCurves()
     }
     if( error_message.size() > 0)
     {
-        QMessageBox msgBox;
+        QMessageBox msgBox(this);
         msgBox.setWindowTitle("Warnings");
         msgBox.setText(tr("Something went wront while creating the following curves. "
                           "Please check that the transform equation is correct.\n\n") +
@@ -1550,7 +1550,7 @@ DataSeriesBase *PlotWidget::createSeriesData(const QString &ID, const PlotData *
         {
             if( if_xy_plot_failed_show_dialog )
             {
-                QMessageBox msgBox;
+                QMessageBox msgBox(this);
                 msgBox.setWindowTitle("Warnings");
                 msgBox.setText("The creation of the XY plot failed because at least two "
                                "timeseries don't share the same time axis.");
