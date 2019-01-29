@@ -130,6 +130,7 @@ void FilterableListWidget::addItem(const QString &item_name)
     font = QFontDatabase::systemFont(QFontDatabase::FixedFont);
     font.setPointSize( _point_size );
     val_cell->setFont( font );
+    val_cell->setFlags(Qt::NoItemFlags);
 
     _model->setItem(row, 1, val_cell );
 
