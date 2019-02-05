@@ -1,5 +1,6 @@
 #include "point_series_xy.h"
-
+#include <cmath>
+#include <cstdlib>
 
 PointSeriesXY::PointSeriesXY(const PlotData *y_axis, const PlotData *x_axis):
     DataSeriesBase( &_cached_curve ),
@@ -75,7 +76,7 @@ bool PointSeriesXY::updateCache()
 
     for (size_t i=0; i<data_size; i++ )
     {
-        if( std::abs( _x_axis->at(i).x  - _y_axis->at(i).x ) >  EPS)
+        if( Abs( _x_axis->at(i).x  - _y_axis->at(i).x ) >  EPS)
         {
             _bounding_box = QRectF();
             _cached_curve.clear();
