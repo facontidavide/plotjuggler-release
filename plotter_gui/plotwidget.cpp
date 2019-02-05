@@ -1199,6 +1199,26 @@ void PlotWidget::on_convertToXY_triggered(bool)
                              tr("To show a XY plot, you must first provide an alternative X axis.\n"
                                 "You can do this drag'n dropping a curve using the RIGHT mouse button "
                                 "instead of the left mouse button.") );
+        _action_noTransform->trigger();
+        return;
+    }
+
+
+    std::deque<PointSeriesXY*> xy_timeseries;
+
+    try{
+        for(auto& it: _curve_list)
+        {
+            const auto& curve_name =  it.first;
+            auto& curve =  it.second;
+            auto& data = _mapped_data.numeric.find(curve_name)->second;
+            xy_timeseries.push_back( new PointSeriesXY( &data, _axisX) );
+        }
+    }
+    catch(std::exception& ex)
+    {
+        QMessageBox::warning(this, tr("Error"), tr(ex.what()) );
+        _action_noTransform->trigger();
         return;
     }
 
@@ -1209,10 +1229,8 @@ void PlotWidget::on_convertToXY_triggered(bool)
     {
         const auto& curve_name =  it.first;
         auto& curve =  it.second;
-        auto& data = _mapped_data.numeric.find(curve_name)->second;
-        auto data_series = new PointSeriesXY( &data, _axisX);
-
-        curve->setData( data_series );
+        curve->setData( xy_timeseries.front() );
+        xy_timeseries.pop_front();
         _point_marker[ curve_name ]->setVisible(true);
     }
 
