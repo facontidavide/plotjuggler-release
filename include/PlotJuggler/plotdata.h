@@ -12,7 +12,14 @@
 #include <QDebug>
 #include <QColor>
 #include <type_traits>
+#include <cmath>
+#include <cstdlib>
 #include <unordered_map>
+
+inline double Abs(double val)
+{
+    return val < 0 ? -val : val;
+}
 
 template <typename Time, typename Value> class PlotDataGeneric
 {
@@ -203,7 +210,7 @@ inline int PlotDataGeneric<Time, Value>::getIndexFromX(Time x ) const
 
   if( index > 0)
   {
-    if( std::abs( _points[index-1].x - x) < std::abs( _points[index].x - x) )
+    if( Abs( _points[index-1].x - x) < Abs( _points[index].x - x) )
     {
       return index-1;
     }
