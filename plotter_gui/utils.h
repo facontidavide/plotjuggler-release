@@ -2,6 +2,9 @@
 #define UTILS_H
 
 #include <QObject>
+#include "PlotJuggler/plotdata.h"
+
+
 
 class MonitoredValue: public QObject{
     Q_OBJECT

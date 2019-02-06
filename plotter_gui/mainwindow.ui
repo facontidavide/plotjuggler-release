@@ -260,6 +260,56 @@ border-radius: 4px;
               </widget>
              </item>
              <item>
+              <widget class="QPushButton" name="pushButtonPlay">
+               <property name="minimumSize">
+                <size>
+                 <width>40</width>
+                 <height>40</height>
+                </size>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>40</width>
+                 <height>40</height>
+                </size>
+               </property>
+               <property name="focusPolicy">
+                <enum>Qt::NoFocus</enum>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">QPushButton:checked {
+    background-color: transparent;
+    border:  0px;
+    padding: 3px;
+    outline: none;
+}</string>
+               </property>
+               <property name="text">
+                <string/>
+               </property>
+               <property name="icon">
+                <iconset resource="resource.qrc">
+                 <normaloff>:/icons/resources/play_arrow.svg</normaloff>
+                 <normalon>:/icons/resources/pause.svg</normalon>:/icons/resources/play_arrow.svg</iconset>
+               </property>
+               <property name="iconSize">
+                <size>
+                 <width>36</width>
+                 <height>36</height>
+                </size>
+               </property>
+               <property name="checkable">
+                <bool>true</bool>
+               </property>
+               <property name="checked">
+                <bool>false</bool>
+               </property>
+               <property name="flat">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item>
               <widget class="RealSlider" name="timeSlider">
                <property name="enabled">
                 <bool>true</bool>
@@ -300,7 +350,7 @@ border-radius: 4px;
                </property>
                <property name="sizeHint" stdset="0">
                 <size>
-                 <width>10</width>
+                 <width>40</width>
                  <height>20</height>
                 </size>
                </property>
