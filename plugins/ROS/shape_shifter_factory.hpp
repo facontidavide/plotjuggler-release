@@ -15,7 +15,7 @@ public:
                               const std::string& datatype,
                               const std::string& definition );
 
-  static const RosIntrospection::ShapeShifter* getShapeShifter(const std::string& topic_name);
+  static RosIntrospection::ShapeShifter* getShapeShifter(const std::string& topic_name);
 
   static std::vector<const std::string*> getTopicList();
 
@@ -59,7 +59,7 @@ inline void RosIntrospectionFactory::registerMessage(const std::string &topic_na
     }
 }
 
-inline const RosIntrospection::ShapeShifter* RosIntrospectionFactory::getShapeShifter(const std::string &topic_name)
+inline RosIntrospection::ShapeShifter* RosIntrospectionFactory::getShapeShifter(const std::string &topic_name)
 {
     auto& instance = get();
     auto it = instance._ss_map.find( topic_name );
@@ -79,12 +79,12 @@ inline std::vector<const std::string*> RosIntrospectionFactory::getTopicList()
     return out;
 }
 
-bool RosIntrospectionFactory::isRegistered(const std::string &topic_name)
+inline bool RosIntrospectionFactory::isRegistered(const std::string &topic_name)
 {
     return get()._ss_map.count(topic_name) != 0;
 }
 
-void RosIntrospectionFactory::reset()
+inline void RosIntrospectionFactory::reset()
 {
     get()._ss_map.clear();
 }
