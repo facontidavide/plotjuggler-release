@@ -34,7 +34,6 @@ DialogSelectRosTopics::DialogSelectRosTopics(const std::vector<std::pair<QString
 
     QSettings settings( "IcarusTechnology", "PlotJuggler");
     ui->checkBoxEnableRules->setChecked(     settings.value("DialogSelectRosTopics.enableRules", true ).toBool());
-    ui->checkBoxUseHeaderStamp->setChecked(  settings.value("DialogSelectRosTopics.useHeaderStamp", true ).toBool());
     ui->spinBoxArraySize->setValue( settings.value( "DialogSelectRosTopics.maxArraySize", 100).toInt() );
     restoreGeometry(settings.value("DialogSelectRosTopics.geometry").toByteArray());
 
@@ -168,12 +167,6 @@ int DialogSelectRosTopics::maxArraySize() const
   return ui->spinBoxArraySize->value();
 }
 
-
-const QCheckBox *DialogSelectRosTopics::checkBoxUseHeaderStamp()
-{
-    return ui->checkBoxUseHeaderStamp;
-}
-
 const QCheckBox* DialogSelectRosTopics::checkBoxUseRenamingRules()
 {
     return ui->checkBoxEnableRules;
@@ -204,7 +197,6 @@ void DialogSelectRosTopics::on_buttonBox_accepted()
     }
     QSettings settings( "IcarusTechnology", "PlotJuggler");
     settings.setValue("DialogSelectRosTopics.enableRules",    ui->checkBoxEnableRules->isChecked() );
-    settings.setValue("DialogSelectRosTopics.useHeaderStamp", ui->checkBoxUseHeaderStamp->isChecked() );
     settings.setValue("DialogSelectRosTopics.geometry", saveGeometry());
     settings.setValue("DialogSelectRosTopics.selectedItems", selected_topics );
     settings.setValue("DialogSelectRosTopics.maxArraySize", ui->spinBoxArraySize->value());
