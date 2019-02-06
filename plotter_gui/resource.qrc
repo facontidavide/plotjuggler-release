@@ -43,6 +43,8 @@
         <file>resources/remove-list.svg</file>
         <file>resources/line-chart.svg</file>
         <file>resources/colored-charts.svg</file>
+        <file>resources/pause.svg</file>
+        <file>resources/play_arrow.svg</file>
     </qresource>
     <qresource prefix="/splash">
         <file>resources/splash.jpg</file>

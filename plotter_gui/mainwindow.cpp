@@ -36,7 +36,7 @@
 #include "aboutdialog.h"
 #include "PlotJuggler/plotdata.h"
 #include "transforms/function_editor.h"
-
+#include "utils.h"
 
 MainWindow::MainWindow(const QCommandLineParser &commandline_parser, QWidget *parent) :
     QMainWindow(parent),
@@ -48,7 +48,8 @@ MainWindow::MainWindow(const QCommandLineParser &commandline_parser, QWidget *pa
     _minimized(false),
     _current_streamer(nullptr),
     _disable_undo_logging(false),
-    _tracker_param( CurveTracker::VALUE )
+    _tracker_param( CurveTracker::VALUE ),
+    _tracker_time(0)
 {
     QLocale::setDefault(QLocale::c()); // set as default
 
@@ -121,7 +122,12 @@ MainWindow::MainWindow(const QCommandLineParser &commandline_parser, QWidget *pa
 
     _replot_timer = new QTimer(this);
     _replot_timer->setInterval(40);
-    connect(_replot_timer, &QTimer::timeout, this, &MainWindow::updateDataAndReplot);
+    connect(_replot_timer, &QTimer::timeout, this, [this](){ updateDataAndReplot(false); } );
+
+    _publish_timer = new QTimer(this);
+    _publish_timer->setInterval(20);
+    connect(_publish_timer, &QTimer::timeout, this, &MainWindow::publishPeriodically );
+
 
     ui->menuFile->setToolTipsVisible(true);
     ui->horizontalSpacer->changeSize(0,0, QSizePolicy::Fixed, QSizePolicy::Fixed);
@@ -155,7 +161,7 @@ MainWindow::MainWindow(const QCommandLineParser &commandline_parser, QWidget *pa
     }
     if( commandline_parser.isSet("layout"))
     {
-        onActionLoadLayoutFromFile( commandline_parser.value("layout"), file_loaded);
+        onActionLoadLayoutFromFile( commandline_parser.value("layout"));
     }
 
     QSettings settings;
@@ -307,15 +313,15 @@ void MainWindow::onTrackerMovedFromWidget(QPointF relative_pos)
     _tracker_time = relative_pos.x() + _time_offset.get();
 
     auto prev = ui->timeSlider->blockSignals(true);
-    ui->timeSlider->setRealValue( relative_pos.x() );
+    ui->timeSlider->setRealValue( _tracker_time );
     ui->timeSlider->blockSignals(prev);
 
     onTrackerTimeUpdated( _tracker_time, true );
 }
 
-void MainWindow::onTimeSlider_valueChanged(double relative_time)
+void MainWindow::onTimeSlider_valueChanged(double abs_time)
 {
-    _tracker_time = relative_time + _time_offset.get();
+    _tracker_time = abs_time;
     onTrackerTimeUpdated( _tracker_time, true );
 }
 
@@ -323,6 +329,7 @@ void MainWindow::onTrackerTimeUpdated(double absolute_time, bool do_replot)
 {
     updatedDisplayTime();
     onUpdateLeftTableValues();
+
 
     for ( auto& it: _state_publisher)
     {
@@ -476,7 +483,7 @@ void MainWindow::loadPlugins(QString directory_name)
                 loaded_plugins.insert( plugin_name );
             }
             else{
-                QMessageBox::warning(nullptr, tr("Warning"),
+                QMessageBox::warning(this, tr("Warning"),
                                      tr("Trying to load twice a plugin with name [%1].\n"
                                         "Only the first will be loaded.").arg(plugin_name) );
                 continue;
@@ -731,7 +738,7 @@ void MainWindow::checkAllCurvesFromLayout(const QDomElement& root)
     }
     if( missing_curves.size() > 0 )
     {
-        QMessageBox msgBox;
+        QMessageBox msgBox(this);
         msgBox.setWindowTitle("Warning");
         msgBox.setText(tr("One or more timeseries in the layout haven't been loaded yet\n"
                           "What do you want to do?"));
@@ -967,7 +974,7 @@ void MainWindow::deleteDataMultipleCurves(const std::vector<std::string> &curve_
 
 void MainWindow::onDeleteLoadedData()
 {
-    QMessageBox msgBox;
+    QMessageBox msgBox(this);
     msgBox.setWindowTitle("Warning");
     msgBox.setText(tr("Do you really want to REMOVE the loaded data?\n"));
     msgBox.addButton(QMessageBox::No);
@@ -1009,7 +1016,7 @@ void MainWindow::onActionLoadDataFile()
 {
     if( _data_loader.empty())
     {
-        QMessageBox::warning(nullptr, tr("Warning"),
+        QMessageBox::warning(this, tr("Warning"),
                              tr("No plugin was loaded to process a data file\n") );
         return;
     }
@@ -1146,17 +1153,27 @@ void MainWindow::importPlotDataMap(PlotDataMapRef& new_data, bool delete_older)
         return;
     }
 
-    if( delete_older && _mapped_plot_data.numeric.size() > 0)
+    std::vector<std::string> old_one_to_delete;
+
+    for (auto& it: _mapped_plot_data.numeric)
+    {
+        // timeseries in old but not in new
+        if( new_data.numeric.count( it.first ) == 0 )
+        {
+           old_one_to_delete.push_back( it.first );
+        }
+    }
+
+    if( !old_one_to_delete.empty() && delete_older )
     {
         QMessageBox::StandardButton reply;
-        reply = QMessageBox::question(nullptr, tr("Warning"),
+        reply = QMessageBox::question(this, tr("Warning"),
                                       tr("Do you want to remove the previously loaded data?\n"),
                                       QMessageBox::Yes | QMessageBox::No,
                                       QMessageBox::Yes );
         if( reply == QMessageBox::Yes )
         {
-            deleteAllDataImpl();
-
+            deleteDataMultipleCurves(old_one_to_delete);
         }
     }
 
@@ -1277,7 +1294,7 @@ void MainWindow::onActionLoadDataFileImpl(QString filename, bool reuse_last_conf
                              .arg(filename) );
     }
     _curvelist_widget->updateFilter();
-    updateDataAndReplot();
+    updateDataAndReplot( true );
 
 }
 
@@ -1379,10 +1396,12 @@ void MainWindow::onActionLoadLayout(bool reload_previous)
                                                 directory_path,
                                                 "*.xml");
     }
-    if (filename.isEmpty())
+    if (filename.isEmpty()){
         return;
-    else
-        onActionLoadLayoutFromFile(filename, true);
+    }
+    else{
+        onActionLoadLayoutFromFile(filename);
+    }
 }
 
 void MainWindow::loadPluginState(const QDomElement& root)
@@ -1505,7 +1524,7 @@ std::tuple<double, double, int> MainWindow::calculateVisibleRangeX()
     return std::tuple<double,double,int>( min_time, max_time, max_steps );
 }
 
-void MainWindow::onActionLoadLayoutFromFile(QString filename, bool load_data)
+void MainWindow::onActionLoadLayoutFromFile(QString filename)
 {
     QSettings settings;
 
@@ -1542,41 +1561,29 @@ void MainWindow::onActionLoadLayoutFromFile(QString filename, bool load_data)
     QDomElement root = domDocument.namedItem("root").toElement();
     loadPluginState(root);
     //-------------------------------------------------
-    if(load_data)
+    QDomElement previously_loaded_datafile =  root.firstChildElement( "previouslyLoadedDatafile" );
+    if( previously_loaded_datafile.isNull() == false)
     {
-        QDomElement previously_loaded_datafile =  root.firstChildElement( "previouslyLoadedDatafile" );
-        if( previously_loaded_datafile.isNull() == false)
+        QString filename = previously_loaded_datafile.attribute("filename");
+
+        QMessageBox msgBox(this);
+        msgBox.setWindowTitle("Load Data?");
+        msgBox.setText(tr("Do you want to reload the previous datafile?\n\n %1 \n\n").arg(filename));
+
+        msgBox.addButton(tr("No (Layout only)"), QMessageBox::RejectRole);
+        QPushButton* buttonBoth = msgBox.addButton(tr("Yes (Both Layout and Datafile)"), QMessageBox::YesRole);
+        msgBox.addButton(QMessageBox::Cancel);
+
+        msgBox.setDefaultButton(buttonBoth);
+        int res = msgBox.exec();
+        if( res < 0 || res == QMessageBox::Cancel)
         {
-            QString filename;
+            return;
+        }
 
-            //new format
-            if( previously_loaded_datafile.hasAttribute("filename"))
-            {
-                filename =  previously_loaded_datafile.attribute("filename");
-            }
-            else{  // old format
-                filename = previously_loaded_datafile.text();
-            }
-
-            QMessageBox msgBox;
-            msgBox.setWindowTitle("Load Data?");
-            msgBox.setText(tr("Do you want to reload the previous datafile?\n\n %1 \n\n").arg(filename));
-
-            msgBox.addButton(tr("No (Layout only)"), QMessageBox::RejectRole);
-            QPushButton* buttonBoth = msgBox.addButton(tr("Yes (Both Layout and Datafile)"), QMessageBox::YesRole);
-            msgBox.addButton(QMessageBox::Cancel);
-
-            msgBox.setDefaultButton(buttonBoth);
-            int res = msgBox.exec();
-            if( res < 0 || res == QMessageBox::Cancel)
-            {
-                return;
-            }
-
-            if( msgBox.clickedButton() == buttonBoth )
-            {
-                onActionLoadDataFileImpl( filename, true );
-            }
+        if( msgBox.clickedButton() == buttonBoth )
+        {
+            onActionLoadDataFileImpl( filename, true );
         }
     }
 
@@ -1585,7 +1592,7 @@ void MainWindow::onActionLoadLayoutFromFile(QString filename, bool load_data)
     {
         QString streamer_name = previously_loaded_streamer.attribute("name");
 
-        QMessageBox msgBox;
+        QMessageBox msgBox(this);
         msgBox.setWindowTitle("Start Streaming?");
         msgBox.setText(tr("Do you want to start the previously used streaming plugin?\n\n %1 \n\n").arg(streamer_name));
         msgBox.addButton(tr("No (Layout only)"), QMessageBox::RejectRole);
@@ -1655,7 +1662,7 @@ void MainWindow::onActionLoadLayoutFromFile(QString filename, bool load_data)
 
         if( snippets_are_different )
         {
-            QMessageBox msgBox;
+            QMessageBox msgBox(this);
             msgBox.setWindowTitle("Overwrite custom transforms?");
             msgBox.setText("Your layour file contains a set of custom transforms different from "
                            "the last one you used.\nDo you want to load these transformations?");
@@ -1759,9 +1766,12 @@ void MainWindow::updateTimeSlider()
 {
     auto range = calculateVisibleRangeX();
 
-    ui->timeSlider->setLimits(std::get<0>(range) - _time_offset.get(),
-                              std::get<1>(range) - _time_offset.get(),
+    ui->timeSlider->setLimits(std::get<0>(range),
+                              std::get<1>(range),
                               std::get<2>(range));
+
+    _tracker_time = std::max( _tracker_time, ui->timeSlider->getMinimum() );
+    _tracker_time = std::min( _tracker_time, ui->timeSlider->getMaximum() );
 }
 
 void MainWindow::updateTimeOffset()
@@ -1843,6 +1853,12 @@ void MainWindow::on_pushButtonStreaming_toggled(bool streaming)
     ui->streamingLabel->setHidden( !streaming );
     ui->streamingSpinBox->setHidden( !streaming );
     ui->timeSlider->setHidden( streaming );
+    ui->pushButtonPlay->setHidden( streaming );
+
+    if( streaming && ui->pushButtonPlay->isChecked() )
+    {
+        ui->pushButtonPlay->setChecked(false);
+    }
 
     forEachWidget([&](PlotWidget* plot)
     {
@@ -1851,27 +1867,34 @@ void MainWindow::on_pushButtonStreaming_toggled(bool streaming)
 
     emit activateStreamingMode( streaming );
 
-    this->repaint();
-
-
     if( _current_streamer && streaming)
     {
         _replot_timer->start();
         updateTimeOffset();
     }
     else{
-        updateTimeSlider();
-        updateDataAndReplot();
+        updateDataAndReplot( true );
         onUndoableChange();
     }
 }
 
 void MainWindow::on_ToggleStreaming()
 {
-    ui->pushButtonStreaming->setChecked( !ui->pushButtonStreaming->isChecked() );
+    if( ui->pushButtonStreaming->isEnabled() )
+    {
+        bool streaming = ui->pushButtonStreaming->isChecked();
+        ui->pushButtonStreaming->setChecked( !streaming );
+    }
+    else {
+        if( ui->pushButtonPlay->isEnabled() )
+        {
+            bool playing = ui->pushButtonPlay->isChecked();
+            ui->pushButtonPlay->setChecked( !playing );
+        }
+    }
 }
 
-void MainWindow::updateDataAndReplot()
+void MainWindow::updateDataAndReplot(bool replot_hidden_tabs)
 {
     if( _current_streamer )
     {
@@ -1883,7 +1906,6 @@ void MainWindow::updateDataAndReplot()
             auto* dst_plot = &_mapped_plot_data.numeric.at(custom_it.first);
             custom_it.second->calculate(_mapped_plot_data, dst_plot);
         }
-
     }
 
     forEachWidget( [](PlotWidget* plot)
@@ -1901,11 +1923,26 @@ void MainWindow::updateDataAndReplot()
 
         onTrackerTimeUpdated(_tracker_time, false);
     }
+    else{
+        updateTimeOffset();
+        updateTimeSlider();
+    }
     //--------------------------------
     for(const auto& it: TabbedPlotWidget::instances())
     {
-        PlotMatrix* matrix =  it.second->currentTab() ;
-        matrix->maximumZoomOut(); // includes replot
+        if( replot_hidden_tabs )
+        {
+            QTabWidget* tabs = it.second->tabWidget();
+            for (int index=0; index < tabs->count(); index++)
+            {
+                PlotMatrix* matrix =  static_cast<PlotMatrix*>( tabs->widget(index) );
+                matrix->maximumZoomOut();
+            }
+        }
+        else{
+            PlotMatrix* matrix =  it.second->currentTab() ;
+            matrix->maximumZoomOut(); // includes replot
+        }
     }
 }
 
@@ -1980,14 +2017,7 @@ void MainWindow::on_actionStopStreaming_triggered()
 
 void MainWindow::on_actionExit_triggered()
 {
-    QMessageBox::StandardButton reply;
-    reply = QMessageBox::question(nullptr, tr("Warning"),
-                                  tr("Do you really want quit?\n"),
-                                  QMessageBox::Yes | QMessageBox::No,
-                                  QMessageBox::Yes );
-    if( reply == QMessageBox::Yes ) {
-        this->close();
-    }
+    this->close();
 }
 
 void MainWindow::on_actionQuick_Help_triggered()
@@ -2051,6 +2081,17 @@ void MainWindow::on_pushButtonActivateGrid_toggled(bool checked)
     });
 }
 
+void MainWindow::on_pushButtonPlay_toggled(bool checked)
+{
+    if( checked )
+    {
+        _publish_timer->start();
+    }
+    else{
+        _publish_timer->stop();
+    }
+}
+
 void MainWindow::on_actionClearBuffer_triggered()
 {
     for (auto& it: _mapped_plot_data.numeric )
@@ -2102,7 +2143,7 @@ void MainWindow::on_minimizeView()
     if( first_call && !_minimized )
     {
         first_call = false;
-        QMessageBox::information(nullptr,"Remember!", "Press F10 to switch back to the normal view");
+        QMessageBox::information(this, "Remember!", "Press F10 to switch back to the normal view");
     }
 
     _minimized = !_minimized;
@@ -2118,9 +2159,24 @@ void MainWindow::on_minimizeView()
     }
 }
 
-void MainWindow::closeEvent(QCloseEvent *)
+void MainWindow::closeEvent(QCloseEvent *event)
 {
+
+    QMessageBox::StandardButton reply;
+    reply = QMessageBox::question(this, tr("Warning"),
+                                  tr("Do you really want quit?\n"),
+                                  QMessageBox::Yes | QMessageBox::No,
+                                  QMessageBox::Yes );
+
+    if (reply != QMessageBox::Yes)
+    {
+        event->ignore();
+        return;
+    }
+
     _replot_timer->stop();
+    _publish_timer->stop();
+
     if( _current_streamer )
     {
         _current_streamer->shutdown();
@@ -2163,7 +2219,7 @@ void MainWindow::onRefreshMathPlot(const std::string &plot_name)
         ce->calculateAndAdd(_mapped_plot_data);
 
         onUpdateLeftTableValues();
-        updateDataAndReplot();
+        updateDataAndReplot( true );
     }
     catch(const std::runtime_error &e)
     {
@@ -2211,7 +2267,7 @@ void MainWindow::addOrEditMathPlot(const std::string &name, bool modifying)
         }
         catch(std::exception& ex)
         {
-            QMessageBox::warning(nullptr, tr("Warning"),
+            QMessageBox::warning(this, tr("Warning"),
                                  tr("Failed to create the custom timeseries. Error:\n\n%1")
                                      .arg( ex.what() ) );
 
@@ -2237,7 +2293,7 @@ void MainWindow::addOrEditMathPlot(const std::string &name, bool modifying)
 
         if(modifying)
         {
-            updateDataAndReplot();
+            updateDataAndReplot( true );
         }
     }
 }
@@ -2247,4 +2303,33 @@ void MainWindow::on_actionFunction_editor_triggered()
     AddCustomPlotDialog dialog(_mapped_plot_data, _custom_plots, this);
     dialog.setEditorMode( AddCustomPlotDialog::FUNCTION_ONLY );
     dialog.exec();
+}
+
+void MainWindow::publishPeriodically()
+{
+    _tracker_time +=  _publish_timer->interval()*0.001;
+    if( _tracker_time >= ui->timeSlider->getMaximum())
+    {
+        ui->pushButtonPlay->setChecked(false);
+        _tracker_time =  ui->timeSlider->getMinimum();
+    }
+    //////////////////
+    auto prev = ui->timeSlider->blockSignals(true);
+    ui->timeSlider->setRealValue( _tracker_time );
+    ui->timeSlider->blockSignals(prev);
+
+    //////////////////
+    updatedDisplayTime();
+    onUpdateLeftTableValues();
+
+    for ( auto& it: _state_publisher)
+    {
+        it.second->play( _tracker_time);
+    }
+
+    forEachWidget( [&](PlotWidget* plot)
+    {
+        plot->setTrackerPosition( _tracker_time );
+        plot->replot();
+    } );
 }
