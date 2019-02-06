@@ -448,8 +448,8 @@ void FilterableListWidget::on_lineEdit_textChanged(const QString &search_string)
                     }
                 }
             }
-            if( !toHide ) visible_count++;
         }
+        if( !toHide ) visible_count++;
 
         if( toHide != ui->tableView->isRowHidden(row) ) updated = true;
 
