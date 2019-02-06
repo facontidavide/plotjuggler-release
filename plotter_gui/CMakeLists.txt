@@ -42,6 +42,8 @@ SET( PLOTTER_SRC
     transforms/function_editor.cpp
     transforms/transform_selector.cpp
 
+    utils.cpp
+
     mainwindow.h
     realslider.h
     utils.h

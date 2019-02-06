@@ -9,6 +9,11 @@ QLabel {
     color: black;
 }
 
+QLineEdit {
+    color: black;
+    background: white;
+}
+
 QTabWidget::pane { /* The tab widget frame */
     border: 2px solid #AAAAAA;
     background: white;
@@ -36,6 +41,11 @@ QTabBar::tab:!selected {
 QListView::item:selected {
    background: #1464a0;
    color: white;
+}
+
+QTableView {
+   background: white;
+   color: black;
 }
 
 QTableView::item:selected {
