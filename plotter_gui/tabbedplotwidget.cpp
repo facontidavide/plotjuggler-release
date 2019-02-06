@@ -272,7 +272,13 @@ void TabbedPlotWidget::on_pushVerticalResize_pressed()
 
 void TabbedPlotWidget::on_pushHorizontalResize_pressed()
 {
-    currentTab()->maximumZoomOutHorizontal();
+
+    emit undoableChangeHappened();
+}
+
+void TabbedPlotWidget::on_pushButtonZoomMax_pressed()
+{
+    currentTab()->maximumZoomOut();
     emit undoableChangeHappened();
 }
 
@@ -515,4 +521,6 @@ void TabbedPlotWidget::setControlsVisible(bool visible)
 {
     ui->widgetControls->setVisible(visible);
 }
+
+
 
