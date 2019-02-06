@@ -2,7 +2,17 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-2.1.0 (2019-02-06)
+2.1.0 (2019-02-07)
+------------------
+* minor change
+* stylesheet fix
+* Cheatsheet added
+* fixing style
+* improved magnifier ( issue #135)
+* added zoom max
+* Contributors: Davide Facont, Davide Faconti
+
+2.0.7 (2019-02-06)
 ------------------
 * fix for dark layout
 * fix issue with edited function transforms

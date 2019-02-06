@@ -6,6 +6,7 @@ QT5_ADD_RESOURCES (RES_SRC  resource.qrc )
 QT5_WRAP_UI ( UI_SRC
     aboutdialog.ui
     axis_limits_dialog.ui
+    cheatsheet_dialog.ui
     mainwindow.ui
     removecurvedialog.ui
     curvecolorpick.ui
