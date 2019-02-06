@@ -2,6 +2,27 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.1.0 (2019-02-06)
+------------------
+* fix for dark layout
+* fix issue with edited function transforms
+* about dialog updated
+* added more key shortcuts
+* reverted behaviour of Dialog "delete previous curves"?
+* fix glitches related to drag and drop
+* update timeSlider more often
+* play seems to work properly for both sim_time and rewritten timestamps
+* play button added
+* clock published
+* remove timestamp modifier
+* Contributors: Davide Faconti
+
+2.0.5 (2019-02-05)
+------------------
+* fix problem in build farm
+* bug fix plot XY
+* Contributors: Davide Faconti
+
 2.0.4 (2019-01-29)
 ------------------
 * add parent to message boxes

@@ -30,8 +30,6 @@ public:
 
     int maxArraySize() const;
 
-    const QCheckBox* checkBoxUseHeaderStamp();
-
     const QCheckBox *checkBoxUseRenamingRules();
 
     bool discardEntireArrayIfTooLarge();

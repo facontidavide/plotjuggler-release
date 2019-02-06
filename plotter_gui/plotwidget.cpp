@@ -119,7 +119,7 @@ PlotWidget::PlotWidget(PlotDataMapRef &datamap, QWidget *parent):
     buildLegend();
 
     this->canvas()->setMouseTracking(true);
-    this->canvas()->installEventFilter(this);
+    //this->canvas()->installEventFilter(this);
 
     setDefaultRangeX();
 
@@ -1125,6 +1125,9 @@ void PlotWidget::zoomOut(bool emit_signal)
     _magnifier->setAxisLimits( xBottom, rect.left(),   rect.right() );
     _magnifier->setAxisLimits( yLeft,   rect.bottom(), rect.top() );
 
+    _magnifier->setZoomInKey( Qt::Key_Plus, Qt::ControlModifier);
+    _magnifier->setZoomOutKey( Qt::Key_Minus, Qt::ControlModifier);
+
     this->setZoomRectangle(rect, emit_signal);
 }
 
@@ -1199,6 +1202,26 @@ void PlotWidget::on_convertToXY_triggered(bool)
                              tr("To show a XY plot, you must first provide an alternative X axis.\n"
                                 "You can do this drag'n dropping a curve using the RIGHT mouse button "
                                 "instead of the left mouse button.") );
+        _action_noTransform->trigger();
+        return;
+    }
+
+
+    std::deque<PointSeriesXY*> xy_timeseries;
+
+    try{
+        for(auto& it: _curve_list)
+        {
+            const auto& curve_name =  it.first;
+            auto& curve =  it.second;
+            auto& data = _mapped_data.numeric.find(curve_name)->second;
+            xy_timeseries.push_back( new PointSeriesXY( &data, _axisX) );
+        }
+    }
+    catch(std::exception& ex)
+    {
+        QMessageBox::warning(this, tr("Error"), tr(ex.what()) );
+        _action_noTransform->trigger();
         return;
     }
 
@@ -1209,10 +1232,8 @@ void PlotWidget::on_convertToXY_triggered(bool)
     {
         const auto& curve_name =  it.first;
         auto& curve =  it.second;
-        auto& data = _mapped_data.numeric.find(curve_name)->second;
-        auto data_series = new PointSeriesXY( &data, _axisX);
-
-        curve->setData( data_series );
+        curve->setData( xy_timeseries.front() );
+        xy_timeseries.pop_front();
         _point_marker[ curve_name ]->setVisible(true);
     }
 
@@ -1414,14 +1435,18 @@ bool PlotWidget::eventFilter(QObject *obj, QEvent *event)
             {
                 emit legendSizeChanged(point_size-1);
             }
-            return true;
+            return true; // don't pass to canvas().
         }
-        // TODO use it for something else?
         return false;
     }
 
     case QEvent::MouseButtonPress:
     {
+        if( _dragging.mode != DragInfo::NONE)
+        {
+            return true; // don't pass to canvas().
+        }
+
         QMouseEvent *mouse_event = static_cast<QMouseEvent*>(event);
 
         if( mouse_event->button() == Qt::LeftButton )
@@ -1432,21 +1457,26 @@ bool PlotWidget::eventFilter(QObject *obj, QEvent *event)
                 QPointF pointF ( invTransform( xBottom, point.x()),
                                  invTransform( yLeft, point.y()) );
                 emit trackerMoved(pointF);
+                return true; // don't pass to canvas().
             }
-            if( mouse_event->modifiers() == Qt::ControlModifier) // panner
+            else if( mouse_event->modifiers() == Qt::ControlModifier) // panner
             {
                 QApplication::setOverrideCursor(QCursor(QPixmap(":/icons/resources/move.png")));
             }
-            else if(mouse_event->modifiers() == Qt::NoModifier )
-            {
-                // delegate to _zoomer
-            }
+            return false; // send to canvas()
+        }    
+        else if ( mouse_event->buttons() == Qt::MidButton &&
+                  mouse_event->modifiers() == Qt::NoModifier )
+        {
+            QApplication::setOverrideCursor(QCursor(QPixmap(":/icons/resources/move.png")));
+            return false;
         }
         else if( mouse_event->button() == Qt::RightButton )
         {
             if( mouse_event->modifiers() == Qt::NoModifier) // show menu
             {
                 canvasContextMenuTriggered( mouse_event->pos() );
+                return true; // don't pass to canvas().
             }
             else if( mouse_event->modifiers() == Qt::ControlModifier) // Start swapping two plots
             {
@@ -1462,12 +1492,19 @@ bool PlotWidget::eventFilter(QObject *obj, QEvent *event)
                 mimeData->setData("plot_area", data );
                 drag->setMimeData(mimeData);
                 drag->exec();
+
+                return true; // don't pass to canvas().
             }
         }
     }break;
         //---------------------------------
     case QEvent::MouseMove:
     {
+        if( _dragging.mode != DragInfo::NONE)
+        {
+            return true; // don't pass to canvas().
+        }
+
         QMouseEvent *mouse_event = static_cast<QMouseEvent*>(event);
 
         if ( mouse_event->buttons() == Qt::LeftButton &&
@@ -1477,16 +1514,26 @@ bool PlotWidget::eventFilter(QObject *obj, QEvent *event)
             QPointF pointF ( invTransform( xBottom, point.x()),
                              invTransform( yLeft, point.y()) );
             emit trackerMoved(pointF);
+            return true;
         }
     }break;
 
     case QEvent::Leave:
+    {
+        if( _dragging.mode == DragInfo::NONE )
+        {
+            changeBackgroundColor( Qt::white );
+            QApplication::restoreOverrideCursor();
+            return false;
+        }
+    }break;
     case QEvent::MouseButtonRelease :
     {
         if( _dragging.mode == DragInfo::NONE )
         {
             changeBackgroundColor( Qt::white );
             QApplication::restoreOverrideCursor();
+            return false;
         }
     }break;
 
@@ -1496,6 +1543,7 @@ bool PlotWidget::eventFilter(QObject *obj, QEvent *event)
         // This is the workaround I have eventually found to avoid the problem with spurious
         // QEvent::DragLeave (I have never found the origin of the bug).
         dropEvent(nullptr);
+        return true;
     }break;
 
     default: {}
