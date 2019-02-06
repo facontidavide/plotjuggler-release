@@ -119,7 +119,6 @@ PlotWidget::PlotWidget(PlotDataMapRef &datamap, QWidget *parent):
     buildLegend();
 
     this->canvas()->setMouseTracking(true);
-    //this->canvas()->installEventFilter(this);
 
     setDefaultRangeX();
 
@@ -166,6 +165,14 @@ void PlotWidget::buildActions()
 
     _action_editLimits = new  QAction(tr("&Edit Axis Limits"), this);
     connect(_action_editLimits, &QAction::triggered, this, &PlotWidget::on_editAxisLimits_triggered);
+
+    _action_zoomOutMaximum = getActionAndIcon("&Zoom Out", ":/icons/resources/zoom_max.svg" );
+    connect(_action_zoomOutMaximum, &QAction::triggered, this, [this]()
+            {
+                zoomOut(true);
+                replot();
+                emit undoableChange();
+            });
 
     _action_zoomOutHorizontally = getActionAndIcon("&Zoom Out Horizontally",
                                                    ":/icons/resources/zoom_horizontal.svg" );
@@ -257,6 +264,7 @@ void PlotWidget::canvasContextMenuTriggered(const QPoint &pos)
     menu.addAction(_action_showPoints);
     menu.addSeparator();
     menu.addAction(_action_editLimits);
+    menu.addAction(_action_zoomOutMaximum);
     menu.addAction(_action_zoomOutHorizontally);
     menu.addAction(_action_zoomOutVertically);
     menu.addSeparator();
@@ -1430,21 +1438,24 @@ bool PlotWidget::eventFilter(QObject *obj, QEvent *event)
         bool ctrl_modifier = mouse_event->modifiers() == Qt::ControlModifier;
         auto legend_rect = _legend->geometry( canvas()->rect() );
 
-        if ( ctrl_modifier
-             && legend_rect.contains( mouse_event->pos() )
-             && _legend->isVisible() )
+        if ( ctrl_modifier)
         {
-            int point_size = _legend->font().pointSize();
-            if( mouse_event->delta() > 0 && point_size < 12)
+            if( legend_rect.contains( mouse_event->pos() )
+                && _legend->isVisible() )
             {
-                emit legendSizeChanged(point_size+1);
+                int point_size = _legend->font().pointSize();
+                if( mouse_event->delta() > 0 && point_size < 12)
+                {
+                    emit legendSizeChanged(point_size+1);
+                }
+                if( mouse_event->delta() < 0 && point_size > 6)
+                {
+                    emit legendSizeChanged(point_size-1);
+                }
+                return true; // don't pass to canvas().
             }
-            if( mouse_event->delta() < 0 && point_size > 6)
-            {
-                emit legendSizeChanged(point_size-1);
-            }
-            return true; // don't pass to canvas().
         }
+
         return false;
     }
 
