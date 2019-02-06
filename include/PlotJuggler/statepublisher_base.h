@@ -19,6 +19,8 @@ public:
 
     virtual void updateState(double current_time) = 0;
 
+    virtual void play(double interval) = 0;
+
     virtual ~StatePublisher() {}
 
     virtual void setEnabled(bool enabled) = 0;

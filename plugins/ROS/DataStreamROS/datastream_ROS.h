@@ -47,7 +47,6 @@ private:
     void extractInitialSamples();
 
     double _initial_time;
-    bool _use_header_timestamp;
     int _max_array_size;
     std::string _prefix;
 
