@@ -30,7 +30,7 @@ public:
 
     const QTabWidget* tabWidget() const;
 
-    void addTab(PlotMatrix *tab = NULL);
+    void addTab(PlotMatrix *tab = nullptr);
 
     QDomElement xmlSaveState(QDomDocument &doc) const;
     bool xmlLoadState(QDomElement &tabbed_area);

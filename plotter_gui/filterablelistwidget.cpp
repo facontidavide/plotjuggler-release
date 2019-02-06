@@ -130,6 +130,7 @@ void FilterableListWidget::addItem(const QString &item_name)
     font = QFontDatabase::systemFont(QFontDatabase::FixedFont);
     font.setPointSize( _point_size );
     val_cell->setFont( font );
+    val_cell->setFlags(Qt::NoItemFlags);
 
     _model->setItem(row, 1, val_cell );
 
@@ -447,8 +448,8 @@ void FilterableListWidget::on_lineEdit_textChanged(const QString &search_string)
                     }
                 }
             }
-            if( !toHide ) visible_count++;
         }
+        if( !toHide ) visible_count++;
 
         if( toHide != ui->tableView->isRowHidden(row) ) updated = true;
 
