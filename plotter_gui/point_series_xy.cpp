@@ -8,10 +8,7 @@ PointSeriesXY::PointSeriesXY(const PlotData *y_axis, const PlotData *x_axis):
     _y_axis(y_axis),
     _cached_curve("")
 {
-    if( !updateCache() )
-    {
-        throw std::runtime_error("X and Y axis don't share the same time");
-    }
+    updateCache();
 }
 
 PlotData::RangeTimeOpt PointSeriesXY::getVisualizationRangeX()
@@ -49,13 +46,18 @@ PlotData::RangeValueOpt PointSeriesXY::getVisualizationRangeY(PlotData::RangeTim
 
 bool PointSeriesXY::updateCache()
 {
+    if( _x_axis == nullptr )
+    {
+        throw std::runtime_error("the X axis is null");
+    }
+
     const size_t data_size =  _x_axis->size();
 
     if( data_size != _x_axis->size() )
     {
         _bounding_box = QRectF();
         _cached_curve.clear();
-        return false;
+        throw std::runtime_error("X and Y axis don't share the same time axis");
     }
 
     if(data_size == 0)
@@ -80,7 +82,7 @@ bool PointSeriesXY::updateCache()
         {
             _bounding_box = QRectF();
             _cached_curve.clear();
-            return false;
+            throw std::runtime_error("X and Y axis don't share the same time axis");
         }
 
         const QPointF p(_x_axis->at(i).y,

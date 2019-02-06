@@ -909,7 +909,10 @@ void MainWindow::onActionSaveLayout()
             loaded_streamer.setAttribute("name", streamer_name );
             root.appendChild( loaded_streamer );
         }
-
+    }
+    //-----------------------------------
+    if( checkbox_snippets->isChecked() )
+    {
         QDomElement custom_equations =  doc.createElement("customMathEquations");
         for (const auto& custom_it: _custom_plots)
         {
@@ -917,10 +920,7 @@ void MainWindow::onActionSaveLayout()
             custom_equations.appendChild( custom_plot->xmlSaveState(doc) );
         }
         root.appendChild(custom_equations);
-    }
-    //-----------------------------------
-    if( checkbox_snippets->isChecked() )
-    {
+
         QByteArray snippets_xml_text = settings.value("AddCustomPlotDialog.savedXML",
                                                   QByteArray() ).toByteArray();
         auto snipped_saved = GetSnippetsFromXML(snippets_xml_text);
