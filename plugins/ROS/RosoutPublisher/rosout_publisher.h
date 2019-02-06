@@ -40,6 +40,11 @@ public:
 
     virtual bool enabled() const override { return _enabled; }
 
+    virtual void play(double interval)  override
+    {
+        //TODO
+    }
+
 public slots:
     virtual void setEnabled(bool enabled) override;
 

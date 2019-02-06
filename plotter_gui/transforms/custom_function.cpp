@@ -77,7 +77,7 @@ CustomFunction::CustomFunction(const std::string &linkedPlot,
             _used_channels.push_back(channel_name.toStdString());
         }
     }
-    _function = replaced_equation;
+    _function_replaced = replaced_equation;
 
     //qDebug() << "final equation string : " << replaced_equation;
     initJsEngine();
@@ -119,7 +119,7 @@ void CustomFunction::initJsEngine()
     {
         throw std::runtime_error("JS Engine : " + globalVarResult.toString().toStdString());
     }
-    QString calcMethodStr = QString("function calc(time, value, CHANNEL_VALUES){with (Math){\n%1\n}}").arg(_function);
+    QString calcMethodStr = QString("function calc(time, value, CHANNEL_VALUES){with (Math){\n%1\n}}").arg(_function_replaced);
     _jsEngine->evaluate(calcMethodStr);
 }
 

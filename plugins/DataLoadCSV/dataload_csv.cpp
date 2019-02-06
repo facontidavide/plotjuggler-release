@@ -214,7 +214,7 @@ PlotDataMapRef DataLoadCSV::readDataFromFile(const QString &file_name, bool use_
     if(interrupted)
     {
         progress_dialog.cancel();
-        plot_data.numeric.erase( plot_data.numeric.begin(), plot_data.numeric.end() );
+        plot_data.numeric.clear();
     }
 
     if( monotonic_warning )
