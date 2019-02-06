@@ -64,8 +64,7 @@ std::vector<std::pair<QString,QString>> DataLoadROS::getAndRegisterAllTopics()
 }
 
 void DataLoadROS::storeMessageInstancesAsUserDefined(PlotDataMapRef& plot_map,
-                                                     const std::string& prefix,
-                                                     bool use_header_stamp)
+                                                     const std::string& prefix)
 {
   using namespace RosIntrospection;
 
@@ -75,22 +74,15 @@ void DataLoadROS::storeMessageInstancesAsUserDefined(PlotDataMapRef& plot_map,
 
   std::string prefixed_name;
 
+  PlotDataAny& plot_consecutive = plot_map.addUserDefined( "__consecutive_message_instances__" )->second;
+
   for(const rosbag::MessageInstance& msg_instance: bag_view )
   {
       const std::string& topic_name  = msg_instance.getTopic();
       double msg_time = msg_instance.getTime().toSec();
+      auto data_point = PlotDataAny::Point(msg_time, nonstd::any(msg_instance) );
+      plot_consecutive.pushBack( data_point );
 
-      if(use_header_stamp)
-      {
-          const auto header_stamp = FlatContainerContainHeaderStamp(renamed_value);
-          if(header_stamp)
-          {
-              const double time = header_stamp.value();
-              if( time > 0 ) {
-                msg_time = time;
-              }
-          }
-      }
       if( prefix.empty() == false)
       {
           StrCat(prefix, topic_name, prefixed_name);
@@ -104,7 +96,7 @@ void DataLoadROS::storeMessageInstancesAsUserDefined(PlotDataMapRef& plot_map,
           plot_pair = plot_map.addUserDefined( *key_ptr );
       }
       PlotDataAny& plot_raw = plot_pair->second;
-      plot_raw.pushBack( PlotDataAny::Point(msg_time, nonstd::any(std::move(msg_instance)) ));
+      plot_raw.pushBack( data_point );
   }
 }
 
@@ -174,7 +166,6 @@ PlotDataMapRef DataLoadROS::readDataFromFile(const QString &file_name, bool use_
     }
     const int max_array_size    = dialog->maxArraySize();
     const std::string prefix    = dialog->prefix().toStdString();
-    const bool use_header_stamp = dialog->checkBoxUseHeaderStamp()->isChecked();
 
     //-----------------------------------
     std::set<std::string> topic_selected;
@@ -244,21 +235,6 @@ PlotDataMapRef DataLoadROS::readDataFromFile(const QString &file_name, bool use_
 
         double msg_time = msg_instance.getTime().toSec();
 
-        if(use_header_stamp)
-        {
-            const auto header_stamp = FlatContainerContainHeaderStamp(renamed_values);
-            if(header_stamp)
-            {
-                const double time = header_stamp.value();
-                if( time > 0 ) {
-                  msg_time = time;
-                }
-                else{
-                  warning_headerstamp.insert(topic_name);
-                }
-            }
-        }
-
         for(const auto& it: renamed_values )
         {
             const auto& field_name = it.first;
@@ -316,7 +292,7 @@ PlotDataMapRef DataLoadROS::readDataFromFile(const QString &file_name, bool use_
         } //end of for renamed_value
     }
 
-    storeMessageInstancesAsUserDefined(plot_map, prefix, use_header_stamp);
+    storeMessageInstancesAsUserDefined(plot_map, prefix);
 
     qDebug() << "The loading operation took" << timer.elapsed() << "milliseconds";
 
@@ -338,11 +314,6 @@ PlotDataMapRef DataLoadROS::readDataFromFile(const QString &file_name, bool use_
       QString message = "The time of one or more fields is not strictly monotonic.\n"
                          "Some plots will not be displayed correctly\n";
 
-      if( use_header_stamp)
-      {
-        message += "\nNOTE: you should probably DISABLE this checkbox:\n\n"
-                   "[If present, use the timestamp in the field header.stamp]\n";
-      }
       DialogWithItemList::warning( message, warning_monotonic );
     }
 
