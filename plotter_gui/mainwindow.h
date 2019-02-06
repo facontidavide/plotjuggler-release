@@ -99,7 +99,7 @@ private slots:
 
     void on_actionQuick_Help_triggered();
 
-    void onTimeSlider_valueChanged(double value);
+    void onTimeSlider_valueChanged(double abs_time);
 
     void onUpdateLeftTableValues();
 
@@ -110,6 +110,8 @@ private slots:
     void on_pushButtonOptions_toggled(bool checked);
 
     void on_pushButtonActivateGrid_toggled(bool checked);
+
+    void on_pushButtonPlay_toggled(bool checked);
 
     void on_actionClearBuffer_triggered();
 
@@ -132,6 +134,8 @@ private slots:
     void buildDummyData();
 
     void on_actionFunction_editor_triggered();
+
+    void publishPeriodically();
 
 private:
 
@@ -222,6 +226,9 @@ protected:
     MonitoredValue _time_offset;
 
     QTimer *_replot_timer;
+
+    QTimer *_publish_timer;
+
 signals:
     void requestRemoveCurveByName(const std::string& name);
 

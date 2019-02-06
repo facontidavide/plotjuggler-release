@@ -8,7 +8,8 @@
 #include <ros_type_introspection/ros_introspection.hpp>
 #include <tf/transform_broadcaster.h>
 #include "PlotJuggler/statepublisher_base.h"
-
+#include "../shape_shifter_factory.hpp"
+#include <rosbag/bag.h>
 
 class  TopicPublisherROS: public QObject, StatePublisher
 {
@@ -28,9 +29,11 @@ public:
 
     void setParentMenu(QMenu *menu) override;
 
+    virtual void play(double interval)  override;
+
 public slots:
     virtual void setEnabled(bool enabled) override;
-    void ChangeFilter(bool toggled = true);
+    void filterDialog(bool toggled = true);
 
 private:
 
@@ -39,16 +42,22 @@ private:
     std::map<std::string, ros::Publisher> _publishers;
     bool enabled_;
     ros::NodeHandlePtr _node;
+    bool _publish_clock;
     std::unique_ptr<tf::TransformBroadcaster> _tf_publisher;
+    ros::Publisher _clock_publisher;
 
-    QAction* _current_time;
+    QAction* _enable_self_action;
     QAction* _select_topics_to_publish;
 
     std::unordered_map<std::string,bool> _topics_to_publish;
-    std::unordered_map<const PlotDataAny*, int> _previous_published_msg;
 
     bool toPublish(const std::string& topic_name);
 
+    double previous_time;
+
+    int _previous_play_index;
+
+    void publishAnyMsg(const rosbag::MessageInstance& msg_instance);
 };
 
 #endif // DATALOAD_CSV_H
