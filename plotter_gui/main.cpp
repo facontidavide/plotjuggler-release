@@ -16,7 +16,7 @@ QString getFunnySubtitle(){
     // do not repeat it twice in a row
     while( settings.value("previousFunnySubtitle").toInt() == n)
     {
-        n = qrand() % 18;
+        n = qrand() % 20;
     }
     settings.setValue("previousFunnySubtitle", n);
 
@@ -39,6 +39,7 @@ QString getFunnySubtitle(){
     case 13: return "Now, with less bugs than usual!";
     case 14: return "You log them, I visualize them";
     case 15: return "The fancy timeseries visualization tool";
+    case 16: return "Send me a PR with your splashscreen phrase!";
 
     default: return "I don't always visualize data,\n"
                     "but when I do, I use PlotJuggler";

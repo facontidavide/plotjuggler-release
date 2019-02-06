@@ -119,7 +119,7 @@ PlotWidget::PlotWidget(PlotDataMapRef &datamap, QWidget *parent):
     buildLegend();
 
     this->canvas()->setMouseTracking(true);
-    this->canvas()->installEventFilter(this);
+    //this->canvas()->installEventFilter(this);
 
     setDefaultRangeX();
 
@@ -338,12 +338,20 @@ bool PlotWidget::addCurve(const std::string &name)
     const auto qname = QString::fromStdString( name );
 
     auto curve = new QwtPlotCurve( qname );
-    auto plot_qwt = createSeriesData( _default_transform, &data );
-    _curves_transform.insert( {name, _default_transform} );
+    try {
+        auto plot_qwt = createSeriesData( _default_transform, &data );
+        _curves_transform.insert( {name, _default_transform} );
 
-    curve->setPaintAttribute( QwtPlotCurve::ClipPolygons, true );
-    curve->setPaintAttribute( QwtPlotCurve::FilterPointsAggressive, true );
-    curve->setData( plot_qwt );
+        curve->setPaintAttribute( QwtPlotCurve::ClipPolygons, true );
+        curve->setPaintAttribute( QwtPlotCurve::FilterPointsAggressive, true );
+        curve->setData( plot_qwt );
+
+    }
+    catch( std::exception& ex)
+    {
+        QMessageBox::warning(this, "Exception!", ex.what());
+        return false;
+    }
 
     if( _show_line_and_points ) {
         curve->setStyle( QwtPlotCurve::LinesAndDots);
@@ -546,9 +554,9 @@ void PlotWidget::detachAllCurves()
     for(auto& it: _curve_list)   { it.second->detach(); }
     for(auto& it: _point_marker) { it.second->detach(); }
 
-    _axisX = nullptr;
     if( isXYPlot() )
     {
+        _axisX = nullptr;
         _action_noTransform->trigger();
     }
 
@@ -1125,6 +1133,9 @@ void PlotWidget::zoomOut(bool emit_signal)
     _magnifier->setAxisLimits( xBottom, rect.left(),   rect.right() );
     _magnifier->setAxisLimits( yLeft,   rect.bottom(), rect.top() );
 
+    _magnifier->setZoomInKey( Qt::Key_Plus, Qt::ControlModifier);
+    _magnifier->setZoomOutKey( Qt::Key_Minus, Qt::ControlModifier);
+
     this->setZoomRectangle(rect, emit_signal);
 }
 
@@ -1432,14 +1443,18 @@ bool PlotWidget::eventFilter(QObject *obj, QEvent *event)
             {
                 emit legendSizeChanged(point_size-1);
             }
-            return true;
+            return true; // don't pass to canvas().
         }
-        // TODO use it for something else?
         return false;
     }
 
     case QEvent::MouseButtonPress:
     {
+        if( _dragging.mode != DragInfo::NONE)
+        {
+            return true; // don't pass to canvas().
+        }
+
         QMouseEvent *mouse_event = static_cast<QMouseEvent*>(event);
 
         if( mouse_event->button() == Qt::LeftButton )
@@ -1450,21 +1465,26 @@ bool PlotWidget::eventFilter(QObject *obj, QEvent *event)
                 QPointF pointF ( invTransform( xBottom, point.x()),
                                  invTransform( yLeft, point.y()) );
                 emit trackerMoved(pointF);
+                return true; // don't pass to canvas().
             }
-            if( mouse_event->modifiers() == Qt::ControlModifier) // panner
+            else if( mouse_event->modifiers() == Qt::ControlModifier) // panner
             {
                 QApplication::setOverrideCursor(QCursor(QPixmap(":/icons/resources/move.png")));
             }
-            else if(mouse_event->modifiers() == Qt::NoModifier )
-            {
-                // delegate to _zoomer
-            }
+            return false; // send to canvas()
+        }    
+        else if ( mouse_event->buttons() == Qt::MidButton &&
+                  mouse_event->modifiers() == Qt::NoModifier )
+        {
+            QApplication::setOverrideCursor(QCursor(QPixmap(":/icons/resources/move.png")));
+            return false;
         }
         else if( mouse_event->button() == Qt::RightButton )
         {
             if( mouse_event->modifiers() == Qt::NoModifier) // show menu
             {
                 canvasContextMenuTriggered( mouse_event->pos() );
+                return true; // don't pass to canvas().
             }
             else if( mouse_event->modifiers() == Qt::ControlModifier) // Start swapping two plots
             {
@@ -1480,12 +1500,19 @@ bool PlotWidget::eventFilter(QObject *obj, QEvent *event)
                 mimeData->setData("plot_area", data );
                 drag->setMimeData(mimeData);
                 drag->exec();
+
+                return true; // don't pass to canvas().
             }
         }
     }break;
         //---------------------------------
     case QEvent::MouseMove:
     {
+        if( _dragging.mode != DragInfo::NONE)
+        {
+            return true; // don't pass to canvas().
+        }
+
         QMouseEvent *mouse_event = static_cast<QMouseEvent*>(event);
 
         if ( mouse_event->buttons() == Qt::LeftButton &&
@@ -1495,16 +1522,26 @@ bool PlotWidget::eventFilter(QObject *obj, QEvent *event)
             QPointF pointF ( invTransform( xBottom, point.x()),
                              invTransform( yLeft, point.y()) );
             emit trackerMoved(pointF);
+            return true;
         }
     }break;
 
     case QEvent::Leave:
+    {
+        if( _dragging.mode == DragInfo::NONE )
+        {
+            changeBackgroundColor( Qt::white );
+            QApplication::restoreOverrideCursor();
+            return false;
+        }
+    }break;
     case QEvent::MouseButtonRelease :
     {
         if( _dragging.mode == DragInfo::NONE )
         {
             changeBackgroundColor( Qt::white );
             QApplication::restoreOverrideCursor();
+            return false;
         }
     }break;
 
@@ -1514,6 +1551,7 @@ bool PlotWidget::eventFilter(QObject *obj, QEvent *event)
         // This is the workaround I have eventually found to avoid the problem with spurious
         // QEvent::DragLeave (I have never found the origin of the bug).
         dropEvent(nullptr);
+        return true;
     }break;
 
     default: {}
@@ -1564,26 +1602,26 @@ DataSeriesBase *PlotWidget::createSeriesData(const QString &ID, const PlotData *
         try {
             output = new PointSeriesXY( data, _axisX );
         }
-        catch (std::runtime_error& )
+        catch (std::runtime_error& ex)
         {
             if( if_xy_plot_failed_show_dialog )
             {
                 QMessageBox msgBox(this);
                 msgBox.setWindowTitle("Warnings");
-                msgBox.setText("The creation of the XY plot failed because at least two "
-                               "timeseries don't share the same time axis.");
+                msgBox.setText( tr("The creation of the XY plot failed with the following message:\n %1")
+                                .arg( ex.what()) );
 
-                QAbstractButton* buttonDontRepear = msgBox.addButton("Don't show again",
-                                                                     QMessageBox::ActionRole);
+//                QAbstractButton* buttonDontRepear = msgBox.addButton("Don't show again",
+//                                                                     QMessageBox::ActionRole);
                 msgBox.addButton("Continue", QMessageBox::AcceptRole);
                 msgBox.exec();
 
-                if (msgBox.clickedButton() == buttonDontRepear)
-                {
-                    if_xy_plot_failed_show_dialog = false;
-                }
+//                if (msgBox.clickedButton() == buttonDontRepear)
+//                {
+//                    if_xy_plot_failed_show_dialog = false;
+//                }
             }
-            output = nullptr;
+            throw std::runtime_error("Creation of XY plot failed");
         }
     }
     auto custom_it = _snippets.find(ID);
@@ -1594,7 +1632,7 @@ DataSeriesBase *PlotWidget::createSeriesData(const QString &ID, const PlotData *
     }
 
     if( !output ){
-        throw std::runtime_error("Not recognized ID in createSeriesData");
+        throw std::runtime_error("Not recognized ID in createSeriesData: ");
     }
     output->setTimeOffset( _time_offset );
     return output;
