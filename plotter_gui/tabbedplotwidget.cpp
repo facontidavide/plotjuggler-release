@@ -272,7 +272,7 @@ void TabbedPlotWidget::on_pushVerticalResize_pressed()
 
 void TabbedPlotWidget::on_pushHorizontalResize_pressed()
 {
-
+    currentTab()->maximumZoomOutHorizontal();
     emit undoableChangeHappened();
 }
 
@@ -290,7 +290,7 @@ void TabbedPlotWidget::on_pushAddRow_pressed()
 
 void TabbedPlotWidget::on_addTabButton_pressed()
 {
-    addTab( NULL );
+    addTab( nullptr );
     emit undoableChangeHappened();
 }
 
