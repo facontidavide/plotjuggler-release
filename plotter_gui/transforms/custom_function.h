@@ -67,10 +67,11 @@ private:
                                     QJSValue &chan_values,
                                     size_t point_index);
 
-    std::string _linked_plot_name;
-    std::string _plot_name;
-    QString _global_vars;
-    QString _function;
+    const std::string _linked_plot_name;
+    const std::string _plot_name;
+    const QString _global_vars;
+    const QString _function;
+    QString _function_replaced;
     std::vector<std::string> _used_channels;
 
     std::unique_ptr<QJSEngine> _jsEngine;
