@@ -42,22 +42,11 @@
     </property>
     <item>
      <widget class="QSplitter" name="splitter">
-      <property name="styleSheet">
-       <string notr="true">QSplitter::handle {
-background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
-    stop:0 #eee, stop:1 #ccc);
-border: 1px solid #777;
-width: 13px;
-margin-top: 2px;
-margin-bottom: 2px;
-border-radius: 4px;
-}</string>
-      </property>
       <property name="frameShape">
        <enum>QFrame::NoFrame</enum>
       </property>
       <property name="midLineWidth">
-       <number>1</number>
+       <number>0</number>
       </property>
       <property name="orientation">
        <enum>Qt::Horizontal</enum>
@@ -655,7 +644,8 @@ border-radius: 4px;
     <property name="title">
      <string>Help</string>
     </property>
-    <addaction name="actionQuick_Help"/>
+    <addaction name="actionCheatsheet"/>
+    <addaction name="actionReportBug"/>
     <addaction name="actionAbout"/>
    </widget>
    <widget class="QMenu" name="menuTools_2">
@@ -726,15 +716,12 @@ border-radius: 4px;
     <string>Stop streaming</string>
    </property>
   </action>
-  <action name="actionQuick_Help">
+  <action name="actionReportBug">
    <property name="text">
-    <string>Documentation</string>
+    <string>Report a bug...</string>
    </property>
    <property name="toolTip">
-    <string>Open the Documentation in a browser</string>
-   </property>
-   <property name="shortcut">
-    <string>F1</string>
+    <string>Report issue on Github</string>
    </property>
   </action>
   <action name="actionClearBuffer">
@@ -763,6 +750,11 @@ border-radius: 4px;
   <action name="actionFunction_editor">
    <property name="text">
     <string>Open Function Editor</string>
+   </property>
+  </action>
+  <action name="actionCheatsheet">
+   <property name="text">
+    <string>Cheatsheet</string>
    </property>
   </action>
  </widget>
