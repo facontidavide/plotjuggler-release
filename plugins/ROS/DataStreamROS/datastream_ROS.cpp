@@ -24,13 +24,11 @@
 #include "../shape_shifter_factory.hpp"
 
 DataStreamROS::DataStreamROS():
-    _action_saveIntoRosbag(nullptr),
-    _node(nullptr)
+    _node(nullptr),
+    _action_saveIntoRosbag(nullptr)
 {
     _running = false;
     _initial_time = std::numeric_limits<double>::max();
-    _use_header_timestamp = true;
-
     _periodic_timer = new QTimer();
     connect( _periodic_timer, &QTimer::timeout,
              this, &DataStreamROS::timerCallback);
@@ -79,18 +77,6 @@ void DataStreamROS::topicCallback(const topic_tools::ShapeShifter::ConstPtr& msg
     _parser->applyNameTransform( topic_name, flat_container, &renamed_value );
 
     double msg_time = ros::Time::now().toSec();
-
-    if(_use_header_timestamp)
-    {
-        const auto header_stamp = FlatContainerContainHeaderStamp(renamed_value);
-        if(header_stamp){
-            const double time = header_stamp.value();
-            if( time > 0 )
-            {
-              msg_time = time;
-            }
-        }
-    }
 
     std::lock_guard<std::mutex> lock( mutex() );
 
@@ -397,8 +383,6 @@ bool DataStreamROS::start()
     }
 
     _prefix = dialog.prefix().toStdString();
-
-    _use_header_timestamp = dialog.checkBoxUseHeaderStamp()->isChecked();
     _max_array_size = dialog.maxArraySize();
     //-------------------------
     setMaxArrayPolicy( _parser.get(), dialog.discardEntireArrayIfTooLarge() );
