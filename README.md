@@ -86,14 +86,20 @@ To run the application, use the command:
 
     rosrun plotjuggler PlotJuggler 
 
-# How you may help
+# If you like PlotJuggler...
 
-PlotJuggler required many hundreds of man/hours to be developed, with the goal to be the most
-intuitive tool to visualize data and time series.
+PlotJuggler required a lot of work to be developed; my goal is to build the most
+intuitive and powerfull tool to visualize data and timeseries.
 
-If you believe that I achieved this goal, consider making a donation here: [Paypal](https://www.paypal.me/facontidavide).
+I have been developing PlotJuggler in my spare time since 2016, but its further development 
+is impossible without the financial support of those people and companies which use it.
 
-If you have any problem, you found a bug or you need help, feel free to submit an issue.
+If you are an individual, consider making a small donation on any of these platforms: 
+[BuyMeACoffe](https://www.buymeacoffee.com/plotjuggler), 
+[PayPal](https://www.paypal.me/facontidavide) or 
+[LiveraPay](https://en.liberapay.com/facontidavide/).
 
-      
+If you use PlotJuggler at work, your company can become a __sponsor__ or support the development of a specific feature.
+[Contact me](mailto:davide.faconti@gmail.com) for more details.
+ 
 
