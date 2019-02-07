@@ -12,30 +12,44 @@ QLabel {
 QLineEdit {
     color: black;
     background: white;
+    border-radius: 2px;
+    border: 1px solid grey;
 }
 
 QTabWidget::pane { /* The tab widget frame */
-    border: 2px solid #AAAAAA;
+    border: 1px solid gray;
     background: white;
-    top: -2px;
+    top: -1px;
+    border-radius: 2px;
 }
 
 QTabBar::tab {
     border-top-left-radius: 4px;
     border-top-right-radius: 4px;
+    border-bottom-left-radius: -4px;
+    border-bottom-right-radius: -4px;
     min-width: 10ex;
     padding: 6px;
+    color: black;
 }
 
 QTabBar::tab:selected {
-    border-left: 2px solid #AAAAAA;
-    border-right: 2px solid #AAAAAA;
-    border-top: 2px solid #AAAAAA;
+    border-left: 1px solid grey;
+    border-right: 1px solid grey;
+    border-top: 1px solid grey;
     background: white;
 }
 QTabBar::tab:!selected {
     background: #EEEEEE;
-    border-bottom: 2px solid #AAAAAA;
+    border-bottom: 1px solid grey;
+}
+
+
+QListView {
+   background: white;
+   color: black;
+   border-radius: 2px;
+   border: 1px solid grey;
 }
 
 QListView::item:selected {
@@ -43,10 +57,25 @@ QListView::item:selected {
    color: white;
 }
 
-QTableView {
+QTextBrowser {
    background: white;
    color: black;
 }
+
+QPlainTextEdit {
+   background: white;
+   color: black;
+   border-radius: 2px;
+   border: 1px solid grey;
+}
+
+QTableView {
+   background: white;
+   color: black;
+   border-radius: 2px;
+   border: 1px solid grey;
+}
+
 
 QTableView::item:selected {
    background: #1464a0;
@@ -55,9 +84,24 @@ QTableView::item:selected {
 
 QToolTip {
     border: 1px solid black;
-    border-radius: 4px;
+    border-radius: 2px;
     background: white;
     color: black; }
+
+QScrollBar {
+    background: #EEEEEE;
+}
+
+QSplitter::handle
+{
+    background: black;
+    border: 0px;
+    width: 1px;
+    margin-top: 2px;
+    margin-bottom: 2px;
+    border-radius: 4px;
+}
+
 
 /* QMenu ----------------------------------------------------------- */
 
@@ -154,7 +198,8 @@ QRadioButton::indicator:unchecked:disabled {
 /* QCheckBox -------------------------------------------------------------- */
 
 QCheckBox{
-    color: black;
+   background: white;
+   color: black;
 }
 
 QCheckBox::indicator {
@@ -245,9 +290,9 @@ QGroupBox::indicator:unchecked:disabled {
 
 QPushButton {
     background-color: transparent ;
-    border: 1px solid #AAAAAA;
+    border: 1px solid grey;
     color: black;
-    border-radius: 4px;
+    border-radius: 2px;
     padding: 6px;
     outline: none;
 }
@@ -267,9 +312,9 @@ QPushButton:focus {
 }
 
 QPushButton:checked {
-    background-color: #AAAAAA;
-    border: 1px solid #AAAAAA;
-    border-radius: 4px;
+    background-color: #BBBBEE;
+    border: 1px solid grey;
+    border-radius: 2px;
     padding: 3px;
     outline: none;
 }
@@ -277,7 +322,7 @@ QPushButton:checked {
 QPushButton:checked:disabled {
     border: 1px solid #32414B;
     color: grey;
-    border-radius: 4px;
+    border-radius: 2px;
     padding: 3px;
     outline: none;
 }
@@ -289,7 +334,7 @@ QPushButton::menu-indicator {
 }
 
 QPushButton:pressed {
-    background-color: #AAAAAA;
+    background-color: grey
 }
 
 QPushButton:hover,
@@ -306,25 +351,17 @@ QPushButton:checked:selected{
 /* QCombobox -------------------------------------------------------------- */
 
 QComboBox {
+    color: black;
+    background-color: white;
+    selection-background-color:  #b5b5b5;
+    border-radius: 2px;
+    border: 1px solid grey;
     padding-top: 2px;     /* This fix  #103, #111*/
     padding-bottom: 2px;  /* This fix  #103, #111*/
     padding-left: 4px;
     padding-right: 4px;
 }
 
-QComboBox QAbstractItemView {
-    color: black;
-    background-color: white;
-    border-radius: 4px;
-    border: 1px solid #32414B;
-    selection-color: white;
-    selection-background-color: blue;
-}
-
-
-QComboBox QAbstractItemView::item:hover {
-    background-color: blue;
-}
 
 /* QSlider ---------------------------------------------------------------- */
 
@@ -341,7 +378,7 @@ QSlider::groove:horizontal {
     border: 1px solid #32414B;
     height: 8px;
     margin: 0px;
-    border-radius: 4px;
+    border-radius: 2px;
 }
 
 QSlider::sub-page:horizontal {
@@ -349,7 +386,7 @@ QSlider::sub-page:horizontal {
     border: 1px solid #32414B;
     height: 4px;
     margin: 0px;
-    border-radius: 4px;
+    border-radius: 2px;
 }
 
 QSlider::sub-page:horizontal:disabled {
@@ -362,7 +399,7 @@ QSlider::handle:horizontal {
     width: 8px;
     height: 8px;
     margin: -8px 0;
-    border-radius: 4px;
+    border-radius: 2px;
 }
 
 QSlider::handle:horizontal:hover {
