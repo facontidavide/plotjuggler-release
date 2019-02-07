@@ -4,15 +4,6 @@
 #include <QSlider>
 
 
-
-inline static int Round(double x)
-{
-    return (x < 0.0) ? static_cast<int>(x - 0.5) : static_cast<int>(x + 0.5);
-}
-
-
-
-
 class RealSlider: public QSlider
 {
     Q_OBJECT
@@ -59,7 +50,7 @@ inline void RealSlider::setRealValue(double val)
     val = std::max( val, _min_value) ;
     val = std::min( val, _max_value) ;
     const double ratio = (val -_min_value)  / (_max_value - _min_value );
-    int pos = Round( (double)(maximum() - minimum()) * ratio  + minimum()) ;
+    long pos = std::round( (double)(maximum() - minimum()) * ratio  + minimum()) ;
     QSlider::setValue(pos);
 }
 
