@@ -17,6 +17,7 @@
 #include <std_msgs/Header.h>
 #include <unordered_map>
 #include <rosgraph_msgs/Clock.h>
+#include <QMessageBox>
 
 TopicPublisherROS::TopicPublisherROS():
     enabled_(false ),
@@ -35,6 +36,7 @@ TopicPublisherROS::~TopicPublisherROS()
 
 void TopicPublisherROS::setParentMenu(QMenu *menu)
 {
+    _enable_self_action = menu->actions().back();
     _menu = menu;
 
     _select_topics_to_publish = new QAction(QString("Select topics to be published"), _menu);
@@ -58,8 +60,11 @@ void TopicPublisherROS::setEnabled(bool to_enable)
         {
             _tf_publisher = std::unique_ptr<tf::TransformBroadcaster>( new tf::TransformBroadcaster );
         }
-        _previous_published_msg.clear();
         _previous_play_index = std::numeric_limits<int>::max();
+    }
+    else{
+        _node.reset();
+        _publishers.clear();
     }
 }
 
@@ -337,6 +342,15 @@ void TopicPublisherROS::updateState(double current_time)
 {
     if(!enabled_ || !_node) return;
 
+    if( !ros::master::check() )
+    {
+        QMessageBox::warning(nullptr, tr("Disconnected!"),
+                             "The roscore master cannot be detected.\n"
+                             "The publisher will be disabled.");
+        _enable_self_action->setChecked(false);
+        return;
+    }
+
     //-----------------------------------------------
     broadcastTF(current_time);
     //-----------------------------------------------
@@ -401,6 +415,15 @@ void TopicPublisherROS::updateState(double current_time)
 void TopicPublisherROS::play(double current_time)
 {
     if(!enabled_ || !_node) return;
+
+    if( !ros::master::check() )
+    {
+        QMessageBox::warning(nullptr, tr("Disconnected!"),
+                             "The roscore master cannot be detected.\n"
+                             "The publisher will be disabled.");
+        _enable_self_action->setChecked(false);
+        return;
+    }
 
     auto data_it = _datamap->user_defined.find( "__consecutive_message_instances__" );
     if( data_it == _datamap->user_defined.end() )
