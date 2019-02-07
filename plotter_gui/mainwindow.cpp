@@ -35,6 +35,7 @@
 #include "selectlistdialog.h"
 #include "aboutdialog.h"
 #include "PlotJuggler/plotdata.h"
+#include "ui_cheatsheet_dialog.h"
 #include "transforms/function_editor.h"
 #include "utils.h"
 
@@ -909,7 +910,10 @@ void MainWindow::onActionSaveLayout()
             loaded_streamer.setAttribute("name", streamer_name );
             root.appendChild( loaded_streamer );
         }
-
+    }
+    //-----------------------------------
+    if( checkbox_snippets->isChecked() )
+    {
         QDomElement custom_equations =  doc.createElement("customMathEquations");
         for (const auto& custom_it: _custom_plots)
         {
@@ -917,10 +921,7 @@ void MainWindow::onActionSaveLayout()
             custom_equations.appendChild( custom_plot->xmlSaveState(doc) );
         }
         root.appendChild(custom_equations);
-    }
-    //-----------------------------------
-    if( checkbox_snippets->isChecked() )
-    {
+
         QByteArray snippets_xml_text = settings.value("AddCustomPlotDialog.savedXML",
                                                   QByteArray() ).toByteArray();
         auto snipped_saved = GetSnippetsFromXML(snippets_xml_text);
@@ -2020,25 +2021,6 @@ void MainWindow::on_actionExit_triggered()
     this->close();
 }
 
-void MainWindow::on_actionQuick_Help_triggered()
-{
-    const QString path =  tr(PJ_DOCUMENTATION_DIR) + "/index.html";
-    QFileInfo check_file(path);
-
-    QUrl url_SYS( tr("file:///")  + path, QUrl::TolerantMode);
-
-    if( check_file.exists() && url_SYS.isValid() )
-    {
-        if(QDesktopServices::openUrl(url_SYS))
-        {
-            return;
-        }
-    }
-    QMessageBox::warning(this, "Can't find Documentation",
-                         QString("Can't open the file:\n\n%1\n\n Is it correctly installed in your system?").arg( url_SYS.path()) );
-}
-
-
 void MainWindow::on_pushButtonRemoveTimeOffset_toggled(bool )
 {
     updateTimeOffset();
@@ -2332,4 +2314,25 @@ void MainWindow::publishPeriodically()
         plot->setTrackerPosition( _tracker_time );
         plot->replot();
     } );
+}
+
+void MainWindow::on_actionReportBug_triggered()
+{
+    QDesktopServices::openUrl( QUrl( "https://github.com/facontidavide/PlotJuggler/issues" ));
+}
+
+void MainWindow::on_actionCheatsheet_triggered()
+{
+    QSettings settings;
+
+    QDialog* dialog = new QDialog(this);
+    Ui_CheatsheetDialog* ui = new Ui_CheatsheetDialog;
+    ui->setupUi(dialog);
+
+    dialog->restoreGeometry(settings.value("Cheatsheet.geometry").toByteArray());
+    dialog->exec();
+    settings.setValue("Cheatsheet.geometry", dialog->saveGeometry());
+
+    delete ui;
+    delete dialog;
 }
