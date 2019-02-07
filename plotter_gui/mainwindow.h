@@ -97,8 +97,6 @@ private slots:
 
     void on_actionExit_triggered();
 
-    void on_actionQuick_Help_triggered();
-
     void onTimeSlider_valueChanged(double abs_time);
 
     void onUpdateLeftTableValues();
@@ -136,6 +134,10 @@ private slots:
     void on_actionFunction_editor_triggered();
 
     void publishPeriodically();
+
+    void on_actionReportBug_triggered();
+
+    void on_actionCheatsheet_triggered();
 
 private:
 
