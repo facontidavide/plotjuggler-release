@@ -3,9 +3,12 @@
 #include <QDebug>
 #include <limits>
 #include <QWheelEvent>
+#include <QApplication>
 
 PlotMagnifier::PlotMagnifier( QWidget *canvas) : QwtPlotMagnifier(canvas)
 {
+    _x_pressed = false;
+    _y_pressed = false;
     for ( int axisId = 0; axisId < QwtPlot::axisCnt; axisId++ )
     {
         _lower_bounds[axisId] = -std::numeric_limits<double>::max();
@@ -43,6 +46,16 @@ void PlotMagnifier::rescale( double factor )
 
     for ( int i = 0; i <2; i++ )
     {
+        double temp_factor = factor;
+        if( i==1 && _x_pressed)
+        {
+            temp_factor = 1.0;
+        }
+        if( i==0 && _y_pressed)
+        {
+            temp_factor = 1.0;
+        }
+
         int axisId = axis_list[i];
 
         if ( isAxisEnabled( axisId ) )
@@ -67,8 +80,8 @@ void PlotMagnifier::rescale( double factor )
             const double width = ( v2 - v1 );
             const double ratio = (v2-center)/ (width);
 
-            v1 = center - width*factor*(1-ratio);
-            v2 = center + width*factor*(ratio);
+            v1 = center - width*temp_factor*(1-ratio);
+            v2 = center + width*temp_factor*(ratio);
 
             if( v1 > v2 ) std::swap( v1, v2 );
 
@@ -121,4 +134,41 @@ void PlotMagnifier::widgetMousePressEvent(QMouseEvent *event)
 {
     _mouse_position = invTransform(event->pos());
     QwtPlotMagnifier::widgetMousePressEvent(event);
+}
+
+bool PlotMagnifier::eventFilter(QObject *obj, QEvent *event)
+{
+    if( event->type() == QEvent::Enter || event->type() == QEvent::Leave)
+    {
+        _x_pressed = false;
+        _y_pressed = false;
+    }
+    else if( event->type() == QEvent::KeyPress)
+    {
+        auto key_event = static_cast<QKeyEvent*>(event);
+        if( key_event->key() == Qt::Key_X )
+        {
+            _x_pressed = true;
+        }
+        else if( key_event->key() == Qt::Key_Y )
+        {
+            _y_pressed = true;
+        }
+        //qDebug() << "p "<< _x_pressed << " " << _y_pressed;
+    }
+    else if( event->type() == QEvent::KeyRelease)
+    {
+        auto key_event = static_cast<QKeyEvent*>(event);
+        if( key_event->key() == Qt::Key_X )
+        {
+            _x_pressed = false;
+        }
+        else if( key_event->key() == Qt::Key_Y )
+        {
+            _y_pressed = false;
+        }
+      //  qDebug() << "R "<< _x_pressed << " " << _y_pressed;
+    }
+
+    return QwtPlotMagnifier::eventFilter(obj, event);
 }
