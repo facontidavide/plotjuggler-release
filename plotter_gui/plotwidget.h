@@ -138,6 +138,7 @@ private:
     QAction *_action_removeAllCurves;
     QAction *_action_changeColorsDialog;
     QAction *_action_showPoints;
+    QAction *_action_zoomOutMaximum;
     QAction *_action_zoomOutHorizontally;
     QAction *_action_zoomOutVertically;
     QAction *_action_noTransform;

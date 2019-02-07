@@ -46,10 +46,10 @@ private:
     std::unique_ptr<tf::TransformBroadcaster> _tf_publisher;
     ros::Publisher _clock_publisher;
 
+    QAction* _enable_self_action;
     QAction* _select_topics_to_publish;
 
     std::unordered_map<std::string,bool> _topics_to_publish;
-    std::unordered_map<const PlotDataAny*, int> _previous_published_msg;
 
     bool toPublish(const std::string& topic_name);
 

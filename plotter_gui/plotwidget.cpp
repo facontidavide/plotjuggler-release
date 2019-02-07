@@ -119,7 +119,6 @@ PlotWidget::PlotWidget(PlotDataMapRef &datamap, QWidget *parent):
     buildLegend();
 
     this->canvas()->setMouseTracking(true);
-    //this->canvas()->installEventFilter(this);
 
     setDefaultRangeX();
 
@@ -166,6 +165,14 @@ void PlotWidget::buildActions()
 
     _action_editLimits = new  QAction(tr("&Edit Axis Limits"), this);
     connect(_action_editLimits, &QAction::triggered, this, &PlotWidget::on_editAxisLimits_triggered);
+
+    _action_zoomOutMaximum = getActionAndIcon("&Zoom Out", ":/icons/resources/zoom_max.svg" );
+    connect(_action_zoomOutMaximum, &QAction::triggered, this, [this]()
+            {
+                zoomOut(true);
+                replot();
+                emit undoableChange();
+            });
 
     _action_zoomOutHorizontally = getActionAndIcon("&Zoom Out Horizontally",
                                                    ":/icons/resources/zoom_horizontal.svg" );
@@ -257,6 +264,7 @@ void PlotWidget::canvasContextMenuTriggered(const QPoint &pos)
     menu.addAction(_action_showPoints);
     menu.addSeparator();
     menu.addAction(_action_editLimits);
+    menu.addAction(_action_zoomOutMaximum);
     menu.addAction(_action_zoomOutHorizontally);
     menu.addAction(_action_zoomOutVertically);
     menu.addSeparator();
@@ -338,12 +346,20 @@ bool PlotWidget::addCurve(const std::string &name)
     const auto qname = QString::fromStdString( name );
 
     auto curve = new QwtPlotCurve( qname );
-    auto plot_qwt = createSeriesData( _default_transform, &data );
-    _curves_transform.insert( {name, _default_transform} );
+    try {
+        auto plot_qwt = createSeriesData( _default_transform, &data );
+        _curves_transform.insert( {name, _default_transform} );
 
-    curve->setPaintAttribute( QwtPlotCurve::ClipPolygons, true );
-    curve->setPaintAttribute( QwtPlotCurve::FilterPointsAggressive, true );
-    curve->setData( plot_qwt );
+        curve->setPaintAttribute( QwtPlotCurve::ClipPolygons, true );
+        curve->setPaintAttribute( QwtPlotCurve::FilterPointsAggressive, true );
+        curve->setData( plot_qwt );
+
+    }
+    catch( std::exception& ex)
+    {
+        QMessageBox::warning(this, "Exception!", ex.what());
+        return false;
+    }
 
     if( _show_line_and_points ) {
         curve->setStyle( QwtPlotCurve::LinesAndDots);
@@ -546,9 +562,9 @@ void PlotWidget::detachAllCurves()
     for(auto& it: _curve_list)   { it.second->detach(); }
     for(auto& it: _point_marker) { it.second->detach(); }
 
-    _axisX = nullptr;
     if( isXYPlot() )
     {
+        _axisX = nullptr;
         _action_noTransform->trigger();
     }
 
@@ -1422,21 +1438,24 @@ bool PlotWidget::eventFilter(QObject *obj, QEvent *event)
         bool ctrl_modifier = mouse_event->modifiers() == Qt::ControlModifier;
         auto legend_rect = _legend->geometry( canvas()->rect() );
 
-        if ( ctrl_modifier
-             && legend_rect.contains( mouse_event->pos() )
-             && _legend->isVisible() )
+        if ( ctrl_modifier)
         {
-            int point_size = _legend->font().pointSize();
-            if( mouse_event->delta() > 0 && point_size < 12)
+            if( legend_rect.contains( mouse_event->pos() )
+                && _legend->isVisible() )
             {
-                emit legendSizeChanged(point_size+1);
+                int point_size = _legend->font().pointSize();
+                if( mouse_event->delta() > 0 && point_size < 12)
+                {
+                    emit legendSizeChanged(point_size+1);
+                }
+                if( mouse_event->delta() < 0 && point_size > 6)
+                {
+                    emit legendSizeChanged(point_size-1);
+                }
+                return true; // don't pass to canvas().
             }
-            if( mouse_event->delta() < 0 && point_size > 6)
-            {
-                emit legendSizeChanged(point_size-1);
-            }
-            return true; // don't pass to canvas().
         }
+
         return false;
     }
 
@@ -1594,26 +1613,26 @@ DataSeriesBase *PlotWidget::createSeriesData(const QString &ID, const PlotData *
         try {
             output = new PointSeriesXY( data, _axisX );
         }
-        catch (std::runtime_error& )
+        catch (std::runtime_error& ex)
         {
             if( if_xy_plot_failed_show_dialog )
             {
                 QMessageBox msgBox(this);
                 msgBox.setWindowTitle("Warnings");
-                msgBox.setText("The creation of the XY plot failed because at least two "
-                               "timeseries don't share the same time axis.");
+                msgBox.setText( tr("The creation of the XY plot failed with the following message:\n %1")
+                                .arg( ex.what()) );
 
-                QAbstractButton* buttonDontRepear = msgBox.addButton("Don't show again",
-                                                                     QMessageBox::ActionRole);
+//                QAbstractButton* buttonDontRepear = msgBox.addButton("Don't show again",
+//                                                                     QMessageBox::ActionRole);
                 msgBox.addButton("Continue", QMessageBox::AcceptRole);
                 msgBox.exec();
 
-                if (msgBox.clickedButton() == buttonDontRepear)
-                {
-                    if_xy_plot_failed_show_dialog = false;
-                }
+//                if (msgBox.clickedButton() == buttonDontRepear)
+//                {
+//                    if_xy_plot_failed_show_dialog = false;
+//                }
             }
-            output = nullptr;
+            throw std::runtime_error("Creation of XY plot failed");
         }
     }
     auto custom_it = _snippets.find(ID);
@@ -1624,7 +1643,7 @@ DataSeriesBase *PlotWidget::createSeriesData(const QString &ID, const PlotData *
     }
 
     if( !output ){
-        throw std::runtime_error("Not recognized ID in createSeriesData");
+        throw std::runtime_error("Not recognized ID in createSeriesData: ");
     }
     output->setTimeOffset( _time_offset );
     return output;
