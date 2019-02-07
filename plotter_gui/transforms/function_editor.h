@@ -66,6 +66,8 @@ private slots:
 
     void on_pushButtonCreate_clicked();
 
+    void on_lineEditFilter_textChanged(const QString &arg1);
+
 private:
     void importSnippets(const QByteArray &xml_text);
 
