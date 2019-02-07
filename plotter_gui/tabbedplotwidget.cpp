@@ -276,6 +276,12 @@ void TabbedPlotWidget::on_pushHorizontalResize_pressed()
     emit undoableChangeHappened();
 }
 
+void TabbedPlotWidget::on_pushButtonZoomMax_pressed()
+{
+    currentTab()->maximumZoomOut();
+    emit undoableChangeHappened();
+}
+
 void TabbedPlotWidget::on_pushAddRow_pressed()
 {
     currentTab()->addRow();
@@ -284,7 +290,7 @@ void TabbedPlotWidget::on_pushAddRow_pressed()
 
 void TabbedPlotWidget::on_addTabButton_pressed()
 {
-    addTab( NULL );
+    addTab( nullptr );
     emit undoableChangeHappened();
 }
 
@@ -515,4 +521,6 @@ void TabbedPlotWidget::setControlsVisible(bool visible)
 {
     ui->widgetControls->setVisible(visible);
 }
+
+
 
