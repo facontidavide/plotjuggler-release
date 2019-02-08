@@ -46,6 +46,7 @@
         <file>resources/pause.svg</file>
         <file>resources/play_arrow.svg</file>
         <file>resources/zoom_max.svg</file>
+        <file>resources/Davide.jpg</file>
     </qresource>
     <qresource prefix="/splash">
         <file>resources/splash.jpg</file>
