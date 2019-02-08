@@ -216,7 +216,7 @@
                 </size>
                </property>
                <property name="flat">
-                <bool>false</bool>
+                <bool>true</bool>
                </property>
               </widget>
              </item>
@@ -484,6 +484,9 @@
                <property name="checkable">
                 <bool>true</bool>
                </property>
+               <property name="flat">
+                <bool>true</bool>
+               </property>
               </widget>
              </item>
              <item>
@@ -645,7 +648,9 @@
      <string>Help</string>
     </property>
     <addaction name="actionCheatsheet"/>
+    <addaction name="actionSupportPlotJuggler"/>
     <addaction name="actionReportBug"/>
+    <addaction name="separator"/>
     <addaction name="actionAbout"/>
    </widget>
    <widget class="QMenu" name="menuTools_2">
@@ -755,6 +760,11 @@
   <action name="actionCheatsheet">
    <property name="text">
     <string>Cheatsheet</string>
+   </property>
+  </action>
+  <action name="actionSupportPlotJuggler">
+   <property name="text">
+    <string>Support PlotJuggler</string>
    </property>
   </action>
  </widget>
