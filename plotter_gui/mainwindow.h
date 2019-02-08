@@ -139,6 +139,8 @@ private slots:
 
     void on_actionCheatsheet_triggered();
 
+    void on_actionSupportPlotJuggler_triggered();
+
 private:
 
     Ui::MainWindow *ui;

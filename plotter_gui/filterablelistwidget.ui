@@ -334,10 +334,6 @@
          <property name="toolTipDuration">
           <number>-1</number>
          </property>
-         <property name="styleSheet">
-          <string notr="true">border-radius: 4px;
-border: 1px solid rgb(150, 150, 150);</string>
-         </property>
          <property name="horizontalScrollBarPolicy">
           <enum>Qt::ScrollBarAsNeeded</enum>
          </property>
