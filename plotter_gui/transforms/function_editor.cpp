@@ -459,3 +459,25 @@ void AddCustomPlotDialog::on_pushButtonCreate_clicked()
         QDialog::reject();
     }
 }
+
+void AddCustomPlotDialog::on_lineEditFilter_textChanged(const QString &search_string)
+{
+    QStringList spaced_items = search_string.split(' ');
+
+    for (int row=0; row < ui->curvesListWidget->count(); row++)
+    {
+        auto item = ui->curvesListWidget->item(row);
+        QString name = item->text();
+        bool toHide = false;
+
+        for (const auto& item: spaced_items)
+        {
+            if( !name.contains(item) )
+            {
+                toHide = true;
+                break;
+            }
+        }
+        ui->curvesListWidget->setRowHidden(row, toHide );
+    }
+}
