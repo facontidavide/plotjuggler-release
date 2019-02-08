@@ -2,6 +2,17 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.1.1 (2019-02-07)
+------------------
+* Added filter to function editor
+* ask for support
+* cleanup
+* fix issue with Datetime and cheatsheet dialog
+* further stylesheet refinements
+* fixing visualization of fucntion editor dialog
+* fixing html of cheatsheet
+* Contributors: Davide Faconti
+
 2.1.0 (2019-02-07)
 ------------------
 * minor change
