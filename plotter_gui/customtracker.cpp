@@ -196,6 +196,14 @@ void CurveTracker::setPosition(const QPointF& position)
         _text_marker->setYValue( tot_Y/visible_points );
     }
 
+    double text_width = _plot->invTransform( QwtPlot::xBottom, mark_text.textSize().width() );
+    bool exceed_right = _text_marker->boundingRect().right() + text_width > rect.right();
+
+    if( exceed_right )
+    {
+         _text_marker->setXValue( position.x() - text_X_offset -text_width );
+    }
+
     _text_marker->setVisible( visible_points > 0 && _visible && _param != LINE_ONLY );
 
     _prev_trackerpoint = position;
