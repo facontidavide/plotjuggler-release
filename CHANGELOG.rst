@@ -2,6 +2,18 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.1.2 (2019-02-13)
+------------------
+* legend button now has three states: left/right/hide
+* replace tracker text when position is on the right side
+* allow again to use the header.stamp
+* fix problem with legend visibility
+* Save all tab plots as images in a folder. (#137)
+* Make default filename for tab image the tab name (#136)
+* Update README.md
+* adding instructions to build AppImage
+* Contributors: Davide Faconti, d-walsh
+
 2.1.1 (2019-02-07)
 ------------------
 * Added filter to function editor

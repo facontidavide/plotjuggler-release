@@ -19,7 +19,8 @@ TabbedPlotWidget::TabbedPlotWidget(QString name,
     QWidget(parent),
     _mapped_data(mapped_data),
     ui(new Ui::TabbedPlotWidget),
-    _name(name)
+    _name(name),
+    _labels_status (LabelStatus::RIGHT)
 {
 
     if( main_window == parent){
@@ -222,6 +223,7 @@ void TabbedPlotWidget::on_savePlotsToFile()
     QFileDialog saveDialog;
     saveDialog.setAcceptMode(QFileDialog::AcceptSave);
     saveDialog.setDefaultSuffix("png");
+    saveDialog.selectFile(currentTab()->name());
 
 #ifndef QWT_NO_SVG
     saveDialog.setNameFilter("Compatible formats (*.jpg *.jpeg *.svg *.png)");
@@ -234,33 +236,46 @@ void TabbedPlotWidget::on_savePlotsToFile()
     {
         QString fileName = saveDialog.selectedFiles().first();
 
-        QPixmap pixmap (1200,900);
-        QPainter * painter = new QPainter(&pixmap);
-
-        if ( !fileName.isEmpty() )
-        {
-            QwtPlotRenderer rend;
-
-            int delta_X = pixmap.width() /  matrix->colsCount();
-            int delta_Y = pixmap.height() /  matrix->rowsCount();
-
-            for (unsigned c=0; c< matrix->colsCount(); c++)
-            {
-                for (unsigned r=0; r< matrix->rowsCount(); r++)
-                {
-                    PlotWidget* widget = matrix->plotAt(r,c);
-                    QRect rect(delta_X*c, delta_Y*r, delta_X, delta_Y);
-                    rend.render(widget,painter, rect);
-                }
-            }
-            pixmap.save(fileName);
-        }
+        saveTabImage(fileName, matrix);
     }
+}
+
+void TabbedPlotWidget::saveTabImage(QString fileName, PlotMatrix* matrix)
+{
+    QPixmap pixmap (1200,900);
+    QPainter * painter = new QPainter(&pixmap);
+
+    if ( !fileName.isEmpty() )
+    {
+        QwtPlotRenderer rend;
+
+        int delta_X = pixmap.width() /  matrix->colsCount();
+        int delta_Y = pixmap.height() /  matrix->rowsCount();
+
+        for (unsigned c=0; c< matrix->colsCount(); c++)
+        {
+            for (unsigned r=0; r< matrix->rowsCount(); r++)
+            {
+                PlotWidget* widget = matrix->plotAt(r,c);
+                QRect rect(delta_X*c, delta_Y*r, delta_X, delta_Y);
+                rend.render(widget,painter, rect);
+            }
+        }
+        pixmap.save(fileName);
+    }
+}
+
+void TabbedPlotWidget::on_pushAddRow_pressed()
+{
+    currentTab()->addRow();
+    onLabelStatusChanged();
+    emit undoableChangeHappened();
 }
 
 void TabbedPlotWidget::on_pushAddColumn_pressed()
 {
     currentTab()->addColumn();
+    onLabelStatusChanged();
     emit undoableChangeHappened();
 }
 
@@ -279,12 +294,6 @@ void TabbedPlotWidget::on_pushHorizontalResize_pressed()
 void TabbedPlotWidget::on_pushButtonZoomMax_pressed()
 {
     currentTab()->maximumZoomOut();
-    emit undoableChangeHappened();
-}
-
-void TabbedPlotWidget::on_pushAddRow_pressed()
-{
-    currentTab()->addRow();
     emit undoableChangeHappened();
 }
 
@@ -419,6 +428,17 @@ void TabbedPlotWidget::on_moveTabIntoNewWindow()
     emit sendTabToNewWindow( currentTab() );
 }
 
+void TabbedPlotWidget::on_pushButtonShowLabel_pressed()
+{
+    switch(_labels_status)
+    {
+    case LabelStatus::LEFT:  _labels_status = LabelStatus::HIDDEN;  break;
+    case LabelStatus::RIGHT: _labels_status = LabelStatus::LEFT;  break;
+    case LabelStatus::HIDDEN: _labels_status = LabelStatus::RIGHT;  break;
+    }
+    onLabelStatusChanged( );
+}
+
 
 bool TabbedPlotWidget::eventFilter(QObject *obj, QEvent *event)
 {
@@ -480,7 +500,7 @@ bool TabbedPlotWidget::eventFilter(QObject *obj, QEvent *event)
     return QObject::eventFilter(obj, event);
 }
 
-void TabbedPlotWidget::on_pushButtonShowLabel_toggled(bool checked)
+void TabbedPlotWidget::onLabelStatusChanged()
 {    
     for(int i=0; i< tabWidget()->count(); i++)
     {
@@ -489,10 +509,19 @@ void TabbedPlotWidget::on_pushButtonShowLabel_toggled(bool checked)
         for(unsigned p=0; p< matrix->plotCount(); p++)
         {
             PlotWidget* plot = matrix->plotAt(p);
-            plot->activateLegent( checked );
+
+            plot->activateLegend( _labels_status != LabelStatus::HIDDEN );
+            if(  _labels_status == LabelStatus::LEFT)
+            {
+                plot->setLegendAlignment( Qt::AlignLeft );
+            }
+            else  if(  _labels_status == LabelStatus::RIGHT)
+            {
+                plot->setLegendAlignment( Qt::AlignRight);
+            }
+            plot->replot();
         }
     }
-    currentTab()->replot();
 }
 
 void TabbedPlotWidget::closeEvent(QCloseEvent *event)
