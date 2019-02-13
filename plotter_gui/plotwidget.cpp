@@ -855,10 +855,11 @@ void PlotWidget::reloadPlotData()
     }
 }
 
-void PlotWidget::activateLegent(bool activate)
+void PlotWidget::activateLegend(bool activate)
 {
-    if( activate ) _legend->attach(this);
-    else           _legend->detach();
+//    if( activate ) _legend->attach(this);
+//    else           _legend->detach();
+    _legend->setVisible(activate);
 }
 
 void PlotWidget::activateGrid(bool activate)
@@ -1664,4 +1665,14 @@ void PlotWidget::setLegendSize(int size)
     font.setPointSize( size );
     _legend->setFont( font );
     replot();
+}
+
+bool PlotWidget::isLegendVisible() const
+{
+    return _legend && _legend->isVisible();
+}
+
+void PlotWidget::setLegendAlignment(Qt::Alignment alignment)
+{
+    _legend->setAlignment( Qt::Alignment( Qt::AlignTop | alignment ) );
 }

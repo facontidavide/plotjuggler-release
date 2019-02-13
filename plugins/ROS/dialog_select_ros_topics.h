@@ -34,6 +34,8 @@ public:
 
     bool discardEntireArrayIfTooLarge();
 
+    QCheckBox * checkBoxTimestamp();
+
     QString prefix();
 
 public slots:
@@ -88,8 +90,8 @@ public:
 };
 
 
+nonstd::optional<double>FlatContainerContainHeaderStamp(const RosIntrospection::FlatMessage& flat_msg);
 
-nonstd::optional<double> FlatContainerContainHeaderStamp(const RosIntrospection::RenamedValues& flat_container);
 
 template<class T, typename std::enable_if< has_setMaxArrayPolicy<T>::value, int>::type = 0>
 inline bool setMaxArrayPolicy(T* parser, bool policy)
