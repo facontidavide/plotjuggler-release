@@ -32,7 +32,17 @@ Watch this video to learn how to use it.
 
 [![Custom timeseries](docs/images/custom_functions.png)](https://vimeo.com/311245098)
 
-# How to build (non ROS users)
+## Just "Download and Run" (Ubuntu 16.04 Xenial or later)
+
+For those of you that can't wait to get your hands dirty, just download this AppImage:
+
+[PlotJuggler-2.1.1-x86_64.AppImage](https://github.com/facontidavide/PlotJuggler/releases/download/2.1.1/PlotJuggler-2.1.1-x86_64.AppImage).
+   
+Do not forget to make it executable with the command 
+
+    chmod +x ./PlotJuggler-2.1.1-x86_64.AppImage
+
+## How to build (non ROS users)
 
 Clone the repository as usual:
 
@@ -56,7 +66,7 @@ Then compile using cmake (qmake is NOT supported):
  
  Note: the plugins need to be installed in the same folder of the executable or in __/usr/local/lib/PlotJuggler/__.
 
-# How to build (ROS users)
+## How to build (ROS users)
 
  The following instructions are for __ROS Kinetic__. Adapt them accordingly if you are using a different version of ROS.
  
@@ -91,15 +101,14 @@ To run the application, use the command:
 PlotJuggler required a lot of work to be developed; my goal is to build the most
 intuitive and powerfull tool to visualize data and timeseries.
 
-I have been developing PlotJuggler in my spare time since 2016, but its further development 
-is impossible without the financial support of those people and companies which use it.
-
-If you are an individual, consider making a small donation on any of these platforms: 
+If you find PlotJuggler useful, consider making a donation on any of these platforms: 
 [BuyMeACoffe](https://www.buymeacoffee.com/plotjuggler), 
 [PayPal](https://www.paypal.me/facontidavide) or 
 [LiveraPay](https://en.liberapay.com/facontidavide/).
 
-If you use PlotJuggler at work, your company can become a __sponsor__ or support the development of a specific feature.
+If you use PlotJuggler at work, your company can become a __sponsor__ and support 
+the development of those specific features they need.
+
 [Contact me](mailto:davide.faconti@gmail.com) for more details.
  
 

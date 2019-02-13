@@ -152,6 +152,8 @@ PlotDataMapRef DataLoadROS::readDataFromFile(const QString &file_name, bool use_
         }
     }
 
+    bool use_header_stamp = dialog->checkBoxTimestamp()->isChecked();
+
     _use_renaming_rules = dialog->checkBoxUseRenamingRules()->isChecked();
 
     if( _use_renaming_rules )
@@ -235,6 +237,21 @@ PlotDataMapRef DataLoadROS::readDataFromFile(const QString &file_name, bool use_
 
         double msg_time = msg_instance.getTime().toSec();
 
+        if(use_header_stamp)
+        {
+            const auto header_stamp = FlatContainerContainHeaderStamp(flat_container);
+            if(header_stamp)
+            {
+                const double time = header_stamp.value();
+                if( time > 0 ) {
+                  msg_time = time;
+                }
+                else{
+                  warning_headerstamp.insert(topic_name);
+                }
+            }
+        }
+
         for(const auto& it: renamed_values )
         {
             const auto& field_name = it.first;
@@ -260,7 +277,7 @@ PlotDataMapRef DataLoadROS::readDataFromFile(const QString &file_name, bool use_
               const double last_time = plot_data.back().x;
               if( msg_time < last_time)
               {
-                warning_monotonic.insert(*key_ptr);
+                 warning_monotonic.insert(*key_ptr);
               }
             }
 
