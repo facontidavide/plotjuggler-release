@@ -19,7 +19,8 @@ TabbedPlotWidget::TabbedPlotWidget(QString name,
     QWidget(parent),
     _mapped_data(mapped_data),
     ui(new Ui::TabbedPlotWidget),
-    _name(name)
+    _name(name),
+    _labels_status (LabelStatus::RIGHT)
 {
 
     if( main_window == parent){
