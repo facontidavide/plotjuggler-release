@@ -59,6 +59,10 @@ public:
 
     void setLegendSize(int size);
 
+    bool isLegendVisible() const;
+
+    void setLegendAlignment( Qt::Alignment alignment );
+
 protected:
     void dragEnterEvent(QDragEnterEvent *event) override;
     void dropEvent(QDropEvent *event) override;
@@ -92,7 +96,7 @@ public slots:
 
     void removeCurve(const std::string &name);
 
-    void activateLegent(bool activate);
+    void activateLegend(bool activate);
 
     void activateGrid(bool activate);
 

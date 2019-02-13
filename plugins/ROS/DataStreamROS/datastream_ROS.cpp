@@ -11,6 +11,7 @@
 #include <QtGlobal>
 #include <QApplication>
 #include <QProcess>
+#include <QCheckBox>
 #include <QSettings>
 #include <QFileDialog>
 #include <ros/callback_queue.h>
@@ -361,6 +362,8 @@ bool DataStreamROS::start()
         }
         dialog.updateTopicList(all_topics);
     });
+
+    dialog.checkBoxTimestamp()->setHidden(true);
 
     int res = dialog.exec();
 
