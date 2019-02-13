@@ -33,8 +33,9 @@ DialogSelectRosTopics::DialogSelectRosTopics(const std::vector<std::pair<QString
     ui->setupUi(this);
 
     QSettings settings( "IcarusTechnology", "PlotJuggler");
-    ui->checkBoxEnableRules->setChecked(     settings.value("DialogSelectRosTopics.enableRules", true ).toBool());
+    ui->checkBoxEnableRules->setChecked( settings.value("DialogSelectRosTopics.enableRules", true ).toBool());
     ui->spinBoxArraySize->setValue( settings.value( "DialogSelectRosTopics.maxArraySize", 100).toInt() );
+    ui->checkBoxTimestamp->setChecked( settings.value("DialogSelectRosTopics.checkBoxTimestamp", false ).toBool());
     restoreGeometry(settings.value("DialogSelectRosTopics.geometry").toByteArray());
 
     bool discard_max = settings.value("DialogSelectRosTopics.maxArrayDiscard", true).toBool();
@@ -177,6 +178,11 @@ bool DialogSelectRosTopics::discardEntireArrayIfTooLarge()
     return ui->radioMaxDiscard->isChecked();
 }
 
+QCheckBox* DialogSelectRosTopics::checkBoxTimestamp()
+{
+     return ui->checkBoxTimestamp;
+}
+
 QString DialogSelectRosTopics::prefix()
 {
     return (ui->checkBoxPrefix->isChecked()) ? ui->linePrefix->text() : QString();
@@ -201,6 +207,7 @@ void DialogSelectRosTopics::on_buttonBox_accepted()
     settings.setValue("DialogSelectRosTopics.selectedItems", selected_topics );
     settings.setValue("DialogSelectRosTopics.maxArraySize", ui->spinBoxArraySize->value());
     settings.setValue("DialogSelectRosTopics.maxArrayDiscard", discardEntireArrayIfTooLarge());
+    settings.setValue("DialogSelectRosTopics.checkBoxTimestamp",  ui->checkBoxTimestamp->isChecked() );
 }
 
 void DialogSelectRosTopics::on_listRosTopics_itemSelectionChanged()
@@ -228,41 +235,24 @@ void DialogSelectRosTopics::closeEvent(QCloseEvent *event)
     settings.setValue("DialogSelectRosTopics.geometry", saveGeometry());
 }
 
-nonstd::optional<double> FlatContainerContainHeaderStamp(const RosIntrospection::RenamedValues& renamed_value)
+nonstd::optional<double> FlatContainerContainHeaderStamp(const RosIntrospection::FlatMessage& flat_msg)
 {
-    const char* ID = "/header/stamp";
-    const int renamed_count = renamed_value.size();
-    const int OFF = strlen(ID);
-
-    // cache the previous result
-    static std::map<const RosIntrospection::RenamedValues*,int> first_indexes;
-
-    int first_index = first_indexes[&renamed_value];
-
-    if( first_index >= 0 && first_index < renamed_count)
+    for (const auto& it: flat_msg.value)
     {
-        const auto& field_name = renamed_value[first_index].first;
-        if( field_name.size() > OFF &&
-            strcmp( &field_name.data()[ field_name.size() -OFF], ID) == 0)
+        if( it.second.getTypeID() != RosIntrospection::TIME)
         {
-            return renamed_value[first_index].second.convert<double>();
+            continue;
         }
-    }
-
-    for(int i=0; i< renamed_count; i++ )
-    {
-        if( i == first_index ) continue;
-
-        const auto& field_name = renamed_value[i].first;
-        if( field_name.size() > OFF &&
-            strcmp( &field_name.data()[ field_name.size() -OFF], ID) == 0)
+        const RosIntrospection::StringTreeNode* leaf1 = it.first.node_ptr;
+        const RosIntrospection::StringTreeNode* leaf2 = leaf1->parent();
+        if( leaf2 && leaf2->value() == "stamp" && leaf1->value() == "header")
         {
-            first_indexes[&renamed_value] = i;
-            return renamed_value[i].second.convert<double>();
+            return it.second.convert<double>();
         }
     }
     return nonstd::optional<double>();
 }
+
 
 void DialogSelectRosTopics::on_checkBoxPrefix_toggled(bool checked)
 {
@@ -324,5 +314,6 @@ void DialogSelectRosTopics::on_spinBoxArraySize_valueChanged(int value)
         ui->spinBoxArraySize->setStyleSheet("QSpinBox { color: black; }");
     }
 }
+
 
 
