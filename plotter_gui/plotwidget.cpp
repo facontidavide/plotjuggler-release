@@ -143,22 +143,22 @@ void PlotWidget::buildActions()
     };
 
     _action_removeCurve = getActionAndIcon("&Remove curves",
-                                           ":/icons/resources/remove-list.svg" );
+                                           ":/icons/resources/light/remove_list.png" );
     _action_removeCurve->setStatusTip(tr("Remove one or more curves from this plot"));
     connect(_action_removeCurve, &QAction::triggered, this, &PlotWidget::launchRemoveCurveDialog);
 
     _action_removeAllCurves = getActionAndIcon("&Remove ALL curves",
-                                               ":/icons/resources/remove-button.svg" );
+                                               ":/icons/resources/light/remove.png" );
     connect(_action_removeAllCurves, &QAction::triggered, this, &PlotWidget::detachAllCurves);
     connect(_action_removeAllCurves, &QAction::triggered, this, &PlotWidget::undoableChange );
 
     _action_changeColorsDialog = getActionAndIcon("&Change colors",
-                                                  ":/icons/resources/colored-charts.svg" );
+                                                  ":/icons/resources/light/colored_charts.png" );
     _action_changeColorsDialog->setStatusTip(tr("Change the color of the curves"));
     connect(_action_changeColorsDialog, &QAction::triggered, this, &PlotWidget::on_changeColorsDialog_triggered);
 
     _action_showPoints = getActionAndIcon("&Show lines and points",
-                                          ":/icons/resources/line-chart.svg" );
+                                          ":/icons/resources/light/point_chart.png" );
     _action_showPoints->setCheckable( true );
     _action_showPoints->setChecked( false );
     connect(_action_showPoints, &QAction::triggered, this, &PlotWidget::on_showPoints_triggered);
@@ -166,7 +166,7 @@ void PlotWidget::buildActions()
     _action_editLimits = new  QAction(tr("&Edit Axis Limits"), this);
     connect(_action_editLimits, &QAction::triggered, this, &PlotWidget::on_editAxisLimits_triggered);
 
-    _action_zoomOutMaximum = getActionAndIcon("&Zoom Out", ":/icons/resources/zoom_max.svg" );
+    _action_zoomOutMaximum = getActionAndIcon("&Zoom Out", ":/icons/resources/light/zoom_max.png" );
     connect(_action_zoomOutMaximum, &QAction::triggered, this, [this]()
             {
                 zoomOut(true);
@@ -175,7 +175,7 @@ void PlotWidget::buildActions()
             });
 
     _action_zoomOutHorizontally = getActionAndIcon("&Zoom Out Horizontally",
-                                                   ":/icons/resources/zoom_horizontal.svg" );
+                                                   ":/icons/resources/light/zoom_horizontal.png" );
     connect(_action_zoomOutHorizontally, &QAction::triggered, this, [this]()
     {
         on_zoomOutHorizontal_triggered(true);
@@ -184,7 +184,7 @@ void PlotWidget::buildActions()
     });
 
     _action_zoomOutVertically = getActionAndIcon("&Zoom Out Vertically",
-                                                 ":/icons/resources/zoom_vertical.svg" );
+                                                 ":/icons/resources/light/zoom_vertical.png" );
     connect(_action_zoomOutVertically, &QAction::triggered, this, [this]()
     {
         on_zoomOutVertical_triggered(true);
@@ -237,7 +237,7 @@ void PlotWidget::buildActions()
             this, &PlotWidget::on_customTransformsDialog);
 
     _action_saveToFile = getActionAndIcon("&Save plot to file",
-                                          ":/icons/resources/save.svg" );
+                                          ":/icons/resources/light/save.png" );
     connect(_action_saveToFile, &QAction::triggered, this, &PlotWidget::on_savePlotToFile);
 
     auto transform_group = new QActionGroup(this);
@@ -1385,11 +1385,8 @@ void PlotWidget::on_savePlotToFile()
     saveDialog.setAcceptMode(QFileDialog::AcceptSave);
     saveDialog.setDefaultSuffix("png");
 
-#ifndef QWT_NO_SVG
-    saveDialog.setNameFilter("Compatible formats (*.jpg *.jpeg *.svg *.png)");
-#else
     saveDialog.setNameFilter("Compatible formats (*.jpg *.jpeg *.png)");
-#endif
+
     saveDialog.exec();
 
     if(saveDialog.result() == QDialog::Accepted && !saveDialog.selectedFiles().empty())
@@ -1481,14 +1478,14 @@ bool PlotWidget::eventFilter(QObject *obj, QEvent *event)
             }
             else if( mouse_event->modifiers() == Qt::ControlModifier) // panner
             {
-                QApplication::setOverrideCursor(QCursor(QPixmap(":/icons/resources/move.png")));
+                QApplication::setOverrideCursor(QCursor(QPixmap(":/icons/resources/light/move.png")));
             }
             return false; // send to canvas()
         }    
         else if ( mouse_event->buttons() == Qt::MidButton &&
                   mouse_event->modifiers() == Qt::NoModifier )
         {
-            QApplication::setOverrideCursor(QCursor(QPixmap(":/icons/resources/move.png")));
+            QApplication::setOverrideCursor(QCursor(QPixmap(":/icons/resource/lights/move.png")));
             return false;
         }
         else if( mouse_event->button() == Qt::RightButton )
