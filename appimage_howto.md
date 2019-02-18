@@ -8,7 +8,7 @@ Add the right repository form [here](https://launchpad.net/~beineri)
 Then, run:
 
     sudo apt-get update
-    sudo apt-get install qt59base qt59svg qt59declarative-y
+    sudo apt-get install qt59base qt59svg qt59declarative -y
 
 Download the latest version of [LinuxDeployQt](https://github.com/probonopd/linuxdeployqt) and make it executable with __chmod__:
 
