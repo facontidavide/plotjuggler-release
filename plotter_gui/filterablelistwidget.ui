@@ -121,7 +121,7 @@
            </property>
            <property name="icon">
             <iconset resource="resource.qrc">
-             <normaloff>:/icons/resources/settings-cog.svg</normaloff>:/icons/resources/settings-cog.svg</iconset>
+             <normaloff>:/icons/resources/light/settings_cog.png</normaloff>:/icons/resources/light/settings_cog.png</iconset>
            </property>
            <property name="iconSize">
             <size>
