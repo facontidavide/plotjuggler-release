@@ -30,7 +30,7 @@ void PlotZoomer::widgetMousePressEvent(QMouseEvent *me)
 
 void PlotZoomer::widgetMouseMoveEvent(QMouseEvent *me)
 {
-    static QCursor zoom_cursor(QPixmap(":/icons/resources/zoom_in_32px.png"));
+    static QCursor zoom_cursor(QPixmap(":/icons/resources/light/zoom_in.png"));
 
     if( _mouse_pressed )
     {
