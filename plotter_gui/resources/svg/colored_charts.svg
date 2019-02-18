@@ -16,7 +16,7 @@
    viewBox="0 0 512 512"
    style="enable-background:new 0 0 512 512;"
    xml:space="preserve"
-   inkscape:version="0.91 r13725"
+   inkscape:version="0.92.4 (33fec40, 2019-01-16)"
    sodipodi:docname="colored-charts.svg"><metadata
      id="metadata95"><rdf:RDF><cc:Work
          rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
@@ -35,12 +35,13 @@
      id="namedview91"
      showgrid="false"
      inkscape:zoom="0.921875"
-     inkscape:cx="267.15715"
+     inkscape:cx="87.089353"
      inkscape:cy="134.35202"
-     inkscape:window-x="65"
+     inkscape:window-x="1985"
      inkscape:window-y="24"
      inkscape:window-maximized="1"
-     inkscape:current-layer="Capa_1" /><path
+     inkscape:current-layer="Capa_1"
+     inkscape:pagecheckerboard="true" /><path
      inkscape:connector-curvature="0"
      id="path11"
      d="M 19.263125,454.70255 4.9198242,439.6359 129.08837,312.30861 c 3.3088,-3.38461 8.39085,-4.03244 12.39596,-1.59158 l 114.84607,70.1357 117.30485,-121.59757 c 3.74939,-3.89442 9.76309,-4.17047 13.83065,-0.63664 l 122.93915,106.10567 -13.1139,16.33992 -115.7681,-99.95193 -116.27956,120.53692 c -3.31961,3.43808 -8.47249,4.08468 -12.49921,1.59159 L 137.89941,333.10499 19.263125,454.70255 Z"
