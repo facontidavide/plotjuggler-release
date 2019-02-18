@@ -14,8 +14,8 @@
    viewBox="0 0 354.33071 354.33071"
    id="svg2"
    version="1.1"
-   inkscape:version="0.91 r13725"
-   sodipodi:docname="zoom_horizontal.svg">
+   inkscape:version="0.92.4 (33fec40, 2019-01-16)"
+   sodipodi:docname="zoom_vertical.svg">
   <defs
      id="defs4" />
   <sodipodi:namedview
@@ -33,9 +33,10 @@
      showgrid="false"
      inkscape:window-width="1855"
      inkscape:window-height="1056"
-     inkscape:window-x="65"
+     inkscape:window-x="1985"
      inkscape:window-y="24"
-     inkscape:window-maximized="1" />
+     inkscape:window-maximized="1"
+     inkscape:pagecheckerboard="true" />
   <metadata
      id="metadata7">
     <rdf:RDF>
@@ -55,7 +56,7 @@
      transform="translate(0,-698.0315)">
     <g
        id="g4224"
-       transform="matrix(0,1.4848731,-1.4145114,0,1417.4254,609.00728)">
+       transform="matrix(1.4848731,0,0,1.4145114,-86.838725,-363.38776)">
       <rect
          transform="matrix(0,1,-1,0,0,0)"
          y="-192.93916"
