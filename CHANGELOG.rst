@@ -2,6 +2,15 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.1.3 (2019-02-18)
+------------------
+* BUG: fixed issue with Customtracker when the plot is zoomed
+* new icons
+* ULog plugin added
+* Allow to build the DataStreamClientSample on Linux (#143)
+* Update README.md
+* Contributors: Davide Faconti, Romain Reignier
+
 2.1.2 (2019-02-13)
 ------------------
 * legend button now has three states: left/right/hide

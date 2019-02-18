@@ -8,7 +8,7 @@ endif()
 
 SET(PLOTJUGGLER_VERSION_MAJOR 2)
 SET(PLOTJUGGLER_VERSION_MINOR 1)
-SET(PLOTJUGGLER_VERSION_PATCH 2)
+SET(PLOTJUGGLER_VERSION_PATCH 3)
 
 add_definitions(
     -DPJ_MAJOR_VERSION=${PLOTJUGGLER_VERSION_MAJOR}
@@ -149,6 +149,7 @@ add_subdirectory( qwt/src )
 add_subdirectory( plotter_gui )
 
 add_subdirectory( plugins/DataLoadCSV )
+add_subdirectory( plugins/DataLoadULog )
 add_subdirectory( plugins/DataStreamSample )
 
 if (Qt5Widgets_VERSION VERSION_LESS 5.3.0)
