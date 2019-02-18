@@ -15,7 +15,7 @@
   </property>
   <property name="windowIcon">
    <iconset>
-    <normaloff>:/icons/resources/Line_tracker.png</normaloff>:/icons/resources/Line_tracker.png</iconset>
+    <normaloff>:/icons/resources/light/line_tracker.png</normaloff>:/icons/resources/light/line_tracker.png</iconset>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_2">
    <property name="spacing">
@@ -126,7 +126,7 @@
         </property>
         <property name="icon">
          <iconset resource="resource.qrc">
-          <normaloff>:/icons/resources/zoom_max.svg</normaloff>:/icons/resources/zoom_max.svg</iconset>
+          <normaloff>:/icons/resources/light/zoom_max.png</normaloff>:/icons/resources/light/zoom_max.png</iconset>
         </property>
         <property name="iconSize">
          <size>
@@ -170,7 +170,7 @@
         </property>
         <property name="icon">
          <iconset resource="resource.qrc">
-          <normaloff>:/icons/resources/zoom_vertical.svg</normaloff>:/icons/resources/zoom_vertical.svg</iconset>
+          <normaloff>:/icons/resources/light/zoom_vertical.png</normaloff>:/icons/resources/light/zoom_vertical.png</iconset>
         </property>
         <property name="iconSize">
          <size>
@@ -211,7 +211,7 @@
         </property>
         <property name="icon">
          <iconset resource="resource.qrc">
-          <normaloff>:/icons/resources/zoom_horizontal.svg</normaloff>:/icons/resources/zoom_horizontal.svg</iconset>
+          <normaloff>:/icons/resources/light/zoom_horizontal.png</normaloff>:/icons/resources/light/zoom_horizontal.png</iconset>
         </property>
         <property name="iconSize">
          <size>
@@ -273,7 +273,7 @@
         </property>
         <property name="icon">
          <iconset resource="resource.qrc">
-          <normaloff>:/icons/resources/add_column.svg</normaloff>:/icons/resources/add_column.svg</iconset>
+          <normaloff>:/icons/resources/light/add_column.png</normaloff>:/icons/resources/light/add_column.png</iconset>
         </property>
         <property name="iconSize">
          <size>
@@ -325,7 +325,7 @@
         </property>
         <property name="icon">
          <iconset resource="resource.qrc">
-          <normaloff>:/icons/resources/add_row.svg</normaloff>:/icons/resources/add_row.svg</iconset>
+          <normaloff>:/icons/resources/light/add_row.png</normaloff>:/icons/resources/light/add_row.png</iconset>
         </property>
         <property name="iconSize">
          <size>
@@ -371,7 +371,7 @@
         </property>
         <property name="icon">
          <iconset resource="resource.qrc">
-          <normaloff>:/icons/resources/add_tab.svg</normaloff>:/icons/resources/add_tab.svg</iconset>
+          <normaloff>:/icons/resources/light/add_tab.png</normaloff>:/icons/resources/light/add_tab.png</iconset>
         </property>
         <property name="iconSize">
          <size>
@@ -420,7 +420,7 @@
         </property>
         <property name="icon">
          <iconset resource="resource.qrc">
-          <normaloff>:/icons/resources/clean_pane_small@2x.png</normaloff>:/icons/resources/clean_pane_small@2x.png</iconset>
+          <normaloff>:/icons/resources/light/clean_pane.png</normaloff>:/icons/resources/light/clean_pane.png</iconset>
         </property>
         <property name="iconSize">
          <size>
@@ -483,7 +483,7 @@
         </property>
         <property name="icon">
          <iconset resource="resource.qrc">
-          <normaloff>:/icons/resources/list_alt_32px.png</normaloff>:/icons/resources/list_alt_32px.png</iconset>
+          <normaloff>:/icons/resources/light/list.png</normaloff>:/icons/resources/light/list.png</iconset>
         </property>
         <property name="iconSize">
          <size>
@@ -533,7 +533,7 @@
         </property>
         <property name="icon">
          <iconset resource="resource.qrc">
-          <normaloff>:/icons/resources/link.png</normaloff>:/icons/resources/link.png</iconset>
+          <normaloff>:/icons/resources/light/link.png</normaloff>:/icons/resources/light/link.png</iconset>
         </property>
         <property name="iconSize">
          <size>
