@@ -11,11 +11,14 @@
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    width="100mm"
    height="100mm"
-   viewBox="0 0 354.33071 354.33071"
+   viewBox="0 0 354.33 354.33071"
    id="svg2"
    version="1.1"
-   inkscape:version="0.91 r13725"
-   sodipodi:docname="zoom_vertical.svg">
+   inkscape:version="0.92.4 (33fec40, 2019-01-16)"
+   sodipodi:docname="zoom_horizontal.svg"
+   inkscape:export-filename="/home/davide.faconti/ws_plotjuggler/src/PlotJuggler/plotter_gui/resources/svg/light/zoom_horizontal.png"
+   inkscape:export-xdpi="34.679539"
+   inkscape:export-ydpi="34.679539">
   <defs
      id="defs4" />
   <sodipodi:namedview
@@ -26,16 +29,17 @@
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
      inkscape:zoom="0.98994949"
-     inkscape:cx="139.98703"
+     inkscape:cx="66.245894"
      inkscape:cy="205.18713"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
      inkscape:window-width="1855"
      inkscape:window-height="1056"
-     inkscape:window-x="65"
+     inkscape:window-x="1985"
      inkscape:window-y="24"
-     inkscape:window-maximized="1" />
+     inkscape:window-maximized="1"
+     inkscape:pagecheckerboard="true" />
   <metadata
      id="metadata7">
     <rdf:RDF>
@@ -55,9 +59,9 @@
      transform="translate(0,-698.0315)">
     <g
        id="g4224"
-       transform="matrix(1.4848731,0,0,1.4145114,-86.838725,-363.38776)">
+       transform="matrix(0,1.4848731,-1.4145114,0,1417.4254,609.00728)">
       <rect
-         transform="matrix(0,1,-1,0,0,0)"
+         transform="rotate(90)"
          y="-192.93916"
          x="784.9046"
          height="28.346457"
@@ -68,13 +72,13 @@
          sodipodi:nodetypes="cccc"
          inkscape:connector-curvature="0"
          id="path3342"
-         d="m 178.37246,758.25218 39.47368,63.79508 -76.92707,0 z"
+         d="m 178.37246,758.25218 39.47368,63.79508 h -76.92707 z"
          style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
       <path
          sodipodi:nodetypes="cccc"
          inkscape:connector-curvature="0"
          id="path3342-6"
-         d="m 179.81912,992.64154 -39.47368,-63.79507 76.92707,0 z"
+         d="m 179.81912,992.64154 -39.47368,-63.79507 h 76.92707 z"
          style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
     </g>
   </g>

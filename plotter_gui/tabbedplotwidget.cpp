@@ -48,7 +48,7 @@ TabbedPlotWidget::TabbedPlotWidget(QString name,
     connect( _action_renameTab, &QAction::triggered, this, &TabbedPlotWidget::on_renameCurrentTab);
 
     QIcon iconSave;
-    iconSave.addFile(QStringLiteral(":/icons/resources/save.svg"), QSize(26, 26));
+    iconSave.addFile(QStringLiteral(":/icons/resources/light/save.png"), QSize(26, 26));
     _action_savePlots = new  QAction(tr("&Save plots to file"), this);
     _action_savePlots->setIcon(iconSave);
     connect(_action_savePlots, &QAction::triggered, this, &TabbedPlotWidget::on_savePlotsToFile);
@@ -225,11 +225,8 @@ void TabbedPlotWidget::on_savePlotsToFile()
     saveDialog.setDefaultSuffix("png");
     saveDialog.selectFile(currentTab()->name());
 
-#ifndef QWT_NO_SVG
-    saveDialog.setNameFilter("Compatible formats (*.jpg *.jpeg *.svg *.png)");
-#else
     saveDialog.setNameFilter("Compatible formats (*.jpg *.jpeg *.png)");
-#endif
+
     saveDialog.exec();
 
     if(saveDialog.result() == QDialog::Accepted && !saveDialog.selectedFiles().empty())
@@ -466,7 +463,7 @@ bool TabbedPlotWidget::eventFilter(QObject *obj, QEvent *event)
                 QAction* action_new_window = submenu->addAction( "New Window" );
 
                 QIcon icon;
-                icon.addFile(QStringLiteral(":/icons/resources/stacks_32px.png"), QSize(16, 16));
+                icon.addFile(QStringLiteral(":/icons/resources/light/stacks.png"), QSize(16, 16));
 
                 action_new_window->setIcon( icon);
                 submenu->addSeparator();
