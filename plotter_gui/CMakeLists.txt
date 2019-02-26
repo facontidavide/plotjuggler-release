@@ -27,6 +27,7 @@ SET( PLOTTER_SRC
     filterablelistwidget.cpp
     main.cpp
     mainwindow.cpp
+    menubar.cpp
     plotwidget.cpp
     plotmatrix.cpp
     plotmagnifier.cpp

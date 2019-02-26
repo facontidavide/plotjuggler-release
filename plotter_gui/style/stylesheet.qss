@@ -381,6 +381,10 @@ QComboBox {
     padding-right: 4px;
 }
 
+QComboBox:disabled {
+    selection-background-color: grey;
+}
+
 
 /* QSlider ---------------------------------------------------------------- */
 
