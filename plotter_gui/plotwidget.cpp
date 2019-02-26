@@ -60,7 +60,8 @@ PlotWidget::PlotWidget(PlotDataMapRef &datamap, QWidget *parent):
     _show_line_and_points(false),
     _time_offset(0.0),
     _axisX(nullptr),
-    _transform_select_dialog(nullptr)
+    _transform_select_dialog(nullptr),
+    _zoom_enabled(true)
 {
     this->setAcceptDrops( true );
 
@@ -1672,4 +1673,18 @@ bool PlotWidget::isLegendVisible() const
 void PlotWidget::setLegendAlignment(Qt::Alignment alignment)
 {
     _legend->setAlignment( Qt::Alignment( Qt::AlignTop | alignment ) );
+}
+
+void PlotWidget::setZoomEnabled(bool enabled)
+{
+    _zoom_enabled = enabled;
+    _zoomer->setEnabled( enabled );
+    _magnifier->setEnabled( enabled );
+    _panner1->setEnabled( enabled );
+    _panner2->setEnabled( enabled );
+}
+
+bool PlotWidget::isZoomEnabled() const
+{
+    return _zoom_enabled;
 }
