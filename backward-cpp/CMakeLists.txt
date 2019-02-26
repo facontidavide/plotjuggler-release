@@ -29,7 +29,7 @@ if (LIBBFD_FOUND)
       message(STATUS "Found BFD: ${LIBBFD_LIBRARY}")
       find_file(BACKWARD_SRC backward.cpp PATHS ${CMAKE_CURRENT_LIST_DIR})
       find_path(BACKWARD_INCLUDE_DIR backward.hpp PATHS ${CMAKE_CURRENT_LIST_DIR})
-      set(BACKWARD_LIBS dl bfd PARENT_SCOPE )
+      set(BACKWARD_LIBS ${CMAKE_DL_LIBS} bfd PARENT_SCOPE )
 
 else (LIBBFD_FOUND)
       message(STATUS "Could NOT find Bfd library named ${LIBBFD_NAMES}.")
