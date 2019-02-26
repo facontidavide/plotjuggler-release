@@ -79,6 +79,18 @@ void DataStreamROS::topicCallback(const topic_tools::ShapeShifter::ConstPtr& msg
 
     double msg_time = ros::Time::now().toSec();
 
+    if( _use_header_stamp )
+    {
+        const auto header_stamp = FlatContainerContainHeaderStamp(flat_container);
+        if(header_stamp)
+        {
+            const double time = header_stamp.value();
+            if( time > 0 ) {
+              msg_time = time;
+            }
+        }
+    }
+
     std::lock_guard<std::mutex> lock( mutex() );
 
     // adding raw serialized msg for future uses.
@@ -363,12 +375,12 @@ bool DataStreamROS::start()
         dialog.updateTopicList(all_topics);
     });
 
-    dialog.checkBoxTimestamp()->setHidden(true);
-
     int res = dialog.exec();
+
 
     timer.stop();
 
+    _use_header_stamp = dialog.checkBoxTimestamp()->isChecked();
     _using_renaming_rules = dialog.checkBoxUseRenamingRules()->isChecked();
 
     if( res != QDialog::Accepted || dialog.getSelectedItems().empty() )

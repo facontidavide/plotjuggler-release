@@ -1,10 +1,14 @@
-Ubuntu 14.04 build (Semaphore): [![Build Status](https://semaphoreci.com/api/v1/facontidavide/plotjuggler/branches/master/shields_badge.svg)](https://semaphoreci.com/facontidavide/plotjuggler)
+| Platform  | Build Status  |
+|---------------------|-----------|
+| Windows (Appveyor)  | [![Build status](https://ci.appveyor.com/api/projects/status/mqdmxpt0kf1cf2h3?svg=true)](https://ci.appveyor.com/project/facontidavide59577/plotjuggler)  |
+| Ubuntu (Semaphore)  | [![Build Status](https://semaphoreci.com/api/v1/facontidavide/plotjuggler/branches/master/shields_badge.svg)](https://semaphoreci.com/facontidavide/plotjuggler) |
+| Ubuntu ROS (Travis) | [![Build Status](https://travis-ci.org/facontidavide/PlotJuggler.svg?branch=master)](https://travis-ci.org/facontidavide/PlotJuggler) |
 
-ROS Indigo/Kinetic build (Travis): [![Build Status](https://travis-ci.org/facontidavide/PlotJuggler.svg?branch=master)](https://travis-ci.org/facontidavide/PlotJuggler)
 
 [![Join the chat at https://gitter.im/PlotJuggler/Lobby](https://badges.gitter.im/PlotJuggler/Lobby.svg)](https://gitter.im/PlotJuggler/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Tweet](https://img.shields.io/twitter/url/http/shields.io.svg?style=social)](https://twitter.com/intent/tweet?text=I%20use%20PlotJuggler%20and%20it%20is%20amazing%0D%0A&url=https://github.com/facontidavide/PlotJuggler&via=facontidavide&hashtags=dataviz,plotjuggler,GoROS,PX4)
 
-# PlotJuggler 2.1.X
+# PlotJuggler 2.1.5
 
 QT5 based application to display time series in plots, using an intuitive "drag and drop" interface.
 
@@ -18,6 +22,14 @@ Its functionality can be easily extended through __plugins__.
 To understand what PlotJuggler can do for you, take a look to the following video [PlotJuggler on Vimeo](https://vimeo.com/214389001) 
 
 ![PlotJuggler](docs/images/PlotJuggler.gif)
+
+
+## Supported formats
+
+- CSV
+- Rosbags / ROS topics
+- ULog (PX4)
+- Your custom format... [contact me to know more](https://www.plotjuggler.io/support).
 
 ## New in version 2.X
 
@@ -36,11 +48,11 @@ Watch this video to learn how to use it.
 
 For those of you that can't wait to get your hands dirty, just download this AppImage:
 
-[PlotJuggler-2.1.2-x86_64.AppImage](https://github.com/facontidavide/PlotJuggler/releases/download/2.1.2/PlotJuggler-2.1.2-x86_64.AppImage).
+[PlotJuggler-2.1.5-x86_64.AppImage](https://github.com/facontidavide/PlotJuggler/releases/download/2.1.5/PlotJuggler-2.1.5-x86_64.AppImage).
    
 Do not forget to make it executable with the command 
 
-    chmod +x ./PlotJuggler-2.1.2-x86_64.AppImage
+    chmod +x ./PlotJuggler-2.1.5-x86_64.AppImage
 
 ## How to build (non ROS users)
 
@@ -109,6 +121,6 @@ If you find PlotJuggler useful, consider making a donation on any of these platf
 If you use PlotJuggler at work, your company can become a __sponsor__ and support 
 the development of those specific features they need.
 
-[Contact me](mailto:davide.faconti@gmail.com) for more details.
+[Contact me](https://www.plotjuggler.io/support) for more details.
  
 
