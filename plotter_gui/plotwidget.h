@@ -63,6 +63,10 @@ public:
 
     void setLegendAlignment( Qt::Alignment alignment );
 
+    void setZoomEnabled(bool enabled);
+
+    bool isZoomEnabled() const;
+
 protected:
     void dragEnterEvent(QDragEnterEvent *event) override;
     void dropEvent(QDropEvent *event) override;
@@ -199,6 +203,9 @@ private:
     TransformSelector* _transform_select_dialog;
 
     SnippetsMap _snippets;
+
+    bool _zoom_enabled;
+
     void transformCustomCurves();
 };
 
