@@ -8,7 +8,7 @@ Add the right repository form [here](https://launchpad.net/~beineri)
 Then, run:
 
     sudo apt-get update
-    sudo apt-get install qt59base qt59svg qt59declarative -y
+    sudo apt-get install qt59base qt59svg qt59declarative qt59translations -y
 
 Download the latest version of [LinuxDeployQt](https://github.com/probonopd/linuxdeployqt) and make it executable with __chmod__:
 
@@ -35,9 +35,13 @@ In the root folder of ws_plotjuggler:
     unset QTDIR; unset QT_PLUGIN_PATH ; unset LD_LIBRARY_PATH
     export LD_LIBRARY_PATH=/opt/ros/kinetic/lib
     
-    export VERSION=2.1.1 
-    ~/linuxdeployq.AppImage ./install/lib/plotjuggler/PlotJuggler.desktop -appimage -bundle-non-qt-libs \ 
+    
+    
+    cd src/PlotJuggler;export VERSION=$(git describe --abbrev=0 --tags);cd -;echo $VERSION
+    
+    ~/linuxdeployq.AppImage ./install/lib/plotjuggler/PlotJuggler.desktop -appimage -bundle-non-qt-libs -no-strip \ 
          -extra-plugins=iconengines,imageformats,platformthemes/libqgtk2.so,styles/libqgtk2style.so
+          
 
 
 

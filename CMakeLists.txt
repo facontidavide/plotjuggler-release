@@ -6,20 +6,27 @@ if( CATKIN_DEVEL_PREFIX OR catkin_FOUND OR CATKIN_BUILD_BINARY_PACKAGE)
     set(COMPILING_WITH_CATKIN 1)
 endif()
 
-SET(PLOTJUGGLER_VERSION_MAJOR 2)
-SET(PLOTJUGGLER_VERSION_MINOR 1)
-SET(PLOTJUGGLER_VERSION_PATCH 3)
+cmake_policy (SET CMP0020 NEW)
 
 add_definitions(
-    -DPJ_MAJOR_VERSION=${PLOTJUGGLER_VERSION_MAJOR}
-    -DPJ_MINOR_VERSION=${PLOTJUGGLER_VERSION_MINOR}
-    -DPJ_PATCH_VERSION=${PLOTJUGGLER_VERSION_PATCH} )
+    -DPJ_MAJOR_VERSION=2
+    -DPJ_MINOR_VERSION=1
+    -DPJ_PATCH_VERSION=5 )
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
 SET(CMAKE_AUTOUIC ON)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -g -fno-omit-frame-pointer")
+if(NOT CMAKE_VERSION VERSION_LESS 3.1)
+    set(CMAKE_CXX_STANDARD 11)
+    set(CMAKE_CXX_STANDARD_REQUIRED ON)
+else()
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+endif()
+
+if (NOT WIN32)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -fno-omit-frame-pointer")
+endif()
 
 if(APPLE AND EXISTS /usr/local/opt/qt5)
     # Homebrew installs Qt5 (up to at least 5.9.1) in
@@ -32,7 +39,6 @@ endif()
 
 
 find_package(Qt5 REQUIRED COMPONENTS Core Widgets PrintSupport Concurrent Xml Qml)
-find_package(Qt5 QUIET COMPONENTS Svg)
 find_package(Qt5 QUIET COMPONENTS WebSockets)
 
 set( QT_LINK_LIBRARIES
@@ -44,12 +50,8 @@ set( QT_LINK_LIBRARIES
     Qt5::Qml
     )
 
-if( NOT Qt5Svg_FOUND)
-    message(STATUS "Can't find Qt5Svg in your system. Have you tried [sudo apt-get install libqt5svg5-dev] ?")
-    add_definitions( -DQWT_NO_SVG )
-else()
-    set( QT_LINK_LIBRARIES ${QT_LINK_LIBRARIES} Qt5::Svg)
-endif()
+add_definitions( -DQWT_NO_SVG )
+
 
 if( NOT Qt5WebSockets_FOUND)
     message(STATUS "Can't find Qt5WebSockets in your system. Have you tried [sudo apt-get install libqt5websockets5-dev] ?")
@@ -101,15 +103,11 @@ include_directories(
     ${Qt5Concurrent_INCLUDE_DIRS}
     ${Qt5PrintSupport_INCLUDE_DIRS}
     ${Qt5Xml_INCLUDE_DIRS}
-    ${Qt5Svg_INCLUDE_DIRS}
     ${Qt5WebSockets_INCLUDE_DIRS}
-    )
-
-include_directories( ./qwt/src
+    ./qwt/src
     ./include
-    ./color_widgets/include )
-
-
+    ./color_widgets/include
+)
 
 #########################  INSTALL ####################################
 
@@ -142,8 +140,7 @@ endif()
 
 #############################################################
 
-add_subdirectory(backward-cpp)
-
+add_subdirectory( backward-cpp )
 add_subdirectory( color_widgets )
 add_subdirectory( qwt/src )
 add_subdirectory( plotter_gui )
