@@ -27,11 +27,44 @@ PlotDataMapRef DataLoadULog::readDataFromFile(const QString &file_name, bool)
 
     const auto& data = parser.getData();
 
+    std::map<std::string,int> name_count;
+
+    for (const auto& it: data )
+    {
+        const ULogParser::Subscription* sub = it.first;
+        const auto& name = sub->message_name;
+        auto name_it = name_count.find( name );
+        if( name_it == name_count.end() )
+        {
+            name_count.insert( { name, 1} );
+        }
+        else{
+            name_it->second++;
+        }
+    }
+
     for( const auto& it: data)
     {
-         const auto& format = it.first;
+         const ULogParser::Subscription* sub = it.first;
+         const ULogParser::Format* format = sub->format;
          const auto& timeseries = it.second;
+         //------------------------------
 
+         char prefix[400];
+
+         for (const auto& it: data )
+         {
+             const auto& name = sub->message_name;
+             if( name_count[name] > 1)
+             {
+                 sprintf(prefix,"%s.%02d", name.c_str(), sub->multi_id );
+             }
+             else{
+                 sprintf(prefix,"%s", name.c_str() );
+             }
+         }
+
+         //----------------------------
          size_t index = 0;
          for (const auto& field: format->fields )
          {
@@ -40,10 +73,10 @@ PlotDataMapRef DataLoadULog::readDataFromFile(const QString &file_name, bool)
                  char series_name[1000];
                  if( field.array_size == 1)
                  {
-                     sprintf(series_name,"%s/%s", format->name.c_str(), field.field_name.c_str());
+                     sprintf(series_name,"%s/%s", prefix, field.field_name.c_str());
                  }
                  else{
-                     sprintf(series_name,"%s/%s/%02d", format->name.c_str(), field.field_name.c_str(), array_index);
+                     sprintf(series_name,"%s/%s.%02d", prefix, field.field_name.c_str(), array_index);
                  }
 
                  const auto& data = timeseries.data[index++];
