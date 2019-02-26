@@ -64,6 +64,7 @@ private:
 
     std::unique_ptr<RosIntrospection::Parser> _parser;
     bool _using_renaming_rules;
+    bool _use_header_stamp;
 
     QTimer* _periodic_timer;
 

@@ -49,7 +49,6 @@ QString getFunnySubtitle(){
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
-    app.setApplicationName("PlotJuggler");
 
     app.setOrganizationName("IcarusTechnology");
     app.setApplicationName("PlotJuggler");

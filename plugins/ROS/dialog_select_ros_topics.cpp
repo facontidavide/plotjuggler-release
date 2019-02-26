@@ -245,7 +245,7 @@ nonstd::optional<double> FlatContainerContainHeaderStamp(const RosIntrospection:
         }
         const RosIntrospection::StringTreeNode* leaf1 = it.first.node_ptr;
         const RosIntrospection::StringTreeNode* leaf2 = leaf1->parent();
-        if( leaf2 && leaf2->value() == "stamp" && leaf1->value() == "header")
+        if( leaf2 && leaf2->value() == "header" && leaf1->value() == "stamp")
         {
             return it.second.convert<double>();
         }
