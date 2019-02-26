@@ -58,10 +58,7 @@ public:
 
     ULogParser(const std::string& filename);
 
-    const std::map<const Format*, Timeseries>& getData()
-    {
-        return _timeseries;
-    }
+    const std::map<const Subscription*, Timeseries> &getData();
 
 private:
     bool readFileHeader(std::ifstream &file);
@@ -88,9 +85,9 @@ private:
 
     std::map<std::string, Format> _formats;
 
-    std::map<uint32_t,Subscription> _subscriptions;
+    std::map<uint16_t,Subscription> _subscriptions;
 
-    std::map<const Format*, Timeseries> _timeseries;
+    std::map<const Subscription*, Timeseries> _timeseries;
 
     std::vector<StringView> splitString(const StringView& strToSplit, char delimeter);
 
