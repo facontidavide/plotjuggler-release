@@ -11,12 +11,12 @@ public:
 
     explicit PlotZoomer( QWidget *, bool doReplot = true );
 
-    virtual ~PlotZoomer() = default;
+    virtual ~PlotZoomer() override = default;
 protected:
     virtual void widgetMousePressEvent( QMouseEvent * event)  override;
     virtual void widgetMouseReleaseEvent( QMouseEvent * event) override;
     virtual void widgetMouseMoveEvent( QMouseEvent * event) override;
-    virtual bool accept( QPolygon & ) const;
+    virtual bool accept( QPolygon & ) const override;
 
     virtual QSizeF minZoomSize() const override;
 private:

@@ -188,6 +188,22 @@ inline void PlotDataGeneric<Time, Value>::pushBack(Point point)
   }
 }
 
+template <> // template specialization
+inline void PlotDataGeneric<double, double>::pushBack(Point point)
+{
+    if( std::isinf( point.y ) || std::isnan( point.y ) )
+    {
+        return; // skip
+    }
+    _points.push_back( point );
+
+    while( _points.size()>2 &&
+           (_points.back().x - _points.front().x) > _max_range_X)
+    {
+        _points.pop_front();
+    }
+}
+
 template < typename Time, typename Value>
 inline int PlotDataGeneric<Time, Value>::getIndexFromX(Time x ) const
 {

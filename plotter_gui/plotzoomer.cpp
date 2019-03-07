@@ -20,7 +20,7 @@ void PlotZoomer::widgetMousePressEvent(QMouseEvent *me)
     {
         if( this->mouseMatch(pattern, me) ){
             _mouse_pressed = true;
-            this->setTrackerMode(AlwaysOn);
+           // this->setTrackerMode(AlwaysOn);
             _initial_pos = me->pos();
         }
         break;
