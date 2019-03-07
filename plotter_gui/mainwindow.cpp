@@ -178,6 +178,9 @@ MainWindow::MainWindow(const QCommandLineParser &commandline_parser, QWidget *pa
     bool datetime_display  = settings.value("MainWindow.dateTimeDisplay", false).toBool();
     ui->pushButtonUseDateTime->setChecked( datetime_display );
 
+    bool remove_time_offset = settings.value("MainWindow.removeTimeOffset", true).toBool();
+    ui->pushButtonRemoveTimeOffset->setChecked(remove_time_offset);
+
     ui->widgetOptions->setVisible( ui->pushButtonOptions->isChecked() );
     ui->line->setVisible( ui->pushButtonOptions->isChecked() );
 
@@ -453,7 +456,7 @@ void MainWindow::loadPlugins(QString directory_name)
 
     QDir pluginsDir( directory_name );
 
-    for (QString filename: pluginsDir.entryList(QDir::Files))
+    for (const QString& filename: pluginsDir.entryList(QDir::Files))
     {
         QFileInfo fileinfo(filename);
         if( fileinfo.suffix() != "so" && fileinfo.suffix() != "dll" && fileinfo.suffix() != "dylib"){
@@ -512,18 +515,18 @@ void MainWindow::loadPlugins(QString directory_name)
                 }
                 else
                 {
-                    _state_publisher.insert( std::make_pair(plugin_name, publisher) );
+                    ui->menuPublishers->setEnabled(true);
 
+                    _state_publisher.insert( std::make_pair(plugin_name, publisher) );
                     QAction* activatePublisher = new QAction(tr("Start: ") + plugin_name , this);
                     activatePublisher->setProperty("starter_button", true);
                     activatePublisher->setCheckable(true);
                     activatePublisher->setChecked(false);
-                    ui->menuPublishers->setEnabled(true);
-                    ui->menuPublishers->addAction(activatePublisher);
-
-                    publisher->setParentMenu( ui->menuPublishers );
 
                     ui->menuPublishers->addSeparator();
+                    ui->menuPublishers->addSection(plugin_name);
+                    ui->menuPublishers->addAction(activatePublisher);
+                    publisher->setParentMenu( ui->menuPublishers );
 
                     connect(activatePublisher, &QAction::toggled,
                             [=](bool enable)
@@ -536,7 +539,6 @@ void MainWindow::loadPlugins(QString directory_name)
                             activatePublisher->blockSignals(false);
                         }
                     } );
-
                 }
             }
             else if (streamer)
@@ -561,6 +563,9 @@ void MainWindow::loadPlugins(QString directory_name)
 
                     connect(streamer, &DataStreamer::connectionClosed,
                             ui->actionStopStreaming, &QAction::trigger );
+
+                    connect(streamer, &DataStreamer::clearBuffers,
+                            this, &MainWindow::on_actionClearBuffer_triggered );
                 }
             }
         }
@@ -1569,22 +1574,22 @@ void MainWindow::onActionLoadLayoutFromFile(QString filename)
     {
         QString filename = previously_loaded_datafile.attribute("filename");
 
-        QMessageBox msgBox(this);
-        msgBox.setWindowTitle("Load Data?");
-        msgBox.setText(tr("Do you want to reload the previous datafile?\n\n %1 \n\n").arg(filename));
+//        QMessageBox msgBox(this);
+//        msgBox.setWindowTitle("Load Data?");
+//        msgBox.setText(tr("Do you want to reload the previous datafile?\n\n %1 \n\n").arg(filename));
 
-        msgBox.addButton(tr("No (Layout only)"), QMessageBox::RejectRole);
-        QPushButton* buttonBoth = msgBox.addButton(tr("Yes (Both Layout and Datafile)"), QMessageBox::YesRole);
-        msgBox.addButton(QMessageBox::Cancel);
+//        msgBox.addButton(tr("No (Layout only)"), QMessageBox::RejectRole);
+//        QPushButton* buttonBoth = msgBox.addButton(tr("Yes (Both Layout and Datafile)"), QMessageBox::YesRole);
+//        msgBox.addButton(QMessageBox::Cancel);
 
-        msgBox.setDefaultButton(buttonBoth);
-        int res = msgBox.exec();
-        if( res < 0 || res == QMessageBox::Cancel)
-        {
-            return;
-        }
+//        msgBox.setDefaultButton(buttonBoth);
+//        int res = msgBox.exec();
+//        if( res < 0 || res == QMessageBox::Cancel)
+//        {
+//            return;
+//        }
 
-        if( msgBox.clickedButton() == buttonBoth )
+//        if( msgBox.clickedButton() == buttonBoth )
         {
             onActionLoadDataFileImpl( filename, true );
         }
@@ -2142,19 +2147,6 @@ void MainWindow::on_minimizeView()
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
-
-    QMessageBox::StandardButton reply;
-    reply = QMessageBox::question(this, tr("Warning"),
-                                  tr("Do you really want quit?\n"),
-                                  QMessageBox::Yes | QMessageBox::No,
-                                  QMessageBox::Yes );
-
-    if (reply != QMessageBox::Yes)
-    {
-        event->ignore();
-        return;
-    }
-
     _replot_timer->stop();
     _publish_timer->stop();
 
@@ -2167,7 +2159,8 @@ void MainWindow::closeEvent(QCloseEvent *event)
     settings.setValue("MainWindow.geometry", saveGeometry());
     settings.setValue("MainWindow.activateGrid", ui->pushButtonActivateGrid->isChecked() );
     settings.setValue("MainWindow.streamingBufferValue", ui->streamingSpinBox->value() );
-    settings.setValue("MainWindow.dateTimeDisplay",ui->pushButtonUseDateTime->isChecked() );
+    settings.setValue("MainWindow.removeTimeOffset",ui->pushButtonRemoveTimeOffset->isChecked() );
+    settings.setValue("MainWindow.dateTimeDisplay", ui->pushButtonUseDateTime->isChecked() );
     settings.setValue("MainWindow.timeTrackerSetting", (int)_tracker_param );
 
     // clean up all the plugins

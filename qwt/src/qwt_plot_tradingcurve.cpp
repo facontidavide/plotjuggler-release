@@ -235,9 +235,6 @@ QPen QwtPlotTradingCurve::symbolPen() const
 void QwtPlotTradingCurve::setSymbolBrush(
     Direction direction, const QBrush &brush )
 {
-    if ( direction < 0 || direction >= 2 )
-        return;
-
     if ( brush != d_data->symbolBrush[ direction ] )
     {
         d_data->symbolBrush[ direction ] = brush;
@@ -256,9 +253,6 @@ void QwtPlotTradingCurve::setSymbolBrush(
 */
 QBrush QwtPlotTradingCurve::symbolBrush( Direction direction ) const
 {
-    if ( direction < 0 || direction >= 2 )
-        return QBrush();
-
     return d_data->symbolBrush[ direction ];
 }
 
