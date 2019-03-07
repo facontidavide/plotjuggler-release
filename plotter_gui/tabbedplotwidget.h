@@ -110,7 +110,7 @@ private:
 
 protected:
 
-    virtual bool eventFilter(QObject *obj, QEvent *event);
+    virtual bool eventFilter(QObject *obj, QEvent *event) override;
 
     static std::map<QString,TabbedPlotWidget*> _instances;
 
