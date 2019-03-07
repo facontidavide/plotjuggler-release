@@ -38,8 +38,8 @@ LogWidget::LogWidget(LogsTableModel& tablemodel, QWidget *parent)
   ui.tableView->horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
   ui.tableView->horizontalHeader()->setSectionResizeMode(2, QHeaderView::ResizeToContents);
   ui.tableView->horizontalHeader()->setSectionResizeMode(3, QHeaderView::Interactive);
-  ui.tableView->horizontalHeader()->setSectionResizeMode(4, QHeaderView::Interactive);
-  ui.tableView->horizontalHeader()->setSectionResizeMode(5, QHeaderView::Stretch);
+  ui.tableView->horizontalHeader()->setSectionResizeMode(4, QHeaderView::Stretch);
+ // ui.tableView->horizontalHeader()->setSectionResizeMode(5, QHeaderView::Stretch);
 
   ui.tableView->verticalHeader()->setVisible(false);
 
