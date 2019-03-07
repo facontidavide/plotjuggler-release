@@ -24,7 +24,7 @@ public:
 
     virtual ~DataStreamSample();
 
-    virtual const char* name() const override { return "DataStreamer Dummy"; }
+    virtual const char* name() const override { return "Dummy Streamer"; }
 
     virtual bool isDebugPlugin() override { return true; }
 
