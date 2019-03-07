@@ -11,7 +11,7 @@ cmake_policy (SET CMP0020 NEW)
 add_definitions(
     -DPJ_MAJOR_VERSION=2
     -DPJ_MINOR_VERSION=1
-    -DPJ_PATCH_VERSION=5 )
+    -DPJ_PATCH_VERSION=6 )
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
@@ -70,7 +70,7 @@ if(COMPILING_WITH_CATKIN)
     message(STATUS "PlotJuggler is being built using CATKIN. ROS plugins will be compiled")
     message(STATUS "---------------------------------------------------------------------")
 
-    find_package(catkin REQUIRED COMPONENTS
+    set(ROS_DEPENDENCIES
         rosbag
         rosbag_storage
         roscpp
@@ -79,10 +79,13 @@ if(COMPILING_WITH_CATKIN)
         rostime
         topic_tools
         tf
-        )
+    )
+
+    find_package(catkin REQUIRED COMPONENTS ${ROS_DEPENDENCIES} )
+
     catkin_package(
         INCLUDE_DIRS include
-        CATKIN_DEPENDS ros_type_introspection tf
+        CATKIN_DEPENDS ${ROS_DEPENDENCIES}
         DEPENDS
         )
 

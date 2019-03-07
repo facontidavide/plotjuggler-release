@@ -169,11 +169,11 @@ void PlotWidget::buildActions()
 
     _action_zoomOutMaximum = getActionAndIcon("&Zoom Out", ":/icons/resources/light/zoom_max.png" );
     connect(_action_zoomOutMaximum, &QAction::triggered, this, [this]()
-            {
-                zoomOut(true);
-                replot();
-                emit undoableChange();
-            });
+    {
+        zoomOut(true);
+        replot();
+        emit undoableChange();
+    });
 
     _action_zoomOutHorizontally = getActionAndIcon("&Zoom Out Horizontally",
                                                    ":/icons/resources/light/zoom_horizontal.png" );
@@ -298,6 +298,7 @@ void PlotWidget::canvasContextMenuTriggered(const QPoint &pos)
 void PlotWidget::buildLegend()
 {
     _legend = new QwtPlotLegendItem();
+
     _legend->attach( this );
 
     _legend->setRenderHint( QwtPlotItem::RenderAntialiased );
@@ -858,8 +859,8 @@ void PlotWidget::reloadPlotData()
 
 void PlotWidget::activateLegend(bool activate)
 {
-//    if( activate ) _legend->attach(this);
-//    else           _legend->detach();
+    //    if( activate ) _legend->attach(this);
+    //    else           _legend->detach();
     _legend->setVisible(activate);
 }
 
@@ -1482,7 +1483,7 @@ bool PlotWidget::eventFilter(QObject *obj, QEvent *event)
                 QApplication::setOverrideCursor(QCursor(QPixmap(":/icons/resources/light/move.png")));
             }
             return false; // send to canvas()
-        }    
+        }
         else if ( mouse_event->buttons() == Qt::MidButton &&
                   mouse_event->modifiers() == Qt::NoModifier )
         {

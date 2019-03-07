@@ -11,7 +11,7 @@ QString getFunnySubtitle(){
 
     qsrand(time(nullptr));
 
-    int n = qrand() % 15;
+    int n = qrand() % 20;
     QSettings settings;
     // do not repeat it twice in a row
     while( settings.value("previousFunnySubtitle").toInt() == n)
