@@ -81,6 +81,7 @@ private:
 
     CustomPlotPtr _plot;
     bool _is_new;
+    int _v_count;
 
     SnippetsMap _snipped_saved;
     SnippetsMap _snipped_recent;

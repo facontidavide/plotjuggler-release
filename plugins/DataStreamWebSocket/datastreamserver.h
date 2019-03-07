@@ -35,7 +35,7 @@ public:
 
     virtual ~DataStreamServer();
 
-    virtual const char* name() const override { return "DataStreamServer"; }
+    virtual const char* name() const override { return "WebSocket Server"; }
 
     virtual bool isDebugPlugin() override { return false; }
 

@@ -48,7 +48,7 @@ int LogsTableModel::columnCount(const QModelIndex &parent) const
     if (parent.isValid())
         return 0;
 
-    return 6;
+    return 5;
 }
 
 QVariant LogsTableModel::data(const QModelIndex &index, int role) const
