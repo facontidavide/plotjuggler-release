@@ -5,6 +5,7 @@
 #include <QMenu>
 #include <QDomDocument>
 #include <mutex>
+#include <unordered_set>
 #include "PlotJuggler/plotdata.h"
 
 /**
@@ -56,6 +57,8 @@ public:
     }
 
 signals:
+
+    void clearBuffers();
 
     void dataUpdated();
 

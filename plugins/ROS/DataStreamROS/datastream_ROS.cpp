@@ -19,6 +19,7 @@
 #include <topic_tools/shape_shifter.h>
 #include <ros/transport_hints.h>
 
+
 #include "../dialog_select_ros_topics.h"
 #include "../rule_editing.h"
 #include "../qnodedialog.h"
@@ -26,13 +27,23 @@
 
 DataStreamROS::DataStreamROS():
     _node(nullptr),
-    _action_saveIntoRosbag(nullptr)
+    _action_saveIntoRosbag(nullptr),
+    _clock_time(0)
 {
     _running = false;
     _initial_time = std::numeric_limits<double>::max();
     _periodic_timer = new QTimer();
     connect( _periodic_timer, &QTimer::timeout,
              this, &DataStreamROS::timerCallback);
+}
+
+void DataStreamROS::clockCallback(const rosgraph_msgs::Clock::ConstPtr& msg)
+{
+    if( ( msg->clock - _clock_time ) < ros::Duration(-1,0) && _action_clearBuffer->isChecked() )
+    {
+        emit clearBuffers();
+    }
+    _clock_time = msg->clock;
 }
 
 void DataStreamROS::topicCallback(const topic_tools::ShapeShifter::ConstPtr& msg,
@@ -88,6 +99,12 @@ void DataStreamROS::topicCallback(const topic_tools::ShapeShifter::ConstPtr& msg
             if( time > 0 ) {
               msg_time = time;
             }
+        }
+    }
+    else{
+        if( _clock_time.toSec() != 0.0)
+        {
+            msg_time = _clock_time.toSec();
         }
     }
 
@@ -294,6 +311,18 @@ void DataStreamROS::subscribe()
 {
     _subscribers.clear();
 
+    {
+        boost::function<void(const rosgraph_msgs::Clock::ConstPtr&) > callback;
+        callback = [this](const rosgraph_msgs::Clock::ConstPtr& msg) -> void
+        {
+            this->clockCallback(msg) ;
+        };
+        ros::SubscribeOptions ops;
+        ops.initByFullCallbackType("/clock", 1, callback );
+        ops.transport_hints = ros::TransportHints().tcpNoDelay();
+        _clock_subscriber = _node->subscribe(ops);
+    }
+
     for (int i=0; i< _default_topic_names.size(); i++ )
     {
         const std::string topic_name = _default_topic_names[i].toStdString();
@@ -427,6 +456,7 @@ void DataStreamROS::shutdown()
     {
         _spinner->stop();
     }
+    _clock_subscriber.shutdown();
     for(auto& it: _subscribers)
     {
         it.second.shutdown();
@@ -450,10 +480,13 @@ void DataStreamROS::setParentMenu(QMenu *menu)
     QIcon iconSave;
     iconSave.addFile(QStringLiteral(":/icons/resources/light/save.png"), QSize(26, 26));
     _action_saveIntoRosbag->setIcon(iconSave);
-
     _menu->addAction( _action_saveIntoRosbag );
 
     connect( _action_saveIntoRosbag, &QAction::triggered, this, &DataStreamROS::saveIntoRosbag );
+
+    _action_clearBuffer = new QAction(QString("Clear buffer if Loop restarts"), _menu);
+    _action_clearBuffer->setCheckable( true );
+    _menu->addAction( _action_clearBuffer );
 }
 
 QDomElement DataStreamROS::xmlSaveState(QDomDocument &doc) const

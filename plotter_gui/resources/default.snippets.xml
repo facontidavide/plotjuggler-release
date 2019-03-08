@@ -32,6 +32,6 @@ function quaternionToYaw(x, y, z, w)
 
   return yaw
 }</global>
-    <equation>return quaternionToYaw($$x$$, $$y$$, $$z$$, $$w$$); </equation>
+    <equation>return quaternionToYaw(x, y, z, w); </equation>
   </snippet>
 </snippets>

@@ -23,7 +23,8 @@ AddCustomPlotDialog::AddCustomPlotDialog(PlotDataMapRef &plotMapData,
     QDialog(parent),
     _plot_map_data(plotMapData),
     _custom_plots(mapped_custom_plots),
-    ui(new Ui::FunctionEditor)
+    ui(new Ui::FunctionEditor),
+    _v_count(1)
 {
     ui->setupUi(this);
 
@@ -139,7 +140,10 @@ CustomPlotPtr AddCustomPlotDialog::getCustomPlotData() const
 
 void AddCustomPlotDialog::on_curvesListWidget_doubleClicked(const QModelIndex &index)
 {
-    QString appendString = QString("$$%1$$").arg(ui->curvesListWidget->item(index.row())->text());
+    QString appendString = QString("V%1 = $$%2$$\n")
+            .arg(_v_count++)
+            .arg(ui->curvesListWidget->item(index.row())->text());
+
     if(ui->globalVarsTextField->hasFocus())
     {
         ui->globalVarsTextField->insertPlainText(appendString);
