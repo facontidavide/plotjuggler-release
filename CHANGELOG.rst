@@ -2,6 +2,24 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.1.6 (2019-03-07)
+------------------
+* removed obsolate question
+* remember RemoveTimeOffset state
+* add clear buffer from data stream
+* reject non valid data
+* fix sorting in ULog messages
+* Fix Ulog window
+* ulog plugin improved
+* Update .appveyor.yml
+* yes, I am sure I want to Quit
+* simplifications in RosoutPublisher
+* better double click behavior in FunctionEditor
+* adding Info and parameters
+* big refactoring of ulog parser. Fix issue #151
+* download links updated
+* Contributors: Davide Faconti
+
 2.1.5 (2019-02-25)
 ------------------
 * reintroducing timestamp from header
