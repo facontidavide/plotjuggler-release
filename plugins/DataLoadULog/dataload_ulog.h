@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QtPlugin>
+#include <QWidget>
 #include "PlotJuggler/dataloader_base.h"
 
 
@@ -14,6 +15,7 @@ class  DataLoadULog: public QObject, DataLoader
 
 public:
     DataLoadULog();
+
     const std::vector<const char*>& compatibleFileExtensions() const override;
 
     PlotDataMapRef readDataFromFile(const QString& file_name, bool) override;
@@ -29,7 +31,7 @@ public:
 private:
 
     std::string _default_time_axis;
-
+    QWidget* _main_win;
 };
 
 #endif // DATALOAD_CSV_H

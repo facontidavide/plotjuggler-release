@@ -306,57 +306,6 @@
          <property name="currentIndex">
           <number>0</number>
          </property>
-         <widget class="QWidget" name="tab">
-          <attribute name="title">
-           <string>Curves</string>
-          </attribute>
-          <layout class="QVBoxLayout" name="verticalLayout">
-           <item>
-            <widget class="QLabel" name="label_8">
-             <property name="text">
-              <string>Double click to insert at reference to a timeseries:</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <layout class="QHBoxLayout" name="horizontalLayout_3">
-             <property name="leftMargin">
-              <number>11</number>
-             </property>
-             <property name="topMargin">
-              <number>11</number>
-             </property>
-             <property name="rightMargin">
-              <number>11</number>
-             </property>
-             <property name="bottomMargin">
-              <number>11</number>
-             </property>
-             <item>
-              <widget class="QLabel" name="label_2">
-               <property name="text">
-                <string>Filter:</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QLineEdit" name="lineEditFilter">
-               <property name="clearButtonEnabled">
-                <bool>true</bool>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </item>
-           <item>
-            <widget class="QListWidget" name="curvesListWidget">
-             <property name="focusPolicy">
-              <enum>Qt::NoFocus</enum>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </widget>
          <widget class="QWidget" name="tab_2">
           <attribute name="title">
            <string>Snippets</string>
@@ -459,6 +408,57 @@
             <widget class="QPlainTextEdit" name="snippetTextEdit">
              <property name="readOnly">
               <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="tab">
+          <attribute name="title">
+           <string>Curve selector</string>
+          </attribute>
+          <layout class="QVBoxLayout" name="verticalLayout">
+           <item>
+            <widget class="QLabel" name="label_8">
+             <property name="text">
+              <string>Double click to insert at reference to a timeseries:</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_3">
+             <property name="leftMargin">
+              <number>11</number>
+             </property>
+             <property name="topMargin">
+              <number>11</number>
+             </property>
+             <property name="rightMargin">
+              <number>11</number>
+             </property>
+             <property name="bottomMargin">
+              <number>11</number>
+             </property>
+             <item>
+              <widget class="QLabel" name="label_2">
+               <property name="text">
+                <string>Filter:</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLineEdit" name="lineEditFilter">
+               <property name="clearButtonEnabled">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <widget class="QListWidget" name="curvesListWidget">
+             <property name="focusPolicy">
+              <enum>Qt::NoFocus</enum>
              </property>
             </widget>
            </item>
