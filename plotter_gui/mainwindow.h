@@ -235,6 +235,8 @@ protected:
 
     QTimer *_publish_timer;
 
+    QDateTime _prev_publish_time;
+
 signals:
     void requestRemoveCurveByName(const std::string& name);
 
