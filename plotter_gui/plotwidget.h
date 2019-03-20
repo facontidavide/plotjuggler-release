@@ -2,26 +2,26 @@
 #define DragableWidget_H
 
 #include <map>
+#include <deque>
 #include <QObject>
 #include <QTextEdit>
-#include <qwt_plot.h>
-#include <qwt_plot_curve.h>
-#include <qwt_plot_grid.h>
-#include <qwt_symbol.h>
-#include <qwt_legend.h>
-#include <deque>
+#include <QDomDocument>
 #include <QMessageBox>
 #include <QTime>
 #include "plotmagnifier.h"
 #include "plotzoomer.h"
-#include <qwt_plot_panner.h>
-#include <QDomDocument>
+#include "qwt_plot.h"
+#include "qwt_plot_curve.h"
+#include "qwt_plot_grid.h"
+#include "qwt_symbol.h"
+#include "qwt_legend.h"
+#include "qwt_plot_panner.h"
+#include "qwt_plot_legenditem.h"
 #include "timeseries_qwt.h"
 #include "customtracker.h"
 #include "axis_limits_dialog.h"
 #include "transforms/transform_selector.h"
 #include "transforms/custom_function.h"
-#include <qwt_plot_legenditem.h>
 
 class PlotWidget : public QwtPlot
 {
@@ -73,6 +73,8 @@ protected:
     bool eventFilter(QObject *obj, QEvent *event) override;
     void dragLeaveEvent(QDragLeaveEvent *event) override;
 
+    bool canvasEventFilter(QEvent *event);
+
 signals:
     void swapWidgetsRequested(PlotWidget* source, PlotWidget* destination);
     void rectChanged(PlotWidget* self, QRectF rect );
@@ -111,6 +113,8 @@ public slots:
     void setTrackerPosition(double abs_time);
 
     void on_changeTimeOffset(double offset);
+
+    void on_changeDateTimeScale(bool enable);
 
 private slots:
 
@@ -165,6 +169,8 @@ private:
     CurveTracker* _tracker;
     QwtPlotLegendItem* _legend;
     QwtPlotGrid* _grid;
+
+    bool _use_date_time_scale;
 
     PlotDataMapRef& _mapped_data;
     QString _default_transform;
