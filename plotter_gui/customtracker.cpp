@@ -1,9 +1,9 @@
 #include "customtracker.h"
-#include <qwt_series_data.h>
-#include <qwt_plot.h>
-#include <qwt_plot_curve.h>
+#include "qwt_series_data.h"
+#include "qwt_plot.h"
+#include "qwt_plot_curve.h"
 #include "qwt_event_pattern.h"
-#include <qwt_symbol.h>
+#include "qwt_symbol.h"
 #include <qevent.h>
 #include <QFontDatabase>
 

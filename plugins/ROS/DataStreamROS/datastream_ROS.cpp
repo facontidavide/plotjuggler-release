@@ -37,6 +37,7 @@ DataStreamROS::DataStreamROS():
              this, &DataStreamROS::timerCallback);
 }
 
+
 void DataStreamROS::clockCallback(const rosgraph_msgs::Clock::ConstPtr& msg)
 {
     if( ( msg->clock - _clock_time ) < ros::Duration(-1,0) && _action_clearBuffer->isChecked() )
@@ -143,7 +144,13 @@ void DataStreamROS::topicCallback(const topic_tools::ShapeShifter::ConstPtr& msg
             val_d = static_cast<double>(val_i);
         }
         else{
-            val_d = value.convert<double>();
+            try{
+                val_d = value.convert<double>();
+            }
+            catch(std::exception&)
+            {
+                continue;
+            }
         }
 
         auto plot_it = dataMap().numeric.find(key);
@@ -151,7 +158,7 @@ void DataStreamROS::topicCallback(const topic_tools::ShapeShifter::ConstPtr& msg
         {
             plot_it = dataMap().addNumeric( key );
         }
-        plot_it->second.pushBack( PlotData::Point(msg_time, val_d));
+        plot_it->second.pushBack( PlotData::Point(msg_time, val_d) );
     }
 
     //------------------------------
@@ -371,7 +378,7 @@ bool DataStreamROS::start()
                                    QString(topic_info.datatype.c_str()) ) );
     }
 
-    QSettings settings( "IcarusTechnology", "PlotJuggler");
+    QSettings settings;
 
     if( _default_topic_names.empty())
     {
@@ -469,6 +476,9 @@ void DataStreamROS::shutdown()
 
 DataStreamROS::~DataStreamROS()
 {
+    QSettings settings;
+    settings.setValue("DataStreamROS/resetAtLoop", _action_clearBuffer->isChecked() );
+
     shutdown();
 }
 
@@ -486,6 +496,11 @@ void DataStreamROS::setParentMenu(QMenu *menu)
 
     _action_clearBuffer = new QAction(QString("Clear buffer if Loop restarts"), _menu);
     _action_clearBuffer->setCheckable( true );
+
+    QSettings settings;
+    bool reset_loop = settings.value("DataStreamROS/resetAtLoop", false).toBool();
+    _action_clearBuffer->setChecked( reset_loop );
+
     _menu->addAction( _action_clearBuffer );
 }
 
