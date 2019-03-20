@@ -3,7 +3,7 @@
 
 #include <QDialog>
 #include <QListWidgetItem>
-#include <qwt_plot_curve.h>
+#include "qwt_plot_curve.h"
 
 namespace Ui {
 class RemoveCurveDialog;
