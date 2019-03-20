@@ -1,8 +1,8 @@
 #ifndef SERIES_DATA_H
 #define SERIES_DATA_H
 
-#include <qwt_series_data.h>
 #include "PlotJuggler/plotdata.h"
+#include "qwt_series_data.h"
 
 class DataSeriesBase: public QwtSeriesData<QPointF>
 {

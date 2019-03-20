@@ -3,10 +3,10 @@
 
 #include <QDialog>
 #include <QListWidgetItem>
-#include <qwt_plot_curve.h>
 #include <unordered_map>
 #include "PlotJuggler/plotdata.h"
 #include "custom_function.h"
+#include "qwt_plot_curve.h"
 #include "ui_function_editor.h"
 
 

@@ -26,7 +26,7 @@ QNodeDialog::QNodeDialog( QWidget *parent) :
 {
   ui->setupUi(this);
 
-  QSettings settings( "IcarusTechnology", "PlotJuggler");
+  QSettings settings;
 
   auto master_ui = settings.value("QNode.master_uri", tr("http://localhost:11311")).toString();
   auto host_ip   = settings.value("QNode.host_ip", tr("localhost")).toString();
@@ -71,7 +71,7 @@ bool QNodeDialog::Connect(const std::string& ros_master_uri,
 
 QNodeDialog::~QNodeDialog()
 {
-  QSettings settings( "IcarusTechnology", "PlotJuggler");
+  QSettings settings;
   settings.setValue ("QNode.master_uri",  ui->lineEditMaster->text() );
   settings.setValue("QNode.host_ip",      ui->lineEditHost->text() );
   delete ui;
