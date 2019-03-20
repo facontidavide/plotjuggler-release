@@ -1,14 +1,14 @@
-#include "plotmagnifier.h"
-#include <qwt_plot.h>
-#include <QDebug>
 #include <limits>
+#include <QDebug>
 #include <QWheelEvent>
 #include <QApplication>
+#include "plotmagnifier.h"
+#include "qwt_plot.h"
 
-PlotMagnifier::PlotMagnifier( QWidget *canvas) : QwtPlotMagnifier(canvas)
+PlotMagnifier::PlotMagnifier( QWidget *canvas) :
+    QwtPlotMagnifier(canvas),
+    _default_mode(BOTH_AXES)
 {
-    _x_pressed = false;
-    _y_pressed = false;
     for ( int axisId = 0; axisId < QwtPlot::axisCnt; axisId++ )
     {
         _lower_bounds[axisId] = -std::numeric_limits<double>::max();
@@ -27,12 +27,12 @@ void PlotMagnifier::setAxisLimits(int axis, double lower, double upper)
     }
 }
 
-void PlotMagnifier::rescale( double factor )
+void PlotMagnifier::rescale( double factor, AxisMode axis )
 {
-    factor = qAbs( factor );
+    factor = qAbs( 1.0/factor );
 
     QwtPlot* plt = plot();
-    if ( plt == NULL || factor == 1.0 ){
+    if ( plt == nullptr || factor == 1.0 ){
         return;
     }
 
@@ -47,11 +47,11 @@ void PlotMagnifier::rescale( double factor )
     for ( int i = 0; i <2; i++ )
     {
         double temp_factor = factor;
-        if( i==1 && _x_pressed)
+        if( i==1 && axis == X_AXIS)
         {
             temp_factor = 1.0;
         }
-        if( i==0 && _y_pressed)
+        if( i==0 && axis == Y_AXIS)
         {
             temp_factor = 1.0;
         }
@@ -136,39 +136,3 @@ void PlotMagnifier::widgetMousePressEvent(QMouseEvent *event)
     QwtPlotMagnifier::widgetMousePressEvent(event);
 }
 
-bool PlotMagnifier::eventFilter(QObject *obj, QEvent *event)
-{
-    if( event->type() == QEvent::Enter || event->type() == QEvent::Leave)
-    {
-        _x_pressed = false;
-        _y_pressed = false;
-    }
-    else if( event->type() == QEvent::KeyPress)
-    {
-        auto key_event = static_cast<QKeyEvent*>(event);
-        if( key_event->key() == Qt::Key_X )
-        {
-            _x_pressed = true;
-        }
-        else if( key_event->key() == Qt::Key_Y )
-        {
-            _y_pressed = true;
-        }
-        //qDebug() << "p "<< _x_pressed << " " << _y_pressed;
-    }
-    else if( event->type() == QEvent::KeyRelease)
-    {
-        auto key_event = static_cast<QKeyEvent*>(event);
-        if( key_event->key() == Qt::Key_X )
-        {
-            _x_pressed = false;
-        }
-        else if( key_event->key() == Qt::Key_Y )
-        {
-            _y_pressed = false;
-        }
-      //  qDebug() << "R "<< _x_pressed << " " << _y_pressed;
-    }
-
-    return QwtPlotMagnifier::eventFilter(obj, event);
-}

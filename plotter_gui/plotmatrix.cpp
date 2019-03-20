@@ -1,10 +1,10 @@
 #include <qlayout.h>
 #include <qpen.h>
-#include <qwt_plot.h>
-#include <qwt_plot_canvas.h>
-#include <qwt_scale_widget.h>
-#include <qwt_scale_draw.h>
 #include <QSettings>
+#include "qwt_plot.h"
+#include "qwt_plot_canvas.h"
+#include "qwt_scale_widget.h"
+#include "qwt_scale_draw.h"
 #include "plotmatrix.h"
 #include "customtracker.h"
 
