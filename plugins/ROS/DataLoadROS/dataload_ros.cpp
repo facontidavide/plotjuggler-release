@@ -123,7 +123,7 @@ PlotDataMapRef DataLoadROS::readDataFromFile(const QString &file_name, bool use_
     auto all_topics = getAndRegisterAllTopics();
 
     //----------------------------------
-    QSettings settings( "IcarusTechnology", "PlotJuggler");
+    QSettings settings;
 
     _use_renaming_rules = settings.value("DataLoadROS/use_renaming").toBool();
 
@@ -304,7 +304,14 @@ PlotDataMapRef DataLoadROS::readDataFromFile(const QString &file_name, bool use_
                 plot_data.pushBack( PlotData::Point(msg_time, val_d) );
             }
             else{
-                plot_data.pushBack( PlotData::Point(msg_time, value.convert<double>() ));
+                try{
+                    double val_d = value.convert<double>();
+                    plot_data.pushBack( PlotData::Point(msg_time, val_d ));
+                }
+                catch(std::exception&)
+                {
+                    continue;
+                }
             }
         } //end of for renamed_value
     }

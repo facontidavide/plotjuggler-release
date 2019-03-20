@@ -2,8 +2,8 @@
 #define _PLOT_MATRIX_H_
 
 #include <qframe.h>
-#include <qwt_plot.h>
 #include <QGridLayout>
+#include "qwt_plot.h"
 #include "plotwidget.h"
 
 class PlotMatrix: public QFrame
