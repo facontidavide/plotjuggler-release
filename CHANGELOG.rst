@@ -2,6 +2,20 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.1.7 (2019-03-20)
+------------------
+* Date time visualization on X axis
+* fix slow PLAY when rendering takes more than 20 msec
+* new way to zoom a single axis (issues #153 and #135)
+* Inverted mouse wheel zoom #153
+* On MacOS there are several mime formats generated in addition to "curveslist", this fix will keep curves array with names collected instead of resetting it for each new mime format. (#159)
+* ulog_parser: fixed parsing of array topics (#157)
+  Signed-off-by: Roman <bapstroman@gmail.com>
+* fis issue  #156 : catch expections
+* remember if the state of _action_clearBuffer
+* QSettings cleanups
+* Contributors: Alexey Zaparovanny, Davide Faconti, Roman Bapst
+
 2.1.6 (2019-03-07)
 ------------------
 * removed obsolate question

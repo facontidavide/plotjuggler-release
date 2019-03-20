@@ -45,7 +45,7 @@ void RosoutPublisher::setEnabled(bool to_enable)
         connect(_log_window, &RosoutWindow::closed,
                 this, &RosoutPublisher::onWindowClosed );
 
-        QSettings settings( "IcarusTechnology", "PlotJuggler");
+        QSettings settings;
         _log_window->restoreGeometry(settings.value("RosoutPublisher.geometry").toByteArray());
 
         _log_window->show();
@@ -60,7 +60,7 @@ void RosoutPublisher::setEnabled(bool to_enable)
 
 void RosoutPublisher::onWindowClosed()
 {
-    QSettings settings( "IcarusTechnology", "PlotJuggler");
+    QSettings settings;
     settings.setValue("RosoutPublisher.geometry", _log_window->saveGeometry());
 
     if( _tablemodel ){
