@@ -2,12 +2,12 @@
 #include <stdio.h>
 #include <set>
 #include <numeric>
-#include <qwt_plot_canvas.h>
 #include <QCheckBox>
 #include <QCommandLineParser>
 #include <QDebug>
 #include <QDesktopServices>
 #include <QDomDocument>
+#include <QElapsedTimer>
 #include <QFileDialog>
 #include <QInputDialog>
 #include <QMenu>
@@ -15,30 +15,29 @@
 #include <QMessageBox>
 #include <QMimeData>
 #include <QMouseEvent>
-#include <QMovie>
 #include <QPluginLoader>
 #include <QPushButton>
 #include <QScrollBar>
+#include <QSettings>
 #include <QStringListModel>
 #include <QStringRef>
 #include <QThread>
-#include <QSettings>
 #include <QWindow>
-#include <QElapsedTimer>
 #include <QHeaderView>
 
-
 #include "mainwindow.h"
-#include "ui_mainwindow.h"
-#include "ui_aboutdialog.h"
-#include "ui_cheatsheet_dialog.h"
-#include "ui_support_dialog.h"
 #include "filterablelistwidget.h"
 #include "tabbedplotwidget.h"
 #include "selectlistdialog.h"
 #include "PlotJuggler/plotdata.h"
+#include "qwt_plot_canvas.h"
 #include "transforms/function_editor.h"
 #include "utils.h"
+
+#include "ui_mainwindow.h"
+#include "ui_aboutdialog.h"
+#include "ui_cheatsheet_dialog.h"
+#include "ui_support_dialog.h"
 
 MainWindow::MainWindow(const QCommandLineParser &commandline_parser, QWidget *parent) :
     QMainWindow(parent),
@@ -50,8 +49,8 @@ MainWindow::MainWindow(const QCommandLineParser &commandline_parser, QWidget *pa
     _minimized(false),
     _current_streamer(nullptr),
     _disable_undo_logging(false),
-    _tracker_param( CurveTracker::VALUE ),
-    _tracker_time(0)
+    _tracker_time(0),
+    _tracker_param( CurveTracker::VALUE )
 {
     QLocale::setDefault(QLocale::c()); // set as default
 
@@ -672,10 +671,14 @@ void MainWindow::onPlotAdded(PlotWidget* plot)
     connect( &_time_offset, SIGNAL( valueChanged(double)),
              plot, SLOT(on_changeTimeOffset(double)) );
 
+    connect( ui->pushButtonUseDateTime, &QPushButton::toggled,
+             plot, &PlotWidget::on_changeDateTimeScale);
+
     connect( plot, &PlotWidget::curvesDropped,
              _curvelist_widget, &FilterableListWidget::clearSelections);
 
     plot->on_changeTimeOffset( _time_offset.get() );
+    plot->on_changeDateTimeScale( ui->pushButtonUseDateTime->isChecked() );
     plot->activateGrid( ui->pushButtonActivateGrid->isChecked() );
     plot->enableTracker( !isStreamingActive() );
     plot->configureTracker( _tracker_param );
@@ -2072,6 +2075,7 @@ void MainWindow::on_pushButtonPlay_toggled(bool checked)
     if( checked )
     {
         _publish_timer->start();
+        _prev_publish_time = QDateTime::currentDateTime();
     }
     else{
         _publish_timer->stop();
@@ -2281,7 +2285,11 @@ void MainWindow::on_actionFunction_editor_triggered()
 
 void MainWindow::publishPeriodically()
 {
-    _tracker_time +=  _publish_timer->interval()*0.001;
+    qint64 delta_ms = (QDateTime::currentMSecsSinceEpoch() - _prev_publish_time.toMSecsSinceEpoch());
+    _prev_publish_time = QDateTime::currentDateTime();
+    delta_ms = std::max( (qint64)_publish_timer->interval(), delta_ms);
+
+    _tracker_time +=  delta_ms*0.001;
     if( _tracker_time >= ui->timeSlider->getMaximum())
     {
         ui->pushButtonPlay->setChecked(false);
@@ -2298,7 +2306,7 @@ void MainWindow::publishPeriodically()
 
     for ( auto& it: _state_publisher)
     {
-        it.second->play( _tracker_time);
+        it.second->play( _tracker_time );
     }
 
     forEachWidget( [&](PlotWidget* plot)

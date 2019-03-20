@@ -1,37 +1,52 @@
-#include "plotwidget.h"
+#include <QAction>
+#include <QActionGroup>
+#include <QApplication>
 #include <QDebug>
 #include <QDrag>
-#include <QMimeData>
 #include <QDragEnterEvent>
 #include <QDragMoveEvent>
-#include <qwt_scale_widget.h>
-#include <qwt_plot_canvas.h>
-#include <qwt_scale_engine.h>
-#include <qwt_plot_layout.h>
-#include <qwt_scale_draw.h>
-#include <QAction>
+#include <QFileDialog>
 #include <QMessageBox>
 #include <QMenu>
+#include <QMimeData>
 #include <QPushButton>
+#include <QWheelEvent>
+#include <QSettings>
 #include <iostream>
 #include <limits>
-#include "removecurvedialog.h"
-#include "curvecolorpick.h"
-#include <QApplication>
 #include <set>
 #include <memory>
-#include <qwt_text.h>
-#include <QActionGroup>
-#include <QWheelEvent>
-#include <QFileDialog>
-#include <QSettings>
 #include <QtXml/QDomElement>
+#include "qwt_scale_widget.h"
+#include "qwt_plot_canvas.h"
+#include "qwt_scale_engine.h"
+#include "qwt_plot_layout.h"
+#include "qwt_scale_draw.h"
+#include "qwt_text.h"
+#include "plotwidget.h"
+#include "removecurvedialog.h"
+#include "curvecolorpick.h"
 #include "qwt_plot_renderer.h"
 #include "qwt_series_data.h"
+#include "qwt_date_scale_draw.h"
 #include "PlotJuggler/random_color.h"
 #include "point_series_xy.h"
 #include "transforms/custom_function.h"
 #include "transforms/custom_timeseries.h"
+
+class TimeScaleDraw: public QwtScaleDraw
+{
+    virtual QwtText label(double v) const
+    {
+            QDateTime t = QDateTime::fromMSecsSinceEpoch((qint64)(v*1000));	//cf fromTime_t
+            if( t.time().msec() == 0){
+                return t.toString("hh:mm:ss\nyyyy MMM dd");
+            }
+            else{
+                return t.toString("hh:mm:ss.z\nyyyy MMM dd");
+            }
+    }
+};
 
 const double MAX_DOUBLE = std::numeric_limits<double>::max() / 2 ;
 
@@ -61,7 +76,8 @@ PlotWidget::PlotWidget(PlotDataMapRef &datamap, QWidget *parent):
     _time_offset(0.0),
     _axisX(nullptr),
     _transform_select_dialog(nullptr),
-    _zoom_enabled(true)
+    _zoom_enabled(true),
+    _use_date_time_scale(false)
 {
     this->setAcceptDrops( true );
 
@@ -127,6 +143,12 @@ PlotWidget::PlotWidget(PlotDataMapRef &datamap, QWidget *parent):
 
     _custom_Y_limits.min = (-MAX_DOUBLE );
     _custom_Y_limits.max = ( MAX_DOUBLE );
+
+    QwtScaleWidget *bottomAxis = this->axisWidget(xBottom);
+    QwtScaleWidget *leftAxis = this->axisWidget(yLeft);
+
+    bottomAxis->installEventFilter(this);
+    leftAxis->installEventFilter(this);
 }
 
 void PlotWidget::buildActions()
@@ -458,18 +480,20 @@ void PlotWidget::dragEnterEvent(QDragEnterEvent *event)
 
     const QMimeData *mimeData = event->mimeData();
     QStringList mimeFormats = mimeData->formats();
+    _dragging.curves.clear();
+    _dragging.source = event->source();
     for(const QString& format: mimeFormats)
     {
         QByteArray encoded = mimeData->data( format );
         QDataStream stream(&encoded, QIODevice::ReadOnly);
-        _dragging.curves.clear();
-        _dragging.source = event->source();
 
         while (!stream.atEnd())
         {
             QString curve_name;
             stream >> curve_name;
-            _dragging.curves.push_back( curve_name );
+            if(!curve_name.isEmpty()) {
+                _dragging.curves.push_back(curve_name);
+            }
         }
 
         if( format.contains( "curveslist/add_curve") )
@@ -911,6 +935,21 @@ void PlotWidget::on_changeTimeOffset(double offset)
         series->setTimeOffset(_time_offset);
     }
     zoomOut(false);
+}
+
+void PlotWidget::on_changeDateTimeScale(bool enable)
+{
+    if( enable != _use_date_time_scale)
+    {
+        _use_date_time_scale = enable;
+        if( enable  )
+        {
+            setAxisScaleDraw(QwtPlot::xBottom, new TimeScaleDraw());
+        }
+        else{
+            setAxisScaleDraw(QwtPlot::xBottom, new QwtScaleDraw);
+        }
+    }
 }
 
 
@@ -1430,11 +1469,43 @@ void PlotWidget::on_editAxisLimits_triggered()
 
 bool PlotWidget::eventFilter(QObject *obj, QEvent *event)
 {
+    QwtScaleWidget *bottomAxis = this->axisWidget(xBottom);
+    QwtScaleWidget *leftAxis   = this->axisWidget(yLeft);
+
+    if( _magnifier && (obj == bottomAxis || obj == leftAxis))
+    {
+        if( event->type() == QEvent::Wheel)
+        {
+            auto wheel_event = dynamic_cast<QWheelEvent*>(event);
+            if( obj == bottomAxis) {
+                _magnifier->setDefaultMode( PlotMagnifier::X_AXIS);
+            }
+            else{
+                _magnifier->setDefaultMode( PlotMagnifier::Y_AXIS );
+            }
+            _magnifier->widgetWheelEvent(wheel_event);
+        }
+    }
+
+    if( obj == canvas() )
+    {
+        if( _magnifier ){
+            _magnifier->setDefaultMode( PlotMagnifier::BOTH_AXES);
+        }
+        return canvasEventFilter(event);
+    }
+
+    return false;
+}
+
+bool PlotWidget::canvasEventFilter(QEvent *event)
+{
     switch( event->type() )
     {
     case QEvent::Wheel:
     {
         auto mouse_event = dynamic_cast<QWheelEvent*>(event);
+
         bool ctrl_modifier = mouse_event->modifiers() == Qt::ControlModifier;
         auto legend_rect = _legend->geometry( canvas()->rect() );
 
@@ -1569,7 +1640,7 @@ bool PlotWidget::eventFilter(QObject *obj, QEvent *event)
 
     } //end switch
 
-    return QWidget::eventFilter( obj, event );
+    return false;
 }
 
 void PlotWidget::setDefaultRangeX()
