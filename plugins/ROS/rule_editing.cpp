@@ -125,7 +125,7 @@ RuleEditing::RuleEditing(QWidget *parent) :
 
     _highlighter = new XMLSyntaxHighlighter(ui->textEdit);
 
-    QSettings settings( "IcarusTechnology", "PlotJuggler");
+    QSettings settings;
     restoreGeometry(settings.value("RuleEditing.geometry").toByteArray());
 
     ui->textEdit->setPlainText( getRenamingXML() );
@@ -213,14 +213,14 @@ bool RuleEditing::isValidXml()
 
 void RuleEditing::on_pushButtonSave_pressed()
 {
-    QSettings settings( "IcarusTechnology", "PlotJuggler");
+    QSettings settings;
     settings.setValue("RuleEditing.text", ui->textEdit->toPlainText() );
     this->close();
 }
 
 void RuleEditing::closeEvent(QCloseEvent *event)
 {
-    QSettings settings( "IcarusTechnology", "PlotJuggler");
+    QSettings settings;
     settings.setValue("RuleEditing.geometry", saveGeometry());
     QWidget::closeEvent(event);
 }
@@ -251,7 +251,7 @@ void RuleEditing::on_pushButtonReset_pressed()
 
 QString RuleEditing::getRenamingXML()
 {
-    QSettings settings( "IcarusTechnology", "PlotJuggler");
+    QSettings settings;
     if( settings.contains("RuleEditing.text") )
     {
         return settings.value("RuleEditing.text").toString();
