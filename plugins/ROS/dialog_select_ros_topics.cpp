@@ -32,7 +32,7 @@ DialogSelectRosTopics::DialogSelectRosTopics(const std::vector<std::pair<QString
 
     ui->setupUi(this);
 
-    QSettings settings( "IcarusTechnology", "PlotJuggler");
+    QSettings settings;
     ui->checkBoxEnableRules->setChecked( settings.value("DialogSelectRosTopics.enableRules", true ).toBool());
     ui->spinBoxArraySize->setValue( settings.value( "DialogSelectRosTopics.maxArraySize", 100).toInt() );
     ui->checkBoxTimestamp->setChecked( settings.value("DialogSelectRosTopics.checkBoxTimestamp", false ).toBool());
@@ -201,7 +201,7 @@ void DialogSelectRosTopics::on_buttonBox_accepted()
             selected_topics.append( _topic_list.back() ).append(" ");
         }
     }
-    QSettings settings( "IcarusTechnology", "PlotJuggler");
+    QSettings settings;
     settings.setValue("DialogSelectRosTopics.enableRules",    ui->checkBoxEnableRules->isChecked() );
     settings.setValue("DialogSelectRosTopics.geometry", saveGeometry());
     settings.setValue("DialogSelectRosTopics.selectedItems", selected_topics );
@@ -231,7 +231,7 @@ void DialogSelectRosTopics::on_pushButtonEditRules_pressed()
 
 void DialogSelectRosTopics::closeEvent(QCloseEvent *event)
 {
-    QSettings settings( "IcarusTechnology", "PlotJuggler");
+    QSettings settings;
     settings.setValue("DialogSelectRosTopics.geometry", saveGeometry());
 }
 
