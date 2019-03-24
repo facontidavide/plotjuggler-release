@@ -399,7 +399,7 @@ void PlotMatrix::on_singlePlotScaleChanged(PlotWidget *modified_plot, QRectF new
                     modified_plot != plot &&
                     plot->isXYPlot() == false)
             {
-                QRectF bound_act = plot->currentBoundingRect();
+                QRectF bound_act = plot->canvasBoundingRect();
                 bound_act.setLeft( new_range.left() );
                 bound_act.setRight( new_range.right() );
                 plot->setZoomRectangle( bound_act, false );
