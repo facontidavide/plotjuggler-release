@@ -179,7 +179,6 @@ bool TabbedPlotWidget::xmlLoadState(QDomElement &tabbed_area)
     if(current_index>=0 && current_index < tabWidget()->count())
     {
         tabWidget()->setCurrentIndex( current_index );
-        currentTab()->replot();
     }
     return true;
 }
