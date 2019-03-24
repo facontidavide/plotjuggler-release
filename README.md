@@ -8,7 +8,7 @@
 [![Join the chat at https://gitter.im/PlotJuggler/Lobby](https://badges.gitter.im/PlotJuggler/Lobby.svg)](https://gitter.im/PlotJuggler/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Tweet](https://img.shields.io/twitter/url/http/shields.io.svg?style=social)](https://twitter.com/intent/tweet?text=I%20use%20PlotJuggler%20and%20it%20is%20amazing%0D%0A&url=https://github.com/facontidavide/PlotJuggler&via=facontidavide&hashtags=dataviz,plotjuggler,GoROS,PX4)
 
-# PlotJuggler 2.1.7
+# PlotJuggler 2.1.8
 
 QT5 based application to display time series in plots, using an intuitive "drag and drop" interface.
 
@@ -46,17 +46,17 @@ Watch this video to learn how to use it.
 
 ## Windows Installer (experimental)
 
-[PlotJugglerInstaller-2.1.7.exe](https://github.com/facontidavide/PlotJuggler/releases/download/2.1.7/PlotJugglerInstaller-2.1.7.exe)
+[PlotJugglerInstaller-2.1.5.exe](https://github.com/facontidavide/PlotJuggler/releases/download/2.1.5/PlotJugglerInstaller-2.1.5.exe)
 
 ## "Download and Run" (Ubuntu 16.04 Xenial or later)
 
 For those of you that can't wait to get your hands dirty, just download this AppImage:
 
-[PlotJuggler-2.1.5-x86_64.AppImage](https://github.com/facontidavide/PlotJuggler/releases/download/2.1.5/PlotJuggler-2.1.5-x86_64.AppImage).
+[PlotJuggler-2.1.8-x86_64.AppImage](https://github.com/facontidavide/PlotJuggler/releases/download/2.1.8/PlotJuggler-2.1.8-x86_64.AppImage).
    
 Do not forget to make it executable with the command 
 
-    chmod +x ./PlotJuggler-2.1.5-x86_64.AppImage
+    chmod +x ./PlotJuggler-2.1.8-x86_64.AppImage
 
 ## How to build (without ROS plugins)
 
@@ -67,11 +67,11 @@ Clone the repository as usual:
 The only binary dependency that you need installed in your system is Qt5. 
 On Ubuntu the debians can be installed with the command:
 
-    sudo apt-get -y install qtbase5-dev libqt5svg5-dev qtdeclarative5-dev
+    sudo apt-get -y install qtbase5-dev libqt5svg5-dev qtdeclarative5-dev qtmultimedia5-dev libqt5multimedia5-plugins
     
 On Fedora:
 
-    sudo dnf install qt5-qtbase-devel qt5-qtsvg-devel qt5-qtdeclarative-devel
+    sudo dnf install qt5-qtbase-devel qt5-qtsvg-devel qt5-qtdeclarative-devel qt5-qtmultimedia-devel
     
 Then compile using cmake (qmake is NOT supported):
 
