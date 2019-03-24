@@ -4,10 +4,11 @@
 #include "qwt_scale_map.h"
 #include "qwt_plot.h"
 
-PlotZoomer::PlotZoomer(QWidget *canvas, bool doReplot):
-    QwtPlotZoomer(canvas,doReplot),
+PlotZoomer::PlotZoomer(QWidget *canvas):
+    QwtPlotZoomer(canvas, true),
     _mouse_pressed(false),
-    _zoom_enabled(false)
+    _zoom_enabled(false),
+    _keep_aspect_ratio(true)
 {
     this->setTrackerMode(AlwaysOff);
 }
@@ -81,11 +82,39 @@ bool PlotZoomer::accept(QPolygon &pa) const
     QRect rect = QRect( pa[0], pa[int( pa.count() ) - 1] );
     QRectF zoomRect = invTransform( rect.normalized() );
 
+
     if ( zoomRect.width()  < minZoomSize().width() &&
          zoomRect.height() < minZoomSize().height() ){
         return false;
     }
     return true;
+}
+
+void PlotZoomer::zoom(const QRectF &zoomRect)
+{
+    QRectF rect = zoomRect;
+
+    if( _keep_aspect_ratio )
+    {
+        const QRectF cr = canvas()->contentsRect();
+        const double canvas_ratio = cr.width() / cr.height();
+        const double zoom_ratio   = zoomRect.width() / zoomRect.height();
+
+        if( zoom_ratio < canvas_ratio )
+        {
+            double new_width = zoomRect.height() * canvas_ratio;
+            double increment = new_width - zoomRect.width();
+            rect.setWidth( new_width );
+            rect.moveLeft( rect.left() - 0.5*increment );
+        }
+        else{
+            double new_height = zoomRect.width() / canvas_ratio;
+            double increment = new_height - zoomRect.height();
+            rect.setHeight( new_height );
+            rect.moveTop( rect.top() - 0.5*increment );
+        }
+    }
+    QwtPlotZoomer::zoom( rect );
 }
 
 QSizeF PlotZoomer::minZoomSize() const
