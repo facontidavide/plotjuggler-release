@@ -36,8 +36,8 @@
 
 #include "ui_mainwindow.h"
 #include "ui_aboutdialog.h"
-#include "ui_cheatsheet_dialog.h"
 #include "ui_support_dialog.h"
+#include "cheatsheet/video_cheatsheet.h"
 
 MainWindow::MainWindow(const QCommandLineParser &commandline_parser, QWidget *parent) :
     QMainWindow(parent),
@@ -225,7 +225,7 @@ void MainWindow::onUndoableChange()
     while( _undo_states.size() >= 100 ) _undo_states.pop_front();
     _undo_states.push_back( xmlSaveState() );
     _redo_states.clear();
-    //  qDebug() << "undo " << _undo_states.size();
+//    qDebug() << "undo " << _undo_states.size();
 }
 
 
@@ -241,8 +241,27 @@ void MainWindow::onRedoInvoked()
 
         xmlLoadState( state_document );
     }
+//    qDebug() << "undo " << _undo_states.size();
     _disable_undo_logging = false;
 }
+
+void MainWindow::onUndoInvoked( )
+{
+    _disable_undo_logging = true;
+    if( _undo_states.size() > 1)
+    {
+        QDomDocument state_document = _undo_states.back();
+        while( _redo_states.size() >= 100 ) _redo_states.pop_front();
+        _redo_states.push_back( state_document );
+        _undo_states.pop_back();
+        state_document = _undo_states.back();
+
+        xmlLoadState( state_document );
+    }
+//    qDebug() << "undo " << _undo_states.size();
+    _disable_undo_logging = false;
+}
+
 
 
 void MainWindow::onUpdateLeftTableValues()
@@ -1576,26 +1595,7 @@ void MainWindow::onActionLoadLayoutFromFile(QString filename)
     if( previously_loaded_datafile.isNull() == false)
     {
         QString filename = previously_loaded_datafile.attribute("filename");
-
-//        QMessageBox msgBox(this);
-//        msgBox.setWindowTitle("Load Data?");
-//        msgBox.setText(tr("Do you want to reload the previous datafile?\n\n %1 \n\n").arg(filename));
-
-//        msgBox.addButton(tr("No (Layout only)"), QMessageBox::RejectRole);
-//        QPushButton* buttonBoth = msgBox.addButton(tr("Yes (Both Layout and Datafile)"), QMessageBox::YesRole);
-//        msgBox.addButton(QMessageBox::Cancel);
-
-//        msgBox.setDefaultButton(buttonBoth);
-//        int res = msgBox.exec();
-//        if( res < 0 || res == QMessageBox::Cancel)
-//        {
-//            return;
-//        }
-
-//        if( msgBox.clickedButton() == buttonBoth )
-        {
-            onActionLoadDataFileImpl( filename, true );
-        }
+        onActionLoadDataFileImpl( filename, true );
     }
 
     QDomElement previously_loaded_streamer =  root.firstChildElement( "previouslyLoadedStreamer" );
@@ -1699,25 +1699,13 @@ void MainWindow::onActionLoadLayoutFromFile(QString filename)
 
     xmlLoadState( domDocument );
 
+    forEachWidget([&](PlotWidget* plot)
+    {
+        plot->zoomOut(false);
+    } );
+
     _undo_states.clear();
     _undo_states.push_back( domDocument );
-}
-
-
-void MainWindow::onUndoInvoked( )
-{
-    _disable_undo_logging = true;
-    if( _undo_states.size() > 1)
-    {
-        QDomDocument state_document = _undo_states.back();
-        while( _redo_states.size() >= 100 ) _redo_states.pop_front();
-        _redo_states.push_back( state_document );
-        _undo_states.pop_back();
-        state_document = _undo_states.back();
-
-        xmlLoadState( state_document );
-    }
-    _disable_undo_logging = false;
 }
 
 
@@ -2032,6 +2020,12 @@ void MainWindow::on_pushButtonRemoveTimeOffset_toggled(bool )
 {
     updateTimeOffset();
     updatedDisplayTime();
+
+    forEachWidget( [](PlotWidget* plot)
+    {
+        plot->replot();
+    } );
+
     if (this->signalsBlocked() == false)  onUndoableChange();
 }
 
@@ -2044,28 +2038,41 @@ void MainWindow::on_pushButtonOptions_toggled(bool checked)
 
 void MainWindow::updatedDisplayTime()
 {
+    QLineEdit* timeLine = ui->displayTime;
     const double relative_time = _tracker_time - _time_offset.get();
     if( ui->pushButtonUseDateTime->isChecked() )
     {
         if( ui->pushButtonRemoveTimeOffset->isChecked() )
         {
             QTime time = QTime::fromMSecsSinceStartOfDay( std::round(relative_time*1000.0));
-            ui->displayTime->setText( time.toString("HH:mm::ss.zzz") );
+            timeLine->setText( time.toString("HH:mm::ss.zzz") );
         }
         else{
             QDateTime datetime = QDateTime::fromMSecsSinceEpoch( std::round(_tracker_time*1000.0) );
-            ui->displayTime->setText( datetime.toString("d/M/yy HH:mm::ss.zzz") );
+            timeLine->setText( datetime.toString("[yyyy MMM dd] HH:mm::ss.zzz") );
         }
     }
     else{
-        ui->displayTime->setText( QString::number(relative_time, 'f', 3));
+        timeLine->setText( QString::number(relative_time, 'f', 3));
     }
+
+    QFontMetrics fm( timeLine->font() );
+    int width = fm.width( timeLine->text()) + 10;
+    timeLine->setFixedWidth( std::max( 100, width ) );
 }
 
 void MainWindow::on_pushButtonActivateGrid_toggled(bool checked)
 {
     forEachWidget( [checked](PlotWidget* plot) {
         plot->activateGrid( checked );
+        plot->replot();
+    });
+}
+
+void MainWindow::on_pushButtonRatio_toggled(bool checked)
+{
+    forEachWidget( [checked](PlotWidget* plot) {
+        plot->setConstantRatioXY( checked );
         plot->replot();
     });
 }
@@ -2336,14 +2343,9 @@ void MainWindow::on_actionCheatsheet_triggered()
 {
     QSettings settings;
 
-    QDialog* dialog = new QDialog(this);  
-    auto* ui = new Ui_CheatsheetDialog();
-    ui->setupUi(dialog);
-
+    HelpVideo* dialog = new HelpVideo(this);
     dialog->restoreGeometry(settings.value("Cheatsheet.geometry").toByteArray());
-
     dialog->setAttribute(Qt::WA_DeleteOnClose);
-
     dialog->show();
 
     connect(dialog, &QDialog::finished, this, [this, dialog]()
@@ -2366,8 +2368,12 @@ void MainWindow::on_actionSupportPlotJuggler_triggered()
 
 void MainWindow::on_actionSaveAllPlotTabs_triggered()
 {
+    QSettings settings;
+    QString directory_path  = settings.value("MainWindow.saveAllPlotTabs",
+                                             QDir::currentPath() ).toString();
     // Get destination folder
     QFileDialog saveDialog;
+    saveDialog.setDirectory(directory_path);
     saveDialog.setFileMode(QFileDialog::FileMode::Directory);
     saveDialog.setAcceptMode(QFileDialog::AcceptSave);
     saveDialog.exec();
@@ -2376,17 +2382,23 @@ void MainWindow::on_actionSaveAllPlotTabs_triggered()
     if(saveDialog.result() == QDialog::Accepted && !saveDialog.selectedFiles().empty())
     {
         // Save Plots
-        QString folder = saveDialog.selectedFiles().first();
+        QString directory = saveDialog.selectedFiles().first();
+        settings.setValue("MainWindow.saveAllPlotTabs", directory);
 
         QStringList file_names;
         QStringList existing_files;
+        QDateTime current_date_time(QDateTime::currentDateTime());
+        QString current_date_time_name(current_date_time.toString("yyyy-MM-dd_HH-mm-ss"));
         for(const auto& it: TabbedPlotWidget::instances())
         {
             auto tab_widget = it.second->tabWidget();
             for(int i=0; i< tab_widget->count(); i++)
             {
                 PlotMatrix* matrix = static_cast<PlotMatrix*>( tab_widget->widget(i) );
-                QString name = QString("%1/%2_%3.png").arg(folder).arg(image_number, 2, 10, QLatin1Char('0')).arg(matrix->name());
+                QString name = QString("%1/%2_%3_%4.png")
+                        .arg(directory)
+                        .arg(current_date_time_name)
+                        .arg(image_number, 2, 10, QLatin1Char('0')).arg(matrix->name());
                 file_names.push_back( name );
                 image_number++;
 
@@ -2424,7 +2436,7 @@ void MainWindow::on_actionSaveAllPlotTabs_triggered()
             for(int i=0; i< tab_widget->count(); i++)
             {
                 PlotMatrix* matrix = static_cast<PlotMatrix*>( tab_widget->widget(i) );
-                TabbedPlotWidget::saveTabImage( file_names[image_number++], matrix);
+                TabbedPlotWidget::saveTabImage( file_names[image_number], matrix);
                 image_number++;
             }
         }

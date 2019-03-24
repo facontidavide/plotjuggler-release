@@ -2,6 +2,16 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.1.8 (2019-03-24)
+------------------
+* bug fixes
+* xy equal scaling seems to work
+* Super fancy Video cheatsheet (#164)
+* better date display
+* Fix issue #161 and remember last directory used
+* mainwindow - use yyyy-MM-dd_HH-mm-ss name when saving a plot as png. This allows to save several times without having to rename the previous image (#162)
+* Contributors: Davide Faconti, bresch
+
 2.1.7 (2019-03-20)
 ------------------
 * Date time visualization on X axis
