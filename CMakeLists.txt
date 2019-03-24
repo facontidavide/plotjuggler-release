@@ -11,7 +11,7 @@ cmake_policy (SET CMP0020 NEW)
 add_definitions(
     -DPJ_MAJOR_VERSION=2
     -DPJ_MINOR_VERSION=1
-    -DPJ_PATCH_VERSION=7 )
+    -DPJ_PATCH_VERSION=8 )
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
@@ -38,7 +38,7 @@ if(APPLE AND EXISTS /usr/local/opt/qt5)
 endif()
 
 
-find_package(Qt5 REQUIRED COMPONENTS Core Widgets PrintSupport Concurrent Xml Qml)
+find_package(Qt5 REQUIRED COMPONENTS Core Widgets Multimedia MultimediaWidgets PrintSupport Concurrent Xml Qml)
 find_package(Qt5 QUIET COMPONENTS WebSockets)
 
 set( QT_LINK_LIBRARIES
@@ -48,6 +48,8 @@ set( QT_LINK_LIBRARIES
     Qt5::Xml
     Qt5::Concurrent
     Qt5::Qml
+    Qt5::Multimedia
+    Qt5::MultimediaWidgets
     )
 
 add_definitions( -DQWT_NO_SVG )
@@ -107,6 +109,8 @@ include_directories(
     ${Qt5PrintSupport_INCLUDE_DIRS}
     ${Qt5Xml_INCLUDE_DIRS}
     ${Qt5WebSockets_INCLUDE_DIRS}
+    ${Qt5Multimedia_INCLUDE_DIRS}
+    ${Qt5MultimediaWidgets_INCLUDE_DIRS}
     ./qwt/src
     ./include
     ./color_widgets/include
