@@ -1,0 +1,12 @@
+Source: ros-lunar-plotjuggler
+Section: misc
+Priority: extra
+Maintainer: Davide Faconti <davide.faconti@gmail.com>
+Build-Depends: debhelper (>= 9.0.0), binutils-dev, qtbase5-dev, qtdeclarative5-dev, qtmultimedia5-dev, ros-lunar-catkin, ros-lunar-ros-type-introspection, ros-lunar-rosbag, ros-lunar-rosbag-storage, ros-lunar-roscpp, ros-lunar-roscpp-serialization, ros-lunar-rostime, ros-lunar-tf, ros-lunar-topic-tools
+Homepage: https://github.com/facontidavide/PlotJuggler
+Standards-Version: 3.9.2
+
+Package: ros-lunar-plotjuggler
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, binutils-dev, qtbase5-dev, qtdeclarative5-dev, qtmultimedia5-dev, ros-lunar-ros-type-introspection, ros-lunar-rosbag, ros-lunar-rosbag-storage, ros-lunar-roscpp, ros-lunar-roscpp-serialization, ros-lunar-rostime, ros-lunar-tf, ros-lunar-topic-tools
+Description: PlotJuggler: juggle with data
