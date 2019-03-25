@@ -8,7 +8,7 @@
 [![Join the chat at https://gitter.im/PlotJuggler/Lobby](https://badges.gitter.im/PlotJuggler/Lobby.svg)](https://gitter.im/PlotJuggler/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Tweet](https://img.shields.io/twitter/url/http/shields.io.svg?style=social)](https://twitter.com/intent/tweet?text=I%20use%20PlotJuggler%20and%20it%20is%20amazing%0D%0A&url=https://github.com/facontidavide/PlotJuggler&via=facontidavide&hashtags=dataviz,plotjuggler,GoROS,PX4)
 
-# PlotJuggler 2.1.8
+# PlotJuggler 2.1.9
 
 QT5 based application to display time series in plots, using an intuitive "drag and drop" interface.
 
@@ -52,11 +52,11 @@ Watch this video to learn how to use it.
 
 For those of you that can't wait to get your hands dirty, just download this AppImage:
 
-[PlotJuggler-2.1.8-x86_64.AppImage](https://github.com/facontidavide/PlotJuggler/releases/download/2.1.8/PlotJuggler-2.1.8-x86_64.AppImage).
+[PlotJuggler-2.1.9-x86_64.AppImage](https://github.com/facontidavide/PlotJuggler/releases/download/2.1.9/PlotJuggler-2.1.9-x86_64.AppImage).
    
 Do not forget to make it executable with the command 
 
-    chmod +x ./PlotJuggler-2.1.8-x86_64.AppImage
+    chmod +x ./PlotJuggler-2.1.9-x86_64.AppImage
 
 ## How to build (without ROS plugins)
 
