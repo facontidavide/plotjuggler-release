@@ -217,14 +217,15 @@ private:
 
     SnippetsMap _snippets;
 
-    QwtPlotRescaler *_rescaler;
-
     bool _zoom_enabled;
 
     bool _keep_aspect_ratio;
 
+    QRectF _max_zoom_rect;
+
     void transformCustomCurves();
-    QRectF updateMaximumZoomArea();
+    void updateMaximumZoomArea();
+    void rescaleEqualAxisScaling();
 };
 
 #endif
