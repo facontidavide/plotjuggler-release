@@ -137,7 +137,7 @@ PlotData::Point CustomFunction::calculatePoint(QJSValue& calcFct,
         double value;
         int index = chan_data->getIndexFromX(old_point.x);
         if(index != -1){
-            value = chan_data->at(point_index).y;
+            value = chan_data->at(index).y;
         }
         else{
             value = std::numeric_limits<double>::quiet_NaN();
