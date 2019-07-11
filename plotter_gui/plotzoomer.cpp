@@ -1,6 +1,7 @@
 #include "plotzoomer.h"
 #include <QMouseEvent>
 #include <QApplication>
+#include <QSettings>
 #include "qwt_scale_map.h"
 #include "qwt_plot.h"
 
@@ -31,8 +32,6 @@ void PlotZoomer::widgetMousePressEvent(QMouseEvent *me)
 
 void PlotZoomer::widgetMouseMoveEvent(QMouseEvent *me)
 {
-    static QCursor zoom_cursor(QPixmap(":/icons/resources/light/zoom_in.png"));
-
     if( _mouse_pressed )
     {
         auto patterns = this->mousePattern();
@@ -46,13 +45,20 @@ void PlotZoomer::widgetMouseMoveEvent(QMouseEvent *me)
             {
                 if( !_zoom_enabled)
                 {
+                    QSettings settings;
+                    QString theme = settings.value("Preferences::theme", "style_light").toString();
+                    QPixmap pixmap( tr(":/%1/zoom_in.png").arg(theme));
+                    QCursor zoom_cursor( pixmap.scaled( 24,24) );
+
                     _zoom_enabled = true;
                     this->setRubberBand( RectRubberBand );
                     this->setTrackerMode(AlwaysOff);
+                    QPen pen( parentWidget()->palette().foreground().color(), 1, Qt::DashLine );
+                    this->setRubberBandPen(pen);
                     QApplication::setOverrideCursor(zoom_cursor);
                 }
             }
-            else if( _zoom_enabled)
+            else if( _zoom_enabled )
             {
                _zoom_enabled = false;
                this->setRubberBand( NoRubberBand );

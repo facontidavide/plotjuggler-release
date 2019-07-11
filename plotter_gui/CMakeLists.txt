@@ -3,15 +3,18 @@ include_directories( ./ ../  ../include  ../common)
 
 QT5_ADD_RESOURCES (RES_SRC  resource.qrc )
 
+
 QT5_WRAP_UI ( UI_SRC
     aboutdialog.ui
     axis_limits_dialog.ui
     mainwindow.ui
     removecurvedialog.ui
     curvecolorpick.ui
-    filterablelistwidget.ui
     tabbedplotwidget.ui
     support_dialog.ui
+    curvelist_panel.ui
+    preferences_dialog.ui
+    suggest_dialog.ui
 
     transforms/function_editor.ui
     transforms/transform_selector.ui
@@ -23,19 +26,23 @@ SET( PLOTTER_SRC
     axis_limits_dialog.cpp
     customtracker.cpp
     curvecolorpick.cpp
-    filterablelistwidget.cpp
+    curvelist_panel.cpp
     main.cpp
     mainwindow.cpp
     menubar.cpp
+    plotlegend.cpp
     plotwidget.cpp
     plotmatrix.cpp
     plotmagnifier.cpp
+    preferences_dialog.cpp
     point_series_xy.cpp
     plotzoomer.cpp
     removecurvedialog.cpp
     subwindow.cpp
+    suggest_dialog.cpp
     timeseries_qwt.cpp
     tabbedplotwidget.cpp
+    tab_widget.h
     tree_completer.h
 
     transforms/custom_function.cpp

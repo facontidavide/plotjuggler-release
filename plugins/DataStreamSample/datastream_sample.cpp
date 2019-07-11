@@ -47,7 +47,7 @@ DataStreamSample::DataStreamSample()
     dataMap().addNumeric("empty");
 }
 
-bool DataStreamSample::start()
+bool DataStreamSample::start(QStringList*)
 {
     _running = true;
     pushSingleCycle();
@@ -68,14 +68,14 @@ DataStreamSample::~DataStreamSample()
     shutdown();
 }
 
-QDomElement DataStreamSample::xmlSaveState(QDomDocument &doc) const
+bool DataStreamSample::xmlSaveState(QDomDocument &doc, QDomElement &parent_element) const
 {
-    return QDomElement();
+    return true;
 }
 
-bool DataStreamSample::xmlLoadState(QDomElement &parent_element)
+bool DataStreamSample::xmlLoadState(const QDomElement &parent_element)
 {
-    return false;
+    return true;
 }
 
 void DataStreamSample::pushSingleCycle()

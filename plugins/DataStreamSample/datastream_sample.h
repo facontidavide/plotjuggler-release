@@ -16,7 +16,7 @@ public:
 
     DataStreamSample();
 
-    virtual bool start() override;
+    virtual bool start(QStringList*) override;
 
     virtual void shutdown() override;
 
@@ -28,9 +28,9 @@ public:
 
     virtual bool isDebugPlugin() override { return true; }
 
-    virtual QDomElement xmlSaveState(QDomDocument &doc) const override;
+    virtual bool xmlSaveState(QDomDocument &doc, QDomElement &parent_element) const override;
 
-    virtual bool xmlLoadState(QDomElement &parent_element ) override;
+    virtual bool xmlLoadState(const QDomElement &parent_element ) override;
 
 private:
 

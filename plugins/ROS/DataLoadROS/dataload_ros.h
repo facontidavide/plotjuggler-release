@@ -8,9 +8,10 @@
 #include <rosbag/bag.h>
 
 #include "PlotJuggler/dataloader_base.h"
-#include <ros_type_introspection/ros_introspection.hpp>
+#include "../dialog_select_ros_topics.h"
+#include "../RosMsgParsers/ros_parser.h"
 
-class  DataLoadROS: public QObject, DataLoader
+class  DataLoadROS: public DataLoader
 {
     Q_OBJECT
     Q_PLUGIN_METADATA(IID "com.icarustechnology.PlotJuggler.DataLoader" "../dataloader.json")
@@ -18,37 +19,35 @@ class  DataLoadROS: public QObject, DataLoader
 
 public:
     DataLoadROS();
+
     virtual const std::vector<const char*>& compatibleFileExtensions() const override;
 
-    virtual PlotDataMapRef readDataFromFile(const QString& file_name, bool use_previous_configuration ) override;
+    virtual bool readDataFromFile(FileLoadInfo* fileload_info, PlotDataMapRef& destination) override;
 
     virtual const char* name() const override { return "DataLoad ROS bags"; }
 
-    virtual ~DataLoadROS();
+    virtual ~DataLoadROS() override;
 
-    virtual QDomElement xmlSaveState(QDomDocument &doc) const override;
+    virtual bool xmlSaveState(QDomDocument &doc, QDomElement &parent_element) const override;
 
-    virtual bool xmlLoadState(QDomElement &parent_element ) override;
+    virtual bool xmlLoadState(const QDomElement &parent_element ) override;
 
 protected:
     void loadSubstitutionRule(QStringList all_topic_names);
     std::shared_ptr<rosbag::Bag> _bag;
 
 private:
-    RosIntrospection::SubstitutionRuleMap  _rules;
+    RosMessageParser _ros_parser;
 
     std::vector<const char*> _extensions;
 
-    QStringList _default_topic_names;
-
-    std::unique_ptr<RosIntrospection::Parser> _parser;
-
-    bool _use_renaming_rules;
+    DialogSelectRosTopics::Configuration _config;
 
     std::vector<std::pair<QString, QString>> getAndRegisterAllTopics();
 
-    void storeMessageInstancesAsUserDefined(PlotDataMapRef& plot_map,
-                                            const std::string &prefix);
+    void saveDefaultSettings();
+
+    void loadDefaultSettings();
 };
 
 #endif // DATALOAD_CSV_H
