@@ -51,15 +51,8 @@ bool PointSeriesXY::updateCache()
         throw std::runtime_error("the X axis is null");
     }
 
-    const size_t data_size =  _x_axis->size();
-
-    if( data_size != _x_axis->size() )
-    {
-        _bounding_box = QRectF();
-        _cached_curve.clear();
-        throw std::runtime_error("X and Y axis don't share the same time axis");
-    }
-
+    const size_t data_size =  std::min(_x_axis->size(), _y_axis->size());
+    
     if(data_size == 0)
     {
         _bounding_box = QRectF();
