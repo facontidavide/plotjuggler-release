@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
 <name>plotjuggler</name>
-<version>2.1.10</version>
+<version>2.3.0</version>
 <description>PlotJuggler: juggle with data</description>
 
 <maintainer email="davide.faconti@gmail.com">Davide Faconti</maintainer>
@@ -25,6 +25,8 @@
 <build_depend>qtdeclarative5-dev</build_depend>
 <build_depend>qtmultimedia5-dev</build_depend>
 <build_depend>binutils</build_depend>
+<build_depend>diagnostic_msgs</build_depend>
+<build_depend>nav_msgs</build_depend>
 
 <run_depend>rosbag</run_depend>
 <run_depend>rosbag_storage</run_depend>
@@ -38,6 +40,8 @@
 <run_depend>qtmultimedia5-dev</run_depend>
 <run_depend>binutils</run_depend>
 <run_depend>tf</run_depend>
+<run_depend>diagnostic_msgs</run_depend>
+<run_depend>nav_msgs</run_depend>
 
 <!-- The export tag contains other, unspecified, tags -->
 <export>

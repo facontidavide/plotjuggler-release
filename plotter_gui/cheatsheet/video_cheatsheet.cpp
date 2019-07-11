@@ -89,9 +89,11 @@ HelpVideo::HelpVideo(QWidget *parent)
     videoLayout->setSpacing(20);
     videoLayout->addWidget(_text);
     videoLayout->addWidget(videoWidget);
+    videoLayout->addWidget(new QLabel("If you can't see the videos, install codecs with [sudo apt-get install libqt5multimedia5-plugins]"));
 
     videoLayout->setStretch(0,1);
     videoLayout->setStretch(1,0);
+    videoLayout->setStretch(2,0);
 
     QBoxLayout *layout = new QHBoxLayout;
     layout->addWidget(list_widget);
@@ -138,10 +140,11 @@ void HelpVideo::setupHelps()
                                " using the <b>Left Mouse</b> button.",
                               QUrl("qrc:/cheatsheet/video/cheatsheet-drag-drop.mp4")});
 
-    _help_sections.push_back( {"Create XY plots",
-                               "Using two timeseries, sharing the same time axis, it is possible"
-                               " to create a XY plot. Drag and Drop the Y axis as usual, using the"
-                               " <b>Left Mouse</b> and the X axis with the <b>Right Mouse</b>.",
+    _help_sections.push_back( {"Create XY curves",
+                               "Select two timeseries, one for the X axis and another for the Y axis. "
+                               "They <b>must</b> share the same time axis.\n"
+                               "Drag and Drop both of them using the <b>Right Mouse</b> button instead of the Left one.\n"
+                               "Keep in mind that a Plot Widget can not display at the same time both XY curves and normal timeseries.",
                               QUrl("qrc:/cheatsheet/video/cheatsheet-xy.mp4")});
 
     _help_sections.push_back( {"Pan view",
