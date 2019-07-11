@@ -2,6 +2,11 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.3.0 (2019-07-11)
+------------------
+* Countless changes and merges of PR.
+* Contributors: Alexandre Eudes, Davide Faconti, Juan Francisco Rascón Crespo, alexandre eudes
+
 2.1.10 (2019-03-29)
 -------------------
 * critical bug fixed in CustomFunctions

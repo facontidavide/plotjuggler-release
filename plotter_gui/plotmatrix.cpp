@@ -154,6 +154,29 @@ void PlotMatrix::removeRow(unsigned row_to_delete)
     updateLayout();
 }
 
+void PlotMatrix::removeEmpty()
+{
+    for( unsigned row = 0; row< rowsCount(); row++)
+    {
+        while( rowsCount() > 1 &&
+               isRowEmpty( row ) &&
+               row < rowsCount() )
+        {
+            removeRow( row );
+        }
+    }
+
+    for( unsigned col = 0; col< colsCount(); col++)
+    {
+        while( colsCount() > 1 &&
+               isColumnEmpty( col ) &&
+               col < colsCount() )
+        {
+            removeColumn( col );
+        }
+    }
+}
+
 
 PlotMatrix::~PlotMatrix(){}
 
