@@ -60,7 +60,6 @@ void CurveTracker::setEnabled(bool enable)
     {
         _marker[i]->setVisible( enable );
     }
-
 }
 
 void CurveTracker::setPosition(const QPointF& position)
@@ -75,7 +74,8 @@ void CurveTracker::setPosition(const QPointF& position)
     rect.setLeft( _plot->canvasMap( QwtPlot::xBottom ).s1() );
     rect.setRight( _plot->canvasMap( QwtPlot::xBottom ).s2() );
 
-    double tot_Y = 0;
+    double min_Y = std::numeric_limits<double>::max();
+    double max_Y = -min_Y;
     int visible_points = 0;
 
     while( _marker.size() >  curves.size())
@@ -90,7 +90,6 @@ void CurveTracker::setPosition(const QPointF& position)
         _marker[i]->attach( _plot );
     }
 
-
     double text_X_offset = 0;
 
     std::multimap<double,QString> text_lines;
@@ -98,6 +97,12 @@ void CurveTracker::setPosition(const QPointF& position)
     for ( int i = 0; i < curves.size(); i++ )
     {
         QwtPlotCurve *curve = static_cast<QwtPlotCurve *>(curves[i]);
+        _marker[i]->setVisible( curve->isVisible() );
+
+        if( curve->isVisible() == false)
+        {
+            continue;
+        }
         QColor color = curve->pen().color();
 
         text_X_offset =  rect.width() * 0.02;
@@ -131,7 +136,9 @@ void CurveTracker::setPosition(const QPointF& position)
 
         if( rect.contains( point ) &&  _visible )
         {
-            tot_Y += point.y();
+            min_Y = std::min( min_Y, point.y());
+            max_Y = std::max( max_Y, point.y());
+
             visible_points++;
             double val = point.y();
 
@@ -174,11 +181,11 @@ void CurveTracker::setPosition(const QPointF& position)
             text_marker_info += "<br>";
         }
     }
+    mark_text.setBorderPen( QColor(Qt::transparent) );
 
-    QColor col( "#FFFFFF" );
-    mark_text.setBorderPen( QPen( col, 2 ) );
-    col.setAlpha( 220 );
-    mark_text.setBackgroundBrush( col );
+    QColor background_color = _plot->palette().background().color();
+    background_color.setAlpha(180);
+    mark_text.setBackgroundBrush( background_color );
     mark_text.setText( text_marker_info );
 
     QFont font = QFontDatabase::systemFont(QFontDatabase::FixedFont);
@@ -193,7 +200,7 @@ void CurveTracker::setPosition(const QPointF& position)
     _text_marker->setXValue( position.x() + text_X_offset );
 
     if(visible_points > 0){
-        _text_marker->setYValue( tot_Y/visible_points );
+        _text_marker->setYValue( 0.5*(max_Y+min_Y) );
     }
 
     double canvas_ratio = rect.width() / double(_plot->width());

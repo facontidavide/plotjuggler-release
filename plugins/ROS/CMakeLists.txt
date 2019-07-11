@@ -22,6 +22,8 @@ SET( COMMON_SRC
     dialog_select_ros_topics.h
     dialog_select_ros_topics.cpp
     dialog_with_itemlist.h
+    ./RosMsgParsers/ros_parser.h
+    ./RosMsgParsers/ros_parser.cpp
     )
 
 QT5_WRAP_UI ( COMMON_UI_SRC
@@ -106,7 +108,11 @@ add_dependencies(RosoutPublisher
     )
 
 if(COMPILING_WITH_CATKIN)
-    install(TARGETS DataLoadROS  DataStreamROS  RosTopicPublisher  RosoutPublisher
+    install(TARGETS
+        DataLoadROS
+        DataStreamROS
+        RosTopicPublisher
+        RosoutPublisher
         ARCHIVE DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
         LIBRARY DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
         RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
