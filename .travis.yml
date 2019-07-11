@@ -13,7 +13,6 @@ compiler:
 
 env:
   matrix:
-    - ROS_DISTRO="indigo" 
     - ROS_DISTRO="kinetic"
     - ROS_DISTRO="lunar" 
     - ROS_DISTRO="melodic" 

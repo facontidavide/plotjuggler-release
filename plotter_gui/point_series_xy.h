@@ -27,6 +27,9 @@ public:
 
     bool updateCache() override;
 
+    const PlotData* dataX() const { return _x_axis; }
+    const PlotData* dataY() const { return _y_axis; }
+
 protected:
 
     const PlotData *_x_axis;

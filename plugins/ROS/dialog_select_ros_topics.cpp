@@ -6,7 +6,6 @@
 #include <QFileDialog>
 #include <QTableWidget>
 #include <QTableWidgetItem>
-#include <QSettings>
 #include <QHeaderView>
 #include <QDebug>
 #include <QMessageBox>
@@ -18,11 +17,11 @@
 
 
 DialogSelectRosTopics::DialogSelectRosTopics(const std::vector<std::pair<QString, QString>>& topic_list,
-                                             QStringList default_selected_topics,
+                                             const Configuration &config,
                                              QWidget *parent) :
     QDialog(parent),
     ui(new Ui::dialogSelectRosTopics),
-    _default_selected_topics(default_selected_topics),
+    _default_selected_topics(config.selected_topics),
     _select_all(QKeySequence(Qt::CTRL + Qt::Key_A), this),
     _deselect_all(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_A), this)
 {
@@ -32,26 +31,16 @@ DialogSelectRosTopics::DialogSelectRosTopics(const std::vector<std::pair<QString
 
     ui->setupUi(this);
 
-    QSettings settings;
-    ui->checkBoxEnableRules->setChecked( settings.value("DialogSelectRosTopics.enableRules", true ).toBool());
-    ui->spinBoxArraySize->setValue( settings.value( "DialogSelectRosTopics.maxArraySize", 100).toInt() );
-    ui->checkBoxTimestamp->setChecked( settings.value("DialogSelectRosTopics.checkBoxTimestamp", false ).toBool());
-    restoreGeometry(settings.value("DialogSelectRosTopics.geometry").toByteArray());
+    ui->checkBoxEnableRules->setChecked( config.use_renaming_rules );
+    ui->spinBoxArraySize->setValue( config.max_array_size );
+    ui->checkBoxTimestamp->setChecked( config.use_header_stamp );
 
-    bool discard_max = settings.value("DialogSelectRosTopics.maxArrayDiscard", true).toBool();
-
-    if( discard_max )
+    if( config.discard_large_arrays )
     {
         ui->radioMaxDiscard->setChecked(true);
     }
     else{
         ui->radioMaxClamp->setChecked(true);
-    }
-
-    if( _default_selected_topics.isEmpty())
-    {
-        QString default_topics = settings.value("DialogSelectRosTopics.selectedItems", "" ).toString();
-        _default_selected_topics = default_topics.split(' ', QString::SkipEmptyParts);
     }
 
     QStringList labels;
@@ -80,13 +69,9 @@ DialogSelectRosTopics::DialogSelectRosTopics(const std::vector<std::pair<QString
 
     on_spinBoxArraySize_valueChanged( ui->spinBoxArraySize->value() );
 
-    if( ! has_setMaxArrayPolicy<RosIntrospection::Parser>::value)
-    {
-        ui->radioMaxDiscard->setChecked(true);
-        ui->radioMaxClamp->setEnabled(false);
-        ui->radioMaxClamp->setToolTip("To enable this policy you must link to an up-to-date "
-                                      "version of ros_type_introspection");
-    }
+    QSettings settings;
+    restoreGeometry(settings.value("DialogSelectRosTopics.geometry").toByteArray());
+
 }
 
 void DialogSelectRosTopics::updateTopicList(std::vector<std::pair<QString, QString> > topic_list )
@@ -158,34 +143,15 @@ DialogSelectRosTopics::~DialogSelectRosTopics()
     delete ui;
 }
 
-QStringList DialogSelectRosTopics::getSelectedItems()
+DialogSelectRosTopics::Configuration DialogSelectRosTopics::getResult() const
 {
-  return _topic_list;
-}
-
-int DialogSelectRosTopics::maxArraySize() const
-{
-  return ui->spinBoxArraySize->value();
-}
-
-const QCheckBox* DialogSelectRosTopics::checkBoxUseRenamingRules()
-{
-    return ui->checkBoxEnableRules;
-}
-
-bool DialogSelectRosTopics::discardEntireArrayIfTooLarge()
-{
-    return ui->radioMaxDiscard->isChecked();
-}
-
-QCheckBox* DialogSelectRosTopics::checkBoxTimestamp()
-{
-     return ui->checkBoxTimestamp;
-}
-
-QString DialogSelectRosTopics::prefix()
-{
-    return (ui->checkBoxPrefix->isChecked()) ? ui->linePrefix->text() : QString();
+    Configuration config;
+    config.selected_topics      = _topic_list;
+    config.max_array_size       = ui->spinBoxArraySize->value();
+    config.use_header_stamp     = ui->checkBoxTimestamp->isChecked();
+    config.discard_large_arrays = ui->radioMaxDiscard->isChecked();
+    config.use_renaming_rules   = ui->checkBoxEnableRules->isChecked();
+    return config;
 }
 
 
@@ -201,13 +167,6 @@ void DialogSelectRosTopics::on_buttonBox_accepted()
             selected_topics.append( _topic_list.back() ).append(" ");
         }
     }
-    QSettings settings;
-    settings.setValue("DialogSelectRosTopics.enableRules",    ui->checkBoxEnableRules->isChecked() );
-    settings.setValue("DialogSelectRosTopics.geometry", saveGeometry());
-    settings.setValue("DialogSelectRosTopics.selectedItems", selected_topics );
-    settings.setValue("DialogSelectRosTopics.maxArraySize", ui->spinBoxArraySize->value());
-    settings.setValue("DialogSelectRosTopics.maxArrayDiscard", discardEntireArrayIfTooLarge());
-    settings.setValue("DialogSelectRosTopics.checkBoxTimestamp",  ui->checkBoxTimestamp->isChecked() );
 }
 
 void DialogSelectRosTopics::on_listRosTopics_itemSelectionChanged()
@@ -251,12 +210,6 @@ nonstd::optional<double> FlatContainerContainHeaderStamp(const RosIntrospection:
         }
     }
     return nonstd::optional<double>();
-}
-
-
-void DialogSelectRosTopics::on_checkBoxPrefix_toggled(bool checked)
-{
-    ui->linePrefix->setEnabled(checked);
 }
 
 void DialogSelectRosTopics::on_maximumSizeHelp_pressed()

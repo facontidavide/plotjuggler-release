@@ -89,7 +89,14 @@ AddCustomPlotDialog::~AddCustomPlotDialog()
 
 void AddCustomPlotDialog::setLinkedPlotName(const QString &linkedPlotName)
 {
-    ui->combo_linkedChannel->setCurrentText(linkedPlotName);
+    
+    int idx = ui->combo_linkedChannel->findText(linkedPlotName);
+    if (idx == -1)
+    {
+      idx = 0;
+      ui->combo_linkedChannel->insertItem(idx, linkedPlotName);
+    }
+    ui->combo_linkedChannel->setCurrentIndex(idx);
 }
 
 void AddCustomPlotDialog::setEditorMode(EditorMode mode)
@@ -120,7 +127,6 @@ QString AddCustomPlotDialog::getName() const
     return ui->nameLineEdit->text();
 }
 
-
 void AddCustomPlotDialog::editExistingPlot(CustomPlotPtr data)
 {
     ui->globalVarsTextField->setPlainText(data->globalVars());
@@ -144,14 +150,18 @@ void AddCustomPlotDialog::on_curvesListWidget_doubleClicked(const QModelIndex &i
             .arg(_v_count++)
             .arg(ui->curvesListWidget->item(index.row())->text());
 
+    QPlainTextEdit* edit = ui->mathEquation;
+
     if(ui->globalVarsTextField->hasFocus())
     {
-        ui->globalVarsTextField->insertPlainText(appendString);
+        edit = ui->globalVarsTextField;
     }
-    else if(ui->mathEquation->hasFocus())
+
+    if( !edit->toPlainText().endsWith("\n") )
     {
-        ui->mathEquation->insertPlainText(appendString);
+        edit->insertPlainText("\n");
     }
+    edit->insertPlainText(appendString);
 }
 
 void AddCustomPlotDialog::importSnippets(const QByteArray& xml_text)

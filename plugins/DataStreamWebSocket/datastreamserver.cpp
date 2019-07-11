@@ -30,7 +30,7 @@ DataStreamServer::~DataStreamServer()
 	shutdown();
 }
 
-bool DataStreamServer::start()
+bool DataStreamServer::start(QStringList*)
 {		
 	if (!_running) {
 		bool ok;
