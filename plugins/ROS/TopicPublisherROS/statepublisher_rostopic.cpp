@@ -20,7 +20,7 @@
 #include <QMessageBox>
 
 TopicPublisherROS::TopicPublisherROS():
-    enabled_(false ),
+    _enabled(false ),
     _node(nullptr),
     _publish_clock(true)
 {
@@ -31,13 +31,14 @@ TopicPublisherROS::TopicPublisherROS():
 
 TopicPublisherROS::~TopicPublisherROS()
 {
-    enabled_ = false;
+    _enabled = false;
 }
 
-void TopicPublisherROS::setParentMenu(QMenu *menu)
+void TopicPublisherROS::setParentMenu(QMenu *menu, QAction* action)
 {
+    StatePublisher::setParentMenu( menu, action );
+
     _enable_self_action = menu->actions().back();
-    _menu = menu;
 
     _select_topics_to_publish = new QAction(QString("Select topics to be published"), _menu);
     _menu->addAction( _select_topics_to_publish );
@@ -51,24 +52,36 @@ void TopicPublisherROS::setEnabled(bool to_enable)
     {
         _node = RosManager::getNode();
     }
-    enabled_ = (to_enable && _node);
+    _enabled = (to_enable && _node);
 
-    if(enabled_)
+    if(_enabled)
     {
-        filterDialog();
-        if( !_tf_publisher)
+        filterDialog(true);
+        if( !_tf_publisher )
         {
             _tf_publisher = std::unique_ptr<tf::TransformBroadcaster>( new tf::TransformBroadcaster );
         }
         _previous_play_index = std::numeric_limits<int>::max();
+
+        if( _publish_clock )
+        {
+            _clock_publisher = _node->advertise<rosgraph_msgs::Clock>( "/clock", 10, true);
+        }
+        else{
+            _clock_publisher.shutdown();
+        }
     }
     else{
         _node.reset();
         _publishers.clear();
+        _clock_publisher.shutdown();
     }
+
+
+    StatePublisher::setEnabled(_enabled);
 }
 
-void TopicPublisherROS::filterDialog(bool)
+void TopicPublisherROS::filterDialog(bool autoconfirm)
 {   
     auto all_topics = RosIntrospectionFactory::get().getTopicList();
 
@@ -142,9 +155,13 @@ void TopicPublisherROS::filterDialog(bool)
     connect(buttons, SIGNAL(rejected()), dialog, SLOT(reject()));
 
     dialog->setLayout(vertical_layout);
-    auto result = dialog->exec();
 
-    if(result == QDialog::Accepted)
+    if( !autoconfirm )
+    {
+        auto result = dialog->exec();
+    }
+
+    if(autoconfirm || dialog->result() == QDialog::Accepted)
     {
         _topics_to_publish.clear();
         for(const auto& it: checkbox )
@@ -166,14 +183,6 @@ void TopicPublisherROS::filterDialog(bool)
         }
 
         _publish_clock = publish_sim_time->isChecked();
-
-        if( _publish_clock )
-        {
-            _clock_publisher = _node->advertise<rosgraph_msgs::Clock>( "/clock", 10, true);
-        }
-        else{
-            _clock_publisher.shutdown();
-        }
 
         QSettings settings;
         settings.setValue( "TopicPublisherROS/publish_clock", _publish_clock );
@@ -284,6 +293,8 @@ bool TopicPublisherROS::toPublish(const std::string &topic_name)
 
 void TopicPublisherROS::publishAnyMsg(const rosbag::MessageInstance& msg_instance)
 {
+    using namespace RosIntrospection;
+
     const auto& topic_name = msg_instance.getTopic();
     RosIntrospection::ShapeShifter* shapeshifted =
             RosIntrospectionFactory::get().getShapeShifter( topic_name );
@@ -300,24 +311,20 @@ void TopicPublisherROS::publishAnyMsg(const rosbag::MessageInstance& msg_instanc
 
     if( !_publish_clock )
     {
-        const RosIntrospection::Parser::VisitingCallback modifyTimestamp =
-                [](const RosIntrospection::ROSType&, absl::Span<uint8_t>& buffer)
+        const ROSMessageInfo* msg_info = RosIntrospectionFactory::parser().getMessageInfo( topic_name );
+        if(msg_info &&  msg_info->message_tree.croot()->children().size() >= 1)
         {
-            std_msgs::Header msg;
-            ros::serialization::IStream is( buffer.data(), buffer.size() );
-            ros::serialization::deserialize(is, msg);
-            msg.stamp = ros::Time::now();
-            ros::serialization::OStream os( buffer.data(), buffer.size() );
-            ros::serialization::serialize(os, msg);
-        };
-
-        auto msg_info = RosIntrospectionFactory::parser().getMessageInfo( topic_name );
-        if(msg_info)
-        {
-            const RosIntrospection::ROSType header_type( ros::message_traits::DataType<std_msgs::Header>::value() ) ;
-            absl::Span<uint8_t> buffer_span(raw_buffer);
-            RosIntrospectionFactory::parser().applyVisitorToBuffer(topic_name, header_type,
-                                                                   buffer_span,  modifyTimestamp );
+            const auto& first_field = msg_info->message_tree.croot()->child(0)->value();
+            if(first_field->type().baseName() == "std_msgs/Header")
+            {
+                absl::Span<uint8_t> buffer(raw_buffer);
+                std_msgs::Header msg;
+                ros::serialization::IStream is( buffer.data(), buffer.size() );
+                ros::serialization::deserialize(is, msg);
+                msg.stamp = ros::Time::now();
+                ros::serialization::OStream os( buffer.data(), buffer.size() );
+                ros::serialization::serialize(os, msg);
+            }
         }
     }
 
@@ -340,7 +347,7 @@ void TopicPublisherROS::publishAnyMsg(const rosbag::MessageInstance& msg_instanc
 
 void TopicPublisherROS::updateState(double current_time)
 {
-    if(!enabled_ || !_node) return;
+    if(!_enabled || !_node) return;
 
     if( !ros::master::check() )
     {
@@ -414,7 +421,7 @@ void TopicPublisherROS::updateState(double current_time)
 
 void TopicPublisherROS::play(double current_time)
 {
-    if(!enabled_ || !_node) return;
+    if(!_enabled || !_node) return;
 
     if( !ros::master::check() )
     {

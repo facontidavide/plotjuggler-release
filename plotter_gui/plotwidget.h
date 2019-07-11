@@ -23,6 +23,7 @@
 #include "axis_limits_dialog.h"
 #include "transforms/transform_selector.h"
 #include "transforms/custom_function.h"
+#include "plotlegend.h"
 
 class PlotWidget : public QwtPlot
 {
@@ -50,11 +51,11 @@ public:
 
     void reloadPlotData( );
 
-    void changeAxisX(QString curve_name);
-
     bool isXYPlot() const;
 
     void changeBackgroundColor(QColor color);
+
+    const PlotLegend* legend() const { return _legend; }
 
     void setLegendSize(int size);
 
@@ -127,7 +128,7 @@ private slots:
 
     void on_changeToBuiltinTransforms(QString new_transform);
 
-    void on_convertToXY_triggered(bool checked);
+    void convertToXY();
 
     void on_customTransformsDialog();
 
@@ -144,7 +145,7 @@ private slots:
 
     void on_changeColor(QString curve_name, QColor new_color);
 
-    void on_showPoints_triggered(bool checked);
+    void on_showPoints_triggered();
 
     void on_externallyResized(const QRectF &new_rect);
 
@@ -163,7 +164,6 @@ private:
     QAction *_action_noTransform;
     QAction *_action_1stDerivativeTransform;
     QAction *_action_2ndDerivativeTransform;
-    QAction *_action_phaseXY;
     QAction *_action_custom_transform;
     QAction *_action_saveToFile;
     QAction *_action_editLimits;
@@ -174,7 +174,7 @@ private:
     QwtPlotPanner* _panner2;
 
     CurveTracker* _tracker;
-    QwtPlotLegendItem* _legend;
+    PlotLegend* _legend;
     QwtPlotGrid* _grid;
 
     bool _use_date_time_scale;
@@ -184,7 +184,7 @@ private:
     std::map<std::string, QString> _curves_transform;
 
     struct DragInfo{
-        enum{ NONE, CURVES, NEW_X, SWAP_PLOTS} mode;
+        enum{ NONE, CURVES, NEW_XY, SWAP_PLOTS} mode;
         std::vector<QString> curves;
         QObject* source;
     };
@@ -193,21 +193,24 @@ private:
 
     bool addCurve(const std::string &name);
 
-    void buildActions();
+    bool addCurveXY(std::string name_x, std::string name_y,
+                    QString curve_name = "");
 
-    void buildLegend();
+    void buildActions();
 
     void updateAvailableTransformers();
 
-    bool _show_line_and_points;
+    QwtPlotCurve::CurveStyle _curve_style;
 
     void setDefaultRangeX();
+
+    DataSeriesBase* createCurveXY(const PlotData *data_x, const PlotData *data_y);
     
-    DataSeriesBase* createSeriesData(const QString& ID, const PlotData *data);
+    DataSeriesBase* createTimeSeries(const QString& ID, const PlotData *data);
 
     double _time_offset;
 
-    const PlotData* _axisX = nullptr;
+    bool _xy_mode;
 
     PlotData::RangeValue _custom_Y_limits;
 
@@ -226,6 +229,7 @@ private:
     void transformCustomCurves();
     void updateMaximumZoomArea();
     void rescaleEqualAxisScaling();
+    void overrideCursonMove();
 };
 
 #endif

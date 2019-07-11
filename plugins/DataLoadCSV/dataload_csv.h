@@ -6,7 +6,7 @@
 #include "PlotJuggler/dataloader_base.h"
 
 
-class  DataLoadCSV: public QObject, DataLoader
+class  DataLoadCSV: public DataLoader
 {
     Q_OBJECT
     Q_PLUGIN_METADATA(IID "com.icarustechnology.PlotJuggler.DataLoader" "../dataloader.json")
@@ -16,15 +16,15 @@ public:
     DataLoadCSV();
     virtual const std::vector<const char*>& compatibleFileExtensions() const override;
 
-    virtual PlotDataMapRef readDataFromFile(const QString& file_name, bool use_previous_configuration  ) override;
+    virtual bool readDataFromFile(FileLoadInfo* fileload_info, PlotDataMapRef& destination) override;
 
     virtual ~DataLoadCSV();
 
     virtual const char* name() const override { return "DataLoad CSV"; }
 
-    virtual QDomElement xmlSaveState(QDomDocument &doc) const override;
+    virtual bool xmlSaveState(QDomDocument &doc, QDomElement &parent_element) const override;
 
-    virtual bool xmlLoadState(QDomElement &parent_element ) override;
+    virtual bool xmlLoadState(const QDomElement &parent_element ) override;
 
 protected:
     QSize parseHeader(QFile *file, std::vector<std::string> &ordered_names);

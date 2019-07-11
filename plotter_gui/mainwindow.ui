@@ -20,8 +20,8 @@
    <string>PlotJuggler</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="resource.qrc">
-    <normaloff>:/icons/resources/office_chart_line_stacked.png</normaloff>:/icons/resources/office_chart_line_stacked.png</iconset>
+   <iconset>
+    <normaloff>:/style_light/office_chart_line_stacked.png</normaloff>:/style_light/office_chart_line_stacked.png</iconset>
   </property>
   <property name="styleSheet">
    <string notr="true"/>
@@ -162,8 +162,8 @@
                 <string/>
                </property>
                <property name="icon">
-                <iconset resource="resource.qrc">
-                 <normaloff>:/icons/resources/light/settings_cog.png</normaloff>:/icons/resources/light/settings_cog.png</iconset>
+                <iconset>
+                 <normaloff>:/style_light/settings_cog.png</normaloff>:/style_light/settings_cog.png</iconset>
                </property>
                <property name="iconSize">
                 <size>
@@ -206,8 +206,8 @@
                 <string/>
                </property>
                <property name="icon">
-                <iconset resource="resource.qrc">
-                 <normaloff>:/icons/resources/light/line_tracker_1.png</normaloff>:/icons/resources/light/line_tracker_1.png</iconset>
+                <iconset>
+                 <normaloff>:/style_light/line_tracker_1.png</normaloff>:/style_light/line_tracker_1.png</iconset>
                </property>
                <property name="iconSize">
                 <size>
@@ -237,7 +237,7 @@
                <property name="maximumSize">
                 <size>
                  <width>200</width>
-                 <height>16777215</height>
+                 <height>30</height>
                 </size>
                </property>
                <property name="font">
@@ -254,54 +254,108 @@
               </widget>
              </item>
              <item>
-              <widget class="QPushButton" name="pushButtonPlay">
-               <property name="minimumSize">
-                <size>
-                 <width>40</width>
-                 <height>40</height>
-                </size>
+              <layout class="QHBoxLayout" name="horizontalLayout_3">
+               <property name="spacing">
+                <number>0</number>
                </property>
-               <property name="maximumSize">
-                <size>
-                 <width>40</width>
-                 <height>40</height>
-                </size>
+               <property name="leftMargin">
+                <number>0</number>
                </property>
-               <property name="focusPolicy">
-                <enum>Qt::NoFocus</enum>
-               </property>
-               <property name="styleSheet">
-                <string notr="true">QPushButton:checked {
+               <item>
+                <widget class="QPushButton" name="playbackLoop">
+                 <property name="minimumSize">
+                  <size>
+                   <width>30</width>
+                   <height>30</height>
+                  </size>
+                 </property>
+                 <property name="maximumSize">
+                  <size>
+                   <width>30</width>
+                   <height>30</height>
+                  </size>
+                 </property>
+                 <property name="focusPolicy">
+                  <enum>Qt::NoFocus</enum>
+                 </property>
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Loop&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                 <property name="text">
+                  <string/>
+                 </property>
+                 <property name="icon">
+                  <iconset>
+                   <normaloff>:/style_light/loop.png</normaloff>:/style_light/loop.png</iconset>
+                 </property>
+                 <property name="iconSize">
+                  <size>
+                   <width>28</width>
+                   <height>28</height>
+                  </size>
+                 </property>
+                 <property name="checkable">
+                  <bool>true</bool>
+                 </property>
+                 <property name="flat">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPushButton" name="pushButtonPlay">
+                 <property name="minimumSize">
+                  <size>
+                   <width>30</width>
+                   <height>30</height>
+                  </size>
+                 </property>
+                 <property name="maximumSize">
+                  <size>
+                   <width>30</width>
+                   <height>30</height>
+                  </size>
+                 </property>
+                 <property name="focusPolicy">
+                  <enum>Qt::NoFocus</enum>
+                 </property>
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Start/Stop player&lt;/p&gt;&lt;p&gt;( &lt;span style=&quot; font-weight:600;&quot;&gt;Space &lt;/span&gt;)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                 <property name="styleSheet">
+                  <string notr="true">QPushButton:checked {
     background-color: transparent;
     border:  0px;
     padding: 3px;
     outline: none;
 }</string>
-               </property>
-               <property name="text">
-                <string/>
-               </property>
-               <property name="icon">
-                <iconset resource="resource.qrc">
-                 <normaloff>:/icons/resources/light/play_arrow.png</normaloff>
-                 <normalon>:/icons/resources/light/pause.png</normalon>:/icons/resources/light/play_arrow.png</iconset>
-               </property>
-               <property name="iconSize">
-                <size>
-                 <width>36</width>
-                 <height>36</height>
-                </size>
-               </property>
-               <property name="checkable">
-                <bool>true</bool>
-               </property>
-               <property name="checked">
-                <bool>false</bool>
-               </property>
-               <property name="flat">
-                <bool>true</bool>
-               </property>
-              </widget>
+                 </property>
+                 <property name="text">
+                  <string/>
+                 </property>
+                 <property name="icon">
+                  <iconset>
+                   <normaloff>:/style_light/play_arrow.png</normaloff>
+                   <normalon>:/style_light/pause.png</normalon>:/style_light/play_arrow.png</iconset>
+                 </property>
+                 <property name="iconSize">
+                  <size>
+                   <width>36</width>
+                   <height>36</height>
+                  </size>
+                 </property>
+                 <property name="checkable">
+                  <bool>true</bool>
+                 </property>
+                 <property name="checked">
+                  <bool>false</bool>
+                 </property>
+                 <property name="flat">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+              </layout>
              </item>
              <item>
               <widget class="RealSlider" name="timeSlider">
@@ -359,12 +413,24 @@
              <item>
               <widget class="QLabel" name="streamingLabel">
                <property name="text">
-                <string>   Buffer size:</string>
+                <string>   Buffer:</string>
                </property>
               </widget>
              </item>
              <item>
               <widget class="QSpinBox" name="streamingSpinBox">
+               <property name="minimumSize">
+                <size>
+                 <width>0</width>
+                 <height>30</height>
+                </size>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>16777215</width>
+                 <height>30</height>
+                </size>
+               </property>
                <property name="focusPolicy">
                 <enum>Qt::ClickFocus</enum>
                </property>
@@ -417,13 +483,6 @@
            </widget>
           </item>
           <item>
-           <widget class="Line" name="line">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-           </widget>
-          </item>
-          <item>
            <widget class="QWidget" name="widgetOptions" native="true">
             <property name="minimumSize">
              <size>
@@ -451,80 +510,86 @@
               <number>2</number>
              </property>
              <item>
-              <widget class="QPushButton" name="pushButtonRemoveTimeOffset">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="minimumSize">
-                <size>
-                 <width>150</width>
-                 <height>28</height>
-                </size>
-               </property>
+              <widget class="QFrame" name="frame">
                <property name="maximumSize">
                 <size>
                  <width>16777215</width>
-                 <height>28</height>
+                 <height>40</height>
                 </size>
                </property>
-               <property name="focusPolicy">
-                <enum>Qt::NoFocus</enum>
+               <property name="frameShape">
+                <enum>QFrame::StyledPanel</enum>
                </property>
-               <property name="toolTip">
-                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If checked, an offset will be applied to each timeseries to ensure that the first time instant is equal to zero.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               <property name="frameShadow">
+                <enum>QFrame::Raised</enum>
                </property>
-               <property name="text">
-                <string>Remove time offset</string>
-               </property>
-               <property name="iconSize">
-                <size>
-                 <width>16</width>
-                 <height>28</height>
-                </size>
-               </property>
-               <property name="checkable">
-                <bool>true</bool>
-               </property>
-               <property name="checked">
-                <bool>true</bool>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QPushButton" name="pushButtonUseDateTime">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="minimumSize">
-                <size>
-                 <width>110</width>
-                 <height>28</height>
-                </size>
-               </property>
-               <property name="maximumSize">
-                <size>
-                 <width>16777215</width>
-                 <height>28</height>
-                </size>
-               </property>
-               <property name="focusPolicy">
-                <enum>Qt::NoFocus</enum>
-               </property>
-               <property name="toolTip">
-                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If active, visualize the current time as DateTime ( YYYY/MM/DD:m::s::ms)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-               </property>
-               <property name="text">
-                <string>Use DateTime</string>
-               </property>
-               <property name="checkable">
-                <bool>true</bool>
-               </property>
+               <layout class="QHBoxLayout" name="horizontalLayout">
+                <property name="spacing">
+                 <number>6</number>
+                </property>
+                <property name="leftMargin">
+                 <number>4</number>
+                </property>
+                <property name="topMargin">
+                 <number>2</number>
+                </property>
+                <property name="rightMargin">
+                 <number>4</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>2</number>
+                </property>
+                <item>
+                 <widget class="QLabel" name="label">
+                  <property name="font">
+                   <font>
+                    <weight>75</weight>
+                    <bold>true</bold>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>Playback speed</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QDoubleSpinBox" name="playbackRate">
+                  <property name="minimumSize">
+                   <size>
+                    <width>0</width>
+                    <height>30</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>16777215</width>
+                    <height>30</height>
+                   </size>
+                  </property>
+                  <property name="focusPolicy">
+                   <enum>Qt::WheelFocus</enum>
+                  </property>
+                  <property name="toolTip">
+                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Rate (speed multiplier)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                  </property>
+                  <property name="decimals">
+                   <number>1</number>
+                  </property>
+                  <property name="minimum">
+                   <double>0.100000000000000</double>
+                  </property>
+                  <property name="maximum">
+                   <double>10.000000000000000</double>
+                  </property>
+                  <property name="singleStep">
+                   <double>0.100000000000000</double>
+                  </property>
+                  <property name="value">
+                   <double>1.000000000000000</double>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
               </widget>
              </item>
              <item>
@@ -541,11 +606,104 @@
               </spacer>
              </item>
              <item>
+              <widget class="QPushButton" name="pushButtonRemoveTimeOffset">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="minimumSize">
+                <size>
+                 <width>80</width>
+                 <height>28</height>
+                </size>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>16777215</width>
+                 <height>30</height>
+                </size>
+               </property>
+               <property name="focusPolicy">
+                <enum>Qt::NoFocus</enum>
+               </property>
+               <property name="toolTip">
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If checked, an offset will be applied to each timeseries to ensure that the first time instant is equal to zero.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               </property>
+               <property name="text">
+                <string>Time offset</string>
+               </property>
+               <property name="iconSize">
+                <size>
+                 <width>16</width>
+                 <height>28</height>
+                </size>
+               </property>
+               <property name="checkable">
+                <bool>true</bool>
+               </property>
+               <property name="checked">
+                <bool>true</bool>
+               </property>
+               <property name="flat">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="pushButtonUseDateTime">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="minimumSize">
+                <size>
+                 <width>40</width>
+                 <height>40</height>
+                </size>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>40</width>
+                 <height>40</height>
+                </size>
+               </property>
+               <property name="focusPolicy">
+                <enum>Qt::NoFocus</enum>
+               </property>
+               <property name="toolTip">
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If active, visualize the current time as DateTime ( YYYY/MM/DD:m::s::ms)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               </property>
+               <property name="text">
+                <string/>
+               </property>
+               <property name="icon">
+                <iconset>
+                 <normaloff>:/style_light/datetime.png</normaloff>:/style_light/datetime.png</iconset>
+               </property>
+               <property name="iconSize">
+                <size>
+                 <width>40</width>
+                 <height>40</height>
+                </size>
+               </property>
+               <property name="checkable">
+                <bool>true</bool>
+               </property>
+               <property name="flat">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item>
               <widget class="QPushButton" name="pushButtonActivateGrid">
                <property name="sizePolicy">
                 <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-                 <horstretch>40</horstretch>
-                 <verstretch>40</verstretch>
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
                 </sizepolicy>
                </property>
                <property name="minimumSize">
@@ -573,8 +731,8 @@
                 <string/>
                </property>
                <property name="icon">
-                <iconset resource="resource.qrc">
-                 <normaloff>:/icons/resources/light/grid.png</normaloff>:/icons/resources/light/grid.png</iconset>
+                <iconset>
+                 <normaloff>:/style_light/grid.png</normaloff>:/style_light/grid.png</iconset>
                </property>
                <property name="iconSize">
                 <size>
@@ -607,7 +765,7 @@
                <property name="maximumSize">
                 <size>
                  <width>40</width>
-                 <height>35</height>
+                 <height>40</height>
                 </size>
                </property>
                <property name="focusPolicy">
@@ -620,8 +778,8 @@
                 <string/>
                </property>
                <property name="icon">
-                <iconset resource="resource.qrc">
-                 <normaloff>:/icons/resources/light/ratio.png</normaloff>:/icons/resources/light/ratio.png</iconset>
+                <iconset>
+                 <normaloff>:/style_light/ratio.png</normaloff>:/style_light/ratio.png</iconset>
                </property>
                <property name="iconSize">
                 <size>
@@ -684,16 +842,29 @@
     <property name="title">
      <string>File</string>
     </property>
+    <widget class="QMenu" name="menuRecentData">
+     <property name="title">
+      <string>Recent datafile...</string>
+     </property>
+     <addaction name="separator"/>
+     <addaction name="actionClearRecentData"/>
+    </widget>
+    <widget class="QMenu" name="menuRecentLayout">
+     <property name="title">
+      <string>Recent layout...</string>
+     </property>
+     <addaction name="separator"/>
+     <addaction name="actionClearRecentLayout"/>
+    </widget>
     <addaction name="actionLoadData"/>
-    <addaction name="actionLoadRecentDatafile"/>
+    <addaction name="menuRecentData"/>
     <addaction name="actionLoadDummyData"/>
-    <addaction name="actionReloadPrevious"/>
-    <addaction name="actionDeleteAllData"/>
     <addaction name="separator"/>
     <addaction name="actionLoadLayout"/>
-    <addaction name="actionLoadRecentLayout"/>
+    <addaction name="menuRecentLayout"/>
     <addaction name="actionSaveLayout"/>
     <addaction name="separator"/>
+    <addaction name="actionPreferences"/>
     <addaction name="actionExit"/>
    </widget>
    <widget class="QMenu" name="menuStreaming">
@@ -704,7 +875,6 @@
      <string>Streaming</string>
     </property>
     <addaction name="actionStopStreaming"/>
-    <addaction name="actionClearBuffer"/>
     <addaction name="separator"/>
    </widget>
    <widget class="QMenu" name="menuPublishers">
@@ -736,16 +906,25 @@
      <string>Tools</string>
     </property>
     <addaction name="separator"/>
-    <addaction name="actionFunction_editor"/>
-    <addaction name="actionMaximizePlots"/>
+    <addaction name="actionFunctionEditor"/>
+    <addaction name="actionFullscreen"/>
     <addaction name="actionSaveAllPlotTabs"/>
    </widget>
+   <widget class="QMenu" name="menuData">
+    <property name="title">
+     <string>Data</string>
+    </property>
+    <addaction name="actionDeleteAllData"/>
+    <addaction name="actionClearBuffer"/>
+   </widget>
    <addaction name="menuFile"/>
+   <addaction name="menuData"/>
    <addaction name="menuStreaming"/>
    <addaction name="menuPublishers"/>
    <addaction name="menuTools"/>
    <addaction name="menuHelp"/>
   </widget>
+  <widget class="QStatusBar" name="statusBar"/>
   <action name="actionLoadData">
    <property name="text">
     <string>Load Data</string>
@@ -753,25 +932,13 @@
    <property name="toolTip">
     <string>Load Data</string>
    </property>
-  </action>
-  <action name="actionLoadRecentDatafile">
-   <property name="text">
-    <string>Load recent datafile...</string>
-   </property>
-  </action>
-  <action name="actionDeleteAllData">
-   <property name="text">
-    <string>Delete all data</string>
+   <property name="shortcut">
+    <string>Ctrl+L</string>
    </property>
   </action>
   <action name="actionLoadLayout">
    <property name="text">
     <string>Load layout</string>
-   </property>
-  </action>
-  <action name="actionLoadRecentLayout">
-   <property name="text">
-    <string>Load recent layout...</string>
    </property>
   </action>
   <action name="actionSaveLayout">
@@ -810,20 +977,21 @@
   </action>
   <action name="actionClearBuffer">
    <property name="text">
-    <string>Clear buffer</string>
+    <string>Clear data points</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+C</string>
    </property>
   </action>
-  <action name="actionReloadPrevious">
+  <action name="actionFullscreen">
    <property name="text">
-    <string>Quick Data Reload</string>
-   </property>
-  </action>
-  <action name="actionMaximizePlots">
-   <property name="text">
-    <string>Maximize plots</string>
+    <string>Fullscreen mode</string>
    </property>
    <property name="toolTip">
     <string>Maximize plots [F10]</string>
+   </property>
+   <property name="shortcut">
+    <string>F10</string>
    </property>
   </action>
   <action name="actionSaveAllPlotTabs">
@@ -839,7 +1007,7 @@
     <string>Load Dummy Data</string>
    </property>
   </action>
-  <action name="actionFunction_editor">
+  <action name="actionFunctionEditor">
    <property name="text">
     <string>Open Function Editor</string>
    </property>
@@ -852,6 +1020,42 @@
   <action name="actionSupportPlotJuggler">
    <property name="text">
     <string>Support PlotJuggler</string>
+   </property>
+  </action>
+  <action name="actionClearRecentData">
+   <property name="icon">
+    <iconset>
+     <normaloff>:/style_light/clean_pane.png</normaloff>:/style_light/clean_pane.png</iconset>
+   </property>
+   <property name="text">
+    <string>Clear</string>
+   </property>
+  </action>
+  <action name="actionClearRecentLayout">
+   <property name="icon">
+    <iconset>
+     <normaloff>:/style_light/clean_pane.png</normaloff>:/style_light/clean_pane.png</iconset>
+   </property>
+   <property name="text">
+    <string>Clear</string>
+   </property>
+  </action>
+  <action name="actionDeleteAllData">
+   <property name="text">
+    <string>Delete everything</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+X</string>
+   </property>
+  </action>
+  <action name="actionLoad_stylesheet">
+   <property name="text">
+    <string>Load stylesheet</string>
+   </property>
+  </action>
+  <action name="actionPreferences">
+   <property name="text">
+    <string>Preferences...</string>
    </property>
   </action>
  </widget>
@@ -868,8 +1072,6 @@
    <header location="global">menubar.h</header>
   </customwidget>
  </customwidgets>
- <resources>
-  <include location="resource.qrc"/>
- </resources>
+ <resources/>
  <connections/>
 </ui>
