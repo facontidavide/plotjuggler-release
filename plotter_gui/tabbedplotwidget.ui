@@ -15,7 +15,7 @@
   </property>
   <property name="windowIcon">
    <iconset>
-    <normaloff>:/icons/resources/light/line_tracker.png</normaloff>:/icons/resources/light/line_tracker.png</iconset>
+    <normaloff>:/style_light/line_tracker.png</normaloff>:/style_light/line_tracker.png</iconset>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_2">
    <property name="spacing">
@@ -34,7 +34,7 @@
     <number>4</number>
    </property>
    <item>
-    <widget class="QTabWidget" name="tabWidget">
+    <widget class="TabWidget" name="tabWidget">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
        <horstretch>0</horstretch>
@@ -99,8 +99,8 @@
        <widget class="QPushButton" name="pushButtonZoomMax">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-          <horstretch>40</horstretch>
-          <verstretch>40</verstretch>
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
          </sizepolicy>
         </property>
         <property name="minimumSize">
@@ -125,8 +125,8 @@
          <string/>
         </property>
         <property name="icon">
-         <iconset resource="resource.qrc">
-          <normaloff>:/icons/resources/light/zoom_max.png</normaloff>:/icons/resources/light/zoom_max.png</iconset>
+         <iconset>
+          <normaloff>:/style_light/zoom_max.png</normaloff>:/style_light/zoom_max.png</iconset>
         </property>
         <property name="iconSize">
          <size>
@@ -150,7 +150,7 @@
         <property name="maximumSize">
          <size>
           <width>40</width>
-          <height>34</height>
+          <height>40</height>
          </size>
         </property>
         <property name="focusPolicy">
@@ -169,8 +169,8 @@
          <string/>
         </property>
         <property name="icon">
-         <iconset resource="resource.qrc">
-          <normaloff>:/icons/resources/light/zoom_vertical.png</normaloff>:/icons/resources/light/zoom_vertical.png</iconset>
+         <iconset>
+          <normaloff>:/style_light/zoom_vertical.png</normaloff>:/style_light/zoom_vertical.png</iconset>
         </property>
         <property name="iconSize">
          <size>
@@ -194,7 +194,7 @@
         <property name="maximumSize">
          <size>
           <width>40</width>
-          <height>34</height>
+          <height>40</height>
          </size>
         </property>
         <property name="focusPolicy">
@@ -210,8 +210,8 @@
          <string/>
         </property>
         <property name="icon">
-         <iconset resource="resource.qrc">
-          <normaloff>:/icons/resources/light/zoom_horizontal.png</normaloff>:/icons/resources/light/zoom_horizontal.png</iconset>
+         <iconset>
+          <normaloff>:/style_light/zoom_horizontal.png</normaloff>:/style_light/zoom_horizontal.png</iconset>
         </property>
         <property name="iconSize">
          <size>
@@ -250,8 +250,8 @@
         </property>
         <property name="maximumSize">
          <size>
-          <width>44</width>
-          <height>34</height>
+          <width>40</width>
+          <height>40</height>
          </size>
         </property>
         <property name="font">
@@ -272,8 +272,8 @@
          <string/>
         </property>
         <property name="icon">
-         <iconset resource="resource.qrc">
-          <normaloff>:/icons/resources/light/add_column.png</normaloff>:/icons/resources/light/add_column.png</iconset>
+         <iconset>
+          <normaloff>:/style_light/add_column.png</normaloff>:/style_light/add_column.png</iconset>
         </property>
         <property name="iconSize">
          <size>
@@ -302,8 +302,8 @@
         </property>
         <property name="maximumSize">
          <size>
-          <width>44</width>
-          <height>34</height>
+          <width>40</width>
+          <height>40</height>
          </size>
         </property>
         <property name="font">
@@ -324,8 +324,8 @@
          <string/>
         </property>
         <property name="icon">
-         <iconset resource="resource.qrc">
-          <normaloff>:/icons/resources/light/add_row.png</normaloff>:/icons/resources/light/add_row.png</iconset>
+         <iconset>
+          <normaloff>:/style_light/add_row.png</normaloff>:/style_light/add_row.png</iconset>
         </property>
         <property name="iconSize">
          <size>
@@ -348,8 +348,8 @@
         </property>
         <property name="maximumSize">
          <size>
-          <width>44</width>
-          <height>34</height>
+          <width>40</width>
+          <height>40</height>
          </size>
         </property>
         <property name="font">
@@ -370,8 +370,8 @@
          <string/>
         </property>
         <property name="icon">
-         <iconset resource="resource.qrc">
-          <normaloff>:/icons/resources/light/add_tab.png</normaloff>:/icons/resources/light/add_tab.png</iconset>
+         <iconset>
+          <normaloff>:/style_light/add_tab.png</normaloff>:/style_light/add_tab.png</iconset>
         </property>
         <property name="iconSize">
          <size>
@@ -397,8 +397,8 @@
         </property>
         <property name="maximumSize">
          <size>
-          <width>44</width>
-          <height>34</height>
+          <width>40</width>
+          <height>40</height>
          </size>
         </property>
         <property name="font">
@@ -419,8 +419,8 @@
          <string/>
         </property>
         <property name="icon">
-         <iconset resource="resource.qrc">
-          <normaloff>:/icons/resources/light/clean_pane.png</normaloff>:/icons/resources/light/clean_pane.png</iconset>
+         <iconset>
+          <normaloff>:/style_light/clean_pane.png</normaloff>:/style_light/clean_pane.png</iconset>
         </property>
         <property name="iconSize">
          <size>
@@ -463,7 +463,7 @@
         <property name="maximumSize">
          <size>
           <width>40</width>
-          <height>34</height>
+          <height>40</height>
          </size>
         </property>
         <property name="focusPolicy">
@@ -482,8 +482,8 @@
          <string/>
         </property>
         <property name="icon">
-         <iconset resource="resource.qrc">
-          <normaloff>:/icons/resources/light/list.png</normaloff>:/icons/resources/light/list.png</iconset>
+         <iconset>
+          <normaloff>:/style_light/list.png</normaloff>:/style_light/list.png</iconset>
         </property>
         <property name="iconSize">
          <size>
@@ -532,8 +532,8 @@
          <string/>
         </property>
         <property name="icon">
-         <iconset resource="resource.qrc">
-          <normaloff>:/icons/resources/light/link.png</normaloff>:/icons/resources/light/link.png</iconset>
+         <iconset>
+          <normaloff>:/style_light/link.png</normaloff>:/style_light/link.png</iconset>
         </property>
         <property name="iconSize">
          <size>
@@ -558,8 +558,14 @@
   </layout>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
- <resources>
-  <include location="resource.qrc"/>
- </resources>
+ <customwidgets>
+  <customwidget>
+   <class>TabWidget</class>
+   <extends>QTabWidget</extends>
+   <header location="global">tab_widget.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources/>
  <connections/>
 </ui>

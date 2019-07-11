@@ -19,10 +19,6 @@
   <property name="windowTitle">
    <string/>
   </property>
-  <property name="windowIcon">
-   <iconset>
-    <normaloff>:/icons/resources/line_tracker.png</normaloff>:/icons/resources/line_tracker.png</iconset>
-  </property>
   <property name="locale">
    <locale language="English" country="Australia"/>
   </property>

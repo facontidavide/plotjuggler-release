@@ -56,6 +56,8 @@ void RosoutPublisher::setEnabled(bool to_enable)
             _log_window->close();
         }
     }
+
+    StatePublisher::setEnabled(_enabled);
 }
 
 void RosoutPublisher::onWindowClosed()
