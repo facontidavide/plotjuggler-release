@@ -64,6 +64,14 @@ public:
 
   PlotDataGeneric( const PlotDataGeneric<Time,Value>& other) = delete;
 
+  PlotDataGeneric(PlotDataGeneric&& other)
+  {
+      _name = std::move(other._name);
+      _points = std::move(other._points);
+      _color_hint = std::move(other._color_hint);
+      _max_range_X = other._max_range_X;
+  }
+
   void swapData( PlotDataGeneric<Time,Value>& other)
   {
       std::swap(_points, other._points);
@@ -157,7 +165,33 @@ typedef struct{
 
 
 //-----------------------------------
+template<typename Value>
+inline void AddPrefixToPlotData(const std::string &prefix, std::unordered_map<std::string, Value>& data)
+{
+    if( prefix.empty() ) return;
 
+    std::unordered_map<std::string, Value> temp;
+
+    for(auto& it: data)
+    {
+        std::string key;
+        key.reserve( prefix.size() + 2 + it.first.size() );
+        if( it.first.front() == '/' )
+        {
+            key = prefix + it.first;
+        }
+        else{
+            key = prefix + "/" + it.first;
+        }
+
+        auto new_plot = temp.emplace( std::piecewise_construct,
+                                      std::forward_as_tuple(key),
+                                      std::forward_as_tuple(key) ).first;
+
+        new_plot->second.swapData( it.second );
+    }
+    std::swap(data, temp);
+}
 
 //template < typename Time, typename Value>
 //inline PlotDataGeneric<Time, Value>::PlotDataGeneric():

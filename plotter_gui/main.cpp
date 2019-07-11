@@ -1,4 +1,5 @@
 #include "mainwindow.h"
+#include <iostream>
 #include <QApplication>
 #include <QSplashScreen>
 #include <QThread>
@@ -31,8 +32,8 @@ QString getFunnySubtitle(){
     case 6: return "I like the smell of plots in the morning";
     case 7: return "Timeseries, timeseries everywhere...";
     case 8: return "I didn't find a better name...";
-    case 9: return "\"It won't take long to code that\"..\n"
-                "Davide, 2014";
+    case 9: return "\"It won't take long to implement that\"\n"
+                   "... Davide, 2014";
     case 10: return "Visualize data responsibly";
     case 11: return "How could you live without it?";
     case 12: return "This time you will find that nasty bug!";
@@ -53,14 +54,6 @@ int main(int argc, char *argv[])
     app.setOrganizationName("IcarusTechnology");
     app.setApplicationName("PlotJuggler");
 
-    // Load an application style
-    QFile styleFile( "://style/stylesheet.qss" );
-    styleFile.open( QFile::ReadOnly );
-
-    // Apply the loaded stylesheet
-    QString style( styleFile.readAll() );
-    app.setStyleSheet( style );
-
     QString VERSION_STRING = QString("%1.%2.%3").
             arg(PJ_MAJOR_VERSION).
             arg(PJ_MINOR_VERSION).
@@ -74,22 +67,26 @@ int main(int argc, char *argv[])
     parser.addHelpOption();
 
     QCommandLineOption nosplash_option(QStringList() << "n" << "nosplash",
-                                       QCoreApplication::translate("main", "Don't display the splashscreen"));
+                                       "Don't display the splashscreen");
     parser.addOption(nosplash_option);
 
     QCommandLineOption test_option(QStringList() << "t" << "test",
-                                   QCoreApplication::translate("main", "Generate test curves at startup"));
+                                   "Generate test curves at startup");
     parser.addOption(test_option);
 
     QCommandLineOption loadfile_option(QStringList() << "d" << "datafile",
-                                       QCoreApplication::translate("main", "Load a file containing data"),
-                                       QCoreApplication::translate("main", "file") );
+                                       "Load a file containing data",
+                                       "file" );
     parser.addOption(loadfile_option);
 
-    QCommandLineOption config_option(QStringList() << "l" << "layout",
-                                     QCoreApplication::translate("main", "Load a file containing the layout configuration"),
-                                     QCoreApplication::translate("main", "file") );
-    parser.addOption(config_option);
+    QCommandLineOption layout_option(QStringList() << "l" << "layout",
+                                     "Load a file containing the layout configuration",
+                                     "file" );
+    parser.addOption(layout_option);
+
+    QCommandLineOption publish_option(QStringList() << "p" << "publish",
+                                     "Automatically start publisher when loading the layout file" );
+    parser.addOption(publish_option);
 
     QCommandLineOption buffersize_option(QStringList() << "buffer_size",
                                      QCoreApplication::translate("main", "Change the maximum size of the streaming buffer (minimum: 10 default: 60)"),
@@ -97,6 +94,12 @@ int main(int argc, char *argv[])
     parser.addOption(buffersize_option);
 
     parser.process( *qApp );
+
+    if( parser.isSet(publish_option) && !parser.isSet(layout_option) )
+    {
+        std::cerr << "Option [ -p / --publish ] is invalid unless [ -l / --layout ] is used too." << std::endl;
+        return -1;
+    }
 
     /*
      * You, fearless code reviewer, decided to start a journey into my source code.
@@ -111,12 +114,12 @@ int main(int argc, char *argv[])
      * Please don't do it.
      */
 
-    if( parser.isSet(nosplash_option) == false)
+    if( !parser.isSet(nosplash_option) && !( parser.isSet(loadfile_option) || parser.isSet(layout_option) ) )
     // if(false) // if you uncomment this line, a kitten will die somewhere in the world.
     {
-        QPixmap main_pixmap(":/splash/resources/splash_2.jpg");
+        QPixmap main_pixmap(":/resources/splash_2.2.jpg");
 
-        int font_id = QFontDatabase::addApplicationFont("://resources/DejaVuSans-ExtraLight.ttf");
+        int font_id = QFontDatabase::addApplicationFont(":/resources/DejaVuSans-ExtraLight.ttf");
         QString family = QFontDatabase::applicationFontFamilies(font_id).at(0);
         QFont font(family);
         font.setStyleStrategy(QFont::PreferAntialias);
@@ -126,17 +129,29 @@ int main(int argc, char *argv[])
         painter.setPen(QColor(255, 255, 255));
         painter.setRenderHint(QPainter::TextAntialiasing, true);
 
-        QString subtitle = getFunnySubtitle();
-        int font_size = 25;
-        int text_width = main_pixmap.width() - 100;
-        do{
-            painter.setFont( QFont(family, font_size--) );
-        }while(font_size > 20 && painter.fontMetrics().width(subtitle) > text_width );
+        const QString subtitle = getFunnySubtitle();
 
-        QPoint topleft(50, main_pixmap.height()-90);
-        QSize rect_size(text_width,90);
-        painter.drawText( QRect(topleft, rect_size),
-                          Qt::AlignHCenter | Qt::AlignVCenter, subtitle );
+        {
+            const int margin = 20;
+            const int text_height = 100;
+            const int text_width = main_pixmap.width() - margin*2;
+            QPoint topleft(margin, main_pixmap.height() - text_height);
+            QSize rect_size(text_width, text_height);
+            font.setPointSize( 16 );
+            painter.setFont( font );
+            painter.drawText( QRect(topleft, rect_size),
+                              Qt::AlignHCenter | Qt::AlignVCenter, subtitle );
+        }
+        {
+            const int text_width = 100;
+            QPoint topleft( main_pixmap.width() - text_width, 0);
+            QSize rect_size( text_width, 40 );
+            font.setPointSize( 14 );
+            painter.setFont( font );
+            painter.drawText( QRect(topleft, rect_size),
+                              Qt::AlignHCenter | Qt::AlignVCenter, VERSION_STRING );
+        }
+
         painter.end();
 
         QSplashScreen splash(main_pixmap);

@@ -31,10 +31,6 @@
   <property name="windowTitle">
    <string>Set the Vertical Limits</string>
   </property>
-  <property name="windowIcon">
-   <iconset resource="resource.qrc">
-    <normaloff>:/icons/resources/resize_vertical.png</normaloff>:/icons/resources/resize_vertical.png</iconset>
-  </property>
   <property name="sizeGripEnabled">
    <bool>false</bool>
   </property>
@@ -154,8 +150,6 @@
    </item>
   </layout>
  </widget>
- <resources>
-  <include location="resource.qrc"/>
- </resources>
+ <resources/>
  <connections/>
 </ui>
