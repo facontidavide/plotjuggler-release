@@ -3,11 +3,23 @@
 #include <QSettings>
 #include <QMessageBox>
 #include <QCloseEvent>
+#include "mainwindow.h"
 
-SubWindow::SubWindow(QString name, PlotMatrix *first_tab, PlotDataMapRef &mapped_data, QMainWindow *parent_window) :
+SubWindow::SubWindow(QString name,
+                     PlotMatrix *first_tab,
+                     PlotDataMapRef &mapped_data,
+                     QMainWindow *parent_window) :
   QMainWindow(parent_window)
 {
     tabbed_widget_ = new TabbedPlotWidget( name, parent_window, first_tab, mapped_data, this );
+
+    MainWindow* parent_mainwin = dynamic_cast<MainWindow*>( parent_window );
+
+    connect(parent_mainwin, &MainWindow::stylesheetChanged,
+            tabbed_widget_, &TabbedPlotWidget::on_stylesheetChanged);
+
+    tabbed_widget_->on_stylesheetChanged( parent_mainwin->styleDirectory() );
+
     this->setCentralWidget( tabbed_widget_ );
 
     Qt::WindowFlags flags = this->windowFlags();

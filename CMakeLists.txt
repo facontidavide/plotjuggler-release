@@ -10,8 +10,8 @@ cmake_policy (SET CMP0020 NEW)
 
 add_definitions(
     -DPJ_MAJOR_VERSION=2
-    -DPJ_MINOR_VERSION=1
-    -DPJ_PATCH_VERSION=10 )
+    -DPJ_MINOR_VERSION=3
+    -DPJ_PATCH_VERSION=0 )
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
@@ -81,6 +81,8 @@ if(COMPILING_WITH_CATKIN)
         rostime
         topic_tools
         tf
+        diagnostic_msgs
+        nav_msgs
     )
 
     find_package(catkin REQUIRED COMPONENTS ${ROS_DEPENDENCIES} )
@@ -92,6 +94,7 @@ if(COMPILING_WITH_CATKIN)
         )
 
     INCLUDE_DIRECTORIES( ${catkin_INCLUDE_DIRS} )
+
 endif()
 
 
