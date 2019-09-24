@@ -259,13 +259,7 @@ void DialogSelectRosTopics::on_lineEditFilter_textChanged(const QString& search_
 
 void DialogSelectRosTopics::on_spinBoxArraySize_valueChanged(int value)
 {
-    if( value > 1000 )
-    {
-        ui->spinBoxArraySize->setStyleSheet("QSpinBox { color: red; }");
-    }
-    else{
-        ui->spinBoxArraySize->setStyleSheet("QSpinBox { color: black; }");
-    }
+
 }
 
 
