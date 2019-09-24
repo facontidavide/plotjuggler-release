@@ -108,6 +108,7 @@ void RosMessageParser::pushMessageRef(const std::string &topic_name,
     auto builtin_it = _builtin_parsers.find( topic_name );
     if( builtin_it != _builtin_parsers.end() )
     {
+        builtin_it->second->setUseHeaderStamp(_use_header_stamp); // bug fix #202
         builtin_it->second->pushMessageRef( builtin_it->first, msg, timestamp );
         return;
     }
