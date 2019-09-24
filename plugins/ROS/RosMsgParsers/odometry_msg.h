@@ -18,19 +18,31 @@ public:
         _data.emplace_back( "/pose/position/y" ); //3
         _data.emplace_back( "/pose/position/z" ); //4
 
-        _data.emplace_back( "/pose/orientation/quat_x" ); // 5
-        _data.emplace_back( "/pose/orientation/quat_y" ); // 6
-        _data.emplace_back( "/pose/orientation/quat_z" ); // 7
-        _data.emplace_back( "/pose/orientation/quat_w" ); // 8
-        _data.emplace_back( "/pose/orientation/yaw_degrees" ); // 9
+        _data.emplace_back( "/pose/orientation/quat_x" );
+        _data.emplace_back( "/pose/orientation/quat_y" );
+        _data.emplace_back( "/pose/orientation/quat_z" );
+        _data.emplace_back( "/pose/orientation/quat_w" );
+        _data.emplace_back( "/pose/orientation/yaw_degrees" );
 
-        _data.emplace_back( "/twist/linear/x" );// 10
-        _data.emplace_back( "/twist/linear/y" );// 11
-        _data.emplace_back( "/twist/linear/z" );// 12
+        _data.emplace_back( "/twist/linear/x" );
+        _data.emplace_back( "/twist/linear/y" );
+        _data.emplace_back( "/twist/linear/z" );
 
-        _data.emplace_back( "/twist/angular/x" );// 13
-        _data.emplace_back( "/twist/angular/y" );// 14
-        _data.emplace_back( "/twist/angular/z" );// 15
+        _data.emplace_back( "/twist/angular/x" );
+        _data.emplace_back( "/twist/angular/y" );
+        _data.emplace_back( "/twist/angular/z" );
+
+        for(int i=0; i<6; i++)
+        {
+            for(int j=i; j<6; j++)
+            {
+                char buffer[100];
+                sprintf(buffer,"/pose/covariance/[%d,%d]",i,j);
+                _data.emplace_back(buffer);
+                sprintf(buffer,"/twist/covariance/[%d,%d]",i,j);
+                _data.emplace_back(buffer);
+            }
+        }
     }
 
     static const std::string& getCompatibleKey()
@@ -100,6 +112,15 @@ public:
         _data[14].pushBack( {timestamp, odom.twist.twist.angular.y} );
         _data[15].pushBack( {timestamp, odom.twist.twist.angular.z} );
 
+        int index = 16;
+        for(int i=0; i<6; i++)
+        {
+            for(int j=i; j<6; j++)
+            {
+                _data[index++].pushBack( {timestamp, odom.pose.covariance[i*6+j]} );
+                _data[index++].pushBack( {timestamp, odom.twist.covariance[i*6+j]} );
+            }
+        }
     }
 
     void extractData(PlotDataMapRef& plot_map, const std::string& prefix) override

@@ -101,6 +101,9 @@ int main(int argc, char *argv[])
         return -1;
     }
 
+    QIcon app_icon( ":/resources/office_chart_line_stacked.ico" );
+    QApplication::setWindowIcon(app_icon);
+
     /*
      * You, fearless code reviewer, decided to start a journey into my source code.
      * For your bravery, you deserve to know the truth, no matter how hard it is to accept it.
@@ -174,11 +177,13 @@ int main(int argc, char *argv[])
             splash.raise();
         }
         splash.close();
+        w.setWindowIcon(app_icon);
         w.show();
         return app.exec();
     }
     else{
         MainWindow w( parser );
+        w.setWindowIcon(app_icon);
         w.show();
         return app.exec();
     }

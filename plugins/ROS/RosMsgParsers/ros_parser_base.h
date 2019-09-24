@@ -13,7 +13,10 @@ class RosParserBase : public MessageParser
 {
 public:
 
-    void setUseHeaderStamp( bool use )
+    RosParserBase(): _use_header_stamp(false){
+    }
+
+    virtual void setUseHeaderStamp( bool use )
     {
         _use_header_stamp = use;
     }
