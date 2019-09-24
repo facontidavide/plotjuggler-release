@@ -362,7 +362,7 @@ bool PlotWidget::addCurve(const std::string &name)
         color = randomColorHint();
         data.setColorHint(color);
     }
-    curve->setPen( color,  (_curve_style == QwtPlotCurve::Dots) ? 4 : 0.8 );
+    curve->setPen( color,  (_curve_style == QwtPlotCurve::Dots) ? 4 : 1.2 );
     curve->setRenderHint( QwtPlotItem::RenderAntialiased, true );
 
     curve->attach( this );
@@ -1788,7 +1788,7 @@ bool PlotWidget::canvasEventFilter(QEvent *event)
         if( _dragging.mode == DragInfo::NONE )
         {
             changeBackgroundColor( Qt::white );
-            QApplication::restoreOverrideCursor();
+
             return false;
         }
     }break;

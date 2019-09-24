@@ -168,7 +168,6 @@ void CurveTracker::setPosition(const QPointF& position)
     }
 
     QwtText mark_text;
-    mark_text.setColor( Qt::black );
 
     QString text_marker_info;
 
@@ -215,7 +214,6 @@ void CurveTracker::setPosition(const QPointF& position)
     _text_marker->setVisible( visible_points > 0 && _visible && _param != LINE_ONLY );
 
     _prev_trackerpoint = position;
-
 }
 
 
