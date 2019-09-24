@@ -2,6 +2,26 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.3.1 (2019-09-24)
+------------------
+* Fix `#202 <https://github.com/facontidavide/PlotJuggler/issues/202>`_ use_header_stamp not initialized for built-in types
+* Merge pull request `#200 <https://github.com/facontidavide/PlotJuggler/issues/200>`_ from aeudes/multiple_streamer
+  data stream topic plugin
+* new color palette
+* Allow to have working datastreamtopic plugin in more than one plotjuggler
+  instance
+* adding covariance to Odometry msg again
+* fix issue `#187 <https://github.com/facontidavide/PlotJuggler/issues/187>`_
+* Fix segfault when swap plotwidget on archlinux (qt5.12.3).
+  This bug is introduced in: 7959e54 Spurious DragLeave fixed?
+  And produce a segfault(nullptr) in QCursor::shape() call by
+  QBasicDrag::updateCursor(Qt::DropAction) [trigger by plotwidget.cpp:1352
+  drag->exec();].
+  It seems to me that the change of global application cursor on leave event during drag drop
+  operation cause the problem [is it the drop widget duty to reset cursor?].
+* minor fixes related to dark theme
+* Contributors: Alexandre Eudes, Davide Faconti
+
 2.3.0 (2019-07-11)
 ------------------
 * Countless changes and merges of PR.
