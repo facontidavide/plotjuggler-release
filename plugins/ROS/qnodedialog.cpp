@@ -51,7 +51,7 @@ bool QNodeDialog::Connect(const std::string& ros_master_uri,
   static bool first_time = true;
   if( first_time)
   {
-      ros::init(remappings,"PlotJugglerListener");
+      ros::init(remappings, "PlotJugglerListener", ros::init_options::AnonymousName);
       first_time = false;
   }
   else{

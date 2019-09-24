@@ -74,15 +74,6 @@ MainWindow::MainWindow(const QCommandLineParser &commandline_parser, QWidget *pa
         ui->streamingSpinBox->setMaximum(buffer_size);
     }
 
-    {
-        QIcon icon( tr(":/%1/office_chart_line_stacked.png").arg(_style_directory) );
-        if (!icon.isNull())
-        {
-            this->setWindowIcon(icon);
-            QApplication::setWindowIcon(icon);
-        }
-    }
-
     connect(this, &MainWindow::stylesheetChanged,
             this, &MainWindow::on_stylesheetChanged);
 
@@ -1931,16 +1922,6 @@ void MainWindow::updateDataAndReplot(bool replot_hidden_tabs)
 void MainWindow::on_streamingSpinBox_valueChanged(int value)
 {
     double real_value = value;
-    if ( value == ui->streamingSpinBox->maximum())
-    {
-        real_value = std::numeric_limits<double>::max();
-        ui->streamingSpinBox->setStyleSheet("QSpinBox { color: red; }");
-        ui->streamingSpinBox->setSuffix("=inf");
-    }
-    else{
-        ui->streamingSpinBox->setStyleSheet("QSpinBox { color: black; }");
-        ui->streamingSpinBox->setSuffix(" sec");
-    }
 
     if( isStreamingActive() == false)
     {

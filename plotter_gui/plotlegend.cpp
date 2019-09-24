@@ -9,9 +9,6 @@ PlotLegend::PlotLegend(QwtPlot *parent):
     _collapsed(false)
 {
     setRenderHint( QwtPlotItem::RenderAntialiased );
-    QColor color( Qt::black );
-    setTextPen( color );
-    setBorderPen( color );
 
     setMaxColumns( 1 );
     setAlignment( Qt::Alignment( Qt::AlignTop | Qt::AlignRight ) );
@@ -64,8 +61,6 @@ void PlotLegend::draw(QPainter *painter, const QwtScaleMap &xMap,
         QPen black_pen (Qt::black);
         black_pen.setWidth(2);
         painter->setPen( black_pen );
-//        painter->drawLine( iconRect.topLeft(), iconRect.bottomRight() );
-//        painter->drawLine( iconRect.topRight(), iconRect.bottomLeft() );
         painter->drawEllipse( iconRect );
         painter->restore();
     }
