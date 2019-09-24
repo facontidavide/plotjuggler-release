@@ -19,10 +19,6 @@
   <property name="windowTitle">
    <string>PlotJuggler</string>
   </property>
-  <property name="windowIcon">
-   <iconset>
-    <normaloff>:/style_light/office_chart_line_stacked.png</normaloff>:/style_light/office_chart_line_stacked.png</iconset>
-  </property>
   <property name="styleSheet">
    <string notr="true"/>
   </property>
