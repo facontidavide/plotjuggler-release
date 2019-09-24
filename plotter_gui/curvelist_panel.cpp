@@ -16,6 +16,7 @@
 #include <QStandardItem>
 #include <QWheelEvent>
 #include <QItemSelectionModel>
+#include <QScrollBar>
 
 class SortedTableItem: public QStandardItem
 {
@@ -54,6 +55,8 @@ CurveListPanel::CurveListPanel(const CustomPlotMap &mapped_math_plots,
         table_view->setModel( _model );
         table_view->horizontalHeader()->setStretchLastSection (true);
         table_view->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
+        table_view->setHorizontalScrollMode(QAbstractItemView::ScrollPerPixel);
+
     }
 
     ui->widgetOptions->setVisible(false);
@@ -330,8 +333,7 @@ bool CurveListPanel::eventFilter(QObject *object, QEvent *event)
 
                 horizontal->setSectionResizeMode(0, QHeaderView::ResizeToContents);
                 horizontal->setSectionResizeMode(1, QHeaderView::Stretch);
-                vertical->setSectionResizeMode(0, QHeaderView::ResizeToContents);
-                vertical->setSectionResizeMode(1, QHeaderView::ResizeToContents);
+                vertical->setSectionResizeMode(QHeaderView::ResizeToContents);
 
                 QSettings settings;
                 settings.setValue("FilterableListWidget/table_point_size", _point_size);
@@ -495,7 +497,9 @@ void CurveListPanel::on_checkBoxHideSecondColumn_toggled(bool checked)
         else{
             table_view->showColumn(1);
         }
+        table_view->horizontalHeader()->setStretchLastSection( !checked );
     }
+
     emit hiddenItemsChanged();
 }
 
