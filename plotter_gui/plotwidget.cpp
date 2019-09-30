@@ -388,12 +388,7 @@ bool PlotWidget::addCurveXY(std::string name_x, std::string name_y,
 {
     std::string name = curve_name.toStdString() ;
 
-    auto isValid = [&](const std::string& str) -> bool
-    {
-        return  !str.empty() && _curve_list.count( str ) == 0;
-    };
-
-    while( !isValid(name) )
+    while( name.empty() )
     {
         SuggestDialog dialog( name_x, name_y, this );
 
@@ -403,7 +398,7 @@ bool PlotWidget::addCurveXY(std::string name_x, std::string name_y,
         name_x = dialog.nameX().toStdString();
         name_y = dialog.nameY().toStdString();
 
-        if ( !ok || !isValid(name) )
+        if ( !ok || name.empty() || _curve_list.count( name ) != 0 )
         {
             int ret = QMessageBox::warning(this, "Missing name",
                                            "The name is missing or invalid. Try again or abort.",
@@ -455,12 +450,8 @@ bool PlotWidget::addCurveXY(std::string name_x, std::string name_y,
 
     curve->setStyle( _curve_style );
 
-    QColor color = data.getColorHint();
-    if( color == Qt::black)
-    {
-        color = randomColorHint();
-        data.setColorHint(color);
-    }
+    QColor color =  randomColorHint();
+
     curve->setPen( color,  (_curve_style == QwtPlotCurve::Dots) ? 4 : 0.8 );
     curve->setRenderHint( QwtPlotItem::RenderAntialiased, true );
 
@@ -484,26 +475,43 @@ bool PlotWidget::addCurveXY(std::string name_x, std::string name_y,
 
 void PlotWidget::removeCurve(const std::string &curve_name)
 {
-    auto it = _curve_list.find(curve_name);
-    if( it != _curve_list.end() )
-    {
-        auto& curve = it->second;
-        curve->detach();
-        _curve_list.erase( it );
+    bool deleted = false;
 
-        auto marker_it = _point_marker.find(curve_name);
-        if( marker_it != _point_marker.end() )
+    for(auto it = _curve_list.begin(); it != _curve_list.end(); )
+    {
+        PointSeriesXY* curve_xy = dynamic_cast<PointSeriesXY*>(it->second->data());
+        bool remove_curve_xy = curve_xy && (curve_xy->dataX()->name() == curve_name ||
+                                            curve_xy->dataY()->name() == curve_name);
+
+        if( it->first == curve_name || remove_curve_xy )
         {
-            auto marker = marker_it->second;
-            if( marker ){
-                marker->detach();
+            deleted = true;
+            auto& curve = it->second;
+            curve->detach();
+
+            auto marker_it = _point_marker.find( it->first );
+            if( marker_it != _point_marker.end() )
+            {
+                auto marker = marker_it->second;
+                if( marker ){
+                    marker->detach();
+                }
+                _point_marker.erase(marker_it);
             }
-            _point_marker.erase(marker_it);
+
+            _curves_transform.erase( it->first );
+            it = _curve_list.erase( it );
         }
+        else{
+            it++;
+        }
+    }
+
+    if( deleted)
+    {
         _tracker->redraw();
         emit curveListChanged();
     }
-    _curves_transform.erase( curve_name );
 }
 
 bool PlotWidget::isEmpty() const
