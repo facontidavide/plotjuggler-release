@@ -2,6 +2,15 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.3.2 (2019-09-30)
+------------------
+* always use random color in addCurveXY
+* Fix issue #204
+* Fix issue #203
+* Add missed absl Span<T> header include
+* Add missed abseil_cpp depend
+* Contributors: Davide Faconti, Enrique Fernandez
+
 2.3.1 (2019-09-24)
 ------------------
 * Fix `#202 <https://github.com/facontidavide/PlotJuggler/issues/202>`_ use_header_stamp not initialized for built-in types
