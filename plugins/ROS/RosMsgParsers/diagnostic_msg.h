@@ -3,8 +3,7 @@
 
 #include "ros_parser_base.h"
 #include <diagnostic_msgs/DiagnosticArray.h>
-#include <absl/strings/str_cat.h>
-#include <absl/strings/charconv.h>
+#include <boost/spirit/include/qi.hpp>
 
 class DiagnosticMsg: public RosParserBase
 {
@@ -50,18 +49,16 @@ public:
             {
                 const char *start_ptr = kv.value.data();
                 double val = 0;
-                auto res = absl::from_chars (start_ptr, start_ptr + kv.value.size(), val);
-                if( start_ptr == res.ptr ) continue;
+
+                bool parsed = boost::spirit::qi::parse(start_ptr, start_ptr + kv.value.size(), boost::spirit::qi::double_, val);
+                if( !parsed ) continue;
 
                 std::string status_prefix;
                 if( status.hardware_id.empty()){
-                    status_prefix = absl::StrCat( "/", status.name,  "/",
-                                                  kv.key );
+                    status_prefix = fmt::format("/{}/{}", status.name, kv.key );
                 }
                 else {
-                    status_prefix = absl::StrCat( "/",status.hardware_id, "/",
-                                                  status.name,  "/",
-                                                  kv.key );
+                    status_prefix = fmt::format( "/{}/{}/{}",status.hardware_id, status.name, kv.key );
                 }
                 auto it = _data.find(status_prefix);
                 if( it == _data.end() )
