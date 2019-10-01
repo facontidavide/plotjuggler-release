@@ -140,6 +140,8 @@ void DialogSelectRosTopics::updateTopicList(std::vector<std::pair<QString, QStri
 
 DialogSelectRosTopics::~DialogSelectRosTopics()
 {
+    QSettings settings;
+    settings.setValue("DialogSelectRosTopics.geometry", saveGeometry());
     delete ui;
 }
 
@@ -186,12 +188,6 @@ void DialogSelectRosTopics::on_pushButtonEditRules_pressed()
 {
     RuleEditing* rule_editing = new RuleEditing(this);
     rule_editing->exec();
-}
-
-void DialogSelectRosTopics::closeEvent(QCloseEvent *event)
-{
-    QSettings settings;
-    settings.setValue("DialogSelectRosTopics.geometry", saveGeometry());
 }
 
 nonstd::optional<double> FlatContainerContainHeaderStamp(const RosIntrospection::FlatMessage& flat_msg)
