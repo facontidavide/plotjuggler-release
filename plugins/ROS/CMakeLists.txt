@@ -38,9 +38,8 @@ target_link_libraries( commonROS
   ${Qt5Widgets_LIBRARIES}
   ${Qt5Xml_LIBRARIES}
   ${catkin_LIBRARIES}
-  fmt::fmt
   )
-
+target_link_libraries(commonROS PRIVATE fmt::fmt-header-only)
 
 #############
 SET( DATALOAD_SRC
