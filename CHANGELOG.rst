@@ -2,6 +2,12 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.3.3 (2019-10-01)
+------------------
+* removed explicit reference to Span
+* remove abseil dependency (to be tested)
+* Contributors: Davide Faconti
+
 2.3.2 (2019-09-30)
 ------------------
 * always use random color in addCurveXY
