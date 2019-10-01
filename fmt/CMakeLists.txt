@@ -10,10 +10,6 @@ endif()
 # Determine if fmt is built as a subproject (using add_subdirectory)
 # or if it is the master project.
 set(MASTER_PROJECT OFF)
-if (CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
-  set(MASTER_PROJECT ON)
-  message(STATUS "CMake version: ${CMAKE_VERSION}")
-endif ()
 
 # Joins arguments and places the results in ${result_var}.
 function(join result_var)
@@ -184,14 +180,6 @@ set_target_properties(fmt PROPERTIES
   VERSION ${FMT_VERSION} SOVERSION ${CPACK_PACKAGE_VERSION_MAJOR}
   DEBUG_POSTFIX d)
 
-if (BUILD_SHARED_LIBS)
-  if (UNIX AND NOT APPLE AND NOT ${CMAKE_SYSTEM_NAME} MATCHES "SunOS")
-    # Fix rpmlint warning:
-    # unused-direct-shlib-dependency /usr/lib/libformat.so.1.1.0 /lib/libm.so.6.
-    target_link_libraries(fmt -Wl,--as-needed)
-  endif ()
-  target_compile_definitions(fmt PRIVATE FMT_EXPORT INTERFACE FMT_SHARED)
-endif ()
 if (FMT_SAFE_DURATION_CAST)
   target_compile_definitions(fmt PUBLIC FMT_SAFE_DURATION_CAST)
 endif()
@@ -207,97 +195,4 @@ target_include_directories(fmt-header-only INTERFACE
   $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>)
 
-# Install targets.
-if (FMT_INSTALL)
-  include(GNUInstallDirs)
-  include(CMakePackageConfigHelpers)
-  set(FMT_CMAKE_DIR ${CMAKE_INSTALL_LIBDIR}/cmake/fmt CACHE STRING
-      "Installation directory for cmake files, relative to ${CMAKE_INSTALL_PREFIX}.")
-  set(version_config ${PROJECT_BINARY_DIR}/fmt-config-version.cmake)
-  set(project_config ${PROJECT_BINARY_DIR}/fmt-config.cmake)
-  set(pkgconfig ${PROJECT_BINARY_DIR}/fmt.pc)
-  set(targets_export_name fmt-targets)
 
-  set (INSTALL_TARGETS fmt)
-  if (TARGET fmt-header-only)
-    set(INSTALL_TARGETS ${INSTALL_TARGETS} fmt-header-only)
-  endif ()
-
-  set(FMT_LIB_DIR ${CMAKE_INSTALL_LIBDIR} CACHE STRING
-      "Installation directory for libraries, relative to ${CMAKE_INSTALL_PREFIX}.")
-
-  set(FMT_INC_DIR ${CMAKE_INSTALL_INCLUDEDIR}/fmt CACHE STRING
-      "Installation directory for include files, relative to ${CMAKE_INSTALL_PREFIX}.")
-
-  set(FMT_PKGCONFIG_DIR ${CMAKE_INSTALL_LIBDIR}/pkgconfig CACHE PATH
-      "Installation directory for pkgconfig (.pc) files, relative to ${CMAKE_INSTALL_PREFIX}.")
-
-  # Generate the version, config and target files into the build directory.
-  write_basic_package_version_file(
-    ${version_config}
-    VERSION ${FMT_VERSION}
-    COMPATIBILITY AnyNewerVersion)
-  configure_file(
-    "${PROJECT_SOURCE_DIR}/support/cmake/fmt.pc.in"
-    "${pkgconfig}"
-    @ONLY)
-  configure_package_config_file(
-    ${PROJECT_SOURCE_DIR}/support/cmake/fmt-config.cmake.in
-    ${project_config}
-    INSTALL_DESTINATION ${FMT_CMAKE_DIR})
-  # Use a namespace because CMake provides better diagnostics for namespaced
-  # imported targets.
-  export(TARGETS ${INSTALL_TARGETS} NAMESPACE fmt::
-         FILE ${PROJECT_BINARY_DIR}/${targets_export_name}.cmake)
-
-  # Install version, config and target files.
-  install(
-    FILES ${project_config} ${version_config}
-    DESTINATION ${FMT_CMAKE_DIR})
-  install(EXPORT ${targets_export_name} DESTINATION ${FMT_CMAKE_DIR}
-          NAMESPACE fmt::)
-
-  # Install the library and headers.
-  install(TARGETS ${INSTALL_TARGETS} EXPORT ${targets_export_name}
-          DESTINATION ${FMT_LIB_DIR})
-
-  install(FILES $<TARGET_PDB_FILE:${INSTALL_TARGETS}>
-          DESTINATION ${FMT_LIB_DIR} OPTIONAL)
-  install(FILES ${FMT_HEADERS} DESTINATION ${FMT_INC_DIR})
-  install(FILES "${pkgconfig}" DESTINATION "${FMT_PKGCONFIG_DIR}")
-endif ()
-
-if (FMT_DOC)
-  add_subdirectory(doc)
-endif ()
-
-if (FMT_TEST)
-  enable_testing()
-  add_subdirectory(test)
-endif ()
-
-# Control fuzzing independent of the unit tests.
-if (FMT_FUZZ)
-  add_subdirectory(test/fuzzing)
-endif ()
-
-set(gitignore ${PROJECT_SOURCE_DIR}/.gitignore)
-if (MASTER_PROJECT AND EXISTS ${gitignore})
-  # Get the list of ignored files from .gitignore.
-  file (STRINGS ${gitignore} lines)
-  LIST(REMOVE_ITEM lines /doc/html)
-  foreach (line ${lines})
-    string(REPLACE "." "[.]" line "${line}")
-    string(REPLACE "*" ".*" line "${line}")
-    set(ignored_files ${ignored_files} "${line}$" "${line}/")
-  endforeach ()
-  set(ignored_files ${ignored_files}
-    /.git /breathe /format-benchmark sphinx/ .buildinfo .doctrees)
-
-  set(CPACK_SOURCE_GENERATOR ZIP)
-  set(CPACK_SOURCE_IGNORE_FILES ${ignored_files})
-  set(CPACK_SOURCE_PACKAGE_FILE_NAME fmt-${FMT_VERSION})
-  set(CPACK_PACKAGE_NAME fmt)
-  set(CPACK_RESOURCE_FILE_README ${PROJECT_SOURCE_DIR}/README.rst)
-  include(CPack)
-endif ()
