@@ -8,8 +8,8 @@
 #include <ros/types.h>
 #include <ros/serialization.h>
 #include "ros_parser_base.h"
-#include <absl/strings/str_cat.h>
-#include <absl/strings/charconv.h>
+#include <boost/spirit/include/qi.hpp>
+
 
 struct StampedDiagnostic_
 {
@@ -91,8 +91,9 @@ public:
             }
             const char *start_ptr = it.value.data();
             double val = 0;
-            auto res = absl::from_chars (start_ptr, start_ptr + it.value.size(), val);
-            if( start_ptr == res.ptr ) continue;
+
+            bool parsed = boost::spirit::qi::parse(start_ptr, start_ptr + it.value.size(), boost::spirit::qi::double_, val);
+            if( !parsed ) continue;
 
             auto data_it = _data.find( it.key );
             if( data_it == _data.end() )
@@ -110,9 +111,7 @@ public:
     {
         for (auto& it: _data)
         {
-            appendData(plot_map,
-                       absl::StrCat(prefix, "/", it.first),
-                       it.second);
+            appendData(plot_map, fmt::format("{}/{}", prefix, it.first), it.second);
         }
     }
 

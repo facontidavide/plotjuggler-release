@@ -38,6 +38,7 @@ target_link_libraries( commonROS
   ${Qt5Widgets_LIBRARIES}
   ${Qt5Xml_LIBRARIES}
   ${catkin_LIBRARIES}
+  fmt::fmt
   )
 
 
