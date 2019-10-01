@@ -5,7 +5,7 @@
 #include "pal_statistics_msg.h"
 #include "odometry_msg.h"
 #include "fiveai_stamped_diagnostic.h"
-#include <absl/strings/charconv.h>
+
 
 RosMessageParser::RosMessageParser()
 {
@@ -118,11 +118,9 @@ void RosMessageParser::pushMessageRef(const std::string &topic_name,
     FlatMessage flat_container;
     RenamedValues renamed_values;
 
-    absl::Span<uint8_t> msg_view ( const_cast<uint8_t*>(msg.data()), msg.size() );
-
     bool max_size_ok = _introspection_parser->deserializeIntoFlatContainer(
                 topic_name,
-                msg_view,
+                {const_cast<uint8_t*>(msg.data()), msg.size()},
                 &flat_container,
                 _max_array_size );
 
@@ -182,7 +180,7 @@ void RosMessageParser::pushMessageRef(const std::string &topic_name,
 //            temp_leaf.node_ptr = temp_leaf.node_ptr->parent();
 //            if( !temp_leaf.node_ptr ) continue;
 
-//            renamed_values.push_back( { absl::StrCat( temp_leaf.toStdString(), "/", flat_container.name[n].second), num } );
+//            renamed_values.push_back( { StrCat( temp_leaf.toStdString(), "/", flat_container.name[n].second), num } );
 //        }
 //    }
 
