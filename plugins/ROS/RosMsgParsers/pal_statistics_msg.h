@@ -9,8 +9,7 @@
 #include <ros/serialization.h>
 #include "ros_parser_base.h"
 #include <std_msgs/Header.h>
-#include <absl/strings/str_cat.h>
-#include <absl/strings/charconv.h>
+
 
 struct PalStatisticsNames_
 {
@@ -152,7 +151,7 @@ public:
             auto& vect = it_version.second;
             for ( size_t index = 0; index < vect.size(); index++ )
             {
-                appendData(plot_map,  absl::StrCat(prefix, "/", names.at(index) ), vect[index]);
+                appendData(plot_map, fmt::format("{}/{}", prefix, names.at(index) ), vect[index]);
             }
         }
     }
