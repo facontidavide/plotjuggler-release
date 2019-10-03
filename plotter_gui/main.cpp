@@ -11,8 +11,8 @@
 QPixmap getFunnySplashscreen(){
 
     qsrand(time(nullptr));
-    int n = qrand() % 30;
-    if ( n > 26 ){ n = 0; }
+    int n = qrand() % 44;
+    if ( n >= 44 ){ n = 0; }
     return QPixmap(QString("://resources/memes/meme_%1.jpg").arg(n, 2, 10, QChar('0')));
 }
 
