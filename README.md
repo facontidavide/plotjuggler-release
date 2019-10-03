@@ -8,7 +8,7 @@
 [![Join the chat at https://gitter.im/PlotJuggler/Lobby](https://badges.gitter.im/PlotJuggler/Lobby.svg)](https://gitter.im/PlotJuggler/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Tweet](https://img.shields.io/twitter/url/http/shields.io.svg?style=social)](https://twitter.com/intent/tweet?text=I%20use%20PlotJuggler%20and%20it%20is%20amazing%0D%0A&url=https://github.com/facontidavide/PlotJuggler&via=facontidavide&hashtags=dataviz,plotjuggler,GoROS,PX4)
 
-# PlotJuggler 2.3.3
+# PlotJuggler 2.3.4
 
 QT5 based application to display time series in plots, using an intuitive "drag and drop" interface.
 
@@ -117,9 +117,9 @@ To run the application, use the command:
 PlotJuggler required a lot of work to be developed; my goal is to build the most
 intuitive and powerfull tool to visualize data and timeseries.
 
-If you find PlotJuggler useful, consider making a donation on any of these platforms: 
+If you find PlotJuggler useful, consider making a donation on 
 [PayPal](https://www.paypal.me/facontidavide) or 
-[LiveraPay](https://en.liberapay.com/facontidavide/).
+
 
 If you use PlotJuggler at work, your company can become a __sponsor__ and support 
 the development of those specific features they need.
