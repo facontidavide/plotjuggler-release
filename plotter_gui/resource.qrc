@@ -192,5 +192,32 @@
         <file>cheatsheet/video/cheatsheet-zoom-in-out.mp4</file>
         <file>style_dark/stylesheet.qss</file>
         <file>style_dark/add_row.png</file>
+        <file>resources/memes/meme_00.jpg</file>
+        <file>resources/memes/meme_01.jpg</file>
+        <file>resources/memes/meme_02.jpg</file>
+        <file>resources/memes/meme_03.jpg</file>
+        <file>resources/memes/meme_04.jpg</file>
+        <file>resources/memes/meme_05.jpg</file>
+        <file>resources/memes/meme_06.jpg</file>
+        <file>resources/memes/meme_07.jpg</file>
+        <file>resources/memes/meme_08.jpg</file>
+        <file>resources/memes/meme_09.jpg</file>
+        <file>resources/memes/meme_10.jpg</file>
+        <file>resources/memes/meme_11.jpg</file>
+        <file>resources/memes/meme_12.jpg</file>
+        <file>resources/memes/meme_13.jpg</file>
+        <file>resources/memes/meme_14.jpg</file>
+        <file>resources/memes/meme_15.jpg</file>
+        <file>resources/memes/meme_16.jpg</file>
+        <file>resources/memes/meme_17.jpg</file>
+        <file>resources/memes/meme_18.jpg</file>
+        <file>resources/memes/meme_19.jpg</file>
+        <file>resources/memes/meme_20.jpg</file>
+        <file>resources/memes/meme_21.jpg</file>
+        <file>resources/memes/meme_22.jpg</file>
+        <file>resources/memes/meme_23.jpg</file>
+        <file>resources/memes/meme_24.jpg</file>
+        <file>resources/memes/meme_25.jpg</file>
+        <file>resources/memes/meme_26.jpg</file>
     </qresource>
 </RCC>
