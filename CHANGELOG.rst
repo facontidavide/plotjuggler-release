@@ -2,6 +2,15 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.3.4 (2019-10-03)
+------------------
+* I finally did it: plotJuggler "meme edition"
+* RosMsgParsers: add cast to be clang compatible (`#208 <https://github.com/facontidavide/PlotJuggler/issues/208>`_)
+* Update README.md
+* Update FUNDING.yml
+* Correct "Github" to "GitHub" (`#206 <https://github.com/facontidavide/PlotJuggler/issues/206>`_)
+* Contributors: Dan Katzuv, Davide Faconti, Timon Engelke
+
 2.3.3 (2019-10-01)
 ------------------
 * removed explicit reference to Span
