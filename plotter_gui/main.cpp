@@ -10,10 +10,24 @@
 
 QPixmap getFunnySplashscreen(){
 
+    QSettings settings;
     qsrand(time(nullptr));
-    int n = qrand() % 44;
-    if ( n >= 44 ){ n = 0; }
-    return QPixmap(QString("://resources/memes/meme_%1.jpg").arg(n, 2, 10, QChar('0')));
+
+    auto getNum = [](){
+        const int last_image_num = 44;
+        int n = qrand() % (last_image_num+2);
+        if ( n > last_image_num ){ n = 0; }
+        return n;
+    };
+    int n = getNum();
+    int prev_n = settings.value("previousFunnySubtitle").toInt();
+    while( n == prev_n ){
+        n = getNum();
+    }
+    settings.setValue("previousFunnySubtitle", n);
+    auto filename = QString("://resources/memes/meme_%1.jpg").arg(n, 2, 10, QChar('0'));
+    //qDebug() << filename;
+    return QPixmap(filename);
 }
 
 int main(int argc, char *argv[])
@@ -100,7 +114,7 @@ int main(int argc, char *argv[])
         app.processEvents();
         splash.raise();
 
-        const auto deadline = QDateTime::currentDateTime().addMSecs( 3000 );
+        const auto deadline = QDateTime::currentDateTime().addMSecs( 3500 );
 
         MainWindow w( parser );
         while( QDateTime::currentDateTime() < deadline && !splash.isHidden() )

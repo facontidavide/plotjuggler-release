@@ -33,7 +33,7 @@ In the root folder of ws_plotjuggler:
     source /opt/qt59/bin/qt59-env.sh
     catkin_make -DCMAKE_BUILD_TYPE=Release  -j$(nproc) install  
     unset QTDIR; unset QT_PLUGIN_PATH ; unset LD_LIBRARY_PATH
-    export LD_LIBRARY_PATH=/opt/ros/kinetic/lib
+    export LD_LIBRARY_PATH=/opt/ros/kinetic/lib:$PWD/install/lib
     
     
     
