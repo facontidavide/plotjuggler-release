@@ -2,7 +2,7 @@
 #include <cmath>
 #include <cstdlib>
 
-PointSeriesXY::PointSeriesXY(const PlotData *y_axis, const PlotData *x_axis):
+PointSeriesXY::PointSeriesXY(const PlotData *x_axis, const PlotData *y_axis):
     DataSeriesBase( &_cached_curve ),
     _x_axis(x_axis),
     _y_axis(y_axis),
