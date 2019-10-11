@@ -1,3 +1,26 @@
+## plotjuggler (kinetic) - 2.3.5-1
+
+The packages in the `plotjuggler` repository were released into the `kinetic` distro by running `/usr/bin/bloom-release --rosdistro kinetic plotjuggler` on `Fri, 11 Oct 2019 11:50:32 -0000`
+
+The `plotjuggler` package was released.
+
+Version of package(s) in repository `plotjuggler`:
+
+- upstream repository: https://github.com/facontidavide/PlotJuggler.git
+- release repository: https://github.com/facontidavide/plotjuggler-release.git
+- rosdistro version: `2.3.4-2`
+- old version: `2.3.4-2`
+- new version: `2.3.5-1`
+
+Versions of tools used:
+
+- bloom version: `0.8.0`
+- catkin_pkg version: `0.4.13`
+- rosdep version: `0.15.2`
+- rosdistro version: `0.7.4`
+- vcstools version: `0.1.42`
+
+
 ## plotjuggler (melodic) - 2.3.5-1
 
 The packages in the `plotjuggler` repository were released into the `melodic` distro by running `/usr/bin/bloom-release --rosdistro melodic plotjuggler` on `Fri, 11 Oct 2019 11:40:26 -0000`
