@@ -41,7 +41,9 @@ public:
 
 public slots:
 
-    void resizeEvent(QResizeEvent *) ;
+    void resizeEvent(QResizeEvent *);
+    void showEvent(QShowEvent *ev);
+
 
     // Undo - Redo
     void onUndoableChange();
