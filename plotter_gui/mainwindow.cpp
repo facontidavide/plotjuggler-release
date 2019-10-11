@@ -123,6 +123,7 @@ MainWindow::MainWindow(const QCommandLineParser &commandline_parser, QWidget *pa
     ui->splitter->setStretchFactor(0,2);
     ui->splitter->setStretchFactor(1,6);
 
+
     connect( ui->splitter, SIGNAL(splitterMoved(int,int)), SLOT(on_splitterMoved(int,int)) );
 
     initializeActions();
@@ -631,7 +632,25 @@ void MainWindow::on_splitterMoved(int , int )
 
 void MainWindow::resizeEvent(QResizeEvent *)
 {
-    on_splitterMoved( 0, 0 );
+  on_splitterMoved( 0, 0 );
+}
+
+void MainWindow::showEvent(QShowEvent *ev)
+{
+  QMainWindow::showEvent(ev);
+
+  static bool first = true;
+  if( first )
+  {
+    first = false;
+    QSettings settings;
+    int splitter_width = settings.value("MainWindow.splitterWidth", 200).toInt();
+    QList<int> splitter_sizes = ui->splitter->sizes();
+    int tot_splitter_width = splitter_sizes[0] + splitter_sizes[1];
+    splitter_sizes[0] = splitter_width;
+    splitter_sizes[1] = tot_splitter_width - splitter_width;
+    ui->splitter->setSizes(splitter_sizes);
+  }
 }
 
 
@@ -2111,7 +2130,8 @@ void MainWindow::closeEvent(QCloseEvent *event)
     settings.setValue("MainWindow.streamingBufferValue", ui->streamingSpinBox->value() );
     settings.setValue("MainWindow.removeTimeOffset",ui->pushButtonRemoveTimeOffset->isChecked() );
     settings.setValue("MainWindow.dateTimeDisplay", ui->pushButtonUseDateTime->isChecked() );
-    settings.setValue("MainWindow.timeTrackerSetting", (int)_tracker_param );
+    settings.setValue("MainWindow.timeTrackerSetting", (int)_tracker_param );  
+    settings.setValue("MainWindow.splitterWidth", ui->splitter->sizes()[0]);
 
     // clean up all the plugins
     for(auto& it : _data_loader ) { delete it.second; }
