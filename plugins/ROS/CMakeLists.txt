@@ -6,13 +6,26 @@ set(CMAKE_AUTOMOC ON)
 SET(CMAKE_AUTOUIC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-
-
 #############
 add_definitions(${QT_DEFINITIONS})
 add_definitions(-DQT_PLUGIN)
 add_definitions(-DQT_SHARED)
 #############
+
+# The directory will exist if the submodule was added
+IF(IS_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/ros_type_introspection")
+    include_directories( ros_type_introspection/include )
+
+    add_library(ros_type_introspection STATIC
+      ros_type_introspection/src/ros_type.cpp
+      ros_type_introspection/src/ros_field.cpp
+      ros_type_introspection/src/stringtree_leaf.cpp
+      ros_type_introspection/src/ros_message.cpp
+      ros_type_introspection/src/substitution_rule.cpp
+      ros_type_introspection/src/ros_introspection.cpp
+    )
+    target_link_libraries(ros_type_introspection ${catkin_LIBRARIES})
+ENDIF()
 
 SET( COMMON_SRC
     rule_editing.h
