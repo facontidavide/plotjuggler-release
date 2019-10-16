@@ -216,6 +216,7 @@ public slots:
 private slots:
     void on_stylesheetChanged(QString style_name);
     void on_actionPreferences_triggered();
+    void on_actionShare_the_love_triggered();
 };
 
 
