@@ -1,0 +1,3 @@
+[submodule "plugins/ROS/ros_type_introspection"]
+	path = plugins/ROS/ros_type_introspection
+	url = https://github.com/facontidavide/ros_type_introspection.git
