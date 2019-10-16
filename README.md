@@ -8,7 +8,7 @@
 [![Join the chat at https://gitter.im/PlotJuggler/Lobby](https://badges.gitter.im/PlotJuggler/Lobby.svg)](https://gitter.im/PlotJuggler/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Tweet](https://img.shields.io/twitter/url/http/shields.io.svg?style=social)](https://twitter.com/intent/tweet?text=I%20use%20PlotJuggler%20and%20it%20is%20amazing%0D%0A&url=https://github.com/facontidavide/PlotJuggler&via=facontidavide&hashtags=dataviz,plotjuggler,GoROS,PX4)
 
-# PlotJuggler 2.3.5
+# PlotJuggler 2.3.6
 
 QT5 based application to display time series in plots, using an intuitive "drag and drop" interface.
 
@@ -50,13 +50,13 @@ Watch this video to learn how to use it.
 
 ## "Download and Run" (Ubuntu 16.04 Xenial or later)
 
-For those of you that can't wait to get your hands dirty, just download this AppImage:
+For those of you that can't wait to get your hands dirty wit the lastest version, just download this AppImage:
 
-[PlotJuggler-2.3.4-x86_64.AppImage](https://github.com/facontidavide/PlotJuggler/releases/download/2.3.4/PlotJuggler-2.3.4-x86_64.AppImage).
+[PlotJuggler-2.3.6-x86_64.AppImage](https://github.com/facontidavide/PlotJuggler/releases/download/2.3.6/PlotJuggler-2.3.6-x86_64.AppImage).
    
 Do not forget to make it executable with the command 
 
-    chmod +x ./PlotJuggler-2.3.4-x86_64.AppImage
+    chmod +x ./PlotJuggler-2.3.6-x86_64.AppImage
 
 ## How to build (without ROS plugins)
 
@@ -95,9 +95,9 @@ you __must__ build PlotJuggler using __catkin__, otherwise the ROS related plugi
 
 Follow these instructions:
 
-    sudo apt-get install qtbase5-dev libqt5svg5-dev ros-kinetic-ros-type-introspection 
+    sudo apt-get install qtbase5-dev libqt5svg5-dev libqt5multimedia libqt5multimedia5-plugins ros-kinetic-ros-type-introspection
     mkdir -p ws_plotjuggler/src; cd ws_plotjuggler/src
-    git clone https://github.com/facontidavide/PlotJuggler.git
+    git clone --recursive https://github.com/facontidavide/PlotJuggler.git
     cd ..
     catkin_make
     source devel/setup.bash
