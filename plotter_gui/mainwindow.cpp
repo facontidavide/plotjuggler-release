@@ -1114,10 +1114,10 @@ bool MainWindow::loadDataFromFiles( QStringList filenames )
     char prefix_ch = 'A';
     QStringList loaded_filenames;
 
-    for( const auto& filename: filenames)
+    for( int i=0; i<filenames.size(); i++)
     {
         FileLoadInfo info;
-        info.filename = filename;
+        info.filename = filenames[i];
         if( filenames.size() > 1 )
         {
             info.prefix = prefix_ch;
@@ -1125,7 +1125,7 @@ bool MainWindow::loadDataFromFiles( QStringList filenames )
 
         if( loadDataFromFile(info) )
         {
-            loaded_filenames.push_back(filename);
+            loaded_filenames.push_back(filenames[i]);
             prefix_ch++;
         }
     }
@@ -1133,7 +1133,7 @@ bool MainWindow::loadDataFromFiles( QStringList filenames )
     {
         updateRecentDataMenu(loaded_filenames);
         return true;
-    }
+    }    
     return false;
 }
 
@@ -1218,7 +1218,22 @@ bool MainWindow::loadDataFromFile(const FileLoadInfo& info)
                 QDomElement plugin_elem = dataloader->xmlSaveState(new_info.plugin_config);
                 new_info.plugin_config.appendChild( plugin_elem );
 
-                _loaded_datafiles.push_back(new_info);
+                bool duplicate = false;
+
+                // substitute an old item of _loaded_datafiles or push_back another item.
+                for( auto& prev_loaded: _loaded_datafiles)
+                {
+                  if( prev_loaded.filename == new_info.filename &&  prev_loaded.prefix == new_info.prefix)
+                  {
+                    prev_loaded = new_info;
+                    duplicate = true;
+                    break;
+                  }
+                }
+
+                if( ! duplicate ){
+                  _loaded_datafiles.push_back(new_info);
+                }
             }
         }
         catch(std::exception &ex)
@@ -2283,6 +2298,12 @@ void MainWindow::on_actionReportBug_triggered()
     QDesktopServices::openUrl( QUrl( "https://github.com/facontidavide/PlotJuggler/issues" ));
 }
 
+void MainWindow::on_actionShare_the_love_triggered()
+{
+    QDesktopServices::openUrl( QUrl( "https://twitter.com/intent/tweet?hashtags=PlotJuggler" ));
+}
+
+
 void MainWindow::on_actionAbout_triggered()
 {
     QDialog* dialog = new QDialog(this);
@@ -2726,3 +2747,4 @@ void MainWindow::on_actionPreferences_triggered()
         emit stylesheetChanged(_style_directory);
     }
 }
+
