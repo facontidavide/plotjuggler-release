@@ -79,18 +79,13 @@ if(COMPILING_WITH_CATKIN)
         rosbag_storage
         roscpp
         roscpp_serialization
+        ros_type_introspection
         rostime
         topic_tools
         tf
         diagnostic_msgs
         nav_msgs
     )
-    if( IS_DIRECTORY "${PROJECT_SOURCE_DIR}/plugins/ROS/ros_type_introspection" )
-        message(STATUS "Using ros_type_introspection from submodule")
-    else()
-        message(STATUS "Using ros_type_introspection from /opt/ros")
-        set(ROS_DEPENDENCIES ${ROS_DEPENDENCIES} ros_type_introspection)
-    endif()
 
     find_package(catkin REQUIRED COMPONENTS ${ROS_DEPENDENCIES} )
 
