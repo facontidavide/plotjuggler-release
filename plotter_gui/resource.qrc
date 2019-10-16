@@ -237,5 +237,7 @@
         <file>resources/memes/meme_42.jpg</file>
         <file>resources/memes/meme_43.jpg</file>
         <file>resources/memes/meme_44.jpg</file>
+        <file>resources/github.png</file>
+        <file>resources/twitter.png</file>
     </qresource>
 </RCC>

@@ -11,7 +11,7 @@ cmake_policy (SET CMP0020 NEW)
 add_definitions(
     -DPJ_MAJOR_VERSION=2
     -DPJ_MINOR_VERSION=3
-    -DPJ_PATCH_VERSION=5 )
+    -DPJ_PATCH_VERSION=6 )
 
 add_subdirectory( fmt )
 
@@ -79,13 +79,18 @@ if(COMPILING_WITH_CATKIN)
         rosbag_storage
         roscpp
         roscpp_serialization
-        ros_type_introspection
         rostime
         topic_tools
         tf
         diagnostic_msgs
         nav_msgs
     )
+    if( IS_DIRECTORY "${PROJECT_SOURCE_DIR}/plugins/ROS/ros_type_introspection" )
+        message(STATUS "Using ros_type_introspection from submodule")
+    else()
+        message(STATUS "Using ros_type_introspection from /opt/ros")
+        set(ROS_DEPENDENCIES ${ROS_DEPENDENCIES} ros_type_introspection)
+    endif()
 
     find_package(catkin REQUIRED COMPONENTS ${ROS_DEPENDENCIES} )
 

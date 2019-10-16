@@ -893,6 +893,7 @@
     </property>
     <addaction name="actionCheatsheet"/>
     <addaction name="actionSupportPlotJuggler"/>
+    <addaction name="actionShare_the_love"/>
     <addaction name="actionReportBug"/>
     <addaction name="separator"/>
     <addaction name="actionAbout"/>
@@ -964,8 +965,12 @@
    </property>
   </action>
   <action name="actionReportBug">
+   <property name="icon">
+    <iconset>
+     <normaloff>:/resources/github.png</normaloff>:/resources/github.png</iconset>
+   </property>
    <property name="text">
-    <string>Report a bug...</string>
+    <string>Report a problem</string>
    </property>
    <property name="toolTip">
     <string>Report issue on GitHub</string>
@@ -1052,6 +1057,15 @@
   <action name="actionPreferences">
    <property name="text">
     <string>Preferences...</string>
+   </property>
+  </action>
+  <action name="actionShare_the_love">
+   <property name="icon">
+    <iconset>
+     <normaloff>:/resources/twitter.png</normaloff>:/resources/twitter.png</iconset>
+   </property>
+   <property name="text">
+    <string>Share the love</string>
    </property>
   </action>
  </widget>
