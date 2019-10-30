@@ -8,34 +8,35 @@
  *****************************************************************************/
 
 #ifndef QWT_SPLINE_H
-#define QWT_SPLINE_H 1
+#define QWT_SPLINE_H
 
 #include "qwt_global.h"
 #include "qwt_spline.h"
-#include "qwt_spline_polynomial.h"
-#include <qpolygon.h>
-#include <qpainterpath.h>
-#include <qmath.h>
 
 class QwtSplineParametrization;
+class QwtSplinePolynomial;
+class QPainterPath;
+class QLineF;
+class QPolygonF;
+template <typename T> class QVector;
 
 /*!
-  \brief Base class for all splines 
+  \brief Base class for all splines
 
   A spline is a curve represented by a sequence of polynomials. Spline approximation
   is the process of finding polynomials for a given set of points.
   When the algorithm preserves the initial points it is called interpolating.
 
   Splines can be classified according to conditions of the polynomials that
-  are met at the start/endpoints of the pieces: 
+  are met at the start/endpoints of the pieces:
 
   - Geometric Continuity
 
     - G0: polynamials are joined
     - G1: first derivatives are proportional at the join point
-          The curve tangents thus have the same direction, but not necessarily the 
+          The curve tangents thus have the same direction, but not necessarily the
           same magnitude. i.e., C1'(1) = (a,b,c) and C2'(0) = (k*a, k*b, k*c).
-    - G2: first and second derivatives are proportional at join point 
+    - G2: first and second derivatives are proportional at join point
 
   - Parametric Continuity
 
@@ -43,10 +44,10 @@ class QwtSplineParametrization;
     - C1: first derivatives equal
     - C2: first and second derivatives are equal
 
-  Geometric continuity requires the geometry to be continuous, while parametric 
+  Geometric continuity requires the geometry to be continuous, while parametric
   continuity requires that the underlying parameterization be continuous as well.
   Parametric continuity of order n implies geometric continuity of order n,
-  but not vice-versa. 
+  but not vice-versa.
 
   QwtSpline is the base class for spline approximations of any continuity.
 */
@@ -76,12 +77,12 @@ public:
 
         /*!
           ClosedPolygon is similar to PeriodicPolygon beside, that
-          the interpolation includes the connection between the last 
+          the interpolation includes the connection between the last
           and the first control point.
 
-          \note Only works for parametrizations, where the parameter increment 
-                for the the final closing line is positive. 
-                This excludes QwtSplineParametrization::ParameterX and 
+          \note Only works for parametrizations, where the parameter increment
+                for the the final closing line is positive.
+                This excludes QwtSplineParametrization::ParameterX and
                 QwtSplineParametrization::ParameterY
          */
 
@@ -102,10 +103,10 @@ public:
     };
 
     /*!
-      \brief Boundary condition 
+      \brief Boundary condition
 
-      A spline algorithm calculates polynomials by looking 
-      a couple of points back/ahead ( locality() ). At the ends 
+      A spline algorithm calculates polynomials by looking
+      a couple of points back/ahead ( locality() ). At the ends
       additional rules are necessary to compensate the missing
       points.
 
@@ -119,21 +120,21 @@ public:
           \sa boundaryValue()
          */
         Clamped1,
-        
+
         /*!
           The second derivative at the end point is given
 
           \sa boundaryValue()
-          \note a condition having a second derivative of 0 
+          \note a condition having a second derivative of 0
                 is also called "natural".
          */
         Clamped2,
-        
+
         /*!
           The third derivative at the end point is given
 
           \sa boundaryValue()
-          \note a condition having a third derivative of 0 
+          \note a condition having a third derivative of 0
                 is also called "parabolic runout".
          */
         Clamped3,
@@ -147,7 +148,7 @@ public:
           \sa boundaryValue().
          */
         LinearRunout
-    };  
+    };
 
     QwtSpline();
     virtual ~QwtSpline();
@@ -160,8 +161,8 @@ public:
     BoundaryType boundaryType() const;
 
     void setBoundaryValue( BoundaryPosition, double value );
-    double boundaryValue( BoundaryPosition ) const; 
-    
+    double boundaryValue( BoundaryPosition ) const;
+
     void setBoundaryCondition( BoundaryPosition, int condition );
     int boundaryCondition( BoundaryPosition ) const;
 
@@ -192,31 +193,32 @@ public:
     QwtSplineInterpolating();
     virtual ~QwtSplineInterpolating();
 
-    virtual QPolygonF equidistantPolygon( const QPolygonF &, 
+    virtual QPolygonF equidistantPolygon( const QPolygonF &,
         double distance, bool withNodes ) const;
 
-    virtual QPolygonF polygon( const QPolygonF &, double tolerance ) const;
+    virtual QPolygonF polygon(
+        const QPolygonF &, double tolerance ) const QWT_OVERRIDE;
 
-    virtual QPainterPath painterPath( const QPolygonF & ) const;
-    virtual QVector<QLineF> bezierControlLines( const QPolygonF &points ) const = 0;
+    virtual QPainterPath painterPath( const QPolygonF & ) const QWT_OVERRIDE;
+    virtual QVector<QLineF> bezierControlLines( const QPolygonF & ) const = 0;
 
 private:
     Q_DISABLE_COPY(QwtSplineInterpolating)
 };
 
 /*!
-  \brief Base class for spline interpolations providing a 
+  \brief Base class for spline interpolations providing a
          first order geometric continuity ( G1 ) between adjoing curves
  */
 class QWT_EXPORT QwtSplineG1: public QwtSplineInterpolating
-{           
-public:     
+{
+public:
     QwtSplineG1();
     virtual ~QwtSplineG1();
 };
 
 /*!
-  \brief Base class for spline interpolations providing a 
+  \brief Base class for spline interpolations providing a
          first order parametric continuity ( C1 ) between adjoing curves
 
   All interpolations with C1 continuity are based on rules for finding
@@ -233,11 +235,11 @@ public:
     QwtSplineC1();
     virtual ~QwtSplineC1();
 
-    virtual QPainterPath painterPath( const QPolygonF & ) const;
-    virtual QVector<QLineF> bezierControlLines( const QPolygonF & ) const;
+    virtual QPainterPath painterPath( const QPolygonF & ) const QWT_OVERRIDE;
+    virtual QVector<QLineF> bezierControlLines( const QPolygonF & ) const QWT_OVERRIDE;
 
     virtual QPolygonF equidistantPolygon( const QPolygonF &,
-        double distance, bool withNodes ) const;
+        double distance, bool withNodes ) const QWT_OVERRIDE;
 
     // these methods are the non parametric part
     virtual QVector<QwtSplinePolynomial> polynomials( const QPolygonF & ) const;
@@ -248,7 +250,7 @@ public:
 };
 
 /*!
-  \brief Base class for spline interpolations providing a 
+  \brief Base class for spline interpolations providing a
          second order parametric continuity ( C2 ) between adjoing curves
 
   All interpolations with C2 continuity are based on rules for finding
@@ -264,7 +266,7 @@ class QWT_EXPORT QwtSplineC2: public QwtSplineC1
 public:
     /*!
       Boundary condition that requires C2 continuity
-      
+
       \sa QwtSpline::boundaryCondition, QwtSpline::BoundaryCondition
      */
     enum BoundaryConditionC2
@@ -275,7 +277,7 @@ public:
 
           \note boundaryValue() is ignored
          */
-        CubicRunout = LinearRunout + 1, 
+        CubicRunout = LinearRunout + 1,
 
         /*!
           The 3rd derivate at the endpoint matches the 3rd derivate at its neighbours.
@@ -290,15 +292,15 @@ public:
     QwtSplineC2();
     virtual ~QwtSplineC2();
 
-    virtual QPainterPath painterPath( const QPolygonF & ) const;
-    virtual QVector<QLineF> bezierControlLines( const QPolygonF & ) const;
+    virtual QPainterPath painterPath( const QPolygonF & ) const QWT_OVERRIDE;
+    virtual QVector<QLineF> bezierControlLines( const QPolygonF & ) const QWT_OVERRIDE;
 
     virtual QPolygonF equidistantPolygon( const QPolygonF &,
-        double distance, bool withNodes ) const;
+        double distance, bool withNodes ) const QWT_OVERRIDE;
 
     // calculating the parametric equations
-    virtual QVector<QwtSplinePolynomial> polynomials( const QPolygonF & ) const;
-    virtual QVector<double> slopes( const QPolygonF & ) const;
+    virtual QVector<QwtSplinePolynomial> polynomials( const QPolygonF & ) const QWT_OVERRIDE;
+    virtual QVector<double> slopes( const QPolygonF & ) const QWT_OVERRIDE;
     virtual QVector<double> curvatures( const QPolygonF & ) const = 0;
 };
 

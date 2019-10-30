@@ -9,46 +9,51 @@
 
 #include "qwt_plot_legenditem.h"
 #include "qwt_dyngrid_layout.h"
-#include "qwt_scale_map.h"
-#include "qwt_painter.h"
+#include "qwt_text.h"
+#include "qwt_graphic.h"
+#include "qwt_legend_data.h"
+#include "qwt_math.h"
+
 #include <qlayoutitem.h>
 #include <qpen.h>
 #include <qbrush.h>
 #include <qpainter.h>
-#include <qmath.h>
 
-class QwtLegendLayoutItem: public QLayoutItem
+namespace
 {
-public:
-    QwtLegendLayoutItem( const QwtPlotLegendItem *, const QwtPlotItem * );
-    virtual ~QwtLegendLayoutItem();
+    class QwtLegendLayoutItem QWT_FINAL: public QLayoutItem
+    {
+    public:
+        QwtLegendLayoutItem( const QwtPlotLegendItem *, const QwtPlotItem * );
+        virtual ~QwtLegendLayoutItem();
 
-    const QwtPlotItem *plotItem() const;
+        const QwtPlotItem *plotItem() const;
 
-    void setData( const QwtLegendData & );
-    const QwtLegendData &data() const;
+        void setData( const QwtLegendData & );
+        const QwtLegendData &data() const;
 
-    virtual Qt::Orientations expandingDirections() const;
-    virtual QRect geometry() const;
-    virtual bool hasHeightForWidth() const;
-    virtual int heightForWidth( int w ) const;
-    virtual bool isEmpty() const;
-    virtual QSize maximumSize() const;
-    virtual int minimumHeightForWidth( int w ) const;
-    virtual QSize minimumSize() const;
-    virtual void setGeometry( const QRect & r );
-    virtual QSize sizeHint() const;
+        virtual Qt::Orientations expandingDirections() const QWT_OVERRIDE;
+        virtual QRect geometry() const QWT_OVERRIDE;
+        virtual bool hasHeightForWidth() const QWT_OVERRIDE;
+        virtual int heightForWidth( int ) const QWT_OVERRIDE;
+        virtual bool isEmpty() const QWT_OVERRIDE;
+        virtual QSize maximumSize() const QWT_OVERRIDE;
+        virtual int minimumHeightForWidth( int ) const QWT_OVERRIDE;
+        virtual QSize minimumSize() const QWT_OVERRIDE;
+        virtual void setGeometry( const QRect & ) QWT_OVERRIDE;
+        virtual QSize sizeHint() const QWT_OVERRIDE;
 
-private:
+    private:
 
-    const QwtPlotLegendItem *d_legendItem;
-    const QwtPlotItem *d_plotItem;
-    QwtLegendData d_data;
+        const QwtPlotLegendItem *d_legendItem;
+        const QwtPlotItem *d_plotItem;
+        QwtLegendData d_data;
 
-    QRect d_rect;
-};
+        QRect d_rect;
+    };
+}
 
-QwtLegendLayoutItem::QwtLegendLayoutItem( 
+QwtLegendLayoutItem::QwtLegendLayoutItem(
         const QwtPlotLegendItem *legendItem, const QwtPlotItem *plotItem ):
     d_legendItem( legendItem ),
     d_plotItem( plotItem)
@@ -134,9 +139,9 @@ public:
         borderPen( Qt::NoPen ),
         backgroundBrush( Qt::NoBrush ),
         backgroundMode( QwtPlotLegendItem::LegendBackground ),
-        borderDistance( 10 ),
-        alignment( Qt::AlignRight | Qt::AlignBottom )
+        canvasAlignment( Qt::AlignRight | Qt::AlignBottom )
     {
+        canvasOffset[ 0 ] = canvasOffset[1] = 10;
         layout = new QwtDynGridLayout();
         layout->setMaxColumns( 2 );
 
@@ -159,14 +164,14 @@ public:
     QBrush backgroundBrush;
     QwtPlotLegendItem::BackgroundMode backgroundMode;
 
-    int borderDistance;
-    Qt::Alignment alignment;
+    int canvasOffset[2];
+    Qt::Alignment canvasAlignment;
 
     QMap< const QwtPlotItem *, QList<QwtLegendLayoutItem *> > map;
     QwtDynGridLayout *layout;
 };
 
-//! Constructor 
+//! Constructor
 QwtPlotLegendItem::QwtPlotLegendItem():
     QwtPlotItem( QwtText( "Legend" ) )
 {
@@ -193,31 +198,31 @@ int QwtPlotLegendItem::rtti() const
   \brief Set the alignmnet
 
   Alignment means the position of the legend relative
-  to the geometry of the plot canvas. 
+  to the geometry of the plot canvas.
 
   \param alignment Alignment flags
 
-  \sa alignment(), setMaxColumns()
+  \sa alignmentInCanvas(), setMaxColumns()
 
-  \note To align a legend with many items horizontally 
+  \note To align a legend with many items horizontally
         the number of columns need to be limited
  */
-void QwtPlotLegendItem::setAlignment( Qt::Alignment alignment )
+void QwtPlotLegendItem::setAlignmentInCanvas( Qt::Alignment alignment )
 {
-    if ( d_data->alignment != alignment )
+    if ( d_data->canvasAlignment != alignment )
     {
-        d_data->alignment = alignment;
+        d_data->canvasAlignment = alignment;
         itemChanged();
     }
 }
 
 /*!
   \return Alignment flags
-  \sa setAlignment()
+  \sa setAlignmentInCanvas()
  */
-Qt::Alignment QwtPlotLegendItem::alignment() const
+Qt::Alignment QwtPlotLegendItem::alignmentInCanvas() const
 {
-    return d_data->alignment;
+    return d_data->canvasAlignment;
 }
 
 /*!
@@ -261,7 +266,7 @@ void QwtPlotLegendItem::setMargin( int margin )
     margin = qMax( margin, 0 );
     if ( margin != this->margin() )
     {
-        d_data->layout->setContentsMargins( 
+        d_data->layout->setContentsMargins(
             margin, margin, margin, margin );
 
         itemChanged();
@@ -387,43 +392,71 @@ QFont QwtPlotLegendItem::font() const
 }
 
 /*!
-  \brief Set the margin between the legend and the canvas border
+  \brief Set the distance between the legend and the canvas border
 
-  The default setting for the margin is 10 pixels.
+  The default setting is 10 pixels.
 
-  \param distance Margin in pixels
+  \param orientations Qt::Horizontal is for the left/right,
+                      Qt::Vertical for the top/bottom offset.
+
+  \param numPixels Distance in pixels
   \sa setMargin()
  */
-void QwtPlotLegendItem::setBorderDistance( int distance )
+void QwtPlotLegendItem::setOffsetInCanvas(
+    Qt::Orientations orientations, int numPixels )
 {
-    if ( distance < 0 )
-        distance = -1;
+    if ( numPixels < 0 )
+        numPixels = -1;
 
-    if ( distance != d_data->borderDistance )
+    bool isChanged = false;
+
+    int *offset = d_data->canvasOffset;
+
+    if ( orientations & Qt::Horizontal )
     {
-        d_data->borderDistance = distance;
-        itemChanged();
+        if ( numPixels != offset[0] )
+        {
+            offset[0] = numPixels;
+            isChanged = true;
+        }
     }
+
+    if ( orientations & Qt::Vertical )
+    {
+        if ( numPixels != offset[1] )
+        {
+            offset[1] = numPixels;
+            isChanged = true;
+        }
+    }
+
+    if ( isChanged )
+        itemChanged();
 }
 
 /*!
-  \return Margin between the legend and the canvas border
-  \sa margin()
+  \param orientation Qt::Horizontal is for the left/right,
+                      Qt::Vertical for the top/bottom padding.
+
+  \return Distance between the legend and the canvas border
+  \sa setOffsetInCanvas()
  */
-int QwtPlotLegendItem::borderDistance() const
+int QwtPlotLegendItem::offsetInCanvas(
+    Qt::Orientation orientation ) const
 {
-    return d_data->borderDistance;
+    const int index = ( orientation == Qt::Vertical ) ? 1 : 0;
+    return d_data->canvasOffset[index];
 }
 
 /*!
   Set the radius for the border
-  
+
   \param radius A value <= 0 defines a rectangular border
   \sa borderRadius(), setBorderPen()
  */
 void QwtPlotLegendItem::setBorderRadius( double radius )
 {
-    radius = qMax( 0.0, radius );
+    radius = qwtMaxF( 0.0, radius );
 
     if ( radius != d_data->borderRadius )
     {
@@ -494,7 +527,7 @@ QBrush QwtPlotLegendItem::backgroundBrush() const
 /*!
   \brief Set the background mode
 
-  Depending on the mode the complete legend or each item 
+  Depending on the mode the complete legend or each item
   might have an background.
 
   The default setting is LegendBackground.
@@ -510,7 +543,7 @@ void QwtPlotLegendItem::setBackgroundMode( BackgroundMode mode )
     }
 }
 
-/*! 
+/*!
   \return backgroundMode
   \sa setBackgroundMode(), backgroundBrush(), drawBackground()
  */
@@ -567,10 +600,10 @@ void QwtPlotLegendItem::draw( QPainter *painter,
 
     if ( d_data->backgroundMode == QwtPlotLegendItem::LegendBackground )
         drawBackground( painter, d_data->layout->geometry() );
-    
+
     for ( int i = 0; i <  d_data->layout->count(); i++ )
     {
-        const QwtLegendLayoutItem *layoutItem = 
+        const QwtLegendLayoutItem *layoutItem =
             static_cast<QwtLegendLayoutItem *>( d_data->layout->itemAt( i ) );
 
         if ( d_data->backgroundMode == QwtPlotLegendItem::ItemBackground )
@@ -594,17 +627,17 @@ void QwtPlotLegendItem::draw( QPainter *painter,
   \sa setBorderRadius(), setBorderPen(),
       setBackgroundBrush(), setBackgroundMode()
  */
-void QwtPlotLegendItem::drawBackground( 
+void QwtPlotLegendItem::drawBackground(
     QPainter *painter, const QRectF &rect ) const
 {
     painter->save();
 
     painter->setPen( d_data->borderPen );
     painter->setBrush( d_data->backgroundBrush );
-    
+
     const double radius = d_data->borderRadius;
     painter->drawRoundedRect( rect, radius, radius );
-    
+
     painter->restore();
 }
 
@@ -619,40 +652,43 @@ QRect QwtPlotLegendItem::geometry( const QRectF &canvasRect ) const
     QRect rect;
     rect.setSize( d_data->layout->sizeHint() );
 
-    int margin = d_data->borderDistance;
-    if ( d_data->alignment & Qt::AlignHCenter )
+    if ( d_data->canvasAlignment & Qt::AlignHCenter )
     {
         int x = qRound( canvasRect.center().x() );
-        rect.moveCenter( QPoint( x, rect.center().y() ) ); 
+        rect.moveCenter( QPoint( x, rect.center().y() ) );
     }
-    else if ( d_data->alignment & Qt::AlignRight )
+    else if ( d_data->canvasAlignment & Qt::AlignRight )
     {
-        rect.moveRight( qFloor( canvasRect.right() - margin ) );
+        const int offset = offsetInCanvas( Qt::Horizontal );
+        rect.moveRight( qwtFloor( canvasRect.right() - offset ) );
     }
-    else 
+    else
     {
-        rect.moveLeft( qCeil( canvasRect.left() + margin ) );
+        const int offset = offsetInCanvas( Qt::Horizontal );
+        rect.moveLeft( qwtCeil( canvasRect.left() + offset ) );
     }
 
-    if ( d_data->alignment & Qt::AlignVCenter )
+    if ( d_data->canvasAlignment & Qt::AlignVCenter )
     {
         int y = qRound( canvasRect.center().y() );
         rect.moveCenter( QPoint( rect.center().x(), y ) );
     }
-    else if ( d_data->alignment & Qt::AlignBottom )
+    else if ( d_data->canvasAlignment & Qt::AlignBottom )
     {
-        rect.moveBottom( qFloor( canvasRect.bottom() - margin ) );
+        const int offset = offsetInCanvas( Qt::Vertical );
+        rect.moveBottom( qwtFloor( canvasRect.bottom() - offset ) );
     }
-    else 
+    else
     {
-        rect.moveTop( qCeil( canvasRect.top() + margin ) ); 
+        const int offset = offsetInCanvas( Qt::Vertical );
+        rect.moveTop( qwtCeil( canvasRect.top() + offset ) );
     }
 
     return rect;
 }
 
 /*!
-  Update the legend items according to modifications of a 
+  Update the legend items according to modifications of a
   plot item
 
   \param plotItem Plot item
@@ -684,7 +720,7 @@ void QwtPlotLegendItem::updateLegend( const QwtPlotItem *plotItem,
         }
         layoutItems.clear();
 
-        if ( it != d_data->map.end() )
+        if ( it != d_data->map.constEnd() )
             d_data->map.remove( plotItem );
 
         if ( !data.isEmpty() )
@@ -694,7 +730,7 @@ void QwtPlotLegendItem::updateLegend( const QwtPlotItem *plotItem,
 #endif
             for ( int i = 0; i < data.size(); i++ )
             {
-                QwtLegendLayoutItem *layoutItem = 
+                QwtLegendLayoutItem *layoutItem =
                     new QwtLegendLayoutItem( this, plotItem );
                 d_data->layout->addItem( layoutItem );
                 layoutItems += layoutItem;
@@ -743,7 +779,7 @@ void QwtPlotLegendItem::clearLegend()
   \param rect Bounding rectangle for the entry
  */
 void QwtPlotLegendItem::drawLegendData( QPainter *painter,
-    const QwtPlotItem *plotItem, const QwtLegendData &data, 
+    const QwtPlotItem *plotItem, const QwtLegendData &data,
     const QRectF &rect ) const
 {
     Q_UNUSED( plotItem );
@@ -760,7 +796,7 @@ void QwtPlotLegendItem::drawLegendData( QPainter *painter,
     {
         QRectF iconRect( r.topLeft(), graphic.defaultSize() );
 
-        iconRect.moveCenter( 
+        iconRect.moveCenter(
             QPoint( iconRect.center().x(), rect.center().y() ) );
 
         graphic.render( painter, iconRect, Qt::KeepAspectRatio );
@@ -808,8 +844,8 @@ QSize QwtPlotLegendItem::minimumSize( const QwtLegendData &data ) const
     {
         const QSizeF sz = text.textSize( font() );
 
-        w += qCeil( sz.width() );
-        h = qMax( h, qCeil( sz.height() ) );
+        w += qwtCeil( sz.width() );
+        h = qMax( h, qwtCeil( sz.height() ) );
     }
 
     if ( graphic.width() > 0 && !text.isEmpty() )
@@ -824,7 +860,7 @@ QSize QwtPlotLegendItem::minimumSize( const QwtLegendData &data ) const
   \param data Attributes of the legend entry
   \param width Width
 */
-int QwtPlotLegendItem::heightForWidth( 
+int QwtPlotLegendItem::heightForWidth(
     const QwtLegendData &data, int width ) const
 {
     width -= 2 * d_data->itemMargin;
@@ -844,7 +880,7 @@ int QwtPlotLegendItem::heightForWidth(
     return qMax( graphic.height(), h );
 }
 
-/*! 
+/*!
   \return All plot items with an entry on the legend
   \note A plot item might have more than one entry on the legend
  */
@@ -857,7 +893,7 @@ QList< const QwtPlotItem * > QwtPlotLegendItem::plotItems() const
   \return Geometries of the items of a plot item
   \note Usually a plot item has only one entry on the legend
 */
-QList< QRect > QwtPlotLegendItem::legendGeometries( 
+QList< QRect > QwtPlotLegendItem::legendGeometries(
     const QwtPlotItem *plotItem ) const
 {
     QList<QwtLegendLayoutItem *> layoutItems;

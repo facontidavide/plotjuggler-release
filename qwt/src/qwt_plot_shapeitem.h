@@ -12,10 +12,14 @@
 
 #include "qwt_global.h"
 #include "qwt_plot_item.h"
-#include <qpainterpath.h>
+
+#include <qstring.h>
+
+class QPainterPath;
+class QPolygonF;
 
 /*!
-  \brief A plot item, which displays any graphical shape, 
+  \brief A plot item, which displays any graphical shape,
          that can be defined by a QPainterPath
 
   A QPainterPath is a shape composed from intersecting and uniting
@@ -60,7 +64,7 @@ public:
         //! Display a scaled down version of the shape
         LegendShape,
 
-        //! Display a filled rectangle 
+        //! Display a filled rectangle
         LegendColor
     };
 
@@ -91,15 +95,16 @@ public:
     void setRenderTolerance( double );
     double renderTolerance() const;
 
-    virtual QRectF boundingRect() const;
+    virtual QRectF boundingRect() const QWT_OVERRIDE;
 
-    virtual void draw( QPainter *p,
+    virtual void draw( QPainter *,
         const QwtScaleMap &xMap, const QwtScaleMap &yMap,
-        const QRectF &rect ) const;
+        const QRectF &canvasRect ) const QWT_OVERRIDE;
 
-    virtual QwtGraphic legendIcon( int index, const QSizeF & ) const;
+    virtual QwtGraphic legendIcon(
+        int index, const QSizeF & ) const QWT_OVERRIDE;
 
-    virtual int rtti() const;
+    virtual int rtti() const QWT_OVERRIDE;
 
 private:
     void init();

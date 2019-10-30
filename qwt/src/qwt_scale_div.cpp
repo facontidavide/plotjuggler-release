@@ -8,8 +8,7 @@
  *****************************************************************************/
 
 #include "qwt_scale_div.h"
-#include "qwt_math.h"
-#include <qalgorithms.h>
+#include "qwt_interval.h"
 
 /*!
   Construct a division without ticks
@@ -70,7 +69,7 @@ QwtScaleDiv::QwtScaleDiv( double lowerBound, double upperBound,
   \note lowerBound might be greater than upperBound for inverted scales
 */
 QwtScaleDiv::QwtScaleDiv( double lowerBound, double upperBound,
-        const QList<double> &minorTicks, 
+        const QList<double> &minorTicks,
         const QList<double> &mediumTicks,
         const QList<double> &majorTicks ):
     d_lowerBound( lowerBound ),
@@ -132,7 +131,7 @@ void QwtScaleDiv::setLowerBound( double lowerBound  )
 double QwtScaleDiv::lowerBound() const
 {
     return d_lowerBound;
-}   
+}
 
 /*!
   Set the second boundary
@@ -143,7 +142,7 @@ double QwtScaleDiv::lowerBound() const
 void QwtScaleDiv::setUpperBound( double upperBound  )
 {
     d_upperBound = upperBound;
-} 
+}
 
 /*!
   \return upper bound
@@ -218,7 +217,7 @@ bool QwtScaleDiv::contains( double value ) const
     return value >= min && value <= max;
 }
 
-/*! 
+/*!
    Invert the scale division
    \sa inverted()
  */
@@ -238,7 +237,7 @@ void QwtScaleDiv::invert()
     }
 }
 
-/*! 
+/*!
   \return A scale division with inverted boundaries and ticks
   \sa invert()
  */
@@ -250,7 +249,7 @@ QwtScaleDiv QwtScaleDiv::inverted() const
     return other;
 }
 
-/*! 
+/*!
    Return a scale division with an interval [lowerBound, upperBound]
    where all ticks outside this interval are removed
 
@@ -261,7 +260,7 @@ QwtScaleDiv QwtScaleDiv::inverted() const
 
    \note lowerBound might be greater than upperBound for inverted scales
 */
-QwtScaleDiv QwtScaleDiv::bounded( 
+QwtScaleDiv QwtScaleDiv::bounded(
     double lowerBound, double upperBound ) const
 {
     const double min = qMin( lowerBound, upperBound );
@@ -292,30 +291,32 @@ QwtScaleDiv QwtScaleDiv::bounded(
 /*!
     Assign ticks
 
-   \param type MinorTick, MediumTick or MajorTick
+   \param tickType MinorTick, MediumTick or MajorTick
    \param ticks Values of the tick positions
 */
-void QwtScaleDiv::setTicks( int type, const QList<double> &ticks )
+void QwtScaleDiv::setTicks( int tickType, const QList<double> &ticks )
 {
-    if ( type >= 0 && type < NTickTypes )
-        d_ticks[type] = ticks;
+    if ( tickType >= 0 && tickType < NTickTypes )
+        d_ticks[tickType] = ticks;
 }
 
 /*!
    Return a list of ticks
 
-   \param type MinorTick, MediumTick or MajorTick
+   \param tickType MinorTick, MediumTick or MajorTick
    \return Tick list
 */
-QList<double> QwtScaleDiv::ticks( int type ) const
+QList<double> QwtScaleDiv::ticks( int tickType ) const
 {
-    if ( type >= 0 && type < NTickTypes )
-        return d_ticks[type];
+    if ( tickType >= 0 && tickType < NTickTypes )
+        return d_ticks[tickType];
 
     return QList<double>();
 }
 
 #ifndef QT_NO_DEBUG_STREAM
+
+#include <qdebug.h>
 
 QDebug operator<<( QDebug debug, const QwtScaleDiv &scaleDiv )
 {

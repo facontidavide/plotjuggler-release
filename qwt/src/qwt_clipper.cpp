@@ -9,13 +9,13 @@
 
 #include "qwt_clipper.h"
 #include "qwt_point_polar.h"
-#include <qrect.h>
-#include <string.h>
-#include <stdlib.h>
+#include "qwt_interval.h"
+#include "qwt_math.h"
 
-#if QT_VERSION < 0x040601
-#define qAtan(x) ::atan(x)
-#endif
+#include <qpolygon.h>
+#include <qrect.h>
+
+#include <algorithm>
 
 namespace QwtClip
 {
@@ -180,14 +180,14 @@ private:
             const Point &p2 = points.last();
 
             if ( edge.isInside( p1 ) )
-            {   
+            {
                 if ( !edge.isInside( p2 ) )
                     clippedPoints += edge.intersection( p1, p2 );
-                
+
                 clippedPoints += p1;
             }
             else if ( edge.isInside( p2 ) )
-            {   
+            {
                 clippedPoints += edge.intersection( p1, p2 );
             }
         }
@@ -251,6 +251,8 @@ QwtCircleClipper::QwtCircleClipper( const QRectF &r ):
 QVector<QwtInterval> QwtCircleClipper::clipCircle(
     const QPointF &pos, double radius ) const
 {
+    // using QVarLengthArray TODO ...
+
     QVector<QPointF> points;
     for ( int edge = 0; edge < NEdges; edge++ )
         points += cuttingPoints( static_cast<Edge>(edge), pos, radius );
@@ -265,7 +267,7 @@ QVector<QwtInterval> QwtCircleClipper::clipCircle(
     }
     else
     {
-        QList<double> angles;
+        QVector<double> angles;
 #if QT_VERSION >= 0x040700
         angles.reserve( points.size() );
 #endif
@@ -273,7 +275,7 @@ QVector<QwtInterval> QwtCircleClipper::clipCircle(
         for ( int i = 0; i < points.size(); i++ )
             angles += toAngle( pos, points[i] );
 
-        qSort( angles );
+        std::sort( angles.begin(), angles.end() );
 
         const int in = d_rect.contains( qwtPolar2Pos( pos, radius,
             angles[0] + ( angles[1] - angles[0] ) / 2 ) );
@@ -304,7 +306,7 @@ double QwtCircleClipper::toAngle(
 
     const double m = qAbs( ( to.y() - from.y() ) / ( to.x() - from.x() ) );
 
-    double angle = qAtan( m );
+    double angle = std::atan( m );
     if ( to.x() > from.x() )
     {
         if ( to.y() > from.y() )
@@ -331,7 +333,7 @@ QVector<QPointF> QwtCircleClipper::cuttingPoints(
         const double x = ( edge == Left ) ? d_rect.left() : d_rect.right();
         if ( qAbs( pos.x() - x ) < radius )
         {
-            const double off = qSqrt( qwtSqr( radius ) - qwtSqr( pos.x() - x ) );
+            const double off = std::sqrt( qwtSqr( radius ) - qwtSqr( pos.x() - x ) );
             const double m_y1 = pos.y() + off;
             if ( m_y1 >= d_rect.top() && m_y1 <= d_rect.bottom() )
                 points += QPointF( x, m_y1 );
@@ -346,7 +348,7 @@ QVector<QPointF> QwtCircleClipper::cuttingPoints(
         const double y = ( edge == Top ) ? d_rect.top() : d_rect.bottom();
         if ( qAbs( pos.y() - y ) < radius )
         {
-            const double off = qSqrt( qwtSqr( radius ) - qwtSqr( pos.y() - y ) );
+            const double off = std::sqrt( qwtSqr( radius ) - qwtSqr( pos.y() - y ) );
             const double x1 = pos.x() + off;
             if ( x1 >= d_rect.left() && x1 <= d_rect.right() )
                 points += QPointF( x1, y );

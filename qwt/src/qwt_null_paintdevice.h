@@ -8,20 +8,21 @@
  *****************************************************************************/
 
 #ifndef QWT_NULL_PAINT_DEVICE_H
-#define QWT_NULL_PAINT_DEVICE_H 1
+#define QWT_NULL_PAINT_DEVICE_H
 
 #include "qwt_global.h"
+
 #include <qpaintdevice.h>
 #include <qpaintengine.h>
 
 /*!
   \brief A null paint device doing nothing
 
-  Sometimes important layout/rendering geometries are not 
-  available or changeable from the public Qt class interface. 
+  Sometimes important layout/rendering geometries are not
+  available or changeable from the public Qt class interface.
   ( f.e hidden in the style implementation ).
 
-  QwtNullPaintDevice can be used to manipulate or filter out 
+  QwtNullPaintDevice can be used to manipulate or filter out
   this information by analyzing the stream of paint primitives.
 
   F.e. QwtNullPaintDevice is used by QwtPlotCanvas to identify
@@ -42,7 +43,7 @@ public:
            All vector graphic primitives are painted by
            the corresponding draw methods
          */
-        NormalMode, 
+        NormalMode,
 
         /*!
            Vector graphic primitives ( beside polygons ) are mapped to a QPainterPath
@@ -74,9 +75,9 @@ public:
     void setMode( Mode );
     Mode mode() const;
 
-    virtual QPaintEngine *paintEngine() const;
+    virtual QPaintEngine *paintEngine() const QWT_OVERRIDE;
 
-    virtual int metric( PaintDeviceMetric metric ) const;
+    virtual int metric( PaintDeviceMetric ) const QWT_OVERRIDE;
 
     virtual void drawRects(const QRect *, int );
     virtual void drawRects(const QRectF *, int );
@@ -92,11 +93,11 @@ public:
     virtual void drawPoints(const QPointF *, int );
     virtual void drawPoints(const QPoint *, int );
 
-    virtual void drawPolygon(
-        const QPointF *, int , QPaintEngine::PolygonDrawMode );
+    virtual void drawPolygon( const QPointF *, int,
+        QPaintEngine::PolygonDrawMode );
 
-    virtual void drawPolygon(
-        const QPoint *, int , QPaintEngine::PolygonDrawMode );
+    virtual void drawPolygon( const QPoint *, int,
+        QPaintEngine::PolygonDrawMode );
 
     virtual void drawPixmap(const QRectF &,
         const QPixmap &, const QRectF &);
@@ -104,12 +105,12 @@ public:
     virtual void drawTextItem(const QPointF &, const QTextItem &);
 
     virtual void drawTiledPixmap(const QRectF &,
-        const QPixmap &, const QPointF &s);
+        const QPixmap &, const QPointF & );
 
-    virtual void drawImage(const QRectF &,
-        const QImage &, const QRectF &, Qt::ImageConversionFlags );
+    virtual void drawImage(const QRectF &, const QImage &,
+        const QRectF &, Qt::ImageConversionFlags );
 
-    virtual void updateState( const QPaintEngineState &state );
+    virtual void updateState( const QPaintEngineState & );
 
 protected:
     //! \return Size needed to implement metric()

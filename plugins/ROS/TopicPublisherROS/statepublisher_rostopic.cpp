@@ -71,11 +71,14 @@ void TopicPublisherROS::setEnabled(bool to_enable)
         else{
             _clock_publisher.shutdown();
         }
+
+        _tf_static_pub = _node->advertise<tf::tfMessage>( "/tf_static", 10, true);
     }
     else{
         _node.reset();
         _publishers.clear();
         _clock_publisher.shutdown();
+        _tf_static_pub.shutdown();
     }
 
 
@@ -185,6 +188,14 @@ void TopicPublisherROS::filterDialog(bool autoconfirm)
 
         _publish_clock = publish_sim_time->isChecked();
 
+        if(_enabled && _publish_clock )
+        {
+          _clock_publisher = _node->advertise<rosgraph_msgs::Clock>( "/clock", 10, true);
+        }
+        else{
+          _clock_publisher.shutdown();
+        }
+
         QSettings settings;
         settings.setValue( "TopicPublisherROS/publish_clock", _publish_clock );
     }
@@ -192,7 +203,9 @@ void TopicPublisherROS::filterDialog(bool autoconfirm)
 
 void TopicPublisherROS::broadcastTF(double current_time)
 {
-    std::unordered_map<std::string, geometry_msgs::TransformStamped> transforms;
+    using StringPair = std::pair<std::string,std::string>;
+
+    std::map<StringPair, geometry_msgs::TransformStamped> transforms;
 
     for(const auto& data_it:  _datamap->user_defined )
     {
@@ -203,10 +216,8 @@ void TopicPublisherROS::broadcastTF(double current_time)
         {
             continue;// Not selected
         }
-        const RosIntrospection::ShapeShifter* shapeshifter =
-                RosIntrospectionFactory::get().getShapeShifter( topic_name );
-        if( shapeshifter->getDataType() != "tf/tfMessage" &&
-            shapeshifter->getDataType() != "tf2_msgs/TFMessage"   )
+
+        if( topic_name != "/tf_static" && topic_name != "/tf")
         {
             continue;
         }
@@ -219,7 +230,7 @@ void TopicPublisherROS::broadcastTF(double current_time)
          }
 
          std::vector<uint8_t> raw_buffer;
-         // 1 second in the past (to be configurable in the future
+         // 2 seconds in the past (to be configurable in the future)
          int initial_index = tf_data->getIndexFromX( current_time - 2.0 );
 
          if( _previous_play_index < last_index &&
@@ -234,31 +245,41 @@ void TopicPublisherROS::broadcastTF(double current_time)
 
              const bool isRosbagMessage = any_value.type() == typeid(rosbag::MessageInstance);
 
-             if( isRosbagMessage )
+             if( !isRosbagMessage )
              {
-                 const auto& msg_instance = nonstd::any_cast<rosbag::MessageInstance>( any_value );
+               continue;
+             }
 
-                 raw_buffer.resize( msg_instance.size() );
-                 ros::serialization::OStream ostream(raw_buffer.data(), raw_buffer.size());
-                 msg_instance.write(ostream);
+             const auto& msg_instance = nonstd::any_cast<rosbag::MessageInstance>( any_value );
 
-                 tf::tfMessage tf_msg;
-                 ros::serialization::IStream istream( raw_buffer.data(), raw_buffer.size() );
-                 ros::serialization::deserialize(istream, tf_msg);
+             raw_buffer.resize( msg_instance.size() );
+             ros::serialization::OStream ostream(raw_buffer.data(), raw_buffer.size());
+             msg_instance.write(ostream);
 
-                 for(const auto& stamped_transform: tf_msg.transforms)
-                 {
-                     const auto& child_id = stamped_transform.child_frame_id;
-                     auto it = transforms.find(child_id);
-                     if( it == transforms.end())
-                     {
-                         transforms.insert( {stamped_transform.child_frame_id, stamped_transform} );
-                     }
-                     else if( it->second.header.stamp <= stamped_transform.header.stamp)
-                     {
-                         it->second = stamped_transform;
-                     }
-                 }
+             tf::tfMessage tf_msg;
+             ros::serialization::IStream istream( raw_buffer.data(), raw_buffer.size() );
+             ros::serialization::deserialize(istream, tf_msg);
+
+             if( topic_name == "/tf_static" )
+             {
+               _tf_static_pub.publish(tf_msg);
+               continue;
+             }
+
+             for(const auto& stamped_transform: tf_msg.transforms)
+             {
+               const auto& parent_id = stamped_transform.header.frame_id;
+               const auto& child_id = stamped_transform.child_frame_id;
+               StringPair trans_id = std::make_pair(parent_id, child_id);
+               auto it = transforms.find(trans_id);
+               if( it == transforms.end())
+               {
+                 transforms.insert( {trans_id, stamped_transform} );
+               }
+               else if( it->second.header.stamp <= stamped_transform.header.stamp)
+               {
+                 it->second = stamped_transform;
+               }
              }
          }
     }

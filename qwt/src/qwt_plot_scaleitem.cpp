@@ -11,6 +11,8 @@
 #include "qwt_plot.h"
 #include "qwt_scale_map.h"
 #include "qwt_interval.h"
+#include "qwt_text.h"
+
 #include <qpalette.h>
 #include <qpainter.h>
 
@@ -349,7 +351,7 @@ void QwtPlotScaleItem::draw( QPainter *painter,
 
     if ( d_data->scaleDivFromAxis )
     {
-        const QwtInterval interval = 
+        const QwtInterval interval =
             d_data->scaleInterval( canvasRect, xMap, yMap );
 
         if ( interval != sd->scaleDiv().interval() )
@@ -447,7 +449,7 @@ void QwtPlotScaleItem::updateScaleDiv( const QwtScaleDiv& xScaleDiv,
 
     if ( d_data->scaleDivFromAxis && scaleDraw )
     {
-        const QwtScaleDiv &scaleDiv = 
+        const QwtScaleDiv &scaleDiv =
             scaleDraw->orientation() == Qt::Horizontal ? xScaleDiv : yScaleDiv;
 
         const QwtPlot *plt = plot();
@@ -455,7 +457,7 @@ void QwtPlotScaleItem::updateScaleDiv( const QwtScaleDiv& xScaleDiv,
         {
             const QRectF canvasRect = plt->canvas()->contentsRect();
 
-            const QwtInterval interval = d_data->scaleInterval( 
+            const QwtInterval interval = d_data->scaleInterval(
                 canvasRect, plt->canvasMap( xAxis() ), plt->canvasMap( yAxis() ) );
 
             QwtScaleDiv sd = scaleDiv;

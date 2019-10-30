@@ -12,7 +12,6 @@
 
 #include "qwt_global.h"
 #include "qwt_plot_seriesitem.h"
-#include "qwt_series_data.h"
 
 /*!
   \brief QwtPlotTradingCurve illustrates movements in the price of a
@@ -21,7 +20,7 @@
   QwtPlotTradingCurve supports candlestick or bar ( OHLC ) charts
   that are used in the domain of technical analysis.
 
-  While the length ( height or width depending on orientation() ) 
+  While the length ( height or width depending on orientation() )
   of each symbol depends on the corresponding OHLC sample the size
   of the other dimension can be controlled using:
 
@@ -31,11 +30,11 @@
 
   The extent is a size in scale coordinates, so that the symbol width
   is increasing when the plot is zoomed in. Minimum/Maximum width
-  is in widget coordinates independent from the zoom level. 
-  When setting the minimum and maximum to the same value, the width of 
-  the symbol is fixed. 
+  is in widget coordinates independent from the zoom level.
+  When setting the minimum and maximum to the same value, the width of
+  the symbol is fixed.
 */
-class QWT_EXPORT QwtPlotTradingCurve: 
+class QWT_EXPORT QwtPlotTradingCurve:
     public QwtPlotSeriesItem, public QwtSeriesStore<QwtOHLCSample>
 {
 public:
@@ -106,7 +105,7 @@ public:
 
     virtual ~QwtPlotTradingCurve();
 
-    virtual int rtti() const;
+    virtual int rtti() const QWT_OVERRIDE;
 
     void setPaintAttribute( PaintAttribute, bool on = true );
     bool testPaintAttribute( PaintAttribute ) const;
@@ -117,7 +116,7 @@ public:
     void setSymbolStyle( SymbolStyle style );
     SymbolStyle symbolStyle() const;
 
-    void setSymbolPen( const QColor &, 
+    void setSymbolPen( const QColor &,
         qreal width = 0.0, Qt::PenStyle = Qt::SolidLine );
     void setSymbolPen( const QPen & );
     QPen symbolPen() const;
@@ -125,7 +124,7 @@ public:
     void setSymbolBrush( Direction, const QBrush & );
     QBrush symbolBrush( Direction ) const;
 
-    void setSymbolExtent( double width );
+    void setSymbolExtent( double );
     double symbolExtent() const;
 
     void setMinSymbolWidth( double );
@@ -134,13 +133,13 @@ public:
     void setMaxSymbolWidth( double );
     double maxSymbolWidth() const;
 
-    virtual void drawSeries( QPainter *painter,
+    virtual void drawSeries( QPainter *,
         const QwtScaleMap &xMap, const QwtScaleMap &yMap,
-        const QRectF &canvasRect, int from, int to ) const;
+        const QRectF &canvasRect, int from, int to ) const QWT_OVERRIDE;
 
-    virtual QRectF boundingRect() const;
+    virtual QRectF boundingRect() const QWT_OVERRIDE;
 
-    virtual QwtGraphic legendIcon( int index, const QSizeF & ) const;
+    virtual QwtGraphic legendIcon( int index, const QSizeF & ) const QWT_OVERRIDE;
 
 protected:
 
@@ -150,14 +149,14 @@ protected:
         const QwtScaleMap &xMap, const QwtScaleMap &yMap,
         const QRectF &canvasRect, int from, int to ) const;
 
-    virtual void drawUserSymbol( QPainter *, 
+    virtual void drawUserSymbol( QPainter *,
         SymbolStyle, const QwtOHLCSample &,
+        Qt::Orientation, bool inverted, double symbolWidth ) const;
+
+    void drawBar( QPainter *, const QwtOHLCSample &,
         Qt::Orientation, bool inverted, double width ) const;
 
-    void drawBar( QPainter *painter, const QwtOHLCSample &, 
-        Qt::Orientation, bool inverted, double width ) const;
-
-    void drawCandleStick( QPainter *, const QwtOHLCSample &, 
+    void drawCandleStick( QPainter *, const QwtOHLCSample &,
         Qt::Orientation, double width ) const;
 
     virtual double scaledSymbolWidth(

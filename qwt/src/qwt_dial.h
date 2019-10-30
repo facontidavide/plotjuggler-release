@@ -8,16 +8,17 @@
  *****************************************************************************/
 
 #ifndef QWT_DIAL_H
-#define QWT_DIAL_H 1
+#define QWT_DIAL_H
 
 #include "qwt_global.h"
 #include "qwt_abstract_slider.h"
-#include "qwt_abstract_scale_draw.h"
+
 #include <qframe.h>
 #include <qpalette.h>
 
 class QwtDialNeedle;
 class QwtRoundScaleDraw;
+class QwtAbstractScaleDraw;
 
 /*!
   \brief QwtDial class provides a rounded range control.
@@ -103,12 +104,12 @@ public:
     void setMode( Mode );
     Mode mode() const;
 
-    void setScaleArc( double min, double max );
+    void setScaleArc( double minArc, double maxArc );
 
-    void setMinScaleArc( double min );
+    void setMinScaleArc( double );
     double minScaleArc() const;
 
-    void setMaxScaleArc( double min );
+    void setMaxScaleArc( double );
     double maxScaleArc() const;
 
     virtual void setOrigin( double );
@@ -123,8 +124,8 @@ public:
 
     virtual QRect scaleInnerRect() const;
 
-    virtual QSize sizeHint() const;
-    virtual QSize minimumSizeHint() const;
+    virtual QSize sizeHint() const QWT_OVERRIDE;
+    virtual QSize minimumSizeHint() const QWT_OVERRIDE;
 
     void setScaleDraw( QwtRoundScaleDraw * );
 
@@ -132,30 +133,30 @@ public:
     const QwtRoundScaleDraw *scaleDraw() const;
 
 protected:
-    virtual void wheelEvent( QWheelEvent * );
-    virtual void paintEvent( QPaintEvent * );
-    virtual void changeEvent( QEvent * );
+    virtual void wheelEvent( QWheelEvent * ) QWT_OVERRIDE;
+    virtual void paintEvent( QPaintEvent * ) QWT_OVERRIDE;
+    virtual void changeEvent( QEvent * ) QWT_OVERRIDE;
 
-    virtual void drawFrame( QPainter *p );
+    virtual void drawFrame( QPainter * );
     virtual void drawContents( QPainter * ) const;
     virtual void drawFocusIndicator( QPainter * ) const;
 
     void invalidateCache();
 
-    virtual void drawScale( QPainter *, 
+    virtual void drawScale( QPainter *,
         const QPointF &center, double radius ) const;
 
-    virtual void drawScaleContents( QPainter *painter, 
+    virtual void drawScaleContents( QPainter *painter,
         const QPointF &center, double radius ) const;
 
     virtual void drawNeedle( QPainter *, const QPointF &,
         double radius, double direction, QPalette::ColorGroup ) const;
 
-    virtual double scrolledTo( const QPoint & ) const;
-    virtual bool isScrollPosition( const QPoint & ) const;
+    virtual double scrolledTo( const QPoint & ) const QWT_OVERRIDE;
+    virtual bool isScrollPosition( const QPoint & ) const QWT_OVERRIDE;
 
-    virtual void sliderChange();
-    virtual void scaleChange();
+    virtual void sliderChange() QWT_OVERRIDE;
+    virtual void scaleChange() QWT_OVERRIDE;
 
 private:
     void setAngleRange( double angle, double span );

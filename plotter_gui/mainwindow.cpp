@@ -1139,6 +1139,8 @@ bool MainWindow::loadDataFromFiles( QStringList filenames )
 
 bool MainWindow::loadDataFromFile(const FileLoadInfo& info)
 {
+    ui->pushButtonPlay->setChecked(false);
+
     const QString extension = QFileInfo(info.filename).suffix().toLower();
 
     typedef std::map<QString,DataLoader*>::iterator MapIterator;
@@ -1904,12 +1906,12 @@ void MainWindow::updateDataAndReplot(bool replot_hidden_tabs)
         {
             _curvelist_widget->refreshColumns();
         }
+    }
 
-        for( auto& custom_it: _custom_plots)
-        {
-            auto* dst_plot = &_mapped_plot_data.numeric.at(custom_it.first);
-            custom_it.second->calculate(_mapped_plot_data, dst_plot);
-        }
+    for( auto& custom_it: _custom_plots)
+    {
+        auto* dst_plot = &_mapped_plot_data.numeric.at(custom_it.first);
+        custom_it.second->calculate(_mapped_plot_data, dst_plot);
     }
 
     const bool is_streaming_active = isStreamingActive();
@@ -2094,6 +2096,11 @@ void MainWindow::on_actionClearBuffer_triggered()
     for (auto& it: _mapped_plot_data.user_defined )
     {
         it.second.clear();
+    }
+
+    for (auto& it: _custom_plots )
+    {
+        it.second->clear();
     }
 
     forEachWidget( [](PlotWidget* plot) {
@@ -2349,7 +2356,7 @@ void MainWindow::on_actionSaveAllPlotTabs_triggered()
     QString directory_path  = settings.value("MainWindow.saveAllPlotTabs",
                                              QDir::currentPath() ).toString();
     // Get destination folder
-    QFileDialog saveDialog;
+    QFileDialog saveDialog(this);
     saveDialog.setDirectory(directory_path);
     saveDialog.setFileMode(QFileDialog::FileMode::Directory);
     saveDialog.setAcceptMode(QFileDialog::AcceptSave);
@@ -2451,7 +2458,7 @@ void MainWindow::on_actionLoadData_triggered()
 
     QString directory_path = settings.value("MainWindow.lastDatafileDirectory", QDir::currentPath() ).toString();
 
-    QFileDialog loadDialog( this );
+    QFileDialog loadDialog(this);
     loadDialog.setFileMode(QFileDialog::ExistingFiles);
     loadDialog.setViewMode(QFileDialog::Detail);
     loadDialog.setNameFilter(file_extension_filter);
@@ -2506,7 +2513,7 @@ void MainWindow::on_actionSaveLayout_triggered()
     QString directory_path  = settings.value("MainWindow.lastLayoutDirectory",
                                              QDir::currentPath() ).toString();
 
-    QFileDialog saveDialog;
+    QFileDialog saveDialog(this);
     saveDialog.setOption(QFileDialog::DontUseNativeDialog, true);
 
     QGridLayout *save_layout = static_cast<QGridLayout*>(saveDialog.layout());

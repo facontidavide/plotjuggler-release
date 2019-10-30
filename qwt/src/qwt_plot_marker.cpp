@@ -12,7 +12,9 @@
 #include "qwt_scale_map.h"
 #include "qwt_symbol.h"
 #include "qwt_text.h"
+#include "qwt_graphic.h"
 #include "qwt_math.h"
+
 #include <qpainter.h>
 
 class QwtPlotMarker::PrivateData
@@ -46,6 +48,13 @@ public:
     double xValue;
     double yValue;
 };
+
+//! Sets alignment to Qt::AlignCenter, and style to QwtPlotMarker::NoLine
+QwtPlotMarker::QwtPlotMarker()
+{
+    d_data = new PrivateData;
+    setZ( 30.0 );
+}
 
 //! Sets alignment to Qt::AlignCenter, and style to QwtPlotMarker::NoLine
 QwtPlotMarker::QwtPlotMarker( const QString &title ):
@@ -134,7 +143,7 @@ void QwtPlotMarker::draw( QPainter *painter,
     const QwtScaleMap &xMap, const QwtScaleMap &yMap,
     const QRectF &canvasRect ) const
 {
-    const QPointF pos( xMap.transform( d_data->xValue ), 
+    const QPointF pos( xMap.transform( d_data->xValue ),
         yMap.transform( d_data->yValue ) );
 
     drawLines( painter, canvasRect, pos );
@@ -202,10 +211,10 @@ void QwtPlotMarker::drawSymbol( QPainter *painter,
     if ( symbol.style() != QwtSymbol::NoSymbol )
     {
         const QSizeF sz = symbol.size();
-    
+
         const QRectF clipRect = canvasRect.adjusted(
             -sz.width(), -sz.height(), sz.width(), sz.height() );
-    
+
         if ( clipRect.contains( pos ) )
             symbol.drawSymbol( painter, pos );
     }
@@ -296,8 +305,8 @@ void QwtPlotMarker::drawLabel( QPainter *painter,
 
     const int spacing = d_data->spacing;
 
-    const qreal xOff = qMax( pw2, symbolOff.width() );
-    const qreal yOff = qMax( pw2, symbolOff.height() );
+    const qreal xOff = qwtMaxF( pw2, symbolOff.width() );
+    const qreal yOff = qwtMaxF( pw2, symbolOff.height() );
 
     const QSizeF textSize = d_data->label.textSize( painter->font() );
 
@@ -351,7 +360,7 @@ void QwtPlotMarker::drawLabel( QPainter *painter,
 
 /*!
   \brief Set the line style
-  \param style Line style. 
+  \param style Line style.
   \sa lineStyle()
 */
 void QwtPlotMarker::setLineStyle( LineStyle style )
@@ -437,7 +446,7 @@ QwtText QwtPlotMarker::label() const
 
   In all other styles the alignment is relative to the marker's position.
 
-  \param align Alignment. 
+  \param align Alignment.
   \sa labelAlignment(), labelOrientation()
 */
 void QwtPlotMarker::setLabelAlignment( Qt::Alignment align )
@@ -516,21 +525,21 @@ int QwtPlotMarker::spacing() const
     return d_data->spacing;
 }
 
-/*! 
+/*!
   Build and assign a line pen
-    
+
   In Qt5 the default pen width is 1.0 ( 0.0 in Qt4 ) what makes it
   non cosmetic ( see QPen::isCosmetic() ). This method has been introduced
   to hide this incompatibility.
-    
+
   \param color Pen color
   \param width Pen width
   \param style Pen style
-    
+
   \sa pen(), brush()
- */ 
+ */
 void QwtPlotMarker::setLinePen( const QColor &color, qreal width, Qt::PenStyle style )
-{   
+{
     setLinePen( QPen( color, width, style ) );
 }
 
@@ -562,20 +571,31 @@ const QPen &QwtPlotMarker::linePen() const
 
 QRectF QwtPlotMarker::boundingRect() const
 {
-    return QRectF( d_data->xValue, d_data->yValue, 0.0, 0.0 );
+    // width/height of -1 does not affect the autoscale calculation
+
+    switch (d_data->style)
+    {
+        case QwtPlotMarker::HLine:
+            return QRectF( d_data->xValue, d_data->yValue, -1.0, 0.0 );
+
+        case QwtPlotMarker::VLine:
+            return QRectF( d_data->xValue, d_data->yValue, 0.0, -1.0 );
+
+        default :
+            return QRectF( d_data->xValue, d_data->yValue, 0.0, 0.0 );
+    }
 }
 
 /*!
    \return Icon representing the marker on the legend
 
-   \param index Index of the legend entry 
+   \param index Index of the legend entry
                 ( usually there is only one )
    \param size Icon size
 
    \sa setLegendIconSize(), legendData()
 */
-QwtGraphic QwtPlotMarker::legendIcon( int index,
-    const QSizeF &size ) const
+QwtGraphic QwtPlotMarker::legendIcon( int index, const QSizeF &size ) const
 {
     Q_UNUSED( index );
 
@@ -599,7 +619,7 @@ QwtGraphic QwtPlotMarker::legendIcon( int index,
         {
             const double y = 0.5 * size.height();
 
-            QwtPainter::drawLine( &painter, 
+            QwtPainter::drawLine( &painter,
                 0.0, y, size.width(), y );
         }
 
@@ -608,7 +628,7 @@ QwtGraphic QwtPlotMarker::legendIcon( int index,
         {
             const double x = 0.5 * size.width();
 
-            QwtPainter::drawLine( &painter, 
+            QwtPainter::drawLine( &painter,
                 x, 0.0, x, size.height() );
         }
     }

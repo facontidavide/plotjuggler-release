@@ -47,8 +47,8 @@ public:
     void setChunkSize( uint );
     uint chunkSize() const;
 
-    virtual QPolygonF fitCurve( const QPolygonF & ) const;
-    virtual QPainterPath fitCurvePath( const QPolygonF & ) const;
+    virtual QPolygonF fitCurve( const QPolygonF & ) const QWT_OVERRIDE;
+    virtual QPainterPath fitCurvePath( const QPolygonF & ) const QWT_OVERRIDE;
 
 private:
     virtual QPolygonF simplify( const QPolygonF & ) const;

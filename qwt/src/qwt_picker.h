@@ -8,23 +8,29 @@
  *****************************************************************************/
 
 #ifndef QWT_PICKER
-#define QWT_PICKER 1
+#define QWT_PICKER
 
 #include "qwt_global.h"
-#include "qwt_text.h"
 #include "qwt_event_pattern.h"
-#include <qobject.h>
-#include <qpen.h>
-#include <qfont.h>
-#include <qrect.h>
-#include <qpainterpath.h>
 
+#include <qobject.h>
+
+class QwtPickerMachine;
+class QwtWidgetOverlay;
+class QwtText;
 class QWidget;
 class QMouseEvent;
 class QWheelEvent;
 class QKeyEvent;
-class QwtPickerMachine;
-class QwtWidgetOverlay;
+class QPainter;
+class QPen;
+class QFont;
+class QRegion;
+class QPainterPath;
+class QPoint;
+class QRect;
+class QSize;
+class QPolygon;
 
 /*!
   \brief QwtPicker provides selections on a widget
@@ -58,13 +64,16 @@ class QwtWidgetOverlay;
   position.
 
   \par Example
-  \verbatim #include <qwt_picker.h>
-#include <qwt_picker_machine.h>
+  \code
+    #include <qwt_picker.h>
+    #include <qwt_picker_machine.h>
 
-QwtPicker *picker = new QwtPicker(widget);
-picker->setStateMachine(new QwtPickerDragRectMachine);
-picker->setTrackerMode(QwtPicker::ActiveOnly);
-picker->setRubberBand(QwtPicker::RectRubberBand); \endverbatim\n
+    QwtPicker *picker = new QwtPicker(widget);
+    picker->setStateMachine(new QwtPickerDragRectMachine);
+    picker->setTrackerMode(QwtPicker::ActiveOnly);
+    picker->setRubberBand(QwtPicker::RectRubberBand);
+  \endcode
+  \endpar
 
   The state machine triggers the following commands:
 
@@ -210,7 +219,7 @@ public:
     bool isEnabled() const;
     bool isActive() const;
 
-    virtual bool eventFilter( QObject *, QEvent * );
+    virtual bool eventFilter( QObject *, QEvent * ) QWT_OVERRIDE;
 
     QWidget *parentWidget();
     const QWidget *parentWidget() const;
@@ -308,8 +317,8 @@ protected:
     virtual void widgetEnterEvent( QEvent * );
     virtual void widgetLeaveEvent( QEvent * );
 
-    virtual void stretchSelection( const QSize &oldSize,
-                                   const QSize &newSize );
+    virtual void stretchSelection(
+        const QSize &oldSize, const QSize &newSize );
 
     virtual void updateDisplay();
 

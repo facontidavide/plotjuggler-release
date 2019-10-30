@@ -11,8 +11,9 @@
 #define QWT_CURVE_FITTER_H
 
 #include "qwt_global.h"
-#include <qpolygon.h>
-#include <qpainterpath.h>
+
+class QPainterPath;
+class QPolygonF;
 
 /*!
   \brief Abstract base class for a curve fitter
@@ -43,7 +44,7 @@ public:
           of fitCurve() extracts a polygon from the path.
 
           \sa QwtSplineCurveFitter
-         */ 
+         */
         Path
     };
 

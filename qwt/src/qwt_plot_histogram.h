@@ -12,13 +12,12 @@
 
 #include "qwt_global.h"
 #include "qwt_plot_seriesitem.h"
-#include "qwt_column_symbol.h"
-#include <qcolor.h>
-#include <qvector.h>
 
-class QwtIntervalData;
-class QString;
+class QwtColumnSymbol;
+class QwtColumnRect;
+class QColor;
 class QPolygonF;
+template <typename T> class QVector;
 
 /*!
   \brief QwtPlotHistogram represents a series of samples, where an interval
@@ -36,7 +35,7 @@ class QPolygonF;
   \sa QwtPlotBarChart, QwtPlotMultiBarChart
 */
 
-class QWT_EXPORT QwtPlotHistogram: 
+class QWT_EXPORT QwtPlotHistogram:
     public QwtPlotSeriesItem, public QwtSeriesStore<QwtIntervalSample>
 {
 public:
@@ -58,7 +57,7 @@ public:
 
         /*!
            Draw a column for each interval. When a symbol() has been set
-           the symbol is used otherwise the column is displayed as 
+           the symbol is used otherwise the column is displayed as
            plain rectangle using pen() and brush().
          */
         Columns,
@@ -80,9 +79,11 @@ public:
     explicit QwtPlotHistogram( const QwtText &title );
     virtual ~QwtPlotHistogram();
 
-    virtual int rtti() const;
+    virtual int rtti() const QWT_OVERRIDE;
 
-    void setPen( const QColor &, qreal width = 0.0, Qt::PenStyle = Qt::SolidLine );
+    void setPen( const QColor &,
+        qreal width = 0.0, Qt::PenStyle = Qt::SolidLine );
+
     void setPen( const QPen & );
     const QPen &pen() const;
 
@@ -92,7 +93,7 @@ public:
     void setSamples( const QVector<QwtIntervalSample> & );
     void setSamples( QwtSeriesData<QwtIntervalSample> * );
 
-    void setBaseline( double reference );
+    void setBaseline( double );
     double baseline() const;
 
     void setStyle( HistogramStyle style );
@@ -101,13 +102,14 @@ public:
     void setSymbol( const QwtColumnSymbol * );
     const QwtColumnSymbol *symbol() const;
 
-    virtual void drawSeries( QPainter *p,
+    virtual void drawSeries( QPainter *,
         const QwtScaleMap &xMap, const QwtScaleMap &yMap,
-        const QRectF &canvasRect, int from, int to ) const;
+        const QRectF &canvasRect, int from, int to ) const QWT_OVERRIDE;
 
-    virtual QRectF boundingRect() const;
+    virtual QRectF boundingRect() const QWT_OVERRIDE;
 
-    virtual QwtGraphic legendIcon( int index, const QSizeF & ) const;
+    virtual QwtGraphic legendIcon(
+        int index, const QSizeF & ) const QWT_OVERRIDE;
 
 protected:
     virtual QwtColumnRect columnRect( const QwtIntervalSample &,

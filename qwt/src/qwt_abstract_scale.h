@@ -27,9 +27,9 @@ class QwtInterval;
   The scale is painted using a QwtScaleDraw object.
 
   The scale division might be assigned explicitly - but usually
-  it is calculated from the boundaries using a QwtScaleEngine. 
+  it is calculated from the boundaries using a QwtScaleEngine.
 
-  The scale engine also decides the type of transformation of the scale 
+  The scale engine also decides the type of transformation of the scale
   ( linear, logarithmic ... ).
 */
 
@@ -85,9 +85,9 @@ public:
     const QwtScaleMap &scaleMap() const;
 
 protected:
-    virtual void changeEvent( QEvent * );
+    virtual void changeEvent( QEvent * ) QWT_OVERRIDE;
 
-    void rescale( double lowerBound, 
+    void rescale( double lowerBound,
         double upperBound, double stepSize );
 
     void setAbstractScaleDraw( QwtAbstractScaleDraw * );

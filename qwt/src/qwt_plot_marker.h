@@ -10,13 +10,10 @@
 #ifndef QWT_PLOT_MARKER_H
 #define QWT_PLOT_MARKER_H
 
-#include <qpen.h>
-#include <qfont.h>
-#include <qstring.h>
-#include <qbrush.h>
 #include "qwt_global.h"
 #include "qwt_plot_item.h"
 
+class QString;
 class QRectF;
 class QwtText;
 class QwtSymbol;
@@ -37,11 +34,11 @@ class QwtSymbol;
   are valid. The interpretation of the alignment depends on the marker's
   line style. The alignment refers to the center point of
   the marker, which means, for example, that the label would be printed
-  left above the center point if the alignment was set to 
+  left above the center point if the alignment was set to
   Qt::AlignLeft | Qt::AlignTop.
 
   \note QwtPlotTextLabel is intended to align a text label
-        according to the geometry of canvas 
+        according to the geometry of canvas
         ( unrelated to plot coordinates )
 */
 
@@ -68,12 +65,13 @@ public:
         Cross
     };
 
-    explicit QwtPlotMarker( const QString &title = QString() );
+    explicit QwtPlotMarker();
+    explicit QwtPlotMarker( const QString &title );
     explicit QwtPlotMarker( const QwtText &title );
 
     virtual ~QwtPlotMarker();
 
-    virtual int rtti() const;
+    virtual int rtti() const QWT_OVERRIDE;
 
     double xValue() const;
     double yValue() const;
@@ -84,11 +82,11 @@ public:
     void setValue( double, double );
     void setValue( const QPointF & );
 
-    void setLineStyle( LineStyle st );
+    void setLineStyle( LineStyle );
     LineStyle lineStyle() const;
 
     void setLinePen( const QColor &, qreal width = 0.0, Qt::PenStyle = Qt::SolidLine );
-    void setLinePen( const QPen &p );
+    void setLinePen( const QPen & );
     const QPen &linePen() const;
 
     void setSymbol( const QwtSymbol * );
@@ -108,20 +106,21 @@ public:
 
     virtual void draw( QPainter *,
         const QwtScaleMap &xMap, const QwtScaleMap &yMap,
-        const QRectF & ) const;
+        const QRectF & ) const QWT_OVERRIDE;
 
-    virtual QRectF boundingRect() const;
+    virtual QRectF boundingRect() const QWT_OVERRIDE;
 
-    virtual QwtGraphic legendIcon( int index, const QSizeF & ) const;
+    virtual QwtGraphic legendIcon(
+        int index, const QSizeF & ) const QWT_OVERRIDE;
 
 protected:
-    virtual void drawLines( QPainter *, 
+    virtual void drawLines( QPainter *,
         const QRectF &, const QPointF & ) const;
 
     virtual void drawSymbol( QPainter *,
         const QRectF &, const QPointF & ) const;
 
-    virtual void drawLabel( QPainter *, 
+    virtual void drawLabel( QPainter *,
         const QRectF &, const QPointF & ) const;
 
 private:
