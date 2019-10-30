@@ -13,10 +13,6 @@
 #include "qwt_global.h"
 #include <qmetatype.h>
 
-#ifndef QT_NO_DEBUG_STREAM
-#include <qdebug.h>
-#endif
-
 /*!
   \brief A class representing an interval
 
@@ -27,7 +23,7 @@ class QWT_EXPORT QwtInterval
 {
 public:
     /*!
-      Flag indicating if a border is included or excluded 
+      Flag indicating if a border is included or excluded
       \sa setBorderFlags(), borderFlags()
     */
     enum BorderFlag
@@ -57,7 +53,7 @@ public:
 
     QwtInterval normalized() const;
     QwtInterval inverted() const;
-    QwtInterval limited( double minValue, double maxValue ) const;
+    QwtInterval limited( double lowerBound, double upperBound ) const;
 
     bool operator==( const QwtInterval & ) const;
     bool operator!=( const QwtInterval & ) const;
@@ -250,7 +246,7 @@ inline long double QwtInterval::widthL() const
 
 /*!
    \brief Intersection of two intervals
- 
+
    \param other Interval to intersect with
    \return Intersection of this and other
 
@@ -276,7 +272,7 @@ inline QwtInterval QwtInterval::operator|(
     return unite( other );
 }
 
-/*! 
+/*!
    \brief Compare two intervals
 
    \param other Interval to compare with
@@ -288,7 +284,7 @@ inline bool QwtInterval::operator==( const QwtInterval &other ) const
            ( d_maxValue == other.d_maxValue ) &&
            ( d_borderFlags == other.d_borderFlags );
 }
-/*! 
+/*!
    \brief Compare two intervals
 
    \param other Interval to compare with

@@ -11,6 +11,8 @@
 #include "qwt_color_map.h"
 #include "qwt_scale_map.h"
 #include "qwt_painter.h"
+#include "qwt_text.h"
+
 #include <qpainter.h>
 
 class QwtPlotSpectroCurve::PrivateData
@@ -117,19 +119,19 @@ void QwtPlotSpectroCurve::setSamples( const QVector<QwtPoint3D> &samples )
 
 /*!
   Assign a series of samples
-    
+
   setSamples() is just a wrapper for setData() without any additional
   value - beside that it is easier to find for the developer.
-    
+
   \param data Data
   \warning The item takes ownership of the data object, deleting
-           it when its not used anymore. 
+           it when its not used anymore.
 */
 void QwtPlotSpectroCurve::setSamples(
     QwtSeriesData<QwtPoint3D> *data )
 {
     setData( data );
-}  
+}
 
 /*!
   Change the color map
@@ -310,7 +312,7 @@ void QwtPlotSpectroCurve::drawDots( QPainter *painter,
             const unsigned char index = d_data->colorMap->colorIndex(
                 256, d_data->colorRange, sample.z() );
 
-            painter->setPen( QPen( QColor::fromRgba( d_data->colorTable[index] ), 
+            painter->setPen( QPen( QColor::fromRgba( d_data->colorTable[index] ),
                 d_data->penWidth ) );
         }
 

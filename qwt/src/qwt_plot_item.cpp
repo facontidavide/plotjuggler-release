@@ -11,8 +11,9 @@
 #include "qwt_text.h"
 #include "qwt_plot.h"
 #include "qwt_legend_data.h"
-#include "qwt_scale_div.h"
+#include "qwt_scale_map.h"
 #include "qwt_graphic.h"
+
 #include <qpainter.h>
 
 class QwtPlotItem::PrivateData
@@ -50,6 +51,24 @@ public:
     QwtText title;
     QSize legendIconSize;
 };
+
+/*!
+   Constructor
+*/
+QwtPlotItem::QwtPlotItem()
+{
+    d_data = new PrivateData;
+}
+
+/*!
+   Constructor
+   \param title Title of the item
+*/
+QwtPlotItem::QwtPlotItem( const QString &title )
+{
+    d_data = new PrivateData;
+    d_data->title = title;
+}
 
 /*!
    Constructor
@@ -94,7 +113,7 @@ void QwtPlotItem::attach( QwtPlot *plot )
 }
 
 /*!
-   \brief This method detaches a QwtPlotItem from any 
+   \brief This method detaches a QwtPlotItem from any
           QwtPlot it has been associated with.
 
    detach() is equivalent to calling attach( NULL )
@@ -219,7 +238,22 @@ void QwtPlotItem::setItemAttribute( ItemAttribute attribute, bool on )
             d_data->attributes &= ~attribute;
 
         if ( attribute == QwtPlotItem::Legend )
-            legendChanged();
+        {
+            if ( on )
+            {
+                legendChanged();
+            }
+            else
+            {
+                /*
+                    In the special case of taking an item from
+                    the legend we can't use legendChanged() as
+                    it depends on QwtPlotItem::Legend being enabled
+                 */
+                if ( d_data->plot )
+                    d_data->plot->updateLegend( this );
+            }
+        }
 
         itemChanged();
     }
@@ -304,8 +338,8 @@ bool QwtPlotItem::testRenderHint( RenderHint hint ) const
 }
 
 /*!
-   On multi core systems rendering of certain plot item 
-   ( f.e QwtPlotRasterItem ) can be done in parallel in 
+   On multi core systems rendering of certain plot item
+   ( f.e QwtPlotRasterItem ) can be done in parallel in
    several threads.
 
    The default setting is set to 1.
@@ -362,13 +396,13 @@ QSize QwtPlotItem::legendIconSize() const
 
    The default implementation returns an invalid icon
 
-   \param index Index of the legend entry 
+   \param index Index of the legend entry
                 ( usually there is only one )
    \param size Icon size
 
    \sa setLegendIconSize(), legendData()
  */
-QwtGraphic QwtPlotItem::legendIcon( 
+QwtGraphic QwtPlotItem::legendIcon(
     int index, const QSizeF &size ) const
 {
     Q_UNUSED( index )
@@ -388,22 +422,22 @@ QwtGraphic QwtPlotItem::legendIcon(
 
    \return A filled rectangle
  */
-QwtGraphic QwtPlotItem::defaultIcon( 
+QwtGraphic QwtPlotItem::defaultIcon(
     const QBrush &brush, const QSizeF &size ) const
-{   
+{
     QwtGraphic icon;
     if ( !size.isEmpty() )
     {
         icon.setDefaultSize( size );
-        
+
         QRectF r( 0, 0, size.width(), size.height() );
-        
+
         QPainter painter( &icon );
         painter.fillRect( r, brush );
-    }   
-    
+    }
+
     return icon;
-}   
+}
 
 //! Show the item
 void QwtPlotItem::show()
@@ -557,11 +591,11 @@ QRectF QwtPlotItem::boundingRect() const
    \param right Returns the right margin
    \param bottom Returns the bottom margin
 
-   \return The default implementation returns 0 for all margins
+   The default implementation returns 0 for all margins
 
    \sa QwtPlot::getCanvasMarginsHint(), QwtPlot::updateCanvasMargins()
  */
-void QwtPlotItem::getCanvasMarginHint( const QwtScaleMap &xMap, 
+void QwtPlotItem::getCanvasMarginHint( const QwtScaleMap &xMap,
     const QwtScaleMap &yMap, const QRectF &canvasRect,
     double &left, double &top, double &right, double &bottom ) const
 {
@@ -582,11 +616,11 @@ void QwtPlotItem::getCanvasMarginHint( const QwtScaleMap &xMap,
    displays one entry for each bar.
 
    QwtLegendData is basically a list of QVariants that makes it
-   possible to overload and reimplement legendData() to 
+   possible to overload and reimplement legendData() to
    return almost any type of information, that is understood
    by the receiver that acts as the legend.
 
-   The default implementation returns one entry with 
+   The default implementation returns one entry with
    the title() of the item and the legendIcon().
 
    \return Data, that is needed to represent the item on the legend
@@ -598,19 +632,19 @@ QList<QwtLegendData> QwtPlotItem::legendData() const
 
     QwtText label = title();
     label.setRenderFlags( label.renderFlags() & Qt::AlignLeft );
-            
+
     QVariant titleValue;
     qVariantSetValue( titleValue, label );
     data.setValue( QwtLegendData::TitleRole, titleValue );
-        
+
     const QwtGraphic graphic = legendIcon( 0, legendIconSize() );
     if ( !graphic.isNull() )
-    {   
+    {
         QVariant iconValue;
         qVariantSetValue( iconValue, graphic );
         data.setValue( QwtLegendData::IconRole, iconValue );
-    }   
-        
+    }
+
     QList<QwtLegendData> list;
     list += data;
 
@@ -658,7 +692,7 @@ void QwtPlotItem::updateScaleDiv( const QwtScaleDiv &xScaleDiv,
          need to enable the QwtPlotItem::Legend flag and to implement
          legendData() and legendIcon()
  */
-void QwtPlotItem::updateLegend( const QwtPlotItem *item, 
+void QwtPlotItem::updateLegend( const QwtPlotItem *item,
     const QList<QwtLegendData> &data )
 {
     Q_UNUSED( item );

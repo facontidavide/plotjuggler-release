@@ -32,12 +32,12 @@ QwtSystemClock::~QwtSystemClock()
 {
     delete d_data;
 }
-    
+
 bool QwtSystemClock::isNull() const
 {
     return d_data->timer.isValid();
 }
-        
+
 void QwtSystemClock::start()
 {
     d_data->timer.start();
@@ -54,7 +54,7 @@ double QwtSystemClock::elapsed() const
     const qint64 nsecs = d_data->timer.nsecsElapsed();
     return nsecs / 1e6;
 }
-    
+
 #else // !USE_ELAPSED_TIMER
 
 #include <qdatetime.h>
@@ -77,41 +77,44 @@ double QwtSystemClock::elapsed() const
 
 #if defined(QWT_HIGH_RESOLUTION_CLOCK)
 
-class QwtHighResolutionClock
+namespace
 {
-public:
-    QwtHighResolutionClock();
+    class QwtHighResolutionClock
+    {
+    public:
+        QwtHighResolutionClock();
 
-    void start();
-    double restart();
-    double elapsed() const;
+        void start();
+        double restart();
+        double elapsed() const;
 
-    bool isNull() const;
+        bool isNull() const;
 
-    static double precision();
+        static double precision();
 
-private:
+    private:
 
 #if defined(Q_OS_MAC)
-    static double msecsTo( uint64_t, uint64_t );
+        static double msecsTo( uint64_t, uint64_t );
 
-    uint64_t d_timeStamp;
+        uint64_t d_timeStamp;
 #elif defined(_POSIX_TIMERS)
 
-    static double msecsTo( const struct timespec &,
-        const struct timespec & );
+        static double msecsTo( const struct timespec &,
+            const struct timespec & );
 
-    static bool isMonotonic();
+        static bool isMonotonic();
 
-    struct timespec d_timeStamp;
-    clockid_t d_clockId;
+        struct timespec d_timeStamp;
+        clockid_t d_clockId;
 
 #elif defined(Q_OS_WIN)
 
-    LARGE_INTEGER d_startTicks;
-    LARGE_INTEGER d_ticksPerSecond;
+        LARGE_INTEGER d_startTicks;
+        LARGE_INTEGER d_ticksPerSecond;
 #endif
-};
+    };
+}
 
 #if defined(Q_OS_MAC)
 QwtHighResolutionClock::QwtHighResolutionClock():
@@ -356,7 +359,7 @@ void QwtSystemClock::start()
 }
 
 /*!
-  Set the start time to the current time 
+  Set the start time to the current time
   \return Time, that is elapsed since the previous start time.
 */
 double QwtSystemClock::restart()

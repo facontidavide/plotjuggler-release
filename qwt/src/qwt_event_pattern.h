@@ -8,9 +8,10 @@
  *****************************************************************************/
 
 #ifndef QWT_EVENT_PATTERN
-#define QWT_EVENT_PATTERN 1
+#define QWT_EVENT_PATTERN
 
 #include "qwt_global.h"
+
 #include <qnamespace.h>
 #include <qvector.h>
 
@@ -43,12 +44,12 @@ public:
     */
     enum MousePatternCode
     {
-        /*! 
+        /*!
           The default setting for 1, 2 and 3 button mice is:
 
-          - Qt::LeftButton 
-          - Qt::LeftButton 
-          - Qt::LeftButton 
+          - Qt::LeftButton
+          - Qt::LeftButton
+          - Qt::LeftButton
          */
         MouseSelect1,
 
@@ -149,14 +150,14 @@ public:
     {
     public:
         //! Constructor
-        MousePattern( Qt::MouseButton btn = Qt::NoButton, 
+        MousePattern( Qt::MouseButton btn = Qt::NoButton,
                 Qt::KeyboardModifiers modifierCodes = Qt::NoModifier ):
             button( btn ),
             modifiers( modifierCodes )
         {
         }
 
-        //! Button 
+        //! Button
         Qt::MouseButton button;
 
         //! Keyboard modifier
@@ -168,7 +169,7 @@ public:
     {
     public:
         //! Constructor
-        KeyPattern( int keyCode = Qt::Key_unknown, 
+        KeyPattern( int keyCode = Qt::Key_unknown,
                 Qt::KeyboardModifiers modifierCodes = Qt::NoModifier ):
             key( keyCode ),
             modifiers( modifierCodes )
@@ -188,11 +189,11 @@ public:
     void initMousePattern( int numButtons );
     void initKeyPattern();
 
-    void setMousePattern( MousePatternCode, Qt::MouseButton button, 
+    void setMousePattern( MousePatternCode, Qt::MouseButton button,
         Qt::KeyboardModifiers = Qt::NoModifier );
 
-    void setKeyPattern( KeyPatternCode, int keyCode, 
-        Qt::KeyboardModifiers modifierCodes = Qt::NoModifier );
+    void setKeyPattern( KeyPatternCode, int key,
+        Qt::KeyboardModifiers modifiers = Qt::NoModifier );
 
     void setMousePattern( const QVector<MousePattern> & );
     void setKeyPattern( const QVector<KeyPattern> & );

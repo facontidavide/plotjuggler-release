@@ -10,11 +10,12 @@
 #include "qwt_text_label.h"
 #include "qwt_text.h"
 #include "qwt_painter.h"
+#include "qwt_math.h"
+
 #include <qstyle.h>
 #include <qstyleoption.h>
 #include <qpainter.h>
 #include <qevent.h>
-#include <qmath.h>
 
 class QwtTextLabel::PrivateData
 {
@@ -91,7 +92,7 @@ QString QwtTextLabel::plainText() const
 
   \sa QwtText
 */
-void QwtTextLabel::setText( const QString &text, 
+void QwtTextLabel::setText( const QString &text,
     QwtText::TextFormat textFormat )
 {
     d_data->text.setText( text, textFormat );
@@ -198,7 +199,7 @@ QSize QwtTextLabel::minimumSizeHint() const
 
     sz += QSizeF( mw, mh );
 
-    return QSize( qCeil( sz.width() ), qCeil( sz.height() ) );
+    return QSize( qwtCeil( sz.width() ), qwtCeil( sz.height() ) );
 }
 
 /*!
@@ -220,7 +221,7 @@ int QwtTextLabel::heightForWidth( int width ) const
     if ( renderFlags & Qt::AlignLeft || renderFlags & Qt::AlignRight )
         width -= indent;
 
-    int height = qCeil( d_data->text.heightForWidth( width, font() ) );
+    int height = qwtCeil( d_data->text.heightForWidth( width, font() ) );
     if ( ( renderFlags & Qt::AlignTop ) || ( renderFlags & Qt::AlignBottom ) )
         height += indent;
 
@@ -341,3 +342,6 @@ int QwtTextLabel::defaultIndent() const
     return QFontMetrics( fnt ).width( 'x' ) / 2;
 }
 
+#if QWT_MOC_INCLUDE
+#include "moc_qwt_text_label.cpp"
+#endif

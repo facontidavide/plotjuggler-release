@@ -11,6 +11,7 @@
 #define QWT_PIXEL_MATRIX_H
 
 #include "qwt_global.h"
+
 #include <qbitarray.h>
 #include <qrect.h>
 

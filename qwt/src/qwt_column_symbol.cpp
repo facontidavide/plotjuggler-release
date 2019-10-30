@@ -8,8 +8,9 @@
  *****************************************************************************/
 
 #include "qwt_column_symbol.h"
-#include "qwt_math.h"
 #include "qwt_painter.h"
+#include "qwt_math.h"
+
 #include <qpainter.h>
 #include <qpalette.h>
 
@@ -32,8 +33,8 @@ static void qwtDrawBox( QPainter *p, const QRectF &rect,
             return;
         }
 
-        lw = qMin( lw, rect.height() / 2.0 - 1.0 );
-        lw = qMin( lw, rect.width() / 2.0 - 1.0 );
+        lw = qwtMinF( lw, rect.height() / 2.0 - 1.0 );
+        lw = qwtMinF( lw, rect.width() / 2.0 - 1.0 );
 
         const QRectF outerRect = rect.adjusted( 0, 0, 1, 1 );
         QPolygonF polygon( outerRect );
@@ -75,8 +76,8 @@ static void qwtDrawPanel( QPainter *painter, const QRectF &rect,
             return;
         }
 
-        lw = qMin( lw, rect.height() / 2.0 - 1.0 );
-        lw = qMin( lw, rect.width() / 2.0 - 1.0 );
+        lw = qwtMinF( lw, rect.height() / 2.0 - 1.0 );
+        lw = qwtMinF( lw, rect.width() / 2.0 - 1.0 );
 
         const QRectF outerRect = rect.adjusted( 0, 0, 1, 1 );
         const QRectF innerRect = outerRect.adjusted( lw, lw, -lw, -lw );
@@ -287,7 +288,32 @@ void QwtColumnSymbol::drawBox( QPainter *painter,
         }
         default:
         {
-            painter->fillRect( r, d_data->palette.window() );
+            painter->fillRect( r.adjusted( 0, 0, 1, 1 ), d_data->palette.window() );
         }
     }
 }
+
+//! \return A normalized QRect built from the intervals
+QRectF QwtColumnRect::toRect() const
+{
+    QRectF r( hInterval.minValue(), vInterval.minValue(),
+        hInterval.maxValue() - hInterval.minValue(),
+        vInterval.maxValue() - vInterval.minValue() );
+
+    r = r.normalized();
+
+    if ( hInterval.borderFlags() & QwtInterval::ExcludeMinimum )
+        r.adjust( 1, 0, 0, 0 );
+
+    if ( hInterval.borderFlags() & QwtInterval::ExcludeMaximum )
+        r.adjust( 0, 0, -1, 0 );
+
+    if ( vInterval.borderFlags() & QwtInterval::ExcludeMinimum )
+        r.adjust( 0, 1, 0, 0 );
+
+    if ( vInterval.borderFlags() & QwtInterval::ExcludeMaximum )
+        r.adjust( 0, 0, 0, -1 );
+
+    return r;
+}
+

@@ -11,17 +11,18 @@
 #define QWT_PLOT_ITEM_H
 
 #include "qwt_global.h"
-#include "qwt_text.h"
-#include "qwt_legend_data.h"
-#include "qwt_graphic.h"
-#include <qrect.h>
-#include <qlist.h>
 #include <qmetatype.h>
 
-class QPainter;
 class QwtScaleMap;
 class QwtScaleDiv;
 class QwtPlot;
+class QwtText;
+class QwtGraphic;
+class QwtLegendData;
+class QRectF;
+class QPainter;
+class QString;
+template <typename T> class QList;
 
 /*!
   \brief Base class for items on the plot canvas
@@ -123,7 +124,7 @@ public:
         //! For QwtPlotZoneItem
         Rtti_PlotZone,
 
-        /*! 
+        /*!
            Values >= Rtti_PlotUserItem are reserved for plot items
            not implemented in the Qwt library.
          */
@@ -134,9 +135,9 @@ public:
        \brief Plot Item Attributes
 
        Various aspects of a plot widget depend on the attributes of
-       the attached plot items. If and how a single plot item 
+       the attached plot items. If and how a single plot item
        participates in these updates depends on its attributes.
-       
+
        \sa setItemAttribute(), testItemAttribute(), ItemInterest
      */
     enum ItemAttribute
@@ -153,7 +154,7 @@ public:
 
         /*!
            The item needs extra space to display something outside
-           its bounding rectangle. 
+           its bounding rectangle.
            \sa getCanvasMarginHint()
          */
         Margins = 0x04
@@ -174,13 +175,13 @@ public:
      */
     enum ItemInterest
     {
-        /*! 
+        /*!
            The item is interested in updates of the scales
            \sa updateScaleDiv()
          */
         ScaleInterest = 0x01,
 
-        /*! 
+        /*!
            The item is interested in updates of the legend ( of other items )
            This flag is intended for items, that want to implement a legend
            for displaying entries of other plot item.
@@ -206,7 +207,10 @@ public:
     //! Render hints
     typedef QFlags<RenderHint> RenderHints;
 
-    explicit QwtPlotItem( const QwtText &title = QwtText() );
+    explicit QwtPlotItem();
+    explicit QwtPlotItem( const QString &title );
+    explicit QwtPlotItem( const QwtText &title );
+
     virtual ~QwtPlotItem();
 
     void attach( QwtPlot *plot );
@@ -268,12 +272,12 @@ public:
 
     virtual QRectF boundingRect() const;
 
-    virtual void getCanvasMarginHint( 
+    virtual void getCanvasMarginHint(
         const QwtScaleMap &xMap, const QwtScaleMap &yMap,
-        const QRectF &canvasSize,
+        const QRectF &canvasRect,
         double &left, double &top, double &right, double &bottom) const;
 
-    virtual void updateScaleDiv( 
+    virtual void updateScaleDiv(
         const QwtScaleDiv&, const QwtScaleDiv& );
 
     virtual void updateLegend( const QwtPlotItem *,

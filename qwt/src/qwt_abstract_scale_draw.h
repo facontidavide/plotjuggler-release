@@ -12,8 +12,8 @@
 
 #include "qwt_global.h"
 #include "qwt_scale_div.h"
-#include "qwt_text.h"
 
+class QwtText;
 class QPalette;
 class QPainter;
 class QFont;
@@ -54,7 +54,7 @@ public:
     QwtAbstractScaleDraw();
     virtual ~QwtAbstractScaleDraw();
 
-    void setScaleDiv( const QwtScaleDiv &s );
+    void setScaleDiv( const QwtScaleDiv & );
     const QwtScaleDiv& scaleDiv() const;
 
     void setTransformation( QwtTransform * );
@@ -68,11 +68,11 @@ public:
     double tickLength( QwtScaleDiv::TickType ) const;
     double maxTickLength() const;
 
-    void setSpacing( double margin );
+    void setSpacing( double );
     double spacing() const;
 
-    void setPenWidth( int width );
-    int penWidth() const;
+    void setPenWidthF( qreal width );
+    qreal penWidthF() const;
 
     virtual void draw( QPainter *, const QPalette & ) const;
 

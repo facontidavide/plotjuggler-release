@@ -9,13 +9,10 @@
 
 /*! \file */
 #ifndef QWT_POINT_3D_H
-#define QWT_POINT_3D_H 1
+#define QWT_POINT_3D_H
 
 #include "qwt_global.h"
 #include <qpoint.h>
-#ifndef QT_NO_DEBUG_STREAM
-#include <qdebug.h>
-#endif
 
 /*!
   \brief QwtPoint3D class defines a 3D point in double coordinates

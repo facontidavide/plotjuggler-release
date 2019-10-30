@@ -9,9 +9,15 @@
 
 #include "qwt_plot_shapeitem.h"
 #include "qwt_scale_map.h"
+#include "qwt_text.h"
+#include "qwt_graphic.h"
 #include "qwt_painter.h"
 #include "qwt_weeding_curve_fitter.h"
 #include "qwt_clipper.h"
+#include "qwt_math.h"
+
+#include <qpainter.h>
+#include <qpainterpath.h>
 
 static QPainterPath qwtTransformPath( const QwtScaleMap &xMap,
         const QwtScaleMap &yMap, const QPainterPath &path, bool doAlign )
@@ -21,7 +27,7 @@ static QPainterPath qwtTransformPath( const QwtScaleMap &xMap,
 
     for ( int i = 0; i < path.elementCount(); i++ )
     {
-        const QPainterPath::Element &element = path.elementAt( i );
+        const QPainterPath::Element element = path.elementAt( i );
 
         double x = xMap.transform( element.x );
         double y = yMap.transform( element.y );
@@ -52,11 +58,11 @@ static QPainterPath qwtTransformPath( const QwtScaleMap &xMap,
             }
             case QPainterPath::CurveToElement:
             {
-                const QPainterPath::Element& element1 = path.elementAt( ++i );
+                const QPainterPath::Element element1 = path.elementAt( ++i );
                 const double x1 = xMap.transform( element1.x );
                 const double y1 = yMap.transform( element1.y );
 
-                const QPainterPath::Element& element2 = path.elementAt( ++i );
+                const QPainterPath::Element element2 = path.elementAt( ++i );
                 const double x2 = xMap.transform( element2.x );
                 const double y2 = yMap.transform( element2.y );
 
@@ -207,7 +213,7 @@ QRectF QwtPlotShapeItem::boundingRect() const
   \param rect Rectangle
   \sa setShape(), setPolygon(), shape()
  */
-void QwtPlotShapeItem::setRect( const QRectF &rect ) 
+void QwtPlotShapeItem::setRect( const QRectF &rect )
 {
     QPainterPath path;
     path.addRect( rect );
@@ -262,21 +268,21 @@ QPainterPath QwtPlotShapeItem::shape() const
     return d_data->shape;
 }
 
-/*! 
+/*!
   Build and assign a pen
-    
+
   In Qt5 the default pen width is 1.0 ( 0.0 in Qt4 ) what makes it
   non cosmetic ( see QPen::isCosmetic() ). This method has been introduced
   to hide this incompatibility.
-    
+
   \param color Pen color
   \param width Pen width
   \param style Pen style
-    
+
   \sa pen(), brush()
- */ 
+ */
 void QwtPlotShapeItem::setPen( const QColor &color, qreal width, Qt::PenStyle style )
-{   
+{
     setPen( QPen( color, width, style ) );
 }
 
@@ -335,7 +341,7 @@ QBrush QwtPlotShapeItem::brush() const
 /*!
   \brief Set the tolerance for the weeding optimization
 
-  After translating the shape into target device coordinate 
+  After translating the shape into target device coordinate
   ( usually widget geometries ) the painter path can be simplified
   by a point weeding algorithm ( Douglas-Peucker ).
 
@@ -350,7 +356,7 @@ QBrush QwtPlotShapeItem::brush() const
  */
 void QwtPlotShapeItem::setRenderTolerance( double tolerance )
 {
-    tolerance = qMax( tolerance, 0.0 );
+    tolerance = qwtMaxF( tolerance, 0.0 );
 
     if ( tolerance != d_data->renderTolerance )
     {
@@ -383,7 +389,7 @@ void QwtPlotShapeItem::draw( QPainter *painter,
     if ( d_data->shape.isEmpty() )
         return;
 
-    if ( d_data->pen.style() == Qt::NoPen 
+    if ( d_data->pen.style() == Qt::NoPen
         && d_data->brush.style() == Qt::NoBrush )
     {
         return;
@@ -403,12 +409,12 @@ void QwtPlotShapeItem::draw( QPainter *painter,
 
     const bool doAlign = QwtPainter::roundingAlignment( painter );
 
-    QPainterPath path = qwtTransformPath( xMap, yMap, 
+    QPainterPath path = qwtTransformPath( xMap, yMap,
         d_data->shape, doAlign );
 
     if ( testPaintAttribute( QwtPlotShapeItem::ClipPolygons ) )
     {
-        const qreal pw = qMax( qreal( 1.0 ), painter->pen().widthF());
+        const qreal pw = QwtPainter::effectivePenWidth( painter->pen() );
         const QRectF clipRect = canvasRect.adjusted( -pw, -pw, pw, pw );
 
         QPainterPath clippedPath;
@@ -448,7 +454,7 @@ void QwtPlotShapeItem::draw( QPainter *painter,
 /*!
   \return A rectangle filled with the color of the brush ( or the pen )
 
-  \param index Index of the legend entry 
+  \param index Index of the legend entry
                 ( usually there is only one )
   \param size Icon size
 

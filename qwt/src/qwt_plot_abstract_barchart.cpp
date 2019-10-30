@@ -9,6 +9,7 @@
 
 #include "qwt_plot_abstract_barchart.h"
 #include "qwt_scale_map.h"
+#include "qwt_math.h"
 
 static inline double qwtTransformWidth(
     const QwtScaleMap &map, double value, double width )
@@ -100,7 +101,7 @@ QwtPlotAbstractBarChart::LayoutPolicy QwtPlotAbstractBarChart::layoutPolicy() co
  */
 void QwtPlotAbstractBarChart::setLayoutHint( double hint )
 {
-    hint = qMax( 0.0, hint );
+    hint = qwtMaxF( 0.0, hint );
     if ( hint != d_data->layoutHint )
     {
         d_data->layoutHint = hint;
@@ -180,8 +181,8 @@ int QwtPlotAbstractBarChart::margin() const
 /*!
    \brief Set the baseline
 
-   The baseline is the origin for the chart. Each bar is 
-   painted from the baseline in the direction of the sample 
+   The baseline is the origin for the chart. Each bar is
+   painted from the baseline in the direction of the sample
    value. In case of a horizontal orientation() the baseline
    is interpreted as x - otherwise as y - value.
 
@@ -200,7 +201,7 @@ void QwtPlotAbstractBarChart::setBaseline( double value )
     }
 }
 
-/*! 
+/*!
    \return Value for the origin of the bar chart
    \sa setBaseline(), QwtPlotSeriesItem::orientation()
  */
@@ -256,7 +257,7 @@ double QwtPlotAbstractBarChart::sampleWidth( const QwtScaleMap &map,
 
             width = qwtTransformWidth( map, value, w );
             width -= d_data->spacing;
-            width = qMax( width, d_data->layoutHint );
+            width = qwtMaxF( width, d_data->layoutHint );
         }
     }
 
@@ -285,7 +286,7 @@ double QwtPlotAbstractBarChart::sampleWidth( const QwtScaleMap &map,
    \sa layoutPolicy(), layoutHint(), QwtPlotItem::Margins
        QwtPlot::getCanvasMarginsHint(), QwtPlot::updateCanvasMargins()
  */
-void QwtPlotAbstractBarChart::getCanvasMarginHint( const QwtScaleMap &xMap, 
+void QwtPlotAbstractBarChart::getCanvasMarginHint( const QwtScaleMap &xMap,
     const QwtScaleMap &yMap, const QRectF &canvasRect,
     double &left, double &top, double &right, double &bottom ) const
 {
@@ -323,7 +324,7 @@ void QwtPlotAbstractBarChart::getCanvasMarginHint( const QwtScaleMap &xMap,
 
             if ( layoutPolicy() == ScaleSamplesToAxes )
             {
-                sampleWidthS = qMax( d_data->layoutHint, 0.0 );
+                sampleWidthS = qwtMaxF( d_data->layoutHint, 0.0 );
             }
             else
             {

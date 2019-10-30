@@ -12,8 +12,8 @@
 
 #include "qwt_global.h"
 #include <qlayout.h>
-#include <qsize.h>
-#include <qlist.h>
+
+template <typename T> class QList;
 
 /*!
   \brief The QwtDynGridLayout class lays out widgets in a grid,
@@ -28,53 +28,54 @@ class QWT_EXPORT QwtDynGridLayout : public QLayout
 {
     Q_OBJECT
 public:
-    explicit QwtDynGridLayout( QWidget *, int margin = 0, int space = -1 );
-    explicit QwtDynGridLayout( int space = -1 );
+    explicit QwtDynGridLayout( QWidget *, int margin = 0, int spacing = -1 );
+    explicit QwtDynGridLayout( int spacing = -1 );
 
     virtual ~QwtDynGridLayout();
 
-    virtual void invalidate();
+    virtual void invalidate() QWT_OVERRIDE;
 
-    void setMaxColumns( uint maxCols );
+    void setMaxColumns( uint maxColumns );
     uint maxColumns() const;
 
     uint numRows () const;
     uint numColumns () const;
 
-    virtual void addItem( QLayoutItem * );
+    virtual void addItem( QLayoutItem * ) QWT_OVERRIDE;
 
-    virtual QLayoutItem *itemAt( int index ) const;
-    virtual QLayoutItem *takeAt( int index );
-    virtual int count() const;
+    virtual QLayoutItem *itemAt( int index ) const QWT_OVERRIDE;
+    virtual QLayoutItem *takeAt( int index ) QWT_OVERRIDE;
+    virtual int count() const QWT_OVERRIDE;
 
     void setExpandingDirections( Qt::Orientations );
-    virtual Qt::Orientations expandingDirections() const;
-    QList<QRect> layoutItems( const QRect &, uint numCols ) const;
+    virtual Qt::Orientations expandingDirections() const QWT_OVERRIDE;
+    QList<QRect> layoutItems( const QRect &, uint numColumns ) const;
 
     virtual int maxItemWidth() const;
 
-    virtual void setGeometry( const QRect &rect );
+    virtual void setGeometry( const QRect & ) QWT_OVERRIDE;
 
-    virtual bool hasHeightForWidth() const;
-    virtual int heightForWidth( int ) const;
+    virtual bool hasHeightForWidth() const QWT_OVERRIDE;
+    virtual int heightForWidth( int ) const QWT_OVERRIDE;
 
-    virtual QSize sizeHint() const;
+    virtual QSize sizeHint() const QWT_OVERRIDE;
 
-    virtual bool isEmpty() const;
+    virtual bool isEmpty() const QWT_OVERRIDE;
     uint itemCount() const;
 
     virtual uint columnsForWidth( int width ) const;
 
 protected:
 
-    void layoutGrid( uint numCols,
+    void layoutGrid( uint numColumns,
         QVector<int>& rowHeight, QVector<int>& colWidth ) const;
-    void stretchGrid( const QRect &rect, uint numCols,
+
+    void stretchGrid( const QRect &rect, uint numColumns,
         QVector<int>& rowHeight, QVector<int>& colWidth ) const;
 
 private:
     void init();
-    int maxRowWidth( int numCols ) const;
+    int maxRowWidth( int numColumns ) const;
 
     class PrivateData;
     PrivateData *d_data;

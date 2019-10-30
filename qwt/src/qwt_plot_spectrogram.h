@@ -13,9 +13,9 @@
 #include "qwt_global.h"
 #include "qwt_raster_data.h"
 #include "qwt_plot_rasteritem.h"
-#include <qlist.h>
 
 class QwtColorMap;
+template <typename T> class QList;
 
 /*!
   \brief A plot item, which displays a spectrogram
@@ -70,11 +70,11 @@ public:
 
     void setMaxRGBTableSize( int numColors );
     int maxRGBTableSize() const;
-    
-    virtual QwtInterval interval(Qt::Axis) const;
-    virtual QRectF pixelHint( const QRectF & ) const;
 
-    void setDefaultContourPen( const QColor &, 
+    virtual QwtInterval interval( Qt::Axis ) const QWT_OVERRIDE;
+    virtual QRectF pixelHint( const QRectF & ) const QWT_OVERRIDE;
+
+    void setDefaultContourPen( const QColor &,
         qreal width = 0.0, Qt::PenStyle = Qt::SolidLine );
     void setDefaultContourPen( const QPen & );
     QPen defaultContourPen() const;
@@ -87,16 +87,16 @@ public:
     void setContourLevels( const QList<double> & );
     QList<double> contourLevels() const;
 
-    virtual int rtti() const;
+    virtual int rtti() const QWT_OVERRIDE;
 
-    virtual void draw( QPainter *p,
+    virtual void draw( QPainter *,
         const QwtScaleMap &xMap, const QwtScaleMap &yMap,
-        const QRectF &rect ) const;
+        const QRectF &canvasRect ) const QWT_OVERRIDE;
 
 protected:
     virtual QImage renderImage(
         const QwtScaleMap &xMap, const QwtScaleMap &yMap,
-        const QRectF &area, const QSize &imageSize ) const;
+        const QRectF &area, const QSize &imageSize ) const QWT_OVERRIDE;
 
     virtual QSize contourRasterSize(
         const QRectF &, const QRect & ) const;
@@ -104,12 +104,12 @@ protected:
     virtual QwtRasterData::ContourLines renderContourLines(
         const QRectF &rect, const QSize &raster ) const;
 
-    virtual void drawContourLines( QPainter *p,
+    virtual void drawContourLines( QPainter *,
         const QwtScaleMap &xMap, const QwtScaleMap &yMap,
-        const QwtRasterData::ContourLines& lines ) const;
+        const QwtRasterData::ContourLines& ) const;
 
     void renderTile( const QwtScaleMap &xMap, const QwtScaleMap &yMap,
-        const QRect &imageRect, QImage *image ) const;
+        const QRect &tile, QImage * ) const;
 
 private:
     class PrivateData;

@@ -40,6 +40,11 @@ public:
     CustomFunction(const std::string &linkedPlot,
                    const SnippetData &snippet);
 
+    void clear()
+    {
+      initJsEngine();
+    }
+
     void calculateAndAdd(PlotDataMapRef &plotData);
 
     void calculate(const PlotDataMapRef &plotData, PlotData *dst_data);
@@ -75,7 +80,7 @@ private:
     std::vector<std::string> _used_channels;
 
     std::unique_ptr<QJSEngine> _jsEngine;
-    double _last_updated_timestamp;
+
 };
 
 

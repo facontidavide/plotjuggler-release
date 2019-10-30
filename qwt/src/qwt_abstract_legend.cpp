@@ -36,3 +36,7 @@ int QwtAbstractLegend::scrollExtent( Qt::Orientation orientation ) const
     Q_UNUSED( orientation );
     return 0;
 }
+
+#if QWT_MOC_INCLUDE
+#include "moc_qwt_abstract_legend.cpp"
+#endif

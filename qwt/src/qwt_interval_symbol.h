@@ -11,12 +11,13 @@
 #define QWT_INTERVAL_SYMBOL_H
 
 #include "qwt_global.h"
-#include <qpen.h>
-#include <qsize.h>
+#include <qnamespace.h>
 
 class QPainter;
-class QRect;
+class QPen;
+class QBrush;
 class QPointF;
+class QColor;
 
 /*!
   \brief A drawing primitive for displaying an interval like an error bar
@@ -65,7 +66,7 @@ public:
     void setWidth( int );
     int width() const;
 
-    void setBrush( const QBrush& b );
+    void setBrush( const QBrush & );
     const QBrush& brush() const;
 
     void setPen( const QColor &, qreal width = 0.0, Qt::PenStyle = Qt::SolidLine );

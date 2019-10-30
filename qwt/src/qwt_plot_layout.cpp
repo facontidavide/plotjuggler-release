@@ -12,8 +12,7 @@
 #include "qwt_text_label.h"
 #include "qwt_scale_widget.h"
 #include "qwt_abstract_legend.h"
-#include <qscrollbar.h>
-#include <qmath.h>
+#include "qwt_math.h"
 
 class QwtPlotLayout::LayoutData
 {
@@ -76,7 +75,7 @@ void QwtPlotLayout::LayoutData::init( const QwtPlot *plot, const QRectF &rect )
 
         const QSize hint = plot->legend()->sizeHint();
 
-        const int w = qMin( hint.width(), qFloor( rect.width() ) );
+        const int w = qMin( hint.width(), qwtFloor( rect.width() ) );
 
         int h = plot->legend()->heightForWidth( w );
         if ( h <= 0 )
@@ -163,8 +162,8 @@ void QwtPlotLayout::LayoutData::init( const QwtPlot *plot, const QRectF &rect )
 
     // canvas
 
-    plot->canvas()->getContentsMargins( 
-        &canvas.contentsMargins[ QwtPlot::yLeft ], 
+    plot->canvas()->getContentsMargins(
+        &canvas.contentsMargins[ QwtPlot::yLeft ],
         &canvas.contentsMargins[ QwtPlot::xTop ],
         &canvas.contentsMargins[ QwtPlot::yRight ],
         &canvas.contentsMargins[ QwtPlot::xBottom ] );
@@ -590,7 +589,7 @@ QSize QwtPlotLayout::minimumSizeHint( const QwtPlot *plot ) const
             scl->getBorderDistHint( sd.minLeft, sd.minRight );
             sd.tickOffset = scl->margin();
             if ( scl->scaleDraw()->hasComponent( QwtAbstractScaleDraw::Ticks ) )
-                sd.tickOffset += qCeil( scl->scaleDraw()->maxTickLength() );
+                sd.tickOffset += qwtCeil( scl->scaleDraw()->maxTickLength() );
         }
 
         canvasBorder[axis] = fw + d_data->canvasMargin[axis] + 1;
@@ -891,7 +890,7 @@ void QwtPlotLayout::expandLineBreaks( Options options, const QRectF &rect,
                 w -= dimAxis[QwtPlot::yLeft] + dimAxis[QwtPlot::yRight];
             }
 
-            int d = qCeil( d_data->layoutData.title.text.heightForWidth( w ) );
+            int d = qwtCeil( d_data->layoutData.title.text.heightForWidth( w ) );
             if ( !( options & IgnoreFrames ) )
                 d += 2 * d_data->layoutData.title.frameWidth;
 
@@ -914,7 +913,7 @@ void QwtPlotLayout::expandLineBreaks( Options options, const QRectF &rect,
                 w -= dimAxis[QwtPlot::yLeft] + dimAxis[QwtPlot::yRight];
             }
 
-            int d = qCeil( d_data->layoutData.footer.text.heightForWidth( w ) );
+            int d = qwtCeil( d_data->layoutData.footer.text.heightForWidth( w ) );
             if ( !( options & IgnoreFrames ) )
                 d += 2 * d_data->layoutData.footer.frameWidth;
 
@@ -979,7 +978,7 @@ void QwtPlotLayout::expandLineBreaks( Options options, const QRectF &rect,
                 int d = scaleData.dimWithoutTitle;
                 if ( !scaleData.scaleWidget->title().isEmpty() )
                 {
-                    d += scaleData.scaleWidget->titleHeightForWidth( qFloor( length ) );
+                    d += scaleData.scaleWidget->titleHeightForWidth( qwtFloor( length ) );
                 }
 
 
@@ -1019,7 +1018,7 @@ void QwtPlotLayout::alignScales( Options options,
 
         if ( !( options & IgnoreFrames ) )
         {
-            backboneOffset[axis] += 
+            backboneOffset[axis] +=
                 d_data->layoutData.canvas.contentsMargins[axis];
         }
     }
@@ -1050,20 +1049,20 @@ void QwtPlotLayout::alignScales( Options options,
                       of the left scale.
                      */
                     const double cLeft = canvasRect.left(); // qreal -> double
-                    canvasRect.setLeft( qMax( cLeft, axisRect.left() - dx ) );
+                    canvasRect.setLeft( qwtMaxF( cLeft, axisRect.left() - dx ) );
                 }
                 else
                 {
                     const double minLeft = leftScaleRect.left();
                     const double left = axisRect.left() + leftOffset;
-                    axisRect.setLeft( qMax( left, minLeft ) );
+                    axisRect.setLeft( qwtMaxF( left, minLeft ) );
                 }
             }
             else
             {
                 if ( d_data->alignCanvasToScales[QwtPlot::yLeft] && leftOffset < 0 )
                 {
-                    canvasRect.setLeft( qMax( canvasRect.left(),
+                    canvasRect.setLeft( qwtMaxF( canvasRect.left(),
                         axisRect.left() - leftOffset ) );
                 }
                 else
@@ -1087,18 +1086,18 @@ void QwtPlotLayout::alignScales( Options options,
                       of the right scale.
                      */
                     const double cRight = canvasRect.right(); // qreal -> double
-                    canvasRect.setRight( qMin( cRight, axisRect.right() + dx ) );
-                }   
+                    canvasRect.setRight( qwtMinF( cRight, axisRect.right() + dx ) );
+                }
 
                 const double maxRight = rightScaleRect.right();
                 const double right = axisRect.right() - rightOffset;
-                axisRect.setRight( qMin( right, maxRight ) );
+                axisRect.setRight( qwtMinF( right, maxRight ) );
             }
             else
             {
                 if ( d_data->alignCanvasToScales[QwtPlot::yRight] && rightOffset < 0 )
                 {
-                    canvasRect.setRight( qMin( canvasRect.right(),
+                    canvasRect.setRight( qwtMinF( canvasRect.right(),
                         axisRect.right() + rightOffset ) );
                 }
                 else
@@ -1124,21 +1123,21 @@ void QwtPlotLayout::alignScales( Options options,
                       of the bottom scale.
                      */
                     const double cBottom = canvasRect.bottom(); // qreal -> double
-                    canvasRect.setBottom( qMin( cBottom, axisRect.bottom() + dy ) );
+                    canvasRect.setBottom( qwtMinF( cBottom, axisRect.bottom() + dy ) );
                 }
                 else
                 {
                     const double maxBottom = bottomScaleRect.top() +
                         d_data->layoutData.scale[QwtPlot::xBottom].tickOffset;
                     const double bottom = axisRect.bottom() - bottomOffset;
-                    axisRect.setBottom( qMin( bottom, maxBottom ) );
+                    axisRect.setBottom( qwtMinF( bottom, maxBottom ) );
                 }
             }
             else
             {
                 if ( d_data->alignCanvasToScales[QwtPlot::xBottom] && bottomOffset < 0 )
                 {
-                    canvasRect.setBottom( qMin( canvasRect.bottom(),
+                    canvasRect.setBottom( qwtMinF( canvasRect.bottom(),
                         axisRect.bottom() + bottomOffset ) );
                 }
                 else
@@ -1161,21 +1160,21 @@ void QwtPlotLayout::alignScales( Options options,
                       of the top scale.
                      */
                     const double cTop = canvasRect.top(); // qreal -> double
-                    canvasRect.setTop( qMax( cTop, axisRect.top() - dy ) );
+                    canvasRect.setTop( qwtMaxF( cTop, axisRect.top() - dy ) );
                 }
                 else
                 {
                     const double minTop = topScaleRect.bottom() -
                         d_data->layoutData.scale[QwtPlot::xTop].tickOffset;
                     const double top = axisRect.top() + topOffset;
-                    axisRect.setTop( qMax( top, minTop ) );
+                    axisRect.setTop( qwtMaxF( top, minTop ) );
                 }
             }
             else
             {
                 if ( d_data->alignCanvasToScales[QwtPlot::xTop] && topOffset < 0 )
                 {
-                    canvasRect.setTop( qMax( canvasRect.top(),
+                    canvasRect.setTop( qwtMaxF( canvasRect.top(),
                         axisRect.top() - topOffset ) );
                 }
                 else

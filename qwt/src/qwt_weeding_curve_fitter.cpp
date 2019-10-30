@@ -9,12 +9,11 @@
 
 #include "qwt_weeding_curve_fitter.h"
 #include "qwt_math.h"
+
+#include <qpainterpath.h>
+#include <qpolygon.h>
 #include <qstack.h>
 #include <qvector.h>
-
-#if QT_VERSION < 0x040601
-#define qFabs(x) ::fabs(x)
-#endif
 
 class QwtWeedingCurveFitter::PrivateData
 {
@@ -76,7 +75,7 @@ QwtWeedingCurveFitter::~QwtWeedingCurveFitter()
 */
 void QwtWeedingCurveFitter::setTolerance( double tolerance )
 {
-    d_data->tolerance = qMax( tolerance, 0.0 );
+    d_data->tolerance = qwtMaxF( tolerance, 0.0 );
 }
 
 /*!
@@ -108,8 +107,7 @@ void QwtWeedingCurveFitter::setChunkSize( uint numPoints )
 }
 
 /*!
-  
-  \return Maximum for the number of points passed to a run 
+  \return Maximum for the number of points passed to a run
           of the algorithm - or 0, when unlimited
   \sa setChunkSize()
 */
@@ -125,8 +123,10 @@ uint QwtWeedingCurveFitter::chunkSize() const
 */
 QPolygonF QwtWeedingCurveFitter::fitCurve( const QPolygonF &points ) const
 {
-    QPolygonF fittedPoints;
+    if ( points.isEmpty() )
+        return points;
 
+    QPolygonF fittedPoints;
     if ( d_data->chunkSize == 0 )
     {
         fittedPoints = simplify( points );
@@ -177,7 +177,7 @@ QPolygonF QwtWeedingCurveFitter::simplify( const QPolygonF &points ) const
         const double vecX = p[r.to].x() - p[r.from].x();
         const double vecY = p[r.to].y() - p[r.from].y();
 
-        const double vecLength = qSqrt( vecX * vecX + vecY * vecY );
+        const double vecLength = std::sqrt( vecX * vecX + vecY * vecY );
 
         const double unitVecX = ( vecLength != 0.0 ) ? vecX / vecLength : 0.0;
         const double unitVecY = ( vecLength != 0.0 ) ? vecY / vecLength : 0.0;
@@ -208,7 +208,7 @@ QPolygonF QwtWeedingCurveFitter::simplify( const QPolygonF &points ) const
                 }
                 else
                 {
-                    distToSegmentSqr = qFabs( toVecLength - s * s );
+                    distToSegmentSqr = std::fabs( toVecLength - s * s );
                 }
             }
 

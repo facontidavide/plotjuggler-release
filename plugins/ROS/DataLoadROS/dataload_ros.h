@@ -37,13 +37,12 @@ protected:
     std::shared_ptr<rosbag::Bag> _bag;
 
 private:
-    RosMessageParser _ros_parser;
 
     std::vector<const char*> _extensions;
 
     DialogSelectRosTopics::Configuration _config;
 
-    std::vector<std::pair<QString, QString>> getAndRegisterAllTopics();
+    std::vector<std::pair<QString, QString>> getAllTopics(const rosbag::Bag *bag, RosMessageParser *parser);
 
     void saveDefaultSettings();
 

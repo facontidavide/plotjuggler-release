@@ -10,6 +10,9 @@
 #include "qwt_point_mapper.h"
 #include "qwt_scale_map.h"
 #include "qwt_pixel_matrix.h"
+#include "qwt_series_data.h"
+#include "qwt_math.h"
+
 #include <qpolygon.h>
 #include <qimage.h>
 #include <qpen.h>
@@ -34,7 +37,7 @@ static inline double qwtRoundValueF( double value )
 {
 #if 1
     // MS Windows and at least IRIX does not have C99's nearbyint() function
-    return ( value >= 0.0 ) ? ::floor( value + 0.5 ) : ::ceil( value - 0.5 );
+    return ( value >= 0.0 ) ? std::floor( value + 0.5 ) : std::ceil( value - 0.5 );
 #else
     return nearbyint( value );
 #endif
@@ -74,108 +77,111 @@ static Qt::Orientation qwtProbeOrientation(
     return Qt::Horizontal;
 }
 
-template <class Polygon, class Point>
-class QwtPolygonQuadrupelX
+namespace
 {
-public:
-    inline void start( int x, int y )
+    template <class Polygon, class Point>
+    class QwtPolygonQuadrupelX
     {
-        x0 = x;
-        y1 = yMin = yMax = y2 = y;
-    }
+    public:
+        inline void start( int x, int y )
+        {
+            x0 = x;
+            y1 = yMin = yMax = y2 = y;
+        }
 
-    inline bool append( int x, int y )
+        inline bool append( int x, int y )
+        {
+            if ( x0 != x )
+                return false;
+
+            if ( y < yMin )
+                yMin = y;
+            else if ( y > yMax )
+                yMax = y;
+
+            y2 = y;
+
+            return true;
+        }
+
+        inline void flush( Polygon &polyline )
+        {
+            appendTo( y1, polyline );
+
+            if ( y2 > y1 )
+                qSwap( yMin, yMax );
+
+            if ( yMax != y1 )
+                appendTo( yMax, polyline );
+
+            if ( yMin != yMax )
+                appendTo( yMin, polyline );
+
+            if ( y2 != yMin )
+                appendTo( y2, polyline );
+        }
+
+    private:
+        inline void appendTo( int y, Polygon &polyline )
+        {
+            polyline += Point( x0, y );
+        }
+
+    private:
+        int x0, y1, yMin, yMax, y2;
+    };
+
+    template <class Polygon, class Point>
+    class QwtPolygonQuadrupelY
     {
-        if ( x0 != x )
-            return false;
+    public:
+        inline void start( int x, int y )
+        {
+            y0 = y;
+            x1 = xMin = xMax = x2 = x;
+        }
 
-        if ( y < yMin )
-            yMin = y;
-        else if ( y > yMax )
-            yMax = y;
+        inline bool append( int x, int y )
+        {
+            if ( y0 != y )
+                return false;
 
-        y2 = y;
+            if ( x < xMin )
+                xMin = x;
+            else if ( x > xMax )
+                xMax = x;
 
-        return true;
-    }
+            x2 = x;
 
-    inline void flush( Polygon &polyline )
-    {
-        appendTo( y1, polyline );
+            return true;
+        }
 
-        if ( y2 > y1 )
-            qSwap( yMin, yMax );
+        inline void flush( Polygon &polyline )
+        {
+            appendTo( x1, polyline );
 
-        if ( yMax != y1 )
-            appendTo( yMax, polyline );
+            if ( x2 > x1 )
+                qSwap( xMin, xMax );
 
-        if ( yMin != yMax )
-            appendTo( yMin, polyline );
+            if ( xMax != x1 )
+                appendTo( xMax, polyline );
 
-        if ( y2 != yMin )
-            appendTo( y2, polyline );
-    }
+            if ( xMin != xMax )
+                appendTo( xMin, polyline );
 
-private:
-    inline void appendTo( int y, Polygon &polyline )
-    {
-        polyline += Point( x0, y );
-    }
+            if ( x2 != xMin )
+                appendTo( x2, polyline );
+        }
 
-private:
-    int x0, y1, yMin, yMax, y2;
-};
+    private:
+        inline void appendTo( int x, Polygon &polyline )
+        {
+            polyline += Point( x, y0 );
+        }
 
-template <class Polygon, class Point>
-class QwtPolygonQuadrupelY
-{
-public:
-    inline void start( int x, int y )
-    {
-        y0 = y;
-        x1 = xMin = xMax = x2 = x;
-    }
-
-    inline bool append( int x, int y )
-    {
-        if ( y0 != y )
-            return false;
-
-        if ( x < xMin )
-            xMin = x;
-        else if ( x > xMax )
-            xMax = x;
-
-        x2 = x;
-
-        return true;
-    }
-
-    inline void flush( Polygon &polyline )
-    {
-        appendTo( x1, polyline );
-
-        if ( x2 > x1 )
-            qSwap( xMin, xMax );
-
-        if ( xMax != x1 )
-            appendTo( xMax, polyline );
-
-        if ( xMin != xMax )
-            appendTo( xMin, polyline );
-
-        if ( x2 != xMin )
-            appendTo( x2, polyline );
-    }
-
-private:
-    inline void appendTo( int x, Polygon &polyline )
-    {
-        polyline += Point( x, y0 );
-    }
-
-    int y0, x1, xMin, xMax, x2;
-};
+        int y0, x1, xMin, xMax, x2;
+    };
+}
 
 template <class Polygon, class Point, class PolygonQuadrupel>
 static Polygon qwtMapPointsQuad( const QwtScaleMap &xMap, const QwtScaleMap &yMap,
@@ -240,14 +246,14 @@ static Polygon qwtMapPointsQuad( const Polygon &polyline )
 
 template <class Polygon, class Point>
 static Polygon qwtMapPointsQuad( const QwtScaleMap &xMap, const QwtScaleMap &yMap,
-    const QwtSeriesData<QPointF> *series, int from, int to ) 
+    const QwtSeriesData<QPointF> *series, int from, int to )
 {
     Polygon polyline;
     if ( from > to )
         return polyline;
 
-    /* 
-        probing some values, to decide if it is better 
+    /*
+        probing some values, to decide if it is better
         to start with x or y coordinates
      */
     const Qt::Orientation orientation = qwtProbeOrientation( series, from, to );
@@ -262,10 +268,10 @@ static Polygon qwtMapPointsQuad( const QwtScaleMap &xMap, const QwtScaleMap &yMa
     }
     else
     {
-        polyline = qwtMapPointsQuad< Polygon, Point, 
+        polyline = qwtMapPointsQuad< Polygon, Point,
             QwtPolygonQuadrupelX<Polygon, Point> >( xMap, yMap, series, from, to );
 
-        polyline = qwtMapPointsQuad< Polygon, Point, 
+        polyline = qwtMapPointsQuad< Polygon, Point,
             QwtPolygonQuadrupelY<Polygon, Point> >( polyline );
     }
 
@@ -285,7 +291,7 @@ public:
 
 static void qwtRenderDots(
     const QwtScaleMap &xMap, const QwtScaleMap &yMap,
-    const QwtDotsCommand &command, const QPoint &pos, QImage *image ) 
+    const QwtDotsCommand &command, const QPoint &pos, QImage *image )
 {
     const QRgb rgb = command.rgb;
     QRgb *bits = reinterpret_cast<QRgb *>( image->bits() );
@@ -326,7 +332,7 @@ struct QwtRoundF
 };
 
 struct QwtNoRoundF
-{   
+{
     inline double operator()( double value ) const
     {
         return value;
@@ -337,10 +343,10 @@ struct QwtNoRoundF
 // the bounding rectangle
 
 template<class Polygon, class Point, class Round>
-static inline Polygon qwtToPoints( 
+static inline Polygon qwtToPoints(
     const QRectF &boundingRect,
     const QwtScaleMap &xMap, const QwtScaleMap &yMap,
-    const QwtSeriesData<QPointF> *series, 
+    const QwtSeriesData<QPointF> *series,
     int from, int to, Round round )
 {
     Polygon polyline( to - from + 1 );
@@ -400,7 +406,7 @@ static inline QPolygon qwtToPointsI(
     const QwtSeriesData<QPointF> *series,
     int from, int to )
 {
-    return qwtToPoints<QPolygon, QPoint>( 
+    return qwtToPoints<QPolygon, QPoint>(
         boundingRect, xMap, yMap, series, from, to, QwtRoundI() );
 }
 
@@ -411,7 +417,7 @@ static inline QPolygonF qwtToPointsF(
     const QwtSeriesData<QPointF> *series,
     int from, int to, Round round )
 {
-    return qwtToPoints<QPolygonF, QPointF>( 
+    return qwtToPoints<QPolygonF, QPointF>(
         boundingRect, xMap, yMap, series, from, to, round );
 }
 
@@ -419,9 +425,9 @@ static inline QPolygonF qwtToPointsF(
 // points mapped to the same position
 
 template<class Polygon, class Point, class Round>
-static inline Polygon qwtToPolylineFiltered( 
+static inline Polygon qwtToPolylineFiltered(
     const QwtScaleMap &xMap, const QwtScaleMap &yMap,
-    const QwtSeriesData<QPointF> *series, 
+    const QwtSeriesData<QPointF> *series,
     int from, int to, Round round )
 {
     // in curves with many points consecutive points
@@ -470,7 +476,7 @@ static inline QPolygonF qwtToPolylineFilteredF(
 {
     return qwtToPolylineFiltered<QPolygonF, QPointF>(
         xMap, yMap, series, from, to, round );
-} 
+}
 
 template<class Polygon, class Point>
 static inline Polygon qwtToPointsFiltered(
@@ -514,7 +520,7 @@ static inline QPolygon qwtToPointsFilteredI(
 {
     return qwtToPointsFiltered<QPolygon, QPoint>(
         boundingRect, xMap, yMap, series, from, to );
-} 
+}
 
 static inline QPolygonF qwtToPointsFilteredF(
     const QRectF &boundingRect,
@@ -621,7 +627,7 @@ QRectF QwtPointMapper::boundingRect() const
   \brief Translate a series of points into a QPolygonF
 
   When the WeedOutPoints flag is enabled consecutive points,
-  that are mapped to the same position will be one point. 
+  that are mapped to the same position will be one point.
 
   When RoundPoints is set all points are rounded to integers
   but returned as PolygonF - what only makes sense
@@ -648,17 +654,17 @@ QPolygonF QwtPointMapper::toPolygonF(
     {
         if ( d_data->flags & WeedOutIntermediatePoints )
         {
-            polyline = qwtMapPointsQuad<QPolygonF, QPointF>( 
+            polyline = qwtMapPointsQuad<QPolygonF, QPointF>(
                 xMap, yMap, series, from, to );
         }
         else if ( d_data->flags & WeedOutPoints )
         {
-            polyline = qwtToPolylineFilteredF( 
+            polyline = qwtToPolylineFilteredF(
                 xMap, yMap, series, from, to, QwtRoundF() );
         }
         else
         {
-            polyline = qwtToPointsF( qwtInvalidRect, 
+            polyline = qwtToPointsF( qwtInvalidRect,
                 xMap, yMap, series, from, to, QwtRoundF() );
         }
     }
@@ -666,12 +672,12 @@ QPolygonF QwtPointMapper::toPolygonF(
     {
         if ( d_data->flags & WeedOutPoints )
         {
-            polyline = qwtToPolylineFilteredF( 
+            polyline = qwtToPolylineFilteredF(
                 xMap, yMap, series, from, to, QwtNoRoundF() );
         }
         else
         {
-            polyline = qwtToPointsF( qwtInvalidRect, 
+            polyline = qwtToPointsF( qwtInvalidRect,
                 xMap, yMap, series, from, to, QwtNoRoundF() );
         }
     }
@@ -683,7 +689,7 @@ QPolygonF QwtPointMapper::toPolygonF(
   \brief Translate a series of points into a QPolygon
 
   When the WeedOutPoints flag is enabled consecutive points,
-  that are mapped to the same position will be one point. 
+  that are mapped to the same position will be one point.
 
   \param xMap x map
   \param yMap y map
@@ -702,17 +708,17 @@ QPolygon QwtPointMapper::toPolygon(
     if ( d_data->flags & WeedOutIntermediatePoints )
     {
         // TODO WeedOutIntermediatePointsY ...
-        polyline = qwtMapPointsQuad<QPolygon, QPoint>( 
+        polyline = qwtMapPointsQuad<QPolygon, QPoint>(
             xMap, yMap, series, from, to );
     }
     else if ( d_data->flags & WeedOutPoints )
     {
-        polyline = qwtToPolylineFilteredI( 
+        polyline = qwtToPolylineFilteredI(
             xMap, yMap, series, from, to );
     }
     else
     {
-        polyline = qwtToPointsI( 
+        polyline = qwtToPointsI(
             qwtInvalidRect, xMap, yMap, series, from, to );
     }
 
@@ -723,16 +729,16 @@ QPolygon QwtPointMapper::toPolygon(
   \brief Translate a series into a QPolygonF
 
   - WeedOutPoints & RoundPoints & boundingRect().isValid()
-    All points that are mapped to the same position 
+    All points that are mapped to the same position
     will be one point. Points outside of the bounding
     rectangle are ignored.
- 
+
   - WeedOutPoints & RoundPoints & !boundingRect().isValid()
-    All consecutive points that are mapped to the same position 
+    All consecutive points that are mapped to the same position
     will one point
 
-  - WeedOutPoints & !RoundPoints 
-    All consecutive points that are mapped to the same position 
+  - WeedOutPoints & !RoundPoints
+    All consecutive points that are mapped to the same position
     will one point
 
   - !WeedOutPoints & boundingRect().isValid()
@@ -761,17 +767,17 @@ QPolygonF QwtPointMapper::toPointsF(
         if ( d_data->flags & RoundPoints )
         {
             if ( d_data->boundingRect.isValid() )
-            {   
+            {
                 points = qwtToPointsFilteredF( d_data->boundingRect,
                     xMap, yMap, series, from, to );
             }
             else
-            {   
+            {
                 // without a bounding rectangle all we can
                 // do is to filter out duplicates of
                 // consecutive points
 
-                points = qwtToPolylineFilteredF( 
+                points = qwtToPolylineFilteredF(
                     xMap, yMap, series, from, to, QwtRoundF() );
             }
         }
@@ -780,7 +786,7 @@ QPolygonF QwtPointMapper::toPointsF(
             // when rounding is not allowed we can't use
             // qwtToPointsFilteredF
 
-            points = qwtToPolylineFilteredF( 
+            points = qwtToPolylineFilteredF(
                 xMap, yMap, series, from, to, QwtNoRoundF() );
         }
     }
@@ -805,12 +811,12 @@ QPolygonF QwtPointMapper::toPointsF(
   \brief Translate a series of points into a QPolygon
 
   - WeedOutPoints & boundingRect().isValid()
-    All points that are mapped to the same position 
+    All points that are mapped to the same position
     will be one point. Points outside of the bounding
     rectangle are ignored.
- 
+
   - WeedOutPoints & !boundingRect().isValid()
-    All consecutive points that are mapped to the same position 
+    All consecutive points that are mapped to the same position
     will one point
 
   - !WeedOutPoints & boundingRect().isValid()
@@ -842,13 +848,13 @@ QPolygon QwtPointMapper::toPoints(
             // when we don't have the bounding rectangle all
             // we can do is to filter out consecutive duplicates
 
-            points = qwtToPolylineFilteredI( 
+            points = qwtToPolylineFilteredI(
                 xMap, yMap, series, from, to );
         }
     }
     else
     {
-        points = qwtToPointsI( 
+        points = qwtToPointsI(
             d_data->boundingRect, xMap, yMap, series, from, to );
     }
 
@@ -876,7 +882,7 @@ QPolygon QwtPointMapper::toPoints(
 */
 QImage QwtPointMapper::toImage(
     const QwtScaleMap &xMap, const QwtScaleMap &yMap,
-    const QwtSeriesData<QPointF> *series, int from, int to, 
+    const QwtSeriesData<QPointF> *series, int from, int to,
     const QPen &pen, bool antialiased, uint numThreads ) const
 {
     Q_UNUSED( antialiased )
@@ -926,7 +932,7 @@ QImage QwtPointMapper::toImage(
                 command.from = index0;
                 command.to = index0 + numPoints - 1;
 
-                futures += QtConcurrent::run( &qwtRenderDots, 
+                futures += QtConcurrent::run( &qwtRenderDots,
                     xMap, yMap, command, pos, &image );
             }
         }

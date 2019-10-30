@@ -11,12 +11,9 @@
 #define QWT_SCALE_DIV_H
 
 #include "qwt_global.h"
-#include "qwt_interval.h"
 #include <qlist.h>
 
-#ifndef QT_NO_DEBUG_STREAM
-#include <qdebug.h>
-#endif
+class QwtInterval;
 
 /*!
   \brief A class representing a scale division
@@ -55,7 +52,7 @@ public:
         NTickTypes
     };
 
-    explicit QwtScaleDiv( double lowerBound = 0.0, 
+    explicit QwtScaleDiv( double lowerBound = 0.0,
         double upperBound = 0.0 );
 
     explicit QwtScaleDiv( const QwtInterval &, QList<double>[NTickTypes] );
@@ -63,7 +60,7 @@ public:
     explicit QwtScaleDiv( double lowerBound, double upperBound,
         QList<double>[NTickTypes] );
 
-    explicit QwtScaleDiv( double lowerBound, double upperBound, 
+    explicit QwtScaleDiv( double lowerBound, double upperBound,
         const QList<double> &minorTicks, const QList<double> &mediumTicks,
         const QList<double> &majorTicks );
 
