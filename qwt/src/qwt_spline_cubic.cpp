@@ -8,14 +8,17 @@
  *****************************************************************************/
 
 #include "qwt_spline_cubic.h"
-#include <qdebug.h>
+#include "qwt_spline_polynomial.h"
+
+#include <qpolygon.h>
+#include <qpainterpath.h>
 
 #define SLOPES_INCREMENTAL 0
 #define KAHAN 0
 
 namespace QwtSplineCubicP
 {
-    class KahanSum 
+    class KahanSum
     {
     public:
         inline KahanSum( double value = 0.0 ):
@@ -29,7 +32,7 @@ namespace QwtSplineCubicP
             d_sum = d_carry = 0.0;
         }
 
-        inline double value() const 
+        inline double value() const
         {
             return d_sum;
         }
@@ -60,11 +63,11 @@ namespace QwtSplineCubicP
             sum.add( d4 );
 
             return sum.value();
-        }   
+        }
 
 
     private:
-        double d_sum; 
+        double d_sum;
         double d_carry; // The carry from the previous operation
     };
 
@@ -77,7 +80,7 @@ namespace QwtSplineCubicP
             d_cv = d_curvatures.data();
         }
 
-        inline void storeFirst( double, 
+        inline void storeFirst( double,
             const QPointF &, const QPointF &, double b1, double )
         {
             d_cv[0] = 2.0 * b1;
@@ -121,17 +124,17 @@ namespace QwtSplineCubicP
             d_slopes.resize( size );
             d_m = d_slopes.data();
         }
-        
-        inline void storeFirst( double h, 
+
+        inline void storeFirst( double h,
             const QPointF &p1, const QPointF &p2, double b1, double b2 )
-        {  
+        {
             const double s = ( p2.y() - p1.y() ) / h;
             d_m[0] = s - h * ( 2.0 * b1 + b2 ) / 3.0;
 #if KAHAN
             d_sum.add( d_m[0] );
 #endif
         }
-        
+
         inline void storeNext( int index, double h,
             const QPointF &p1, const QPointF &p2, double b1, double b2 )
         {
@@ -152,7 +155,7 @@ namespace QwtSplineCubicP
 
         inline void storeLast( double h,
             const QPointF &p1, const QPointF &p2, double b1, double b2 )
-        {   
+        {
             const double s = ( p2.y() - p1.y() ) / h;
             d_m[d_slopes.size() - 1] = s + h * ( b1 + 2.0 * b2 ) / 3.0;
 #if KAHAN
@@ -185,7 +188,7 @@ namespace QwtSplineCubicP
         }
 
         QVector<double> slopes() const { return d_slopes; }
-    
+
     private:
         QVector<double> d_slopes;
         double *d_m;
@@ -193,7 +196,7 @@ namespace QwtSplineCubicP
         KahanSum d_sum;
 #endif
     };
-};
+}
 
 namespace QwtSplineCubicP
 {
@@ -217,7 +220,7 @@ namespace QwtSplineCubicP
             q = q0;
             r = r0;
         }
-            
+
         inline Equation2 normalized() const
         {
             Equation2 c;
@@ -284,10 +287,10 @@ namespace QwtSplineCubicP
             r( dr )
         {
         }
-    
+
         inline bool operator==( const Equation3 &c ) const
         {
-            return ( p == c.p ) && ( q == c.q ) && 
+            return ( p == c.p ) && ( q == c.q ) &&
                 ( u == c.u ) && ( r == c.r );
         }
 
@@ -367,20 +370,22 @@ namespace QwtSplineCubicP
         // p * x1 + q * x2 + u * x3 = r
         double p, q, u, r;
     };
-};
-         
-QDebug operator<<( QDebug debug, const QwtSplineCubicP::Equation2 &eq )
+}
+
+#if 0
+static QDebug operator<<( QDebug debug, const QwtSplineCubicP::Equation2 &eq )
 {
     debug.nospace() << "EQ2(" << eq.p << ", " << eq.q << ", " << eq.r << ")";
     return debug.space();
 }
 
-QDebug operator<<( QDebug debug, const QwtSplineCubicP::Equation3 &eq )
+static QDebug operator<<( QDebug debug, const QwtSplineCubicP::Equation3 &eq )
 {
-    debug.nospace() << "EQ3(" << eq.p << ", " 
+    debug.nospace() << "EQ3(" << eq.p << ", "
         << eq.q << ", " << eq.u << ", " << eq.r << ")";
     return debug.space();
 }
+#endif
 
 namespace QwtSplineCubicP
 {
@@ -398,12 +403,12 @@ namespace QwtSplineCubicP
             d_conditionsEQ[1].setup( p, q, u, r );
         }
 
-        const T &store() const 
-        { 
+        const T &store() const
+        {
             return d_store;
         }
 
-        void resolve( const QPolygonF &p ) 
+        void resolve( const QPolygonF &p )
         {
             const int n = p.size();
             if ( n < 3 )
@@ -426,11 +431,11 @@ namespace QwtSplineCubicP
             const double hn = p[n-1].x() - p[n-2].x();
 
             d_store.setup( n );
-            
+
 
             if ( n == 3 )
             {
-                // For certain conditions the first/last point does not 
+                // For certain conditions the first/last point does not
                 // necessarily meet the spline equation and we would
                 // have many solutions. In this case we resolve using
                 // the spline equation - as for all other conditions.
@@ -452,7 +457,7 @@ namespace QwtSplineCubicP
 
                     b1 = 0.0;
                 }
-                else 
+                else
                 {
                     const Equation2 eq = d_conditionsEQ[1].substituted1( eqSpline0 );
                     b1 = eq0.resolved1( eq );
@@ -465,7 +470,7 @@ namespace QwtSplineCubicP
                 d_store.storeNext( 1, h0, p[0], p[1], b0, b1 );
                 d_store.storeNext( 2, h1, p[1], p[2], b1, b2 );
 
-                return; 
+                return;
             }
 
             const Equation3 eqSplineN( p[n-3], p[n-2], p[n-1] );
@@ -479,7 +484,7 @@ namespace QwtSplineCubicP
                 eq = substituteSpline( p, eq );
             }
 
-            const Equation3 eqSpline0( p[0], p[1], p[2] ); 
+            const Equation3 eqSpline0( p[0], p[1], p[2] );
 
             double b0, b1;
             if ( d_conditionsEQ[0].u == 0.0 )
@@ -628,11 +633,11 @@ namespace QwtSplineCubicP
             const double hn = points[n-1].x() - points[n-2].x();
 
             const Equation3 eqSpline0( points[0], points[1], points[2] );
-            const Equation3 eqSplineN( 
+            const Equation3 eqSplineN(
                 QPointF( points[0].x() - hn, points[n-2].y() ), points[0], points[1] );
 
             d_eq.resize( n - 1 );
-            
+
             double dq = 0;
             double dr = 0;
 
@@ -644,10 +649,10 @@ namespace QwtSplineCubicP
             // b) p2 * b[n-2] + q2 * b[0] + u2 * b[1] = r2
             // c) pi * b[i-1] + qi * b[i] + ui * b[i+1] = ri
             //
-            // Using c) we can substitute b[i] ( starting from 2 ) by b[i+1] 
-            // until we reach n-1. As we know, that b[0] == b[n-1] we found 
+            // Using c) we can substitute b[i] ( starting from 2 ) by b[i+1]
+            // until we reach n-1. As we know, that b[0] == b[n-1] we found
             // an equation where only 2 coefficients ( for b[n-2], b[0] ) are left unknown.
-            // Each step we have an equation that depends on b[0], b[i] and b[i+1] 
+            // Each step we have an equation that depends on b[0], b[i] and b[i+1]
             // that can also be used to substitute b[i] in b). Ding so we end up with another
             // equation depending on b[n-2], b[0] only.
             // Finally 2 equations with 2 coefficients can be solved.
@@ -773,8 +778,8 @@ namespace QwtSplineCubicP
     };
 }
 
-static void qwtSetupEndEquations( 
-    int conditionBegin, double valueBegin, int conditionEnd, double valueEnd, 
+static void qwtSetupEndEquations(
+    int conditionBegin, double valueBegin, int conditionEnd, double valueEnd,
     const QPolygonF &points, QwtSplineCubicP::Equation3 eq[2] )
 {
     const int n = points.size();
@@ -813,7 +818,7 @@ static void qwtSetupEndEquations(
             // b1 = 0.5 * cvEnd
             // => b0 * 0.0 + b1 * 1.0 = 0.5 * cvEnd
 
-            eq[0].setup( 1.0, 0.0, 0.0, 0.5 * valueBegin ); 
+            eq[0].setup( 1.0, 0.0, 0.0, 0.5 * valueBegin );
             break;
         }
         case QwtSpline::Clamped3:
@@ -828,7 +833,7 @@ static void qwtSetupEndEquations(
             // a = marg_n / 6.0
             // => b[n-2] * 1.0 + b[n-1] * ( -1.0 ) = -0.5 * v1 * h5
 
-            eq[0].setup( 1.0, -1.0, 0.0, -0.5 * valueBegin * h0 ); 
+            eq[0].setup( 1.0, -1.0, 0.0, -0.5 * valueBegin * h0 );
 
             break;
         }
@@ -864,20 +869,20 @@ static void qwtSetupEndEquations(
             }
             else
             {
-                // first/last points are on the curve, 
+                // first/last points are on the curve,
                 // the imaginary endpoints have the same distance as h0/hn
 
                 v0 = h0 / ( points[2].x() - points[1].x() );
             }
 
-            eq[0].setup( 1.0, -( 1.0 + v0 ), v0, 0.0 ); 
+            eq[0].setup( 1.0, -( 1.0 + v0 ), v0, 0.0 );
             break;
         }
         default:
         {
             // a natural spline, where the
             // second derivative at end points set to 0.0
-            eq[0].setup( 1.0, 0.0, 0.0, 0.0 ); 
+            eq[0].setup( 1.0, 0.0, 0.0, 0.0 );
             break;
         }
     }
@@ -893,13 +898,13 @@ static void qwtSetupEndEquations(
         case QwtSpline::Clamped2:
         {
             // second derivative at end points given
-            eq[1].setup( 0.0, 0.0, 1.0, 0.5 * valueEnd ); 
+            eq[1].setup( 0.0, 0.0, 1.0, 0.5 * valueEnd );
             break;
         }
         case QwtSpline::Clamped3:
         {
             // third derivative at end point given
-            eq[1].setup( 0.0, 1.0, -1.0, -0.5 * valueEnd * hn ); 
+            eq[1].setup( 0.0, 1.0, -1.0, -0.5 * valueEnd * hn );
             break;
         }
         case QwtSpline::LinearRunout:
@@ -931,20 +936,20 @@ static void qwtSetupEndEquations(
             }
             else
             {
-                // last points on the curve, 
+                // last points on the curve,
                 // the imaginary endpoints have the same distance as hn
 
                 vn = hn / ( points[n-2].x() - points[n-3].x() );
             }
 
-            eq[1].setup( vn, -( 1.0 + vn ), 1.0, 0.0 ); 
+            eq[1].setup( vn, -( 1.0 + vn ), 1.0, 0.0 );
             break;
         }
         default:
         {
             // a natural spline, where the
             // second derivative at end points set to 0.0
-            eq[1].setup( 0.0, 0.0, 1.0, 0.0 ); 
+            eq[1].setup( 0.0, 0.0, 1.0, 0.0 );
             break;
         }
     }
@@ -1033,8 +1038,8 @@ QVector<double> QwtSplineCubic::slopes( const QPolygonF &points ) const
             const double s1 = ( points[2].y() - points[1].y() ) / h1;
 
             /*
-              the system is under-determined and we only 
-              compute a quadratic spline.                   
+              the system is under-determined and we only
+              compute a quadratic spline.
              */
 
             const double b = ( s1 - s0 ) / ( h0 + h1 );
@@ -1052,11 +1057,11 @@ QVector<double> QwtSplineCubic::slopes( const QPolygonF &points ) const
     }
 
     Equation3 eq[2];
-    qwtSetupEndEquations( 
-        boundaryCondition( QwtSpline::AtBeginning ), 
-        boundaryValue( QwtSpline::AtBeginning ), 
-        boundaryCondition( QwtSpline::AtEnd ), 
-        boundaryValue( QwtSpline::AtEnd ), 
+    qwtSetupEndEquations(
+        boundaryCondition( QwtSpline::AtBeginning ),
+        boundaryValue( QwtSpline::AtBeginning ),
+        boundaryCondition( QwtSpline::AtEnd ),
+        boundaryValue( QwtSpline::AtEnd ),
         points, eq );
 
     EquationSystem<SlopeStore> eqs;
@@ -1094,7 +1099,7 @@ QVector<double> QwtSplineCubic::curvatures( const QPolygonF &points ) const
 
     if ( points.size() == 3 )
     {
-        if ( boundaryCondition( QwtSpline::AtBeginning ) == QwtSplineC2::NotAKnot 
+        if ( boundaryCondition( QwtSpline::AtBeginning ) == QwtSplineC2::NotAKnot
             || boundaryCondition( QwtSpline::AtEnd ) == QwtSplineC2::NotAKnot )
         {
             return QVector<double>();
@@ -1129,16 +1134,16 @@ QVector<double> QwtSplineCubic::curvatures( const QPolygonF &points ) const
   \note The implementation simply calls QwtSplineC1::painterPath()
  */
 QPainterPath QwtSplineCubic::painterPath( const QPolygonF &points ) const
-{   
+{
     // as QwtSplineCubic can calcuate slopes directly we can
     // use the implementation of QwtSplineC1 without any performance loss.
 
     return QwtSplineC1::painterPath( points );
 }
-    
-/*! 
+
+/*!
   \brief Interpolate a curve with Bezier curves
-    
+
   Interpolates a polygon piecewise with cubic Bezier curves
   and returns the 2 control points of each curve as QLineF.
 
@@ -1148,12 +1153,12 @@ QPainterPath QwtSplineCubic::painterPath( const QPolygonF &points ) const
   \note The implementation simply calls QwtSplineC1::bezierControlLines()
  */
 QVector<QLineF> QwtSplineCubic::bezierControlLines( const QPolygonF &points ) const
-{   
+{
     // as QwtSplineCubic can calcuate slopes directly we can
     // use the implementation of QwtSplineC1 without any performance loss.
 
-    return QwtSplineC1::bezierControlLines( points ); 
-}   
+    return QwtSplineC1::bezierControlLines( points );
+}
 
 /*!
   \brief Calculate the interpolating polynomials for a non parametric spline
@@ -1162,7 +1167,7 @@ QVector<QLineF> QwtSplineCubic::bezierControlLines( const QPolygonF &points ) co
   \return Interpolating polynomials
 
   \note The x coordinates need to be increasing or decreasing
-  \note The implementation simply calls QwtSplineC2::polynomials(), but is 
+  \note The implementation simply calls QwtSplineC2::polynomials(), but is
         intended to be replaced by a one pass calculation some day.
  */
 QVector<QwtSplinePolynomial> QwtSplineCubic::polynomials( const QPolygonF &points ) const

@@ -4,6 +4,7 @@
 #include <QApplication>
 #include "plotmagnifier.h"
 #include "qwt_plot.h"
+#include "qwt_scale_map.h"
 
 PlotMagnifier::PlotMagnifier( QWidget *canvas) :
     QwtPlotMagnifier(canvas),

@@ -12,10 +12,10 @@
 
 #include "qwt_global.h"
 #include "qwt_plot_item.h"
-#include "qwt_interval.h"
-#include <qglobal.h>
+
 #include <qstring.h>
-#include <qimage.h>
+
+class QwtInterval;
 
 /*!
   \brief A class, which displays raster data
@@ -50,10 +50,10 @@ public:
 
         /*!
           renderImage() is called, whenever the image cache is not valid,
-          or the scales, or the size of the canvas has changed. 
+          or the scales, or the size of the canvas has changed.
 
-          This type of cache is useful for improving the performance 
-          of hide/show operations or manipulations of the alpha value. 
+          This type of cache is useful for improving the performance
+          of hide/show operations or manipulations of the alpha value.
           All other situations are handled by the canvas backing store.
          */
         PaintCache
@@ -68,11 +68,11 @@ public:
         /*!
           When the image is rendered according to the data pixels
           ( QwtRasterData::pixelHint() ) it can be expanded to paint
-          device resolution before it is passed to QPainter. 
-          The expansion algorithm rounds the pixel borders in the same 
+          device resolution before it is passed to QPainter.
+          The expansion algorithm rounds the pixel borders in the same
           way as the axis ticks, what is usually better than the
           scaling algorithm implemented in Qt.
-          Disabling this flag might make sense, to reduce the size of a 
+          Disabling this flag might make sense, to reduce the size of a
           document/file. If this is possible for a document format
           depends on the implementation of the specific QPaintEngine.
          */
@@ -98,21 +98,21 @@ public:
 
     void invalidateCache();
 
-    virtual void draw( QPainter *p,
+    virtual void draw( QPainter *,
         const QwtScaleMap &xMap, const QwtScaleMap &yMap,
-        const QRectF &rect ) const;
+        const QRectF &canvasRect ) const QWT_OVERRIDE;
 
     virtual QRectF pixelHint( const QRectF & ) const;
 
     virtual QwtInterval interval(Qt::Axis) const;
-    virtual QRectF boundingRect() const;
+    virtual QRectF boundingRect() const QWT_OVERRIDE;
 
 protected:
     /*!
-      \brief Render an image 
+      \brief Render an image
 
       An implementation of render() might iterate over all
-      pixels of imageRect. Each pixel has to be translated into 
+      pixels of imageRect. Each pixel has to be translated into
       the corresponding position in scale coordinates using the maps.
       This position can be used to look up a value in a implementation
       specific way and to map it into a color.
@@ -121,7 +121,7 @@ protected:
       \param yMap Y-Scale Map
       \param area Requested area for the image in scale coordinates
       \param imageSize Requested size of the image
-   
+
       \return Rendered image
      */
     virtual QImage renderImage( const QwtScaleMap &xMap,

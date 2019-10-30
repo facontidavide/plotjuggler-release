@@ -10,6 +10,8 @@
 #include "qwt_text.h"
 #include "qwt_painter.h"
 #include "qwt_text_engine.h"
+#include "qwt_math.h"
+
 #include <qmap.h>
 #include <qfont.h>
 #include <qcolor.h>
@@ -18,32 +20,34 @@
 #include <qpainter.h>
 #include <qapplication.h>
 #include <qdesktopwidget.h>
-#include <qmath.h>
 
-class QwtTextEngineDict
+namespace
 {
-public:
-    static QwtTextEngineDict &dict();
-
-    void setTextEngine( QwtText::TextFormat, QwtTextEngine * );
-
-    const QwtTextEngine *textEngine( QwtText::TextFormat ) const;
-    const QwtTextEngine *textEngine( const QString &,
-        QwtText::TextFormat ) const;
-
-private:
-    QwtTextEngineDict();
-    ~QwtTextEngineDict();
-
-    typedef QMap<int, QwtTextEngine *> EngineMap;
-
-    inline const QwtTextEngine *engine( EngineMap::const_iterator &it ) const
+    class QwtTextEngineDict
     {
-        return it.value();
-    }
+    public:
+        static QwtTextEngineDict &dict();
 
-    EngineMap d_map;
-};
+        void setTextEngine( QwtText::TextFormat, QwtTextEngine * );
+
+        const QwtTextEngine *textEngine( QwtText::TextFormat ) const;
+        const QwtTextEngine *textEngine( const QString &,
+            QwtText::TextFormat ) const;
+
+    private:
+        QwtTextEngineDict();
+        ~QwtTextEngineDict();
+
+        typedef QMap<int, QwtTextEngine *> EngineMap;
+
+        inline const QwtTextEngine *engine( EngineMap::const_iterator &it ) const
+        {
+            return it.value();
+        }
+
+        EngineMap d_map;
+    };
+}
 
 QwtTextEngineDict &QwtTextEngineDict::dict()
 {
@@ -110,10 +114,7 @@ void QwtTextEngineDict::setTextEngine( QwtText::TextFormat format,
     EngineMap::const_iterator it = d_map.constFind( format );
     if ( it != d_map.constEnd() )
     {
-        const QwtTextEngine *e = this->engine( it );
-        if ( e )
-            delete e;
-
+        delete this->engine( it );
         d_map.remove( format );
     }
 
@@ -172,6 +173,17 @@ public:
     QFont font;
     QSizeF textSize;
 };
+
+/*!
+   Constructor
+*/
+QwtText::QwtText()
+{
+    d_data = new PrivateData;
+    d_data->textEngine = textEngine( d_data->text, PlainText );
+
+    d_layoutCache = new LayoutCache;
+}
 
 /*!
    Constructor
@@ -366,7 +378,7 @@ QColor QwtText::usedColor( const QColor &defaultColor ) const
 */
 void QwtText::setBorderRadius( double radius )
 {
-    d_data->borderRadius = qMax( 0.0, radius );
+    d_data->borderRadius = qwtMaxF( 0.0, radius );
 }
 
 /*!
@@ -482,6 +494,18 @@ bool QwtText::testLayoutAttribute( LayoutAttribute attribute ) const
 /*!
    Find the height for a given width
 
+   \param width Width
+   \return Calculated height
+*/
+
+double QwtText::heightForWidth( double width ) const
+{
+    return heightForWidth( width, QFont() );
+}
+
+/*!
+   Find the height for a given width
+
    \param defaultFont Font, used for the calculation if the text has no font
    \param width Width
 
@@ -515,6 +539,16 @@ double QwtText::heightForWidth( double width, const QFont &defaultFont ) const
     }
 
     return h;
+}
+
+/*!
+   Returns the size, that is needed to render text
+
+   \return Calculated size
+*/
+QSizeF QwtText::textSize() const
+{
+    return textSize( QFont() );
 }
 
 /*!
@@ -674,3 +708,16 @@ const QwtTextEngine *QwtText::textEngine( QwtText::TextFormat format )
 {
     return  QwtTextEngineDict::dict().textEngine( format );
 }
+
+//! \return text().isNull()
+bool QwtText::isNull() const
+{
+    return d_data->text.isNull();
+}
+
+//! \return text().isEmpty()
+bool QwtText::isEmpty() const
+{
+    return d_data->text.isEmpty();
+}
+

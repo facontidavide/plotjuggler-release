@@ -12,30 +12,32 @@
 
 #include "qwt_global.h"
 #include "qwt_plot_item.h"
-#include "qwt_interval.h"
 
+#include <qnamespace.h>
+
+class QwtInterval;
 class QPen;
 class QBrush;
 
 /*!
   \brief A plot item, which displays a zone
 
-  A horizontal zone highlights an interval of the y axis - a vertical 
+  A horizontal zone highlights an interval of the y axis - a vertical
   zone an interval of the x axis - and is unbounded in the opposite direction.
-  It is filled with a brush and its border lines are optionally displayed with a pen. 
+  It is filled with a brush and its border lines are optionally displayed with a pen.
 
-  \note For displaying an area that is bounded for x and y coordinates 
+  \note For displaying an area that is bounded for x and y coordinates
         use QwtPlotShapeItem
 */
 
-class QWT_EXPORT QwtPlotZoneItem: 
+class QWT_EXPORT QwtPlotZoneItem:
     public QwtPlotItem
 {
 public:
     explicit QwtPlotZoneItem();
     virtual ~QwtPlotZoneItem();
 
-    virtual int rtti() const;
+    virtual int rtti() const QWT_OVERRIDE;
 
     void setOrientation( Qt::Orientation );
     Qt::Orientation orientation() const;
@@ -53,9 +55,9 @@ public:
 
     virtual void draw( QPainter *,
         const QwtScaleMap &, const QwtScaleMap &,
-        const QRectF &) const;
+        const QRectF &canvasRect ) const QWT_OVERRIDE;
 
-    virtual QRectF boundingRect() const;
+    virtual QRectF boundingRect() const QWT_OVERRIDE;
 
 private:
     class PrivateData;

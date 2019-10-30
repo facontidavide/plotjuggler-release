@@ -9,14 +9,11 @@
 
 #include "qwt_legend_label.h"
 #include "qwt_legend_data.h"
-#include "qwt_math.h"
-#include "qwt_painter.h"
-#include "qwt_symbol.h"
 #include "qwt_graphic.h"
+
 #include <qpainter.h>
 #include <qdrawutil.h>
 #include <qstyle.h>
-#include <qpen.h>
 #include <qevent.h>
 #include <qstyleoption.h>
 #include <qapplication.h>
@@ -137,7 +134,7 @@ void QwtLegendLabel::setItemMode( QwtLegendData::Mode mode )
         d_data->itemMode = mode;
         d_data->isDown = false;
 
-        setFocusPolicy( ( mode != QwtLegendData::ReadOnly ) 
+        setFocusPolicy( ( mode != QwtLegendData::ReadOnly )
             ? Qt::TabFocus : Qt::NoFocus );
         setMargin( ButtonFrame + Margin );
 
@@ -417,3 +414,7 @@ void QwtLegendLabel::keyReleaseEvent( QKeyEvent *e )
 
     QwtTextLabel::keyReleaseEvent( e );
 }
+
+#if QWT_MOC_INCLUDE
+#include "moc_qwt_legend_label.cpp"
+#endif

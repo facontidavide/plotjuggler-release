@@ -9,7 +9,13 @@
 
 #include "qwt_raster_data.h"
 #include "qwt_point_3d.h"
+#include "qwt_interval.h"
+
+#include <qrect.h>
+#include <qpolygon.h>
 #include <qnumeric.h>
+#include <qlist.h>
+#include <qmap.h>
 
 class QwtRasterData::ContourPlane
 {
@@ -159,7 +165,7 @@ class QwtRasterData::PrivateData
 {
 public:
     QwtRasterData::Attributes attributes;
-};  
+};
 
 //! Constructor
 QwtRasterData::QwtRasterData()
@@ -235,20 +241,20 @@ void QwtRasterData::discardRaster()
 /*!
    \brief Pixel hint
 
-   pixelHint() returns the geometry of a pixel, that can be used 
+   pixelHint() returns the geometry of a pixel, that can be used
    to calculate the resolution and alignment of the plot item, that is
-   representing the data. 
-   
-   Width and height of the hint need to be the horizontal  
-   and vertical distances between 2 neighbored points. 
-   The center of the hint has to be the position of any point 
+   representing the data.
+
+   Width and height of the hint need to be the horizontal
+   and vertical distances between 2 neighbored points.
+   The center of the hint has to be the position of any point
    ( it doesn't matter which one ).
 
    An empty hint indicates, that there are values for any detail level.
 
    Limiting the resolution of the image might significantly improve
    the performance and heavily reduce the amount of memory when rendering
-   a QImage from the raster data. 
+   a QImage from the raster data.
 
    The default implementation returns an empty rectangle recommending
    to render in target device ( f.e. screen ) resolution.
@@ -256,12 +262,12 @@ void QwtRasterData::discardRaster()
    \param area In most implementations the resolution of the data doesn't
                depend on the requested area.
 
-   \return Bounding rectangle of a pixel 
+   \return Bounding rectangle of a pixel
 */
 QRectF QwtRasterData::pixelHint( const QRectF &area ) const
 {
     Q_UNUSED( area );
-    return QRectF(); 
+    return QRectF();
 }
 
 /*!

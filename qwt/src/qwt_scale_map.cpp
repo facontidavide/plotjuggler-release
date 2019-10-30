@@ -9,6 +9,7 @@
 
 #include "qwt_scale_map.h"
 #include "qwt_math.h"
+
 #include <qrect.h>
 #include <qdebug.h>
 
@@ -93,7 +94,7 @@ const QwtTransform *QwtScaleMap::transformation() const
   \brief Specify the borders of the scale interval
   \param s1 first border
   \param s2 second border
-  \warning scales might be aligned to 
+  \warning scales might be aligned to
            transformation depending boundaries
 */
 void QwtScaleMap::setScaleInterval( double s1, double s2 )
@@ -186,9 +187,9 @@ QRectF QwtScaleMap::transform( const QwtScaleMap &xMap,
 QPointF QwtScaleMap::invTransform( const QwtScaleMap &xMap,
     const QwtScaleMap &yMap, const QPointF &pos )
 {
-    return QPointF( 
-        xMap.invTransform( pos.x() ), 
-        yMap.invTransform( pos.y() ) 
+    return QPointF(
+        xMap.invTransform( pos.x() ),
+        yMap.invTransform( pos.y() )
     );
 }
 
@@ -205,8 +206,8 @@ QPointF QwtScaleMap::invTransform( const QwtScaleMap &xMap,
 QPointF QwtScaleMap::transform( const QwtScaleMap &xMap,
     const QwtScaleMap &yMap, const QPointF &pos )
 {
-    return QPointF( 
-        xMap.transform( pos.x() ), 
+    return QPointF(
+        xMap.transform( pos.x() ),
         yMap.transform( pos.y() )
     );
 }
