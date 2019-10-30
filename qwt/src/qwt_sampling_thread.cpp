@@ -104,3 +104,7 @@ void QwtSamplingThread::run()
         }
     }
 }
+
+#if QWT_MOC_INCLUDE
+#include "moc_qwt_sampling_thread.cpp"
+#endif

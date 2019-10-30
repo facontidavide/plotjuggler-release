@@ -8,8 +8,6 @@
  *****************************************************************************/
 
 #include "qwt_interval.h"
-#include "qwt_math.h"
-#include <qalgorithms.h>
 
 /*!
   \brief Normalize the limits of the interval
@@ -41,8 +39,10 @@ QwtInterval QwtInterval::normalized() const
 QwtInterval QwtInterval::inverted() const
 {
     BorderFlags borderFlags = IncludeBorders;
+
     if ( d_borderFlags & ExcludeMinimum )
         borderFlags |= ExcludeMaximum;
+
     if ( d_borderFlags & ExcludeMaximum )
         borderFlags |= ExcludeMinimum;
 
@@ -130,9 +130,9 @@ QwtInterval QwtInterval::unite( const QwtInterval &other ) const
     return united;
 }
 
-/*! 
+/*!
   \brief Intersect 2 intervals
-  
+
   \param other Interval to be intersect with
   \return Intersection
  */
@@ -197,7 +197,7 @@ QwtInterval QwtInterval::intersect( const QwtInterval &other ) const
     return intersected;
 }
 
-/*! 
+/*!
   \brief Unite this interval with the given interval.
 
   \param other Interval to be united with
@@ -209,7 +209,7 @@ QwtInterval& QwtInterval::operator|=( const QwtInterval &other )
     return *this;
 }
 
-/*! 
+/*!
   \brief Intersect this interval with the given interval.
 
   \param other Interval to be intersected with
@@ -337,6 +337,8 @@ QwtInterval& QwtInterval::operator|=( double value )
 }
 
 #ifndef QT_NO_DEBUG_STREAM
+
+#include <qdebug.h>
 
 QDebug operator<<( QDebug debug, const QwtInterval &interval )
 {

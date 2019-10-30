@@ -8,9 +8,12 @@
  *****************************************************************************/
 
 #include "qwt_bezier.h"
+#include "qwt_math.h"
+
+#include <qpolygon.h>
 #include <qstack.h>
 
-namespace 
+namespace
 {
     class BezierData
     {
@@ -35,8 +38,8 @@ namespace
 
         static inline double minFlatness( double tolerance )
         {
-            // we can make simplify the tolerance criterion check in
-            // the subdivison loop cheaper, by precalculating some
+            // we can simplify the tolerance criterion check in
+            // the subdivison loop, by precalculating some
             // flatness value.
 
             return 16 * ( tolerance * tolerance );
@@ -57,7 +60,7 @@ namespace
             const double vx2 = vx * vx;
             const double vy2 = vy * vy;
 
-            return qMax( ux2, vx2 ) + qMax( uy2, vy2 );
+            return qwtMaxF( ux2, vx2 ) + qwtMaxF( uy2, vy2 );
         }
 
         inline BezierData subdivided()
@@ -111,7 +114,7 @@ namespace
  */
 
 QwtBezier::QwtBezier( double tolerance ):
-    m_tolerance( qMax( tolerance, 0.0 ) ),
+    m_tolerance( qwtMaxF( tolerance, 0.0 ) ),
     m_flatness( BezierData::minFlatness( m_tolerance ) )
 {
 }
@@ -130,14 +133,14 @@ QwtBezier::~QwtBezier()
 
   When interpolating a Betier curve to render it as a sequence of lines
   to some sort of raster ( f.e to screen ) a value of 0.5 of the pixel size
-  is a good value for the tolerance. 
+  is a good value for the tolerance.
 
   \param tolerance Termination criterion for the subdivision
   \sa tolerance()
  */
 void QwtBezier::setTolerance( double tolerance )
 {
-    m_tolerance = qMax( tolerance, 0.0 );
+    m_tolerance = qwtMaxF( tolerance, 0.0 );
     m_flatness = BezierData::minFlatness( m_tolerance );
 }
 
@@ -169,7 +172,7 @@ QPolygonF QwtBezier::toPolygon( const QPointF &p1,
   \brief Interpolate a Bézier curve by a polygon
 
   appendToPolygon() is tailored for cummulating points from a sequence
-  of bezier curves like being created by a spline interpolation. 
+  of bezier curves like being created by a spline interpolation.
 
   \param p1 Start point
   \param cp1 First control point
@@ -179,7 +182,7 @@ QPolygonF QwtBezier::toPolygon( const QPointF &p1,
 
   \note If the last point of the incoming polygon matches p1 it won't be
         inserted a second time.
- */     
+ */
 void QwtBezier::appendToPolygon( const QPointF &p1, const QPointF &cp1,
     const QPointF &cp2, const QPointF &p2, QPolygonF &polygon ) const
 {
@@ -221,3 +224,29 @@ void QwtBezier::appendToPolygon( const QPointF &p1, const QPointF &cp1,
     }
 
 }
+
+/*!
+  Find a point on a Bézier Curve
+
+  \param p1 Start point
+  \param cp1 First control point
+  \param cp2 Second control point
+  \param p2 End point
+  \param t Parameter value, something between [0,1]
+
+  \return Point on the curve
+ */
+QPointF QwtBezier::pointAt( const QPointF &p1,
+    const QPointF &cp1, const QPointF &cp2, const QPointF &p2, double t )
+{
+    const double d1 = 3.0 * t;
+    const double d2 = 3.0 * t * t;
+    const double d3 = t * t * t;
+    const double s  = 1.0 - t;
+
+    const double x = (( s * p1.x() + d1 * cp1.x() ) * s + d2 * cp2.x() ) * s + d3 * p2.x();
+    const double y = (( s * p1.y() + d1 * cp1.y() ) * s + d2 * cp2.y() ) * s + d3 * p2.y();
+
+    return QPointF( x, y );
+}
+

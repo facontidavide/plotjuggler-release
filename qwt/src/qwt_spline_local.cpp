@@ -9,7 +9,9 @@
 
 #include "qwt_spline_local.h"
 #include "qwt_spline_parametrization.h"
-#include <qmath.h>
+#include "qwt_spline_polynomial.h"
+
+#include <qpainterpath.h>
 
 static inline bool qwtIsStrictlyMonotonic( double dy1, double dy2 )
 {
@@ -87,7 +89,7 @@ namespace QwtSplineLocalP
             const QPointF &p2, double m2 )
         {
             const double dx3 = ( p2.x() - p1.x() ) / 3.0;
-    
+
             path.cubicTo( p1.x() + dx3, p1.y() + m1 * dx3,
                 p2.x() - dx3, p2.y() - m2 * dx3,
                 p2.x(), p2.y() );
@@ -116,7 +118,7 @@ namespace QwtSplineLocalP
             const double dx3 = ( p2.x() - p1.x() ) / 3.0;
 
             QLineF &l = *d_cp++;
-            l.setLine( p1.x() + dx3, p1.y() + m1 * dx3, 
+            l.setLine( p1.x() + dx3, p1.y() + m1 * dx3,
                 p2.x() - dx3, p2.y() - m2 * dx3 );
         }
 
@@ -136,7 +138,7 @@ namespace QwtSplineLocalP
         }
 
         inline void start( const QPointF &, double m0 )
-        {   
+        {
             *d_m++ = m0;
         }
 
@@ -155,7 +157,7 @@ namespace QwtSplineLocalP
     struct slopeCardinal
     {
         static inline double value( double dx1, double dy1, double s1,
-            double dx2, double dy2, double s2 ) 
+            double dx2, double dy2, double s2 )
         {
             return qwtSlopeCardinal( dx1, dy1, s1, dx2, dy2, s2 );
         }
@@ -164,24 +166,24 @@ namespace QwtSplineLocalP
     struct slopeParabolicBlending
     {
         static inline double value( double dx1, double dy1, double s1,
-            double dx2, double dy2, double s2 ) 
+            double dx2, double dy2, double s2 )
         {
             return qwtSlopeParabolicBlending( dx1, dy1, s1, dx2, dy2, s2 );
         }
-    };  
+    };
 
     struct slopePChip
     {
         static inline double value( double dx1, double dy1, double s1,
-            double dx2, double dy2, double s2 ) 
+            double dx2, double dy2, double s2 )
         {
             return qwtSlopePChip( dx1, dy1, s1, dx2, dy2, s2 );
         }
-    };  
-};
+    };
+}
 
 template< class Slope >
-static inline double qwtSlopeP3( 
+static inline double qwtSlopeP3(
     const QPointF &p1, const QPointF &p2, const QPointF &p3 )
 {
     const double dx1 = p2.x() - p1.x();
@@ -205,7 +207,7 @@ static inline double qwtSlopeAkima( double s1, double s2, double s3, double s4 )
     return ( s2 * ds34 + s3 * ds12 ) / ( ds12 + ds34 );
 }
 
-static inline double qwtSlopeAkima( const QPointF &p1, const QPointF &p2, 
+static inline double qwtSlopeAkima( const QPointF &p1, const QPointF &p2,
     const QPointF &p3, const QPointF &p4, const QPointF &p5 )
 {
     const double s1 = qwtSlopeLine( p1, p2 );
@@ -217,8 +219,8 @@ static inline double qwtSlopeAkima( const QPointF &p1, const QPointF &p2,
 }
 
 template< class Slope >
-static void qwtSplineBoundariesL1( 
-    const QwtSplineLocal *spline, const QVector<QPointF> &points, 
+static void qwtSplineBoundariesL1(
+    const QwtSplineLocal *spline, const QVector<QPointF> &points,
     double &slopeBegin, double &slopeEnd )
 {
     const int n = points.size();
@@ -247,7 +249,7 @@ static inline SplineStore qwtSplineL1(
     const int size = points.size();
     const QPointF *p = points.constData();
 
-    double slopeBegin, slopeEnd; 
+    double slopeBegin, slopeEnd;
     qwtSplineBoundariesL1<Slope>( spline, points, slopeBegin, slopeEnd );
 
     double m1 = slopeBegin;
@@ -265,7 +267,7 @@ static inline SplineStore qwtSplineL1(
         const double dx2 = p[i+1].x() - p[i].x();
         const double dy2 = p[i+1].y() - p[i].y() ;
 
-        // cardinal spline doesn't need the line slopes, but 
+        // cardinal spline doesn't need the line slopes, but
         // the compiler will eliminate pointless calculations
         const double s2 = dy2 / dx2;
 
@@ -385,9 +387,9 @@ static inline SplineStore qwtSplineAkima(
 }
 
 template< class SplineStore >
-static inline SplineStore qwtSplineLocal( 
+static inline SplineStore qwtSplineLocal(
     const QwtSplineLocal *spline, const QVector<QPointF> &points )
-{   
+{
     SplineStore store;
 
     const int size = points.size();
@@ -408,27 +410,27 @@ static inline SplineStore qwtSplineLocal(
     }
 
     switch( spline->type() )
-    {   
+    {
         case QwtSplineLocal::Cardinal:
-        {   
+        {
             using namespace QwtSplineLocalP;
             store = qwtSplineL1<SplineStore, slopeCardinal>( spline, points );
             break;
         }
         case QwtSplineLocal::ParabolicBlending:
-        {   
+        {
             using namespace QwtSplineLocalP;
             store = qwtSplineL1<SplineStore, slopeParabolicBlending>( spline, points );
             break;
         }
         case QwtSplineLocal::PChip:
-        {   
+        {
             using namespace QwtSplineLocalP;
             store = qwtSplineL1<SplineStore, slopePChip>( spline, points );
             break;
         }
         case QwtSplineLocal::Akima:
-        {   
+        {
             store = qwtSplineAkima<SplineStore>( spline, points );
             break;
         }
@@ -488,9 +490,9 @@ QPainterPath QwtSplineLocal::painterPath( const QPolygonF &points ) const
     return QwtSplineC1::painterPath( points );
 }
 
-/*! 
+/*!
   \brief Interpolate a curve with Bezier curves
-    
+
   Interpolates a polygon piecewise with cubic Bezier curves
   and returns the 2 control points of each curve as QLineF.
 
@@ -500,7 +502,7 @@ QPainterPath QwtSplineLocal::painterPath( const QPolygonF &points ) const
 QVector<QLineF> QwtSplineLocal::bezierControlLines( const QPolygonF &points ) const
 {
     if ( parametrization()->type() == QwtSplineParametrization::ParameterX )
-    {   
+    {
         using namespace QwtSplineLocalP;
         return qwtSplineLocal<ControlPointsStore>( this, points ).controlPoints;
     }
@@ -508,7 +510,7 @@ QVector<QLineF> QwtSplineLocal::bezierControlLines( const QPolygonF &points ) co
     return QwtSplineC1::bezierControlLines( points );
 }
 
-/*! 
+/*!
   \brief Find the first derivative at the control points
 
   \param points Control nodes of the spline
@@ -529,7 +531,7 @@ QVector<double> QwtSplineLocal::slopes( const QPolygonF &points ) const
   \return Interpolating polynomials
 
   \note The x coordinates need to be increasing or decreasing
-  \note The implementation simply calls QwtSplineC1::polynomials(), but is 
+  \note The implementation simply calls QwtSplineC1::polynomials(), but is
         intended to be replaced by a one pass calculation some day.
  */
 QVector<QwtSplinePolynomial> QwtSplineLocal::polynomials( const QPolygonF &points ) const
@@ -565,5 +567,5 @@ uint QwtSplineLocal::locality() const
         }
     }
 
-    return QwtSplineC1::locality(); 
+    return QwtSplineC1::locality();
 }

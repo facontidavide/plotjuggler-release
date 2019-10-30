@@ -11,9 +11,10 @@
 #define QWT_COLOR_MAP_H
 
 #include "qwt_global.h"
-#include "qwt_interval.h"
 #include <qcolor.h>
-#include <qvector.h>
+
+class QwtInterval;
+template <typename T> class QVector;
 
 /*!
   \brief QwtColorMap is used to map values into colors.
@@ -124,9 +125,11 @@ public:
     QColor color1() const;
     QColor color2() const;
 
-    virtual QRgb rgb( const QwtInterval &, double value ) const;
+    virtual QRgb rgb( const QwtInterval &,
+        double value ) const QWT_OVERRIDE;
+
     virtual uint colorIndex( int numColors,
-        const QwtInterval &, double value ) const;
+        const QwtInterval &, double value ) const QWT_OVERRIDE;
 
     class ColorStops;
 
@@ -144,7 +147,7 @@ public:
     explicit QwtAlphaColorMap( const QColor & = QColor( Qt::gray ) );
     virtual ~QwtAlphaColorMap();
 
-    void setAlphaInterval( int alpha1, int alpha2 ); 
+    void setAlphaInterval( int alpha1, int alpha2 );
 
     int alpha1() const;
     int alpha2() const;
@@ -152,7 +155,8 @@ public:
     void setColor( const QColor & );
     QColor color() const;
 
-    virtual QRgb rgb( const QwtInterval &, double value ) const;
+    virtual QRgb rgb( const QwtInterval &,
+        double value ) const QWT_OVERRIDE;
 
 private:
     class PrivateData;
@@ -167,7 +171,7 @@ private:
 
   The values for value and saturation are in the range of 0 to 255 and doesn't
   depend on the data value to be mapped.
-  
+
   \sa QwtSaturationValueColorMap
 */
 class QWT_EXPORT QwtHueColorMap: public QwtColorMap
@@ -179,7 +183,7 @@ public:
     void setHueInterval( int hue1, int hue2 ); // direction ?
     void setSaturation( int saturation );
     void setValue( int value );
-    void setAlpha( int alpha ); 
+    void setAlpha( int alpha );
 
     int hue1() const;
     int hue2() const;
@@ -187,7 +191,8 @@ public:
     int value() const;
     int alpha() const;
 
-    virtual QRgb rgb( const QwtInterval &, double value ) const;
+    virtual QRgb rgb( const QwtInterval &,
+        double value ) const QWT_OVERRIDE;
 
 private:
     class PrivateData;
@@ -200,7 +205,7 @@ private:
 
   Value and saturation are in the range of 0 to 255 while hue is inthe range
   of 0 to 259.
-  
+
   \sa QwtHueColorMap
 */
 class QWT_EXPORT QwtSaturationValueColorMap: public QwtColorMap
@@ -210,9 +215,9 @@ public:
     virtual ~QwtSaturationValueColorMap();
 
     void setHue( int hue );
-    void setSaturationInterval( int sat1, int sat2 ); 
+    void setSaturationInterval( int sat1, int sat2 );
     void setValueInterval( int value1, int value2 );
-    void setAlpha( int alpha ); 
+    void setAlpha( int alpha );
 
     int hue() const;
     int saturation1() const;
@@ -221,7 +226,8 @@ public:
     int value2() const;
     int alpha() const;
 
-    virtual QRgb rgb( const QwtInterval &, double value ) const;
+    virtual QRgb rgb( const QwtInterval &,
+        double value ) const QWT_OVERRIDE;
 
 private:
     class PrivateData;

@@ -8,13 +8,13 @@
  *****************************************************************************/
 
 #ifndef QWT_PANNER_H
-#define QWT_PANNER_H 1
+#define QWT_PANNER_H
 
 #include "qwt_global.h"
 #include <qwidget.h>
-#include <qpixmap.h>
 
 class QCursor;
+class QPixmap;
 
 /*!
   \brief QwtPanner provides panning of a widget
@@ -43,9 +43,9 @@ public:
     void setEnabled( bool );
     bool isEnabled() const;
 
-    void setMouseButton( Qt::MouseButton, 
+    void setMouseButton( Qt::MouseButton,
         Qt::KeyboardModifiers = Qt::NoModifier );
-    void getMouseButton( Qt::MouseButton &button, 
+    void getMouseButton( Qt::MouseButton &button,
         Qt::KeyboardModifiers & ) const;
 
     void setAbortKey( int key, Qt::KeyboardModifiers = Qt::NoModifier );
@@ -59,7 +59,7 @@ public:
 
     bool isOrientationEnabled( Qt::Orientation ) const;
 
-    virtual bool eventFilter( QObject *, QEvent * );
+    virtual bool eventFilter( QObject *, QEvent * ) QWT_OVERRIDE;
 
 Q_SIGNALS:
     /*!
@@ -86,7 +86,7 @@ protected:
     virtual void widgetKeyPressEvent( QKeyEvent * );
     virtual void widgetKeyReleaseEvent( QKeyEvent * );
 
-    virtual void paintEvent( QPaintEvent * );
+    virtual void paintEvent( QPaintEvent * ) QWT_OVERRIDE;
 
     virtual QBitmap contentsMask() const;
     virtual QPixmap grab() const;

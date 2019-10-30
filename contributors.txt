@@ -2,6 +2,7 @@ Main developer:
    Davide Faconti
    
 Contributors:
+   Alexandre Audes (@aeudes)
    Arturo Martín-de-Nicolás
    Dorian Scholz 
    Eddy Scott

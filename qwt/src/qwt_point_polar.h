@@ -8,15 +8,14 @@
  *****************************************************************************/
 
 /*! \file */
-#ifndef _QWT_POINT_POLAR_H_
-#define _QWT_POINT_POLAR_H_ 1
+#ifndef QWT_POINT_POLAR_H
+#define QWT_POINT_POLAR_H
 
 #include "qwt_global.h"
 #include "qwt_math.h"
+
 #include <qpoint.h>
-#ifndef QT_NO_DEBUG_STREAM
-#include <qdebug.h>
-#endif
+#include <qmath.h>
 
 /*!
   \brief A point in polar coordinates
@@ -145,8 +144,8 @@ QWT_EXPORT QDebug operator<<( QDebug, const QwtPointPolar & );
 inline QPoint qwtPolar2Pos( const QPoint &pole,
     double radius, double angle )
 {
-    const double x = pole.x() + radius * qCos( angle );
-    const double y = pole.y() - radius * qSin( angle );
+    const double x = pole.x() + radius * std::cos( angle );
+    const double y = pole.y() - radius * std::sin( angle );
 
     return QPoint( qRound( x ), qRound( y ) );
 }
@@ -160,8 +159,8 @@ inline QPoint qwtDegree2Pos( const QPoint &pole,
 inline QPointF qwtPolar2Pos( const QPointF &pole,
     double radius, double angle )
 {
-    const double x = pole.x() + radius * qCos( angle );
-    const double y = pole.y() - radius * qSin( angle );
+    const double x = pole.x() + radius * std::cos( angle );
+    const double y = pole.y() - radius * std::sin( angle );
 
     return QPointF( x, y);
 }
@@ -176,21 +175,20 @@ inline QPointF qwtFastPolar2Pos( const QPointF &pole,
     double radius, double angle )
 {
 #if QT_VERSION < 0x040601
-    const double x = pole.x() + radius * ::cos( angle );
-    const double y = pole.y() - radius * ::sin( angle );
+    return qwtPolar2Pos( pole, radius, angle );
 #else
     const double x = pole.x() + radius * qFastCos( angle );
     const double y = pole.y() - radius * qFastSin( angle );
-#endif
 
     return QPointF( x, y);
+#endif
 }
 
 inline QPointF qwtFastDegree2Pos( const QPointF &pole,
     double radius, double angle )
-{   
+{
     return qwtFastPolar2Pos( pole, radius, angle / 180.0 * M_PI );
-} 
+}
 
 inline QwtPointPolar qwtFastPos2Polar( const QPointF &pos )
 {
@@ -198,4 +196,4 @@ inline QwtPointPolar qwtFastPos2Polar( const QPointF &pos )
         qSqrt( qwtSqr( pos.x() ) + qwtSqr( pos.y() ) ) );
 }
 
-#endif 
+#endif
