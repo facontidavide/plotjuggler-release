@@ -12,17 +12,15 @@
 
 #include "qwt_global.h"
 #include "qwt_plot_seriesitem.h"
-#include "qwt_series_data.h"
 
-class QwtSymbol;
 class QwtColorMap;
 
 /*!
     \brief Curve that displays 3D points as dots, where the z coordinate is
            mapped to a color.
 */
-class QWT_EXPORT QwtPlotSpectroCurve: 
-    public QwtPlotSeriesItem, QwtSeriesStore<QwtPoint3D>
+class QWT_EXPORT QwtPlotSpectroCurve:
+    public QwtPlotSeriesItem, public QwtSeriesStore<QwtPoint3D>
 {
 public:
     //! Paint attributes
@@ -40,7 +38,7 @@ public:
 
     virtual ~QwtPlotSpectroCurve();
 
-    virtual int rtti() const;
+    virtual int rtti() const QWT_OVERRIDE;
 
     void setPaintAttribute( PaintAttribute, bool on = true );
     bool testPaintAttribute( PaintAttribute ) const;
@@ -57,9 +55,9 @@ public:
 
     virtual void drawSeries( QPainter *,
         const QwtScaleMap &xMap, const QwtScaleMap &yMap,
-        const QRectF &canvasRect, int from, int to ) const;
+        const QRectF &canvasRect, int from, int to ) const QWT_OVERRIDE;
 
-    void setPenWidth(double width);
+    void setPenWidth( double );
     double penWidth() const;
 
 protected:

@@ -2,6 +2,7 @@
 #define CUSTOMTRACKER_H
 
 #include <QEvent>
+#include <QPointF>
 #include "qwt_plot_picker.h"
 #include "qwt_picker_machine.h"
 #include "qwt_plot_marker.h"
@@ -30,6 +31,8 @@ public slots:
     void setParameter(Parameter par);
 
     void setEnabled(bool enable);
+
+    bool isEnabled() const;
 
     void redraw()
     {

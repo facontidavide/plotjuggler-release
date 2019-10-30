@@ -11,7 +11,7 @@ cmake_policy (SET CMP0020 NEW)
 add_definitions(
     -DPJ_MAJOR_VERSION=2
     -DPJ_MINOR_VERSION=3
-    -DPJ_PATCH_VERSION=6 )
+    -DPJ_PATCH_VERSION=7 )
 
 add_subdirectory( fmt )
 
@@ -40,7 +40,17 @@ if(APPLE AND EXISTS /usr/local/opt/qt5)
 endif()
 
 
-find_package(Qt5 REQUIRED COMPONENTS Core Widgets Multimedia MultimediaWidgets PrintSupport Concurrent Xml Qml)
+find_package(Qt5 REQUIRED COMPONENTS
+    Core
+    Widgets
+    Multimedia
+    MultimediaWidgets
+    PrintSupport
+    Concurrent
+    Xml
+    Qml
+    Svg)
+
 find_package(Qt5 QUIET COMPONENTS WebSockets)
 
 set( QT_LINK_LIBRARIES
@@ -52,6 +62,7 @@ set( QT_LINK_LIBRARIES
     Qt5::Qml
     Qt5::Multimedia
     Qt5::MultimediaWidgets
+    Qt5::Svg
     )
 
 add_definitions( -DQWT_NO_SVG )
@@ -116,6 +127,7 @@ include_directories(
     ${Qt5WebSockets_INCLUDE_DIRS}
     ${Qt5Multimedia_INCLUDE_DIRS}
     ${Qt5MultimediaWidgets_INCLUDE_DIRS}
+    ${Qt5Svg_INCLUDE_DIRS}
     ./qwt/src
     ./include
     ./color_widgets/include
@@ -128,16 +140,6 @@ if(COMPILING_WITH_CATKIN)
     set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_LIB_DESTINATION})
     set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_BIN_DESTINATION})
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_BIN_DESTINATION})
-
-    INSTALL( FILES ${CMAKE_CURRENT_SOURCE_DIR}/plotjuggler-icon.png
-        DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
-    INSTALL( FILES ${CMAKE_CURRENT_SOURCE_DIR}/PlotJuggler.desktop
-        DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
-
-    INSTALL( FILES ${CMAKE_CURRENT_SOURCE_DIR}/plotjuggler-icon.png
-        DESTINATION ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_BIN_DESTINATION})
-    INSTALL( FILES ${CMAKE_CURRENT_SOURCE_DIR}/PlotJuggler.desktop
-        DESTINATION ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_BIN_DESTINATION})
 
 else()
     set(CMAKE_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})

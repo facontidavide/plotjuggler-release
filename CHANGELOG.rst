@@ -2,6 +2,24 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.3.7 (2019-10-30)
+------------------
+* Dont take invisible curve into account for axis limit computation (`#185 <https://github.com/facontidavide/PlotJuggler/issues/185>`_)
+* consistent line width
+* do not close() a rosbag unless you accepted the dialog
+* important bug fix: stop playback when loading new data
+* fix bug in TopicPublisher
+* do complete reset of globals in custom functions
+* apply changes discussed in `#220 <https://github.com/facontidavide/PlotJuggler/issues/220>`_
+* Merge branch 'master' of github.com:facontidavide/PlotJuggler
+* cherry picking bug fix from `#220 <https://github.com/facontidavide/PlotJuggler/issues/220>`_ : update custom functions
+  Thanks @aeudes
+* Fix F10 is ambiguous (`#219 <https://github.com/facontidavide/PlotJuggler/issues/219>`_)
+* fix compilation and add feature `#218 <https://github.com/facontidavide/PlotJuggler/issues/218>`_
+* qwt updated
+* appImage instructions updated
+* Contributors: Davide Faconti, alexandre eudes
+
 2.3.6 (2019-10-16)
 ------------------
 * fix issue `#215 <https://github.com/facontidavide/PlotJuggler/issues/215>`_

@@ -8,17 +8,18 @@
  *****************************************************************************/
 
 #ifndef QWT_MATRIX_RASTER_DATA_H
-#define QWT_MATRIX_RASTER_DATA_H 1
+#define QWT_MATRIX_RASTER_DATA_H
 
 #include "qwt_global.h"
 #include "qwt_raster_data.h"
-#include <qvector.h>
+
+template <typename T> class QVector;
 
 /*!
   \brief A class representing a matrix of values as raster data
 
   QwtMatrixRasterData implements an interface for a matrix of
-  equidistant values, that can be used by a QwtPlotRasterItem. 
+  equidistant values, that can be used by a QwtPlotRasterItem.
   It implements a couple of resampling algorithms, to provide
   values for positions, that or not on the value matrix.
 */
@@ -38,7 +39,7 @@ public:
         NearestNeighbour,
 
         /*!
-          Interpolate the value from the distances and values of the 
+          Interpolate the value from the distances and values of the
           4 surrounding values in the matrix,
          */
         BilinearInterpolation
@@ -51,7 +52,7 @@ public:
     ResampleMode resampleMode() const;
 
     void setInterval( Qt::Axis, const QwtInterval & );
-    QwtInterval interval( Qt::Axis axis) const;
+    virtual QwtInterval interval( Qt::Axis axis) const QWT_OVERRIDE QWT_FINAL;
 
     void setValueMatrix( const QVector<double> &values, int numColumns );
     const QVector<double> valueMatrix() const;
@@ -61,9 +62,9 @@ public:
     int numColumns() const;
     int numRows() const;
 
-    virtual QRectF pixelHint( const QRectF & ) const;
+    virtual QRectF pixelHint( const QRectF & ) const QWT_OVERRIDE;
 
-    virtual double value( double x, double y ) const;
+    virtual double value( double x, double y ) const QWT_OVERRIDE;
 
 private:
     void update();

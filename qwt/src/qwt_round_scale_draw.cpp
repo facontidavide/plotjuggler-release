@@ -11,11 +11,10 @@
 #include "qwt_painter.h"
 #include "qwt_scale_div.h"
 #include "qwt_scale_map.h"
+#include "qwt_text.h"
 #include "qwt_math.h"
-#include <qpen.h>
+
 #include <qpainter.h>
-#include <qfontmetrics.h>
-#include <qmath.h>
 
 class QwtRoundScaleDraw::PrivateData
 {
@@ -170,9 +169,9 @@ void QwtRoundScaleDraw::drawLabel( QPainter *painter, double value ) const
     const double arc = qwtRadians( tval );
 
     const double x = d_data->center.x() +
-        ( radius + sz.width() / 2.0 ) * qSin( arc );
+        ( radius + sz.width() / 2.0 ) * std::sin( arc );
     const double y = d_data->center.y() -
-        ( radius + sz.height() / 2.0 ) * qCos( arc );
+        ( radius + sz.height() / 2.0 ) * std::cos( arc );
 
     const QRectF r( x - sz.width() / 2, y - sz.height() / 2,
         sz.width(), sz.height() );
@@ -184,7 +183,7 @@ void QwtRoundScaleDraw::drawLabel( QPainter *painter, double value ) const
 
    \param painter Painter
    \param value Value of the tick
-   \param len Lenght of the tick
+   \param len Length of the tick
 
    \sa drawBackbone(), drawLabel()
 */
@@ -204,8 +203,8 @@ void QwtRoundScaleDraw::drawTick( QPainter *painter, double value, double len ) 
     {
         const double arc = qwtRadians( tval );
 
-        const double sinArc = qSin( arc );
-        const double cosArc = qCos( arc );
+        const double sinArc = std::sin( arc );
+        const double cosArc = std::cos( arc );
 
         const double x1 = cx + radius * sinArc;
         const double x2 = cx + ( radius + len ) * sinArc;
@@ -227,8 +226,8 @@ void QwtRoundScaleDraw::drawBackbone( QPainter *painter ) const
     const double deg1 = scaleMap().p1();
     const double deg2 = scaleMap().p2();
 
-    const int a1 = qRound( qMin( deg1, deg2 ) - 90 );
-    const int a2 = qRound( qMax( deg1, deg2 ) - 90 );
+    const int a1 = qRound( qwtMinF( deg1, deg2 ) - 90 );
+    const int a2 = qRound( qwtMaxF( deg1, deg2 ) - 90 );
 
     const double radius = d_data->radius;
     const double x = d_data->center.x() - radius;
@@ -280,10 +279,10 @@ double QwtRoundScaleDraw::extent( const QFont &font ) const
                 const QSizeF sz = label.textSize( font );
                 const double off = qMax( sz.width(), sz.height() );
 
-                double x = off * qSin( arc );
-                double y = off * qCos( arc );
+                double x = off * std::sin( arc );
+                double y = off * std::cos( arc );
 
-                const double dist = qSqrt( x * x + y * y );
+                const double dist = std::sqrt( x * x + y * y );
                 if ( dist > d )
                     d = dist;
             }
@@ -297,8 +296,7 @@ double QwtRoundScaleDraw::extent( const QFont &font ) const
 
     if ( hasComponent( QwtAbstractScaleDraw::Backbone ) )
     {
-        const double pw = qMax( 1, penWidth() );  // pen width can be zero
-        d += pw;
+        d += qwtMaxF( penWidthF(), 1.0 );
     }
 
     if ( hasComponent( QwtAbstractScaleDraw::Labels ) &&
@@ -308,7 +306,7 @@ double QwtRoundScaleDraw::extent( const QFont &font ) const
         d += spacing();
     }
 
-    d = qMax( d, minimumExtent() );
+    d = qwtMaxF( d, minimumExtent() );
 
     return d;
 }

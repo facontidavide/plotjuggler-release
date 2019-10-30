@@ -12,7 +12,7 @@
 #include "qwt_clipper.h"
 #include "qwt_color_map.h"
 #include "qwt_scale_map.h"
-#include <qwindowdefs.h>
+
 #include <qwidget.h>
 #include <qframe.h>
 #include <qrect.h>
@@ -28,11 +28,7 @@
 #include <qapplication.h>
 #include <qdesktopwidget.h>
 
-#if QT_VERSION >= 0x050000
-#include <qwindow.h>
-#endif
-
-#if QT_VERSION < 0x050000 
+#if QT_VERSION < 0x050000
 
 #ifdef Q_WS_X11
 #include <qx11info_x11.h>
@@ -40,13 +36,15 @@
 
 #endif
 
+#include <cstring>
+
 bool QwtPainter::d_polylineSplitting = true;
 bool QwtPainter::d_roundingAlignment = true;
 
 static inline bool qwtIsRasterPaintEngineBuggy()
 {
 #if 0
-    static int isBuggy = -1; 
+    static int isBuggy = -1;
     if ( isBuggy < 0 )
     {
         // auto detect bug of the raster paint engine,
@@ -84,7 +82,7 @@ static inline bool qwtIsRasterPaintEngineBuggy()
 #endif
 }
 
-static inline bool qwtIsClippingNeeded( 
+static inline bool qwtIsClippingNeeded(
     const QPainter *painter, QRectF &clipRect )
 {
     bool doClipping = false;
@@ -119,7 +117,7 @@ static inline void qwtDrawPolyline( QPainter *painter,
                 if ( painter->renderHints() & QPainter::Antialiasing )
                 {
                     /*
-                        all versions <= 4.7 have issues with 
+                        all versions <= 4.7 have issues with
                         antialiased lines
                      */
 
@@ -229,7 +227,12 @@ static inline void qwtUnscaleFont( QPainter *painter )
 */
 bool QwtPainter::isX11GraphicsSystem()
 {
-#if QT_VERSION < 0x050000
+    /*
+        The X11 paint engine has been removed with Qt 5.0, but
+        reintroduced with Qt 5.10. It can be enabled with
+        "export QT_XCB_NATIVE_PAINTING=1".
+     */
+
     static int onX11 = -1;
     if ( onX11 < 0 )
     {
@@ -240,11 +243,6 @@ bool QwtPainter::isX11GraphicsSystem()
     }
 
     return onX11 == 1;
-#else
-    // the X11 paint engine has been removed with Qt5 - so sad, as it was
-    // the best available graphic system around: no bugs + hardware accelerated.
-    return false;
-#endif
 }
 
 /*!
@@ -261,20 +259,33 @@ bool QwtPainter::isX11GraphicsSystem()
 
   \sa setRoundingAlignment()
 */
-bool QwtPainter::isAligning( QPainter *painter )
+bool QwtPainter::isAligning( const QPainter *painter )
 {
     if ( painter && painter->isActive() )
     {
-        switch ( painter->paintEngine()->type() )
+        const QPaintEngine::Type type =
+            painter->paintEngine()->type();
+
+        if ( type >= QPaintEngine::User )
+        {
+            // we have no idea - better don't align
+            return false;
+        }
+
+        switch ( type )
         {
             case QPaintEngine::Pdf:
             case QPaintEngine::SVG:
+#if 0
+            case QPaintEngine::MacPrinter:
+#endif
                 return false;
 
-            default:;
+            default:
+                break;
         }
 
-        const QTransform tr = painter->transform();
+        const QTransform &tr = painter->transform();
         if ( tr.isRotating() || tr.isScaling() )
         {
             // we might have to check translations too
@@ -289,10 +300,10 @@ bool QwtPainter::isAligning( QPainter *painter )
   Enable whether coordinates should be rounded, before they are painted
   to a paint engine that floors to integer values. For other paint engines
   ( PDF, SVG ) this flag has no effect.
-  QwtPainter stores this flag only, the rounding itself is done in 
+  QwtPainter stores this flag only, the rounding itself is done in
   the painting code ( f.e the plot items ).
 
-  The default setting is true. 
+  The default setting is true.
 
   \sa roundingAlignment(), isAligning()
 */
@@ -328,7 +339,7 @@ void QwtPainter::drawPath( QPainter *painter, const QPainterPath &path )
 }
 
 //! Wrapper for QPainter::drawRect()
-void QwtPainter::drawRect( QPainter *painter, double x, double y, double w, double h )
+void QwtPainter::drawRect( QPainter *painter, qreal x, qreal y, qreal w, qreal h )
 {
     drawRect( painter, QRectF( x, y, w, h ) );
 }
@@ -419,8 +430,8 @@ void QwtPainter::drawEllipse( QPainter *painter, const QRectF &rect )
 }
 
 //! Wrapper for QPainter::drawText()
-void QwtPainter::drawText( QPainter *painter, double x, double y,
-        const QString &text )
+void QwtPainter::drawText( QPainter *painter,
+    qreal x, qreal y, const QString &text )
 {
     drawText( painter, QPointF( x, y ), text );
 }
@@ -444,7 +455,7 @@ void QwtPainter::drawText( QPainter *painter, const QPointF &pos,
 
 //! Wrapper for QPainter::drawText()
 void QwtPainter::drawText( QPainter *painter,
-    double x, double y, double w, double h,
+    qreal x, qreal y, qreal w, qreal h,
     int flags, const QString &text )
 {
     drawText( painter, QRectF( x, y, w, h ), flags, text );
@@ -488,21 +499,21 @@ void QwtPainter::drawSimpleRichText( QPainter *painter, const QRectF &rect,
             pd->logicalDpiY() != res.height() )
         {
             QTransform transform;
-            transform.scale( res.width() / double( pd->logicalDpiX() ),
-                res.height() / double( pd->logicalDpiY() ));
+            transform.scale( res.width() / qreal( pd->logicalDpiX() ),
+                res.height() / qreal( pd->logicalDpiY() ));
 
             painter->setWorldTransform( transform, true );
             unscaledRect = transform.inverted().mapRect(rect);
         }
-    }  
+    }
 
     txt->setDefaultFont( painter->font() );
     txt->setPageSize( QSizeF( unscaledRect.width(), QWIDGETSIZE_MAX ) );
 
     QAbstractTextDocumentLayout* layout = txt->documentLayout();
 
-    const double height = layout->documentSize().height();
-    double y = unscaledRect.y();
+    const qreal height = layout->documentSize().height();
+    qreal y = unscaledRect.y();
     if ( flags & Qt::AlignBottom )
         y += ( unscaledRect.height() - height );
     else if ( flags & Qt::AlignVCenter )
@@ -588,7 +599,7 @@ void QwtPainter::drawPolyline( QPainter *painter,
     if ( deviceClipping )
     {
         QPolygonF polygon( pointCount );
-        ::memcpy( polygon.data(), points, pointCount * sizeof( QPointF ) );
+        std::memcpy( polygon.data(), points, pointCount * sizeof( QPointF ) );
 
         QwtClipper::clipPolygonF( clipRect, polygon );
         qwtDrawPolyline<QPointF>( painter,
@@ -647,7 +658,7 @@ void QwtPainter::drawPolyline( QPainter *painter,
     if ( deviceClipping )
     {
         QPolygon polygon( pointCount );
-        ::memcpy( polygon.data(), points, pointCount * sizeof( QPoint ) );
+        std::memcpy( polygon.data(), points, pointCount * sizeof( QPoint ) );
 
         QwtClipper::clipPolygon( clipRect, polygon );
         qwtDrawPolyline<QPoint>( painter,
@@ -679,12 +690,12 @@ void QwtPainter::drawPoint( QPainter *painter, const QPoint &pos )
 
     if ( deviceClipping )
     {
-        const int minX = qCeil( clipRect.left() );
-        const int maxX = qFloor( clipRect.right() );
-        const int minY = qCeil( clipRect.top() );
-        const int maxY = qFloor( clipRect.bottom() );
+        const int minX = qwtCeil( clipRect.left() );
+        const int maxX = qwtFloor( clipRect.right() );
+        const int minY = qwtCeil( clipRect.top() );
+        const int maxY = qwtFloor( clipRect.bottom() );
 
-        if ( pos.x() < minX || pos.x() > maxX 
+        if ( pos.x() < minX || pos.x() > maxX
             || pos.y() < minY || pos.y() > maxY )
         {
             return;
@@ -695,7 +706,7 @@ void QwtPainter::drawPoint( QPainter *painter, const QPoint &pos )
 }
 
 //! Wrapper for QPainter::drawPoints()
-void QwtPainter::drawPoints( QPainter *painter, 
+void QwtPainter::drawPoints( QPainter *painter,
     const QPoint *points, int pointCount )
 {
     QRectF clipRect;
@@ -703,10 +714,10 @@ void QwtPainter::drawPoints( QPainter *painter,
 
     if ( deviceClipping )
     {
-        const int minX = qCeil( clipRect.left() );
-        const int maxX = qFloor( clipRect.right() );
-        const int minY = qCeil( clipRect.top() );
-        const int maxY = qFloor( clipRect.bottom() );
+        const int minX = qwtCeil( clipRect.left() );
+        const int maxX = qwtFloor( clipRect.right() );
+        const int minY = qwtCeil( clipRect.top() );
+        const int maxY = qwtFloor( clipRect.bottom() );
 
         const QRect r( minX, minY, maxX - minX, maxY - minY );
 
@@ -728,7 +739,7 @@ void QwtPainter::drawPoints( QPainter *painter,
 }
 
 //! Wrapper for QPainter::drawPoints()
-void QwtPainter::drawPoints( QPainter *painter, 
+void QwtPainter::drawPoints( QPainter *painter,
     const QPointF *points, int pointCount )
 {
     QRectF clipRect;
@@ -816,7 +827,7 @@ void QwtPainter::drawFocusRect( QPainter *painter, const QWidget *widget,
 }
 
 /*!
-  Draw a round frame 
+  Draw a round frame
 
   \param painter Painter
   \param rect Frame rectangle
@@ -827,7 +838,7 @@ void QwtPainter::drawFocusRect( QPainter *painter, const QWidget *widget,
   \param frameStyle bitwise OR´ed value of QFrame::Shape and QFrame::Shadow
 */
 void QwtPainter::drawRoundFrame( QPainter *painter,
-    const QRectF &rect, const QPalette &palette, 
+    const QRectF &rect, const QPalette &palette,
     int lineWidth, int frameStyle )
 {
     enum Style
@@ -843,7 +854,7 @@ void QwtPainter::drawRoundFrame( QPainter *painter,
     else if ( (frameStyle & QFrame::Raised) == QFrame::Raised )
         style = Raised;
 
-    const double lw2 = 0.5 * lineWidth;
+    const qreal lw2 = 0.5 * lineWidth;
     QRectF r = rect.adjusted( lw2, lw2, -lw2, -lw2 );
 
     QBrush brush;
@@ -906,7 +917,7 @@ void QwtPainter::drawFrame( QPainter *painter, const QRectF &rect,
     if ( shadow == QFrame::Plain )
     {
         const QRectF outerRect = rect.adjusted( 0.0, 0.0, -1.0, -1.0 );
-        const QRectF innerRect = outerRect.adjusted( 
+        const QRectF innerRect = outerRect.adjusted(
             frameWidth, frameWidth, -frameWidth, -frameWidth );
 
         QPainterPath path;
@@ -925,12 +936,12 @@ void QwtPainter::drawFrame( QPainter *painter, const QRectF &rect,
         if ( shape == QFrame::Box )
         {
             const QRectF outerRect = rect.adjusted( 0.0, 0.0, -1.0, -1.0 );
-            const QRectF midRect1 = outerRect.adjusted( 
+            const QRectF midRect1 = outerRect.adjusted(
                 frameWidth, frameWidth, -frameWidth, -frameWidth );
-            const QRectF midRect2 = midRect1.adjusted( 
+            const QRectF midRect2 = midRect1.adjusted(
                 midLineWidth, midLineWidth, -midLineWidth, -midLineWidth );
 
-            const QRectF innerRect = midRect2.adjusted( 
+            const QRectF innerRect = midRect2.adjusted(
                 frameWidth, frameWidth, -frameWidth, -frameWidth );
 
             QPainterPath path1;
@@ -1006,8 +1017,8 @@ void QwtPainter::drawFrame( QPainter *painter, const QRectF &rect,
         else
         {
             const QRectF outerRect = rect.adjusted( 0.0, 0.0, -1.0, -1.0 );
-            const QRectF innerRect = outerRect.adjusted( 
-                frameWidth - 1.0, frameWidth - 1.0, 
+            const QRectF innerRect = outerRect.adjusted(
+                frameWidth - 1.0, frameWidth - 1.0,
                 -( frameWidth - 1.0 ), -( frameWidth - 1.0 ) );
 
             QPainterPath path1;
@@ -1061,19 +1072,19 @@ void QwtPainter::drawFrame( QPainter *painter, const QRectF &rect,
   \param frameStyle bitwise OR´ed value of QFrame::Shape and QFrame::Shadow
 */
 
-void QwtPainter::drawRoundedFrame( QPainter *painter, 
-    const QRectF &rect, double xRadius, double yRadius, 
+void QwtPainter::drawRoundedFrame( QPainter *painter,
+    const QRectF &rect, qreal xRadius, qreal yRadius,
     const QPalette &palette, int lineWidth, int frameStyle )
 {
     painter->save();
     painter->setRenderHint( QPainter::Antialiasing, true );
     painter->setBrush( Qt::NoBrush );
 
-    double lw2 = lineWidth * 0.5;
-    QRectF r = rect.adjusted( lw2, lw2, -lw2, -lw2 );
+    qreal lw2 = lineWidth * 0.5;
+    QRectF innerRect = rect.adjusted( lw2, lw2, -lw2, -lw2 );
 
     QPainterPath path;
-    path.addRoundedRect( r, xRadius, yRadius );
+    path.addRoundedRect( innerRect, xRadius, yRadius );
 
     enum Style
     {
@@ -1092,27 +1103,27 @@ void QwtPainter::drawRoundedFrame( QPainter *painter,
     {
         // move + 4 * ( cubicTo + lineTo )
         QPainterPath pathList[8];
-        
+
         for ( int i = 0; i < 4; i++ )
         {
             const int j = i * 4 + 1;
-            
+
             pathList[ 2 * i ].moveTo(
                 path.elementAt(j - 1).x, path.elementAt( j - 1 ).y
-            );  
-            
+            );
+
             pathList[ 2 * i ].cubicTo(
                 path.elementAt(j + 0).x, path.elementAt(j + 0).y,
                 path.elementAt(j + 1).x, path.elementAt(j + 1).y,
                 path.elementAt(j + 2).x, path.elementAt(j + 2).y );
-                
+
             pathList[ 2 * i + 1 ].moveTo(
                 path.elementAt(j + 2).x, path.elementAt(j + 2).y
-            );  
+            );
             pathList[ 2 * i + 1 ].lineTo(
                 path.elementAt(j + 3).x, path.elementAt(j + 3).y
-            );  
-        }   
+            );
+        }
 
         QColor c1( palette.color( QPalette::Dark ) );
         QColor c2( palette.color( QPalette::Light ) );
@@ -1122,7 +1133,7 @@ void QwtPainter::drawRoundedFrame( QPainter *painter,
 
         for ( int i = 0; i < 4; i++ )
         {
-            QRectF r = pathList[2 * i].controlPointRect();
+            const QRectF r = pathList[2 * i].controlPointRect();
 
             QPen arcPen;
             arcPen.setCapStyle( Qt::FlatCap );
@@ -1266,10 +1277,10 @@ void QwtPainter::drawColorBar( QPainter *painter,
     drawPixmap( painter, rect, pixmap );
 }
 
-static inline void qwtFillRect( const QWidget *widget, QPainter *painter, 
+static inline void qwtFillRect( const QWidget *widget, QPainter *painter,
     const QRect &rect, const QBrush &brush)
 {
-    if ( brush.style() == Qt::TexturePattern ) 
+    if ( brush.style() == Qt::TexturePattern )
     {
         painter->save();
 
@@ -1277,18 +1288,18 @@ static inline void qwtFillRect( const QWidget *widget, QPainter *painter,
         painter->drawTiledPixmap(rect, brush.texture(), rect.topLeft());
 
         painter->restore();
-    } 
+    }
     else if ( brush.gradient() )
     {
         painter->save();
 
         painter->setClipRect( rect );
-        painter->fillRect(0, 0, widget->width(), 
+        painter->fillRect(0, 0, widget->width(),
             widget->height(), brush);
 
         painter->restore();
-    } 
-    else 
+    }
+    else
     {
         painter->fillRect(rect, brush);
     }
@@ -1298,16 +1309,16 @@ static inline void qwtFillRect( const QWidget *widget, QPainter *painter,
   Fill a pixmap with the content of a widget
 
   In Qt >= 5.0 QPixmap::fill() is a nop, in Qt 4.x it is buggy
-  for backgrounds with gradients. Thus fillPixmap() offers 
+  for backgrounds with gradients. Thus fillPixmap() offers
   an alternative implementation.
 
   \param widget Widget
   \param pixmap Pixmap to be filled
-  \param offset Offset 
+  \param offset Offset
 
   \sa QPixmap::fill()
  */
-void QwtPainter::fillPixmap( const QWidget *widget, 
+void QwtPainter::fillPixmap( const QWidget *widget,
     QPixmap &pixmap, const QPoint &offset )
 {
     const QRect rect( offset, pixmap.size() );
@@ -1315,10 +1326,10 @@ void QwtPainter::fillPixmap( const QWidget *widget,
     QPainter painter( &pixmap );
     painter.translate( -offset );
 
-    const QBrush autoFillBrush = 
+    const QBrush autoFillBrush =
         widget->palette().brush( widget->backgroundRole() );
 
-    if ( !( widget->autoFillBackground() && autoFillBrush.isOpaque() ) ) 
+    if ( !( widget->autoFillBackground() && autoFillBrush.isOpaque() ) )
     {
         const QBrush bg = widget->palette().brush( QPalette::Window );
         qwtFillRect( widget, &painter, rect, bg);
@@ -1327,13 +1338,13 @@ void QwtPainter::fillPixmap( const QWidget *widget,
     if ( widget->autoFillBackground() )
         qwtFillRect( widget, &painter, rect, autoFillBrush);
 
-    if ( widget->testAttribute(Qt::WA_StyledBackground) ) 
+    if ( widget->testAttribute(Qt::WA_StyledBackground) )
     {
         painter.setClipRegion( rect );
 
         QStyleOption opt;
         opt.initFrom( widget );
-        widget->style()->drawPrimitive( QStyle::PE_Widget, 
+        widget->style()->drawPrimitive( QStyle::PE_Widget,
             &opt, &painter, widget );
     }
 }
@@ -1410,7 +1421,7 @@ QPixmap QwtPainter::backingStore( QWidget *widget, const QSize &size )
 {
     QPixmap pm;
 
-#if QT_VERSION >= 0x050000 
+#if QT_VERSION >= 0x050000
     const qreal pixelRatio = QwtPainter::devicePixelRatio( widget );
 
     pm = QPixmap( size * pixelRatio );
@@ -1431,4 +1442,3 @@ QPixmap QwtPainter::backingStore( QWidget *widget, const QSize &size )
 
     return pm;
 }
-
