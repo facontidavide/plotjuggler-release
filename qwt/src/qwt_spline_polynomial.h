@@ -8,20 +8,17 @@
  *****************************************************************************/
 
 #ifndef QWT_SPLINE_POLYNOMIAL_H
-#define QWT_SPLINE_POLYNOMIAL_H 1
+#define QWT_SPLINE_POLYNOMIAL_H
 
 #include "qwt_global.h"
+
 #include <qpoint.h>
 #include <qmetatype.h>
-
-#ifndef QT_NO_DEBUG_STREAM
-#include <qdebug.h>
-#endif
 
 /*!
   \brief A cubic polynomial without constant term
 
-  QwtSplinePolynomial is a 3rd degree polynomial 
+  QwtSplinePolynomial is a 3rd degree polynomial
   of the form: y = c3 * x³ + c2 * x² + c1 * x;
 
   QwtSplinePolynomial is usually used in combination with polygon
@@ -42,28 +39,28 @@ public:
     double slopeAt( double x ) const;
     double curvatureAt( double x ) const;
 
-    static QwtSplinePolynomial fromSlopes( 
-        const QPointF &p1, double m1, 
+    static QwtSplinePolynomial fromSlopes(
+        const QPointF &p1, double m1,
         const QPointF &p2, double m2 );
 
-    static QwtSplinePolynomial fromSlopes( 
+    static QwtSplinePolynomial fromSlopes(
         double x, double y, double m1, double m2 );
 
-    static QwtSplinePolynomial fromCurvatures( 
+    static QwtSplinePolynomial fromCurvatures(
         const QPointF &p1, double cv1,
         const QPointF &p2, double cv2 );
-    
+
     static QwtSplinePolynomial fromCurvatures(
         double dx, double dy, double cv1, double cv2 );
 
 public:
-    //! coefficient of the cubic summand 
+    //! coefficient of the cubic summand
     double c3;
 
-    //! coefficient of the quadratic summand 
+    //! coefficient of the quadratic summand
     double c2;
 
-    //! coefficient of the linear summand 
+    //! coefficient of the linear summand
     double c1;
 };
 
@@ -108,7 +105,7 @@ inline bool QwtSplinePolynomial::operator!=( const QwtSplinePolynomial &other ) 
 inline double QwtSplinePolynomial::valueAt( double x ) const
 {
     return ( ( ( c3 * x ) + c2 ) * x + c1 ) * x;
-}   
+}
 
 /*!
   Calculate the value of the first derivate of a polynomial for a given x
@@ -117,7 +114,7 @@ inline double QwtSplinePolynomial::valueAt( double x ) const
   \return Slope at x
  */
 inline double QwtSplinePolynomial::slopeAt( double x ) const
-{   
+{
     return ( 3.0 * c3 * x + 2.0 * c2 ) * x + c1;
 }
 
@@ -128,7 +125,7 @@ inline double QwtSplinePolynomial::slopeAt( double x ) const
   \return Curvature at x
  */
 inline double QwtSplinePolynomial::curvatureAt( double x ) const
-{   
+{
     return 6.0 * c3 * x + 2.0 * c2;
 }
 
@@ -144,7 +141,7 @@ inline double QwtSplinePolynomial::curvatureAt( double x ) const
   \return Coefficients of the polynomials
   \note The missing constant term of the polynomial is p1.y()
  */
-inline QwtSplinePolynomial QwtSplinePolynomial::fromSlopes( 
+inline QwtSplinePolynomial QwtSplinePolynomial::fromSlopes(
     const QPointF &p1, double m1, const QPointF &p2, double m2 )
 {
     return fromSlopes( p2.x() - p1.x(), p2.y() - p1.y(), m1, m2 );
@@ -161,7 +158,7 @@ inline QwtSplinePolynomial QwtSplinePolynomial::fromSlopes(
 
   \return Coefficients of the polynomials
  */
-inline QwtSplinePolynomial QwtSplinePolynomial::fromSlopes( 
+inline QwtSplinePolynomial QwtSplinePolynomial::fromSlopes(
     double dx, double dy, double m1, double m2 )
 {
     const double c2 = ( 3.0 * dy / dx - 2 * m1 - m2 ) / dx;
@@ -182,7 +179,7 @@ inline QwtSplinePolynomial QwtSplinePolynomial::fromSlopes(
   \return Coefficients of the polynomials
   \note The missing constant term of the polynomial is p1.y()
  */
-inline QwtSplinePolynomial QwtSplinePolynomial::fromCurvatures( 
+inline QwtSplinePolynomial QwtSplinePolynomial::fromCurvatures(
     const QPointF &p1, double cv1, const QPointF &p2, double cv2 )
 {
     return fromCurvatures( p2.x() - p1.x(), p2.y() - p1.y(), cv1, cv2 );
@@ -199,12 +196,12 @@ inline QwtSplinePolynomial QwtSplinePolynomial::fromCurvatures(
 
   \return Coefficients of the polynomials
  */
-inline QwtSplinePolynomial QwtSplinePolynomial::fromCurvatures( 
-    double x, double y, double cv1, double cv2 )
+inline QwtSplinePolynomial QwtSplinePolynomial::fromCurvatures(
+    double dx, double dy, double cv1, double cv2 )
 {
-    const double c3 = ( cv2 - cv1 ) / ( 6.0 * x );
+    const double c3 = ( cv2 - cv1 ) / ( 6.0 * dx );
     const double c2 = 0.5 * cv1;
-    const double c1 = y / x - ( c3 * x + c2 ) * x;
+    const double c1 = dy / dx - ( c3 * dx + c2 ) * dx;
 
     return QwtSplinePolynomial( c3, c2, c1 );
 }
@@ -212,6 +209,9 @@ inline QwtSplinePolynomial QwtSplinePolynomial::fromCurvatures(
 Q_DECLARE_METATYPE( QwtSplinePolynomial )
 
 #ifndef QT_NO_DEBUG_STREAM
+
+#include <qdebug.h>
+
 inline QDebug operator<<( QDebug debug, const QwtSplinePolynomial &polynomial )
 {
     debug.nospace() << "Polynom(" << polynomial.c3 << ", "

@@ -8,10 +8,11 @@
  *****************************************************************************/
 
 #ifndef QWT_SAMPLES_H
-#define QWT_SAMPLES_H 1
+#define QWT_SAMPLES_H
 
 #include "qwt_global.h"
 #include "qwt_interval.h"
+
 #include <qvector.h>
 #include <qrect.h>
 

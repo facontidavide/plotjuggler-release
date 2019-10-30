@@ -36,10 +36,11 @@ const std::vector<const char*> &DataLoadROS::compatibleFileExtensions() const
     return _extensions;
 }
 
-std::vector<std::pair<QString,QString>> DataLoadROS::getAndRegisterAllTopics()
+std::vector<std::pair<QString,QString>> DataLoadROS::getAllTopics(const rosbag::Bag* bag, RosMessageParser* parser)
 {
+    parser->clear();
     std::vector<std::pair<QString,QString>> all_topics;
-    rosbag::View bag_view ( *_bag, ros::TIME_MIN, ros::TIME_MAX, true );
+    rosbag::View bag_view ( *bag, ros::TIME_MIN, ros::TIME_MAX, true );
 
     RosIntrospectionFactory::reset();
 
@@ -54,7 +55,7 @@ std::vector<std::pair<QString,QString>> DataLoadROS::getAndRegisterAllTopics()
 
         all_topics.push_back( std::make_pair(QString( topic.c_str()), QString( datatype.c_str()) ) );
         try {
-            _ros_parser.registerSchema(
+            parser->registerSchema(
                     topic, md5sum, RosIntrospection::ROSType(datatype), definition);
             RosIntrospectionFactory::registerMessage(topic, md5sum, datatype, definition);
         }
@@ -102,13 +103,11 @@ std::vector<std::pair<QString,QString>> DataLoadROS::getAndRegisterAllTopics()
 
 bool DataLoadROS::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_map)
 {
-    if( _bag ) _bag->close();
-
-    _bag = std::make_shared<rosbag::Bag>();
-    _ros_parser.clear();
+    auto temp_bag = std::make_shared<rosbag::Bag>();
+    RosMessageParser ros_parser;
 
     try{
-        _bag->open( info->filename.toStdString(), rosbag::bagmode::Read );
+        temp_bag->open( info->filename.toStdString(), rosbag::bagmode::Read );
     }
     catch( rosbag::BagException&  ex)
     {
@@ -118,7 +117,7 @@ bool DataLoadROS::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_map)
         return false;
     }
 
-    auto all_topics = getAndRegisterAllTopics();
+    auto all_topics = getAllTopics(temp_bag.get(), &ros_parser);
 
     //----------------------------------
 
@@ -129,7 +128,7 @@ bool DataLoadROS::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_map)
 
     if( ! info->selected_datasources.empty() )
     {
-            _config.selected_topics =   info->selected_datasources;
+        _config.selected_topics = info->selected_datasources;
     }
     else{
         DialogSelectRosTopics* dialog = new DialogSelectRosTopics( all_topics, _config );
@@ -138,17 +137,26 @@ bool DataLoadROS::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_map)
         {
             return false;
         }
+        else{
+
+          // clean up previous MessageInstances
+          plot_map.user_defined.clear();
+          if(_bag){
+            _bag->close();
+          }
+          _bag = temp_bag;
+        }
         _config = dialog->getResult();
     }
 
     saveDefaultSettings();
 
-    _ros_parser.setUseHeaderStamp( _config.use_header_stamp );
-    _ros_parser.setMaxArrayPolicy( _config.max_array_size, _config.discard_large_arrays );
+    ros_parser.setUseHeaderStamp( _config.use_header_stamp );
+    ros_parser.setMaxArrayPolicy( _config.max_array_size, _config.discard_large_arrays );
 
     if( _config.use_renaming_rules )
     {
-        _ros_parser.addRules( RuleEditing::getRenamingRules() );
+        ros_parser.addRules( RuleEditing::getRenamingRules() );
     }
 
     //-----------------------------------
@@ -179,7 +187,6 @@ bool DataLoadROS::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_map)
 
     for(const rosbag::MessageInstance& msg_instance: bag_view)
     {
-
         const std::string& topic_name  = msg_instance.getTopic();
         double msg_time = msg_instance.getTime().toSec();
         auto data_point = PlotDataAny::Point(msg_time, nonstd::any(msg_instance) );
@@ -216,10 +223,10 @@ bool DataLoadROS::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_map)
         ros::serialization::OStream stream(buffer.data(), buffer.size());
         msg_instance.write(stream);
         MessageRef buffer_view( buffer );
-        _ros_parser.pushMessageRef( topic_name, buffer_view, msg_time );
+        ros_parser.pushMessageRef( topic_name, buffer_view, msg_time );
     }
 
-    _ros_parser.extractData(plot_map, "");
+    ros_parser.extractData(plot_map, "");
 
     qDebug() << "The loading operation took" << timer.elapsed() << "milliseconds";
 

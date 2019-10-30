@@ -78,10 +78,10 @@ public:
     void setBorderWidth( int );
     int borderWidth() const;
 
-    void setInverted( bool tf );
+    void setInverted( bool );
     bool isInverted() const;
 
-    void setWrapping( bool tf );
+    void setWrapping( bool );
     bool wrapping() const;
 
     void setSingleStep( double );
@@ -93,18 +93,18 @@ public:
     void setStepAlignment( bool on );
     bool stepAlignment() const;
 
-    void setRange( double vmin, double vmax );
+    void setRange( double min, double max );
 
-    void setMinimum( double min );
+    void setMinimum( double );
     double minimum() const;
 
-    void setMaximum( double max );
+    void setMaximum( double );
     double maximum() const;
 
     void setUpdateInterval( int );
     int updateInterval() const;
 
-    void setTracking( bool enable );
+    void setTracking( bool );
     bool isTracking() const;
 
     double mass() const;
@@ -121,7 +121,7 @@ Q_SIGNALS:
       \brief Notify a change of value.
 
       When tracking is enabled this signal will be emitted every
-      time the value changes. 
+      time the value changes.
 
       \param value new value
       \sa setTracking()
@@ -148,20 +148,20 @@ Q_SIGNALS:
     void wheelMoved( double value );
 
 protected:
-    virtual void paintEvent( QPaintEvent * );
-    virtual void mousePressEvent( QMouseEvent * );
-    virtual void mouseReleaseEvent( QMouseEvent * );
-    virtual void mouseMoveEvent( QMouseEvent * );
-    virtual void keyPressEvent( QKeyEvent * );
-    virtual void wheelEvent( QWheelEvent * );
-    virtual void timerEvent( QTimerEvent * );
+    virtual void paintEvent( QPaintEvent * ) QWT_OVERRIDE;
+    virtual void mousePressEvent( QMouseEvent * ) QWT_OVERRIDE;
+    virtual void mouseReleaseEvent( QMouseEvent * ) QWT_OVERRIDE;
+    virtual void mouseMoveEvent( QMouseEvent * ) QWT_OVERRIDE;
+    virtual void keyPressEvent( QKeyEvent * ) QWT_OVERRIDE;
+    virtual void wheelEvent( QWheelEvent * ) QWT_OVERRIDE;
+    virtual void timerEvent( QTimerEvent * ) QWT_OVERRIDE;
 
     void stopFlying();
 
     QRect wheelRect() const;
 
-    virtual QSize sizeHint() const;
-    virtual QSize minimumSizeHint() const;
+    virtual QSize sizeHint() const QWT_OVERRIDE;
+    virtual QSize minimumSizeHint() const QWT_OVERRIDE;
 
     virtual void drawTicks( QPainter *, const QRectF & );
     virtual void drawWheelBackground( QPainter *, const QRectF & );

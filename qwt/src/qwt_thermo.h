@@ -29,7 +29,7 @@ class QwtColorMap;
   \image html sysinfo.png
 
   The fill colors might be calculated from an optional color map
-  If no color map has been assigned QwtThermo uses the 
+  If no color map has been assigned QwtThermo uses the
   following colors/brushes from the widget palette:
 
   - QPalette::Base
@@ -52,7 +52,7 @@ class QWT_EXPORT QwtThermo: public QwtAbstractScale
 
     Q_PROPERTY( Qt::Orientation orientation
         READ orientation WRITE setOrientation )
-    Q_PROPERTY( ScalePosition scalePosition 
+    Q_PROPERTY( ScalePosition scalePosition
         READ scalePosition WRITE setScalePosition )
     Q_PROPERTY( OriginMode originMode READ originMode WRITE setOriginMode )
 
@@ -112,7 +112,7 @@ public:
     void setSpacing( int );
     int spacing() const;
 
-    void setBorderWidth( int w );
+    void setBorderWidth( int );
     int borderWidth() const;
 
     void setOriginMode( OriginMode );
@@ -121,23 +121,23 @@ public:
     void setOrigin( double );
     double origin() const;
 
-    void setFillBrush( const QBrush &b );
+    void setFillBrush( const QBrush & );
     QBrush fillBrush() const;
 
-    void setAlarmBrush( const QBrush &b );
+    void setAlarmBrush( const QBrush & );
     QBrush alarmBrush() const;
 
-    void setAlarmLevel( double v );
+    void setAlarmLevel( double );
     double alarmLevel() const;
 
-    void setAlarmEnabled( bool tf );
+    void setAlarmEnabled( bool );
     bool alarmEnabled() const;
 
     void setColorMap( QwtColorMap * );
     QwtColorMap *colorMap();
     const QwtColorMap *colorMap() const;
 
-    void setPipeWidth( int w );
+    void setPipeWidth( int );
     int pipeWidth() const;
 
     void setRangeFlags( QwtInterval::BorderFlags );
@@ -145,22 +145,22 @@ public:
 
     double value() const;
 
-    virtual QSize sizeHint() const;
-    virtual QSize minimumSizeHint() const;
+    virtual QSize sizeHint() const QWT_OVERRIDE;
+    virtual QSize minimumSizeHint() const QWT_OVERRIDE;
 
     void setScaleDraw( QwtScaleDraw * );
     const QwtScaleDraw *scaleDraw() const;
 
 public Q_SLOTS:
-    virtual void setValue( double val );
+    virtual void setValue( double );
 
 protected:
     virtual void drawLiquid( QPainter *, const QRect & ) const;
-    virtual void scaleChange();
+    virtual void scaleChange() QWT_OVERRIDE;
 
-    virtual void paintEvent( QPaintEvent * );
-    virtual void resizeEvent( QResizeEvent * );
-    virtual void changeEvent( QEvent * );
+    virtual void paintEvent( QPaintEvent * ) QWT_OVERRIDE;
+    virtual void resizeEvent( QResizeEvent * ) QWT_OVERRIDE;
+    virtual void changeEvent( QEvent * ) QWT_OVERRIDE;
 
     QwtScaleDraw *scaleDraw();
 

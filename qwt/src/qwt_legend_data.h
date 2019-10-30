@@ -11,21 +11,22 @@
 #define QWT_LEGEND_DATA_H
 
 #include "qwt_global.h"
-#include "qwt_text.h"
-#include "qwt_graphic.h"
+
 #include <qvariant.h>
-#include <qpixmap.h>
 #include <qmap.h>
+
+class QwtText;
+class QwtGraphic;
 
 /*!
   \brief Attributes of an entry on a legend
 
   QwtLegendData is an abstract container ( like QAbstractModel )
-  to exchange attributes, that are only known between to 
-  the plot item and the legend. 
-  
+  to exchange attributes, that are only known between to
+  the plot item and the legend.
+
   By overloading QwtPlotItem::legendData() any other set of attributes
-  could be used, that can be handled by a modified ( or completely 
+  could be used, that can be handled by a modified ( or completely
   different ) implementation of a legend.
 
   \sa QwtLegend, QwtPlotLegendItem
@@ -52,13 +53,13 @@ public:
     enum Role
     {
         // The value is a Mode
-        ModeRole, 
+        ModeRole,
 
         // The value is a title
-        TitleRole, 
+        TitleRole,
 
         // The value is an icon
-        IconRole, 
+        IconRole,
 
         // Values < UserRole are reserved for internal use
         UserRole  = 32
