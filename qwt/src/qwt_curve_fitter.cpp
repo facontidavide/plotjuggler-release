@@ -9,7 +9,7 @@
 
 #include "qwt_curve_fitter.h"
 
-/*! 
+/*!
    Constructor
    \param mode Preferred fitting mode
  */

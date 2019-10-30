@@ -8,51 +8,96 @@
  *****************************************************************************/
 
 #ifndef QWT_POINT_DATA_H
-#define QWT_POINT_DATA_H 1
+#define QWT_POINT_DATA_H
 
 #include "qwt_global.h"
 #include "qwt_series_data.h"
 
+#include <cstring>
+
 /*!
-  \brief Interface for iterating over two QVector<double> objects.
+  \brief Interface for iterating over two QVector<T> objects.
 */
-class QWT_EXPORT QwtPointArrayData: public QwtSeriesData<QPointF>
+template <typename T>
+class QwtPointArrayData: public QwtPointSeriesData
 {
 public:
-    QwtPointArrayData( const QVector<double> &x, const QVector<double> &y );
-    QwtPointArrayData( const double *x, const double *y, size_t size );
+    QwtPointArrayData( const QVector<T> &x, const QVector<T> &y );
+    QwtPointArrayData( const T *x, const T *y, size_t size );
 
-    virtual QRectF boundingRect() const;
+    virtual size_t size() const QWT_OVERRIDE;
+    virtual QPointF sample( size_t index ) const QWT_OVERRIDE;
 
-    virtual size_t size() const;
-    virtual QPointF sample( size_t i ) const;
-
-    const QVector<double> &xData() const;
-    const QVector<double> &yData() const;
+    const QVector<T> &xData() const;
+    const QVector<T> &yData() const;
 
 private:
-    QVector<double> d_x;
-    QVector<double> d_y;
+    QVector<T> d_x;
+    QVector<T> d_y;
 };
 
 /*!
-  \brief Data class containing two pointers to memory blocks of doubles.
+  \brief Data class containing two pointers to memory blocks of T.
  */
-class QWT_EXPORT QwtCPointerData: public QwtSeriesData<QPointF>
+template <typename T>
+class QwtCPointerData: public QwtPointSeriesData
 {
 public:
-    QwtCPointerData( const double *x, const double *y, size_t size );
+    QwtCPointerData( const T *x, const T *y, size_t size );
 
-    virtual QRectF boundingRect() const;
-    virtual size_t size() const;
-    virtual QPointF sample( size_t i ) const;
+    virtual size_t size() const QWT_OVERRIDE;
+    virtual QPointF sample( size_t index ) const QWT_OVERRIDE;
 
-    const double *xData() const;
-    const double *yData() const;
+    const T *xData() const;
+    const T *yData() const;
 
 private:
-    const double *d_x;
-    const double *d_y;
+    const T *d_x;
+    const T *d_y;
+    size_t d_size;
+};
+
+/*!
+  \brief Interface for iterating over a QVector<T>.
+
+  The memory contains the y coordinates, while the index is
+  interpreted as x coordinate.
+*/
+template <typename T>
+class QwtValuePointData: public QwtPointSeriesData
+{
+public:
+    QwtValuePointData( const QVector<T> &y );
+    QwtValuePointData( const T *y, size_t size );
+
+    virtual size_t size() const QWT_OVERRIDE;
+    virtual QPointF sample( size_t index ) const QWT_OVERRIDE;
+
+    const QVector<T> &yData() const;
+
+private:
+    QVector<T> d_y;
+};
+
+/*!
+  \brief Data class containing a pointer to memory of y coordinates
+
+  The memory contains the y coordinates, while the index is
+  interpreted as x coordinate.
+ */
+template <typename T>
+class QwtCPointerValueData: public QwtPointSeriesData
+{
+public:
+    QwtCPointerValueData( const T *y, size_t size );
+
+    virtual size_t size() const QWT_OVERRIDE;
+    virtual QPointF sample( size_t index ) const QWT_OVERRIDE;
+
+    const T *yData() const;
+
+private:
+    const T *d_y;
     size_t d_size;
 };
 
@@ -109,20 +154,20 @@ int main(int argc, char **argv)
 }
    \endcode
 */
-class QWT_EXPORT QwtSyntheticPointData: public QwtSeriesData<QPointF>
+class QWT_EXPORT QwtSyntheticPointData: public QwtPointSeriesData
 {
 public:
     QwtSyntheticPointData( size_t size,
         const QwtInterval & = QwtInterval() );
 
     void setSize( size_t size );
-    virtual size_t size() const;
+    virtual size_t size() const QWT_OVERRIDE;
 
     void setInterval( const QwtInterval& );
     QwtInterval interval() const;
 
-    virtual QRectF boundingRect() const;
-    virtual QPointF sample( size_t i ) const;
+    virtual QRectF boundingRect() const QWT_OVERRIDE;
+    virtual QPointF sample( size_t index ) const QWT_OVERRIDE;
 
     /*!
        Calculate a y value for a x value
@@ -133,7 +178,7 @@ public:
     virtual double y( double x ) const = 0;
     virtual double x( uint index ) const;
 
-    virtual void setRectOfInterest( const QRectF & );
+    virtual void setRectOfInterest( const QRectF & ) QWT_OVERRIDE;
     QRectF rectOfInterest() const;
 
 private:
@@ -142,5 +187,228 @@ private:
     QRectF d_rectOfInterest;
     QwtInterval d_intervalOfInterest;
 };
+
+/*!
+  Constructor
+
+  \param x Array of x values
+  \param y Array of y values
+
+  \sa QwtPlotCurve::setData(), QwtPlotCurve::setSamples()
+*/
+template <typename T>
+QwtPointArrayData<T>::QwtPointArrayData(
+        const QVector<T> &x, const QVector<T> &y ):
+    d_x( x ),
+    d_y( y )
+{
+}
+
+/*!
+  Constructor
+
+  \param x Array of x values
+  \param y Array of y values
+  \param size Size of the x and y arrays
+  \sa QwtPlotCurve::setData(), QwtPlotCurve::setSamples()
+*/
+template <typename T>
+QwtPointArrayData<T>::QwtPointArrayData(
+    const T *x, const T *y, size_t size )
+{
+    d_x.resize( size );
+    std::memcpy( d_x.data(), x, size * sizeof( T ) );
+
+    d_y.resize( size );
+    std::memcpy( d_y.data(), y, size * sizeof( T ) );
+}
+
+//! \return Size of the data set
+template <typename T>
+size_t QwtPointArrayData<T>::size() const
+{
+    return qMin( d_x.size(), d_y.size() );
+}
+
+/*!
+  Return the sample at position i
+
+  \param index Index
+  \return Sample at position i
+*/
+template <typename T>
+QPointF QwtPointArrayData<T>::sample( size_t index ) const
+{
+    return QPointF( d_x[int( index )], d_y[int( index )] );
+}
+
+//! \return Array of the x-values
+template <typename T>
+const QVector<T> &QwtPointArrayData<T>::xData() const
+{
+    return d_x;
+}
+
+//! \return Array of the y-values
+template <typename T>
+const QVector<T> &QwtPointArrayData<T>::yData() const
+{
+    return d_y;
+}
+
+/*!
+  Constructor
+
+  \param y Array of y values
+
+  \sa QwtPlotCurve::setData(), QwtPlotCurve::setSamples()
+*/
+template <typename T>
+QwtValuePointData<T>::QwtValuePointData( const QVector<T> &y ):
+    d_y( y )
+{
+}
+
+/*!
+  Constructor
+
+  \param x Array of x values
+  \param y Array of y values
+  \param size Size of the x and y arrays
+  \sa QwtPlotCurve::setData(), QwtPlotCurve::setSamples()
+*/
+template <typename T>
+QwtValuePointData<T>::QwtValuePointData( const T *y, size_t size )
+{
+    d_y.resize( size );
+    std::memcpy( d_y.data(), y, size * sizeof( T ) );
+}
+
+//! \return Size of the data set
+template <typename T>
+size_t QwtValuePointData<T>::size() const
+{
+    return d_y.size();
+}
+
+/*!
+  Return the sample at position i
+
+  \param index Index
+  \return Sample at position i
+*/
+template <typename T>
+QPointF QwtValuePointData<T>::sample( size_t index ) const
+{
+    return QPointF( index, d_y[int( index )] );
+}
+
+//! \return Array of the y-values
+template <typename T>
+const QVector<T> &QwtValuePointData<T>::yData() const
+{
+    return d_y;
+}
+
+/*!
+  Constructor
+
+  \param x Array of x values
+  \param y Array of y values
+  \param size Size of the x and y arrays
+
+  \warning The programmer must assure that the memory blocks referenced
+           by the pointers remain valid during the lifetime of the
+           QwtPlotCPointer object.
+
+  \sa QwtPlotCurve::setData(), QwtPlotCurve::setRawSamples()
+*/
+
+template <typename T>
+QwtCPointerData<T>::QwtCPointerData( const T *x, const T *y, size_t size ):
+    d_x( x ),
+    d_y( y ),
+    d_size( size )
+{
+}
+
+//! \return Size of the data set
+template <typename T>
+size_t QwtCPointerData<T>::size() const
+{
+    return d_size;
+}
+
+/*!
+  Return the sample at position i
+
+  \param index Index
+  \return Sample at position i
+*/
+template <typename T>
+QPointF QwtCPointerData<T>::sample( size_t index ) const
+{
+    return QPointF( d_x[int( index )], d_y[int( index )] );
+}
+
+//! \return Array of the x-values
+template <typename T>
+const T *QwtCPointerData<T>::xData() const
+{
+    return d_x;
+}
+
+//! \return Array of the y-values
+template <typename T>
+const T *QwtCPointerData<T>::yData() const
+{
+    return d_y;
+}
+
+/*!
+  Constructor
+
+  \param y Array of y values
+  \param size Size of the x and y arrays
+
+  \warning The programmer must assure that the memory blocks referenced
+           by the pointers remain valid during the lifetime of the
+           QwtCPointerValueData object.
+
+  \sa QwtPlotCurve::setData(), QwtPlotCurve::setRawSamples()
+*/
+
+template <typename T>
+QwtCPointerValueData<T>::QwtCPointerValueData( const T *y, size_t size ):
+    d_y( y ),
+    d_size( size )
+{
+}
+
+//! \return Size of the data set
+template <typename T>
+size_t QwtCPointerValueData<T>::size() const
+{
+    return d_size;
+}
+
+/*!
+  Return the sample at position i
+
+  \param index Index
+  \return Sample at position i
+*/
+template <typename T>
+QPointF QwtCPointerValueData<T>::sample( size_t index ) const
+{
+    return QPointF( index, d_y[ int( index ) ] );
+}
+
+//! \return Array of the y-values
+template <typename T>
+const T *QwtCPointerValueData<T>::yData() const
+{
+    return d_y;
+}
 
 #endif

@@ -8,13 +8,13 @@
  *****************************************************************************/
 
 #ifndef QWT_SPLINE_CUBIC_H
-#define QWT_SPLINE_CUBIC_H 1
+#define QWT_SPLINE_CUBIC_H
 
 #include "qwt_global.h"
 #include "qwt_spline.h"
 
 /*!
-  \brief A cubic spline 
+  \brief A cubic spline
 
   A cubic spline is a spline with C2 continuity at all control points.
   It is a non local spline, what means that all polynomials are changing
@@ -36,15 +36,15 @@ public:
     QwtSplineCubic();
     virtual ~QwtSplineCubic();
 
-    virtual uint locality() const;
+    virtual uint locality() const QWT_OVERRIDE;
 
-    virtual QPainterPath painterPath( const QPolygonF & ) const;
-    virtual QVector<QLineF> bezierControlLines( const QPolygonF &points ) const;
+    virtual QPainterPath painterPath( const QPolygonF & ) const QWT_OVERRIDE;
+    virtual QVector<QLineF> bezierControlLines( const QPolygonF &points ) const QWT_OVERRIDE;
 
     // calculating the parametric equations
-    virtual QVector<QwtSplinePolynomial> polynomials( const QPolygonF & ) const;
-    virtual QVector<double> slopes( const QPolygonF & ) const;
-    virtual QVector<double> curvatures( const QPolygonF & ) const;
+    virtual QVector<QwtSplinePolynomial> polynomials( const QPolygonF & ) const QWT_OVERRIDE;
+    virtual QVector<double> slopes( const QPolygonF & ) const QWT_OVERRIDE;
+    virtual QVector<double> curvatures( const QPolygonF & ) const QWT_OVERRIDE;
 
 private:
     class PrivateData;

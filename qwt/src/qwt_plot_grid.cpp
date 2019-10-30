@@ -12,7 +12,7 @@
 #include "qwt_text.h"
 #include "qwt_scale_map.h"
 #include "qwt_scale_div.h"
-#include "qwt_math.h"
+
 #include <qpainter.h>
 #include <qpen.h>
 

@@ -8,18 +8,20 @@
  *****************************************************************************/
 
 #include "qwt_thermo.h"
-#include "qwt_scale_engine.h"
 #include "qwt_scale_draw.h"
 #include "qwt_scale_map.h"
 #include "qwt_color_map.h"
+#include "qwt_math.h"
+
 #include <qpainter.h>
 #include <qevent.h>
 #include <qdrawutil.h>
 #include <qstyle.h>
 #include <qstyleoption.h>
-#include <qmath.h>
 
-static inline void qwtDrawLine( QPainter *painter, int pos, 
+#include <algorithm>
+
+static inline void qwtDrawLine( QPainter *painter, int pos,
     const QColor &color, const QRect &pipeRect, const QRect &liquidRect,
     Qt::Orientation orientation )
 {
@@ -36,7 +38,7 @@ static inline void qwtDrawLine( QPainter *painter, int pos,
     }
 }
 
-QVector<double> qwtTickList( const QwtScaleDiv &scaleDiv )
+static QVector<double> qwtTickList( const QwtScaleDiv &scaleDiv )
 {
     QVector<double> values;
 
@@ -58,11 +60,11 @@ QVector<double> qwtTickList( const QwtScaleDiv &scaleDiv )
             const double v = ticks[i];
             if ( v > lowerLimit && v < upperLimit )
                 values += v;
-        }       
-    }   
+        }
+    }
 
     values += upperLimit;
-    
+
     return values;
 }
 
@@ -248,15 +250,15 @@ void QwtThermo::paintEvent( QPaintEvent *event )
     const int bw = d_data->borderWidth;
 
     const QBrush brush = palette().brush( QPalette::Base );
-    qDrawShadePanel( &painter, 
+    qDrawShadePanel( &painter,
         tRect.adjusted( -bw, -bw, bw, bw ),
-        palette(), true, bw, 
+        palette(), true, bw,
         d_data->autoFillPipe ? &brush : NULL );
 
     drawLiquid( &painter, tRect );
 }
 
-/*! 
+/*!
   Resize event handler
   \param event Resize event
 */
@@ -266,7 +268,7 @@ void QwtThermo::resizeEvent( QResizeEvent *event )
     layoutThermo( false );
 }
 
-/*! 
+/*!
   Qt change event handler
   \param event Event
 */
@@ -410,7 +412,7 @@ QRect QwtThermo::pipeRect() const
 
         if ( d_data->scalePosition == QwtThermo::LeadingScale )
             pipeRect.setLeft( bw );
-        else 
+        else
             pipeRect.setLeft( cr.left() + cr.width() - bw - d_data->pipeWidth );
 
         pipeRect.setWidth( d_data->pipeWidth );
@@ -539,7 +541,7 @@ void QwtThermo::scaleChange()
    \param painter Painter
    \param pipeRect Bounding rectangle of the pipe without borders
 */
-void QwtThermo::drawLiquid( 
+void QwtThermo::drawLiquid(
     QPainter *painter, const QRect &pipeRect ) const
 {
     painter->save();
@@ -560,9 +562,9 @@ void QwtThermo::drawLiquid(
         QVector<double> values = qwtTickList( scaleDraw()->scaleDiv() );
 
         if ( scaleMap.isInverting() )
-            qSort( values.begin(), values.end(), qGreater<double>() );
+            std::sort( values.begin(), values.end(), std::greater<double>() );
         else
-            qSort( values.begin(), values.end(), qLess<double>() );
+            std::sort( values.begin(), values.end(), std::less<double>() );
 
         int from;
         if ( !values.isEmpty() )
@@ -581,7 +583,7 @@ void QwtThermo::drawLiquid(
             {
                 const double v = scaleMap.invTransform( pos );
 
-                qwtDrawLine( painter, pos, 
+                qwtDrawLine( painter, pos,
                     d_data->colorMap->color( interval, v ),
                     pipeRect, liquidRect, d_data->orientation );
             }
@@ -707,10 +709,10 @@ const QwtColorMap *QwtThermo::colorMap() const
 
 /*!
   \brief Change the brush of the liquid.
- 
+
   Changes the QPalette::ButtonText brush of the palette.
 
-  \param brush New brush. 
+  \param brush New brush.
   \sa fillBrush(), QWidget::setPalette()
 */
 void QwtThermo::setFillBrush( const QBrush& brush )
@@ -721,7 +723,7 @@ void QwtThermo::setFillBrush( const QBrush& brush )
 }
 
 /*!
-  \return Liquid ( QPalette::ButtonText ) brush. 
+  \return Liquid ( QPalette::ButtonText ) brush.
   \sa setFillBrush(), QWidget::palette()
 */
 QBrush QwtThermo::fillBrush() const
@@ -734,7 +736,7 @@ QBrush QwtThermo::fillBrush() const
 
   Changes the QPalette::Highlight brush of the palette.
 
-  \param brush New brush. 
+  \param brush New brush.
   \sa alarmBrush(), QWidget::setPalette()
 
   \warning The alarm threshold has no effect, when
@@ -824,7 +826,7 @@ void QwtThermo::setAlarmEnabled( bool on )
     update();
 }
 
-/*! 
+/*!
   \return True, when the alarm threshold is enabled.
 
   \warning The alarm threshold has no effect, when
@@ -855,7 +857,7 @@ QSize QwtThermo::minimumSizeHint() const
 
     if ( d_data->scalePosition != NoScale )
     {
-        const int sdExtent = qCeil( scaleDraw()->extent( font() ) );
+        const int sdExtent = qwtCeil( scaleDraw()->extent( font() ) );
         const int sdLength = scaleDraw()->minLength( font() );
 
         w = sdLength;
@@ -893,7 +895,7 @@ QSize QwtThermo::minimumSizeHint() const
  */
 QRect QwtThermo::fillRect( const QRect &pipeRect ) const
 {
-    double origin;        
+    double origin;
     if ( d_data->originMode == OriginMinimum )
     {
         origin = qMin( lowerBound(), upperBound() );
@@ -914,7 +916,7 @@ QRect QwtThermo::fillRect( const QRect &pipeRect ) const
 
     if ( to < from )
         qSwap( from, to );
-    
+
     QRect fillRect = pipeRect;
     if ( d_data->orientation == Qt::Horizontal )
     {
@@ -946,7 +948,7 @@ QRect QwtThermo::alarmRect( const QRect &fillRect ) const
         return alarmRect;
 
     const bool inverted = ( upperBound() < lowerBound() );
-    
+
     bool increasing;
     if ( d_data->originMode == OriginCustom )
     {
@@ -960,7 +962,7 @@ QRect QwtThermo::alarmRect( const QRect &fillRect ) const
     const QwtScaleMap map = scaleDraw()->scaleMap();
     const int alarmPos = qRound( map.transform( d_data->alarmLevel ) );
     const int valuePos = qRound( map.transform( d_data->value ) );
-    
+
     if ( d_data->orientation == Qt::Horizontal )
     {
         int v1, v2;
@@ -1002,4 +1004,8 @@ QRect QwtThermo::alarmRect( const QRect &fillRect ) const
     }
 
     return alarmRect;
-} 
+}
+
+#if QWT_MOC_INCLUDE
+#include "moc_qwt_thermo.cpp"
+#endif
