@@ -118,6 +118,8 @@ public slots:
 
     void enableTracker(bool enable);
 
+    bool isTrackerEnabled() const;
+
     void setTrackerPosition(double abs_time);
 
     void on_changeTimeOffset(double offset);

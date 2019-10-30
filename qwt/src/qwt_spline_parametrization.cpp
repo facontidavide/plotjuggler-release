@@ -23,13 +23,13 @@ QwtSplineParametrization::QwtSplineParametrization( int type ):
 QwtSplineParametrization::~QwtSplineParametrization()
 {
 }
- 
-/*!     
+
+/*!
   \brief Calculate the parameter value increment for 2 points
-            
+
   \param point1 First point
   \param point2 Second point
-        
+
   \return Value increment
  */
 double QwtSplineParametrization::valueIncrement(

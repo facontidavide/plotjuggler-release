@@ -8,13 +8,13 @@
  *****************************************************************************/
 
 #ifndef QWT_PICKER_MACHINE
-#define QWT_PICKER_MACHINE 1
+#define QWT_PICKER_MACHINE
 
 #include "qwt_global.h"
-#include <qlist.h>
 
-class QEvent;
 class QwtEventPattern;
+class QEvent;
+template <typename T> class QList;
 
 /*!
   \brief A state machine for QwtPicker selections
@@ -88,7 +88,7 @@ public:
     QwtPickerTrackerMachine();
 
     virtual QList<Command> transition(
-        const QwtEventPattern &, const QEvent * );
+        const QwtEventPattern &, const QEvent * ) QWT_OVERRIDE;
 };
 
 /*!
@@ -105,7 +105,7 @@ public:
     QwtPickerClickPointMachine();
 
     virtual QList<Command> transition(
-        const QwtEventPattern &, const QEvent * );
+        const QwtEventPattern &, const QEvent * ) QWT_OVERRIDE;
 };
 
 /*!
@@ -121,7 +121,7 @@ public:
     QwtPickerDragPointMachine();
 
     virtual QList<Command> transition(
-        const QwtEventPattern &, const QEvent * );
+        const QwtEventPattern &, const QEvent * ) QWT_OVERRIDE;
 };
 
 /*!
@@ -143,7 +143,7 @@ public:
     QwtPickerClickRectMachine();
 
     virtual QList<Command> transition(
-        const QwtEventPattern &, const QEvent * );
+        const QwtEventPattern &, const QEvent * ) QWT_OVERRIDE;
 };
 
 /*!
@@ -164,12 +164,12 @@ public:
     QwtPickerDragRectMachine();
 
     virtual QList<Command> transition(
-        const QwtEventPattern &, const QEvent * );
+        const QwtEventPattern &, const QEvent * ) QWT_OVERRIDE;
 };
 
 /*!
   \brief A state machine for line selections
-    
+
   Pressing QwtEventPattern::MouseSelect1 selects
   the first point, releasing it the second point.
   Pressing QwtEventPattern::KeySelect1 also selects the
@@ -178,17 +178,17 @@ public:
 
   A common use case of QwtPickerDragLineMachine are pickers for
   distance measurements.
-  
+
   \sa QwtEventPattern::MousePatternCode, QwtEventPattern::KeyPatternCode
-*/              
-                    
+*/
+
 class QWT_EXPORT QwtPickerDragLineMachine: public QwtPickerMachine
 {
 public:
     QwtPickerDragLineMachine();
 
     virtual QList<Command> transition(
-        const QwtEventPattern &, const QEvent * );
+        const QwtEventPattern &, const QEvent * ) QWT_OVERRIDE;
 };
 
 /*!
@@ -208,7 +208,7 @@ public:
     QwtPickerPolygonMachine();
 
     virtual QList<Command> transition(
-        const QwtEventPattern &, const QEvent * );
+        const QwtEventPattern &, const QEvent * ) QWT_OVERRIDE;
 };
 
 #endif

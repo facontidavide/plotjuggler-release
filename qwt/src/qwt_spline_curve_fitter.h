@@ -33,8 +33,8 @@ public:
     const QwtSpline *spline() const;
     QwtSpline *spline();
 
-    virtual QPolygonF fitCurve( const QPolygonF & ) const;
-    virtual QPainterPath fitCurvePath( const QPolygonF & ) const;
+    virtual QPolygonF fitCurve( const QPolygonF & ) const QWT_OVERRIDE;
+    virtual QPainterPath fitCurvePath( const QPolygonF & ) const QWT_OVERRIDE;
 
 private:
     QwtSpline *d_spline;

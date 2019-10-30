@@ -8,10 +8,11 @@
  *****************************************************************************/
 
 #include "qwt_plot_histogram.h"
-#include "qwt_plot.h"
 #include "qwt_painter.h"
 #include "qwt_column_symbol.h"
 #include "qwt_scale_map.h"
+#include "qwt_graphic.h"
+
 #include <qstring.h>
 #include <qpainter.h>
 
@@ -122,21 +123,21 @@ QwtPlotHistogram::HistogramStyle QwtPlotHistogram::style() const
 
 /*!
   Build and assign a pen
-    
+
   In Qt5 the default pen width is 1.0 ( 0.0 in Qt4 ) what makes it
   non cosmetic ( see QPen::isCosmetic() ). This method has been introduced
   to hide this incompatibility.
-    
+
   \param color Pen color
   \param width Pen width
   \param style Pen style
-    
+
   \sa pen(), brush()
  */
 void QwtPlotHistogram::setPen( const QColor &color, qreal width, Qt::PenStyle style )
-{   
+{
     setPen( QPen( color, width, style ) );
-}   
+}
 
 /*!
   Assign a pen, that is used in a style() depending way.
@@ -303,15 +304,15 @@ void QwtPlotHistogram::setSamples(
 
 /*!
   Assign a series of samples
-    
+
   setSamples() is just a wrapper for setData() without any additional
   value - beside that it is easier to find for the developer.
-    
+
   \param data Data
   \warning The item takes ownership of the data object, deleting
            it when its not used anymore.
 */
-void QwtPlotHistogram::setSamples( 
+void QwtPlotHistogram::setSamples(
     QwtSeriesData<QwtIntervalSample> *data )
 {
     setData( data );
@@ -332,8 +333,10 @@ void QwtPlotHistogram::setSamples(
 */
 void QwtPlotHistogram::drawSeries( QPainter *painter,
     const QwtScaleMap &xMap, const QwtScaleMap &yMap,
-    const QRectF &, int from, int to ) const
+    const QRectF &canvasRect, int from, int to ) const
 {
+    Q_UNUSED( canvasRect )
+
     if ( !painter || dataSize() <= 0 )
         return;
 
@@ -675,15 +678,14 @@ void QwtPlotHistogram::drawColumn( QPainter *painter,
 /*!
   A plain rectangle without pen using the brush()
 
-  \param index Index of the legend entry 
+  \param index Index of the legend entry
                 ( ignored as there is only one )
   \param size Icon size
   \return A graphic displaying the icon
-    
+
   \sa QwtPlotItem::setLegendIconSize(), QwtPlotItem::legendData()
 */
-QwtGraphic QwtPlotHistogram::legendIcon( int index,
-    const QSizeF &size ) const
+QwtGraphic QwtPlotHistogram::legendIcon( int index, const QSizeF &size ) const
 {
     Q_UNUSED( index );
     return defaultIcon( d_data->brush, size );

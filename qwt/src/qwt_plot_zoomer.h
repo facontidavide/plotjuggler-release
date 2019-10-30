@@ -92,7 +92,7 @@ public:
     QRectF zoomBase() const;
     QRectF zoomRect() const;
 
-    virtual void setAxis( int xAxis, int yAxis ) override;
+    virtual void setAxis( int xAxis, int yAxis ) QWT_OVERRIDE;
 
     void setMaxStackDepth( int );
     int maxStackDepth() const;
@@ -125,12 +125,12 @@ protected:
 
     virtual QSizeF minZoomSize() const;
 
-    virtual void widgetMouseReleaseEvent( QMouseEvent * ) override;
-    virtual void widgetKeyPressEvent( QKeyEvent * ) override;
+    virtual void widgetMouseReleaseEvent( QMouseEvent * ) QWT_OVERRIDE;
+    virtual void widgetKeyPressEvent( QKeyEvent * ) QWT_OVERRIDE;
 
-    virtual void begin() override;
-    virtual bool end( bool ok = true ) override;
-    virtual bool accept( QPolygon & ) const override;
+    virtual void begin() QWT_OVERRIDE;
+    virtual bool end( bool ok = true ) QWT_OVERRIDE;
+    virtual bool accept( QPolygon & ) const QWT_OVERRIDE;
 
 private:
     void init( bool doReplot );
