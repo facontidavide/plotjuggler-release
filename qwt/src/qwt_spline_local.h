@@ -8,7 +8,7 @@
  *****************************************************************************/
 
 #ifndef QWT_SPLINE_LOCAL_H
-#define QWT_SPLINE_LOCAL_H 1
+#define QWT_SPLINE_LOCAL_H
 
 #include "qwt_global.h"
 #include "qwt_spline.h"
@@ -36,7 +36,7 @@ public:
         /*!
           A cardinal spline
 
-          The cardinal spline interpolation is a very cheap calculation with 
+          The cardinal spline interpolation is a very cheap calculation with
           a locality of 1.
          */
         Cardinal,
@@ -45,10 +45,10 @@ public:
           Parabolic blending is a cheap calculation with a locality of 1. Sometimes
           it is also called Cubic Bessel interpolation.
          */
-        ParabolicBlending, 
+        ParabolicBlending,
 
         /*!
-          The algorithm of H.Akima is a calculation with a locality of 2. 
+          The algorithm of H.Akima is a calculation with a locality of 2.
          */
         Akima,
 
@@ -59,7 +59,7 @@ public:
           It preserves the shape of the data and respects monotonicity. It has a
           locality of 1.
          */
-        PChip 
+        PChip
     };
 
     QwtSplineLocal( Type type );
@@ -67,14 +67,14 @@ public:
 
     Type type() const;
 
-    virtual uint locality() const;
+    virtual uint locality() const QWT_OVERRIDE;
 
-    virtual QPainterPath painterPath( const QPolygonF & ) const;
-    virtual QVector<QLineF> bezierControlLines( const QPolygonF & ) const;
+    virtual QPainterPath painterPath( const QPolygonF & ) const QWT_OVERRIDE;
+    virtual QVector<QLineF> bezierControlLines( const QPolygonF & ) const QWT_OVERRIDE;
 
     // calculating the parametric equations
-    virtual QVector<QwtSplinePolynomial> polynomials( const QPolygonF & ) const;
-    virtual QVector<double> slopes( const QPolygonF & ) const;
+    virtual QVector<QwtSplinePolynomial> polynomials( const QPolygonF & ) const QWT_OVERRIDE;
+    virtual QVector<double> slopes( const QPolygonF & ) const QWT_OVERRIDE;
 
 private:
     const Type d_type;

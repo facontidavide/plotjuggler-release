@@ -8,6 +8,8 @@
  *****************************************************************************/
 
 #include "qwt_legend_data.h"
+#include "qwt_text.h"
+#include "qwt_graphic.h"
 
 //! Constructor
 QwtLegendData::QwtLegendData()
@@ -123,7 +125,7 @@ QwtLegendData::Mode QwtLegendData::mode() const
         const int mode = qvariant_cast<int>( modeValue );
         return static_cast<QwtLegendData::Mode>( mode );
     }
-    
+
     return QwtLegendData::ReadOnly;
 }
 

@@ -2,7 +2,10 @@
 #include <QEvent>
 #include <QMouseEvent>
 #include <QWheelEvent>
-
+#include <QPainter>
+#include "qwt_legend_data.h"
+#include "qwt_graphic.h"
+#include "qwt_text.h"
 
 PlotLegend::PlotLegend(QwtPlot *parent):
     _parent_plot(parent),
@@ -11,7 +14,7 @@ PlotLegend::PlotLegend(QwtPlot *parent):
     setRenderHint( QwtPlotItem::RenderAntialiased );
 
     setMaxColumns( 1 );
-    setAlignment( Qt::Alignment( Qt::AlignTop | Qt::AlignRight ) );
+    setAlignmentInCanvas( Qt::Alignment( Qt::AlignTop | Qt::AlignRight ) );
     setBackgroundMode( QwtPlotLegendItem::BackgroundMode::LegendBackground   );
 
     setBorderRadius( 2 );
@@ -32,7 +35,7 @@ PlotLegend::PlotLegend(QwtPlot *parent):
 QRectF PlotLegend::hideButtonRect() const
 {
     auto canvas_rect = _parent_plot->canvas()->rect();
-    if( alignment() & Qt::AlignRight)
+    if( alignmentInCanvas() & Qt::AlignRight)
     {
         return QRectF( geometry(canvas_rect).topRight(), QSize(8,-8) );
     }

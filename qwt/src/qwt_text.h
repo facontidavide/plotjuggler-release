@@ -11,14 +11,14 @@
 #define QWT_TEXT_H
 
 #include "qwt_global.h"
-#include <qstring.h>
-#include <qsize.h>
-#include <qfont.h>
 #include <qmetatype.h>
 
+class QFont;
+class QString;
 class QColor;
 class QPen;
 class QBrush;
+class QSizeF;
 class QRectF;
 class QPainter;
 class QwtTextEngine;
@@ -80,10 +80,13 @@ public:
         /*!
           Use a MathML (http://en.wikipedia.org/wiki/MathML) render engine
           to display the text. The Qwt MathML extension offers such an engine
-          based on the MathML renderer of the Qt solutions package. 
+          based on the MathML renderer of the former Qt solutions package.
           To enable MathML support the following code needs to be added to the
           application:
-\verbatim QwtText::setTextEngine(QwtText::MathMLText, new QwtMathMLTextEngine()); \endverbatim
+
+          \code
+            QwtText::setTextEngine( QwtText::MathMLText, new QwtMathMLTextEngine() );
+          \endcode
          */
         MathMLText,
 
@@ -139,9 +142,10 @@ public:
     //! Layout attributes
     typedef QFlags<LayoutAttribute> LayoutAttributes;
 
-    QwtText( const QString & = QString(),
-             TextFormat textFormat = AutoText );
+    QwtText();
+    QwtText( const QString &, TextFormat textFormat = AutoText );
     QwtText( const QwtText & );
+
     ~QwtText();
 
     QwtText &operator=( const QwtText & );
@@ -161,7 +165,7 @@ public:
 
     QFont usedFont( const QFont & ) const;
 
-    void setRenderFlags( int flags );
+    void setRenderFlags( int );
     int renderFlags() const;
 
     void setColor( const QColor & );
@@ -184,12 +188,15 @@ public:
     void setLayoutAttribute( LayoutAttribute, bool on = true );
     bool testLayoutAttribute( LayoutAttribute ) const;
 
-    double heightForWidth( double width, const QFont & = QFont() ) const;
-    QSizeF textSize( const QFont & = QFont() ) const;
+    double heightForWidth( double width ) const;
+    double heightForWidth( double width, const QFont & ) const;
+
+    QSizeF textSize() const;
+    QSizeF textSize( const QFont & ) const;
 
     void draw( QPainter *painter, const QRectF &rect ) const;
 
-    static const QwtTextEngine *textEngine( 
+    static const QwtTextEngine *textEngine(
         const QString &text, QwtText::TextFormat = AutoText );
 
     static const QwtTextEngine *textEngine( QwtText::TextFormat );
@@ -202,18 +209,6 @@ private:
     class LayoutCache;
     LayoutCache *d_layoutCache;
 };
-
-//! \return text().isNull()
-inline bool QwtText::isNull() const
-{
-    return text().isNull();
-}
-
-//! \return text().isEmpty()
-inline bool QwtText::isEmpty() const
-{
-    return text().isEmpty();
-}
 
 Q_DECLARE_OPERATORS_FOR_FLAGS( QwtText::PaintAttributes )
 Q_DECLARE_OPERATORS_FOR_FLAGS( QwtText::LayoutAttributes )

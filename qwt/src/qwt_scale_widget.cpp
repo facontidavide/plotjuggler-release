@@ -14,12 +14,14 @@
 #include "qwt_math.h"
 #include "qwt_scale_div.h"
 #include "qwt_text.h"
+#include "qwt_interval.h"
 #include "qwt_scale_engine.h"
+
 #include <qpainter.h>
 #include <qevent.h>
-#include <qmath.h>
 #include <qstyle.h>
 #include <qstyleoption.h>
+#include <qapplication.h>
 
 class QwtScaleWidget::PrivateData
 {
@@ -145,6 +147,8 @@ void QwtScaleWidget::setLayoutFlag( LayoutFlag flag, bool on )
             d_data->layoutFlags |= flag;
         else
             d_data->layoutFlags &= ~flag;
+
+        update();
     }
 }
 
@@ -581,7 +585,7 @@ void QwtScaleWidget::layoutScale( bool update_geometry )
     d_data->scaleDraw->move( x, y );
     d_data->scaleDraw->setLength( length );
 
-    const int extent = qCeil( d_data->scaleDraw->extent( font() ) );
+    const int extent = qwtCeil( d_data->scaleDraw->extent( font() ) );
 
     d_data->titleOffset =
         d_data->margin + d_data->spacing + colorBarWidth + extent;
@@ -589,6 +593,23 @@ void QwtScaleWidget::layoutScale( bool update_geometry )
     if ( update_geometry )
     {
         updateGeometry();
+
+#if 1
+        /*
+            for some reason updateGeometry does not send a LayoutRequest event
+            when the parent is not visible and has no layout
+         */
+
+        if ( QWidget* w = parentWidget() )
+        {
+            if ( !w->isVisible() && w->layout() == NULL )
+            {
+                if ( w->testAttribute( Qt::WA_WState_Polished ) )
+                    QApplication::postEvent( w, new QEvent( QEvent::LayoutRequest ) );
+            }
+        }
+#endif
+
         update();
     }
 }
@@ -747,7 +768,7 @@ QSize QwtScaleWidget::minimumSizeHint() const
 
 int QwtScaleWidget::titleHeightForWidth( int width ) const
 {
-    return qCeil( d_data->title.heightForWidth( width, font() ) );
+    return qwtCeil( d_data->title.heightForWidth( width, font() ) );
 }
 
 /*!
@@ -761,7 +782,7 @@ int QwtScaleWidget::titleHeightForWidth( int width ) const
 
 int QwtScaleWidget::dimForLength( int length, const QFont &scaleFont ) const
 {
-    const int extent = qCeil( d_data->scaleDraw->extent( scaleFont ) );
+    const int extent = qwtCeil( d_data->scaleDraw->extent( scaleFont ) );
 
     int dim = d_data->margin + extent + 1;
 
@@ -783,9 +804,9 @@ int QwtScaleWidget::dimForLength( int length, const QFont &scaleFont ) const
   The maximum of this distance an the minimum border distance
   is returned.
 
-  \param start Return parameter for the border width at 
+  \param start Return parameter for the border width at
                the beginning of the scale
-  \param end Return parameter for the border width at the 
+  \param end Return parameter for the border width at the
              end of the scale
 
   \warning
@@ -823,9 +844,9 @@ void QwtScaleWidget::setMinBorderDist( int start, int end )
   Get the minimum value for the distances of the scale's endpoints from
   the widget borders.
 
-  \param start Return parameter for the border width at 
+  \param start Return parameter for the border width at
                the beginning of the scale
-  \param end Return parameter for the border width at the 
+  \param end Return parameter for the border width at the
              end of the scale
 
   \sa setMinBorderDist(), getBorderDistHint()
@@ -956,3 +977,7 @@ const QwtColorMap *QwtScaleWidget::colorMap() const
 {
     return d_data->colorBar.colorMap;
 }
+
+#if QWT_MOC_INCLUDE
+#include "moc_qwt_scale_widget.cpp"
+#endif

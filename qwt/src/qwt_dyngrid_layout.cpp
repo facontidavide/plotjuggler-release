@@ -8,7 +8,7 @@
  *****************************************************************************/
 
 #include "qwt_dyngrid_layout.h"
-#include "qwt_math.h"
+
 #include <qvector.h>
 #include <qlist.h>
 
@@ -82,7 +82,6 @@ void QwtDynGridLayout::init()
 {
     d_data = new QwtDynGridLayout::PrivateData;
     d_data->maxColumns = d_data->numRows = d_data->numColumns = 0;
-    d_data->expanding = 0;
 }
 
 //! Destructor
@@ -123,7 +122,7 @@ uint QwtDynGridLayout::maxColumns() const
     return d_data->maxColumns;
 }
 
-/*! 
+/*!
   \brief Add an item to the next free position.
   \param item Layout item
  */
@@ -245,9 +244,9 @@ void QwtDynGridLayout::setGeometry( const QRect &rect )
 }
 
 /*!
-  \brief Calculate the number of columns for a given width. 
+  \brief Calculate the number of columns for a given width.
 
-  The calculation tries to use as many columns as possible 
+  The calculation tries to use as many columns as possible
   ( limited by maxColumns() )
 
   \param width Available width for all columns
@@ -261,7 +260,7 @@ uint QwtDynGridLayout::columnsForWidth( int width ) const
         return 0;
 
     uint maxColumns = itemCount();
-    if ( d_data->maxColumns > 0 ) 
+    if ( d_data->maxColumns > 0 )
         maxColumns = qMin( d_data->maxColumns, maxColumns );
 
     if ( maxRowWidth( maxColumns ) <= width )
@@ -300,7 +299,7 @@ int QwtDynGridLayout::maxRowWidth( int numColumns ) const
     {
         col = index % numColumns;
         colWidth[col] = qMax( colWidth[col],
-            d_data->itemSizeHints[int( index )].width() );
+            d_data->itemSizeHints[index].width() );
     }
 
     int rowWidth = 2 * margin() + ( numColumns - 1 ) * spacing();
@@ -430,7 +429,7 @@ void QwtDynGridLayout::layoutGrid( uint numColumns,
         const int row = index / numColumns;
         const int col = index % numColumns;
 
-        const QSize &size = d_data->itemSizeHints[int( index )];
+        const QSize &size = d_data->itemSizeHints[index];
 
         rowHeight[row] = ( col == 0 )
             ? size.height() : qMax( rowHeight[row], size.height() );
@@ -591,3 +590,7 @@ uint QwtDynGridLayout::numColumns() const
 {
     return d_data->numColumns;
 }
+
+#if QWT_MOC_INCLUDE
+#include "moc_qwt_dyngrid_layout.cpp"
+#endif

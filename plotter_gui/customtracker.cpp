@@ -3,7 +3,10 @@
 #include "qwt_plot.h"
 #include "qwt_plot_curve.h"
 #include "qwt_event_pattern.h"
+#include "qwt_scale_map.h"
 #include "qwt_symbol.h"
+#include "qwt_graphic.h"
+#include "qwt_text.h"
 #include <qevent.h>
 #include <QFontDatabase>
 
@@ -60,6 +63,11 @@ void CurveTracker::setEnabled(bool enable)
     {
         _marker[i]->setVisible( enable );
     }
+}
+
+bool CurveTracker::isEnabled() const
+{
+  return _visible;
 }
 
 void CurveTracker::setPosition(const QPointF& position)

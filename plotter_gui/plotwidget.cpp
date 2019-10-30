@@ -6,12 +6,15 @@
 #include <QDragEnterEvent>
 #include <QDragMoveEvent>
 #include <QFileDialog>
+#include <QFileInfo>
 #include <QMessageBox>
 #include <QMenu>
 #include <QMimeData>
+#include <QPainter>
 #include <QPushButton>
 #include <QWheelEvent>
 #include <QSettings>
+#include <QSvgGenerator>
 #include <iostream>
 #include <limits>
 #include <set>
@@ -20,6 +23,7 @@
 #include "qwt_scale_widget.h"
 #include "qwt_plot_canvas.h"
 #include "qwt_scale_engine.h"
+#include "qwt_scale_map.h"
 #include "qwt_plot_layout.h"
 #include "qwt_scale_draw.h"
 #include "qwt_text.h"
@@ -362,7 +366,7 @@ bool PlotWidget::addCurve(const std::string &name)
         color = randomColorHint();
         data.setColorHint(color);
     }
-    curve->setPen( color,  (_curve_style == QwtPlotCurve::Dots) ? 4 : 1.2 );
+    curve->setPen( color,  (_curve_style == QwtPlotCurve::Dots) ? 4 : 1.0 );
     curve->setRenderHint( QwtPlotItem::RenderAntialiased, true );
 
     curve->attach( this );
@@ -452,7 +456,7 @@ bool PlotWidget::addCurveXY(std::string name_x, std::string name_y,
 
     QColor color =  randomColorHint();
 
-    curve->setPen( color,  (_curve_style == QwtPlotCurve::Dots) ? 4 : 0.8 );
+    curve->setPen( color,  (_curve_style == QwtPlotCurve::Dots) ? 4 : 1.0 );
     curve->setRenderHint( QwtPlotItem::RenderAntialiased, true );
 
     curve->attach( this );
@@ -1073,8 +1077,12 @@ void PlotWidget::setZoomRectangle(QRectF rect, bool emit_signal)
 
 void PlotWidget::reloadPlotData()
 {
+    int visible = 0;
     for (auto& curve_it: _curve_list)
     {
+        if (curve_it.second->isVisible())
+          visible++;
+
         auto& curve = curve_it.second;
         const auto& curve_name = curve_it.first;
 
@@ -1088,7 +1096,7 @@ void PlotWidget::reloadPlotData()
         }
     }
 
-    if( _curve_list.size() == 0){
+    if( _curve_list.size() == 0 || visible == 0){
         setDefaultRangeX();
     }
 }
@@ -1114,7 +1122,12 @@ void PlotWidget::configureTracker(CurveTracker::Parameter val)
 
 void PlotWidget::enableTracker(bool enable)
 {
-    _tracker->setEnabled( enable && !isXYPlot() );
+  _tracker->setEnabled( enable && !isXYPlot() );
+}
+
+bool PlotWidget::isTrackerEnabled() const
+{
+  return _tracker->isEnabled();
 }
 
 void PlotWidget::setTrackerPosition(double abs_time)
@@ -1181,6 +1194,9 @@ PlotData::RangeTime PlotWidget::getMaximumRangeX() const
 
     for(auto& it: _curve_list)
     {
+        if (!it.second->isVisible())
+            continue;
+
         auto series = static_cast<DataSeriesBase*>( it.second->data() );
         const auto max_range_X = series->getVisualizationRangeX();
         if( !max_range_X ) continue;
@@ -1213,6 +1229,9 @@ PlotData::RangeValue  PlotWidget::getMaximumRangeY( PlotData::RangeTime range_X)
 
     for(auto& it: _curve_list)
     {
+        if (!it.second->isVisible())
+            continue;
+
         auto series = static_cast<DataSeriesBase*>( it.second->data() );
 
         const auto max_range_X = series->getVisualizationRangeX();
@@ -1358,7 +1377,7 @@ void PlotWidget::on_showPoints_triggered()
     for(auto& it: _curve_list)
     {
         auto& curve = it.second;
-        curve->setPen( curve->pen().color(),  (_curve_style == QwtPlotCurve::Dots) ? 4 : 0.8 );
+        curve->setPen( curve->pen().color(),  (_curve_style == QwtPlotCurve::Dots) ? 4 : 1.0 );
         curve->setStyle( _curve_style );
     }
     replot();
@@ -1579,11 +1598,16 @@ void PlotWidget::on_savePlotToFile()
 {
     QString fileName;
 
-    QFileDialog saveDialog;
+    QFileDialog saveDialog(this);
     saveDialog.setAcceptMode(QFileDialog::AcceptSave);
     saveDialog.setDefaultSuffix("png");
 
-    saveDialog.setNameFilter("Compatible formats (*.jpg *.jpeg *.png)");
+    QStringList filters;
+    filters << "png (*.png)"
+            << "jpg (*.jpg *.jpeg)"
+            << "svg (*.svg)";
+
+    saveDialog.setNameFilters(filters);
 
     saveDialog.exec();
 
@@ -1591,14 +1615,39 @@ void PlotWidget::on_savePlotToFile()
     {
         fileName = saveDialog.selectedFiles().first();
 
-        QPixmap pixmap (1200,900);
-        QPainter * painter = new QPainter(&pixmap);
-
-        if ( !fileName.isEmpty() )
+        if ( fileName.isEmpty() )
         {
-            QwtPlotRenderer rend;
-            rend.render(this, painter, QRect(0, 0, pixmap.width(), pixmap.height()));
+          return;
+        }
+
+        bool tracker_enabled =  _tracker->isEnabled();
+        if( tracker_enabled ){
+          this->enableTracker(false);
+          replot();
+        }
+
+        QRect documentRect(0,0,1200, 900);
+        QwtPlotRenderer rend;
+
+        if( QFileInfo(fileName).suffix().toLower() == "svg")
+        {
+          QSvgGenerator generator;
+          generator.setFileName( fileName );
+          generator.setResolution( 80 );
+          generator.setViewBox( documentRect );
+          QPainter painter( &generator );
+          rend.render( this, &painter, documentRect );
+        }
+        else {
+            QPixmap pixmap (1200,900);
+            QPainter painter(&pixmap);
+            rend.render(this, &painter, documentRect);
             pixmap.save(fileName);
+        }
+
+        if( tracker_enabled ){
+          this->enableTracker(true);
+          replot();
         }
     }
 }
@@ -1730,6 +1779,7 @@ bool PlotWidget::canvasEventFilter(QEvent *event)
                             auto &curve = _curve_list.at( curve_it.first );
                             curve->setVisible( !curve->isVisible() );
                             _tracker->redraw();
+                            on_zoomOutVertical_triggered();
                             replot();
                             return true;
                         }
@@ -1926,7 +1976,7 @@ bool PlotWidget::isLegendVisible() const
 
 void PlotWidget::setLegendAlignment(Qt::Alignment alignment)
 {
-    _legend->setAlignment( Qt::Alignment( Qt::AlignTop | alignment ) );
+    _legend->setAlignmentInCanvas( Qt::Alignment( Qt::AlignTop | alignment ) );
 }
 
 void PlotWidget::setZoomEnabled(bool enabled)
