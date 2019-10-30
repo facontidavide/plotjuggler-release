@@ -2,6 +2,7 @@
 #include <QMouseEvent>
 #include <QApplication>
 #include <QSettings>
+#include <QPen>
 #include "qwt_scale_map.h"
 #include "qwt_plot.h"
 

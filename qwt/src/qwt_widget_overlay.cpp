@@ -9,10 +9,13 @@
 
 #include "qwt_widget_overlay.h"
 #include "qwt_painter.h"
+
 #include <qpainter.h>
 #include <qpaintengine.h>
 #include <qimage.h>
 #include <qevent.h>
+
+#include <cstdlib>
 
 static QImage::Format qwtMaskImageFormat()
 {
@@ -22,60 +25,68 @@ static QImage::Format qwtMaskImageFormat()
     return QImage::Format_ARGB32_Premultiplied;
 }
 
-static QRegion qwtAlphaMask( 
-    const QImage& image, const QVector<QRect> &rects )
+static QRegion qwtAlphaMask( const QImage& image, const QRegion &region )
 {
     const int w = image.width();
     const int h = image.height();
 
-    QRegion region;
+    QRegion mask;
     QRect rect;
 
+#if QT_VERSION >= 0x050800
+    for ( QRegion::const_iterator it = region.cbegin();
+        it != region.cend(); ++it )
+    {
+        const QRect& r = *it;
+#else
+    const QVector<QRect> rects = region.rects();
     for ( int i = 0; i < rects.size(); i++ )
     {
+        const QRect& r = rects[i];
+#endif
         int x1, x2, y1, y2;
-        rects[i].getCoords( &x1, &y1, &x2, &y2 );
+        r.getCoords( &x1, &y1, &x2, &y2 );
 
         x1 = qMax( x1, 0 );
         x2 = qMin( x2, w - 1 );
         y1 = qMax( y1, 0 );
         y2 = qMin( y2, h - 1 );
 
-        for ( int y = y1; y <= y2; ++y ) 
+        for ( int y = y1; y <= y2; ++y )
         {
             bool inRect = false;
             int rx0 = -1;
 
-            const uint *line = 
+            const uint *line =
                 reinterpret_cast<const uint *> ( image.scanLine( y ) ) + x1;
-            for ( int x = x1; x <= x2; x++ ) 
+            for ( int x = x1; x <= x2; x++ )
             {
                 const bool on = ( ( *line++ >> 24 ) != 0 );
-                if ( on != inRect ) 
+                if ( on != inRect )
                 {
-                    if ( inRect  ) 
+                    if ( inRect  )
                     {
                         rect.setCoords( rx0, y, x - 1, y );
-                        region += rect;
-                    } 
-                    else 
+                        mask += rect;
+                    }
+                    else
                     {
                         rx0 = x;
                     }
 
                     inRect = on;
-                } 
+                }
             }
 
-            if ( inRect ) 
+            if ( inRect )
             {
                 rect.setCoords( rx0, y, x2, y );
-                region = region.united( rect );
+                mask = mask.united( rect );
             }
         }
     }
 
-    return region;
+    return mask;
 }
 
 class QwtWidgetOverlay::PrivateData
@@ -97,7 +108,7 @@ public:
     {
         if ( rgbaBuffer )
         {
-            ::free( rgbaBuffer );
+            std::free( rgbaBuffer );
             rgbaBuffer = NULL;
         }
     }
@@ -211,14 +222,14 @@ void QwtWidgetOverlay::updateMask()
 
         d_data->rgbaBuffer = ( uchar* )::calloc( width() * height(), 4 );
 
-        QImage image( d_data->rgbaBuffer, 
+        QImage image( d_data->rgbaBuffer,
             width(), height(), qwtMaskImageFormat() );
 
         QPainter painter( &image );
         draw( &painter );
         painter.end();
 
-        mask = qwtAlphaMask( image, hint.rects() );
+        mask = qwtAlphaMask( image, hint );
 
         if ( d_data->renderMode == QwtWidgetOverlay::DrawOverlay )
         {
@@ -248,7 +259,7 @@ void QwtWidgetOverlay::updateMask()
 */
 void QwtWidgetOverlay::paintEvent( QPaintEvent* event )
 {
-    const QRegion clipRegion = event->region();
+    const QRegion &clipRegion = event->region();
 
     QPainter painter( this );
 
@@ -265,25 +276,39 @@ void QwtWidgetOverlay::paintEvent( QPaintEvent* event )
 
     if ( d_data->rgbaBuffer && useRgbaBuffer )
     {
-        const QImage image( d_data->rgbaBuffer, 
+        const QImage image( d_data->rgbaBuffer,
             width(), height(), qwtMaskImageFormat() );
 
-        QVector<QRect> rects;
-        if ( clipRegion.rects().size() > 2000 )
+#if QT_VERSION >= 0x040600
+        const int rectCount = clipRegion.rectCount();
+#else
+        const int rectCount = clipRegion.numRects();
+#endif
+        if ( rectCount > 2000 )
         {
             // the region is to complex
             painter.setClipRegion( clipRegion );
-            rects += clipRegion.boundingRect();
+
+            const QRect r = clipRegion.boundingRect();
+            painter.drawImage( r.topLeft(), image, r );
         }
         else
         {
-            rects = clipRegion.rects();
-        }
-
-        for ( int i = 0; i < rects.size(); i++ )
-        {
-            const QRect r = rects[i];
-            painter.drawImage( r.topLeft(), image, r );
+#if QT_VERSION >= 0x050800
+            for ( QRegion::const_iterator it = clipRegion.cbegin();
+                it != clipRegion.cend(); ++it )
+            {
+                const QRect& r = *it;
+                painter.drawImage( r.topLeft(), image, r );
+            }
+#else
+            const QVector<QRect> rects = clipRegion.rects();
+            for ( int i = 0; i < rects.size(); i++ )
+            {
+                const QRect& r = rects[i];
+                painter.drawImage( r.topLeft(), image, r );
+            }
+#endif
         }
     }
     else
@@ -306,10 +331,9 @@ void QwtWidgetOverlay::resizeEvent( QResizeEvent* event )
 
 void QwtWidgetOverlay::draw( QPainter *painter ) const
 {
-    QWidget *widget = const_cast< QWidget *>( parentWidget() );
-    if ( widget )
+    if ( QWidget *widget = parentWidget() )
     {
-        painter->setClipRect( parentWidget()->contentsRect() );
+        painter->setClipRect( widget->contentsRect() );
 
         // something special for the plot canvas
 

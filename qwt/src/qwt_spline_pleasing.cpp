@@ -10,12 +10,14 @@
 #include "qwt_spline_pleasing.h"
 #include "qwt_spline_parametrization.h"
 
+#include <qpainterpath.h>
+
 static inline double qwtChordalLength( const QPointF &point1, const QPointF &point2 )
 {
     const double dx = point2.x() - point1.x();
     const double dy = point2.y() - point1.y();
 
-    return qSqrt( dx * dx + dy * dy );
+    return std::sqrt( dx * dx + dy * dy );
 }
 
 template< class Param >
@@ -158,7 +160,7 @@ static inline QwtSplinePleasingP::Tension qwtTensionPleasing(
 }
 
 template< class SplineStore, class Param >
-static SplineStore qwtSplinePathPleasing( const QPolygonF &points, 
+static SplineStore qwtSplinePathPleasing( const QPolygonF &points,
     bool isClosed, Param param )
 {
     using namespace QwtSplinePleasingP;
@@ -178,7 +180,7 @@ static SplineStore qwtSplinePathPleasing( const QPolygonF &points,
     {
         d13 = qwtChordalLength(p[0], p[2]);
 
-        const Tension t0 = qwtTensionPleasing( 
+        const Tension t0 = qwtTensionPleasing(
             qwtChordalLength( p[size-1], p[1]), qwtChordalLength(p[0], p[1]),
             d13, p[size-1], p[0], p[1], p[2] );
 
@@ -191,7 +193,7 @@ static SplineStore qwtSplinePathPleasing( const QPolygonF &points,
     {
         d13 = qwtChordalLength(p[0], p[2]);
 
-        const Tension t0 = qwtTensionPleasing( 
+        const Tension t0 = qwtTensionPleasing(
             qwtChordalLength( p[0], p[1]), qwtChordalLength(p[0], p[1]),
             d13,  p[0], p[0], p[1], p[2] );
 
@@ -208,7 +210,7 @@ static SplineStore qwtSplinePathPleasing( const QPolygonF &points,
 
         const QPointF vec2 = qwtVectorCardinal<Param>( param, p[i], p[i+1], p[i+2] );
 
-        const Tension t = qwtTensionPleasing( 
+        const Tension t = qwtTensionPleasing(
             d13, d23, d24, p[i-1], p[i], p[i+1], p[i+2] );
 
         store.addCubic( p[i] + vec1 * t.t1, p[i+1] - vec2 * t.t2, p[i+1] );
@@ -221,8 +223,8 @@ static SplineStore qwtSplinePathPleasing( const QPolygonF &points,
     {
         const double d24 = qwtChordalLength( p[size-2], p[0] );
 
-        const Tension tn = qwtTensionPleasing( 
-            d13, qwtChordalLength( p[size-2], p[size-1] ), d24, 
+        const Tension tn = qwtTensionPleasing(
+            d13, qwtChordalLength( p[size-2], p[size-1] ), d24,
             p[size-3], p[size-2], p[size-1], p[0] );
 
         const QPointF vec2 = qwtVectorCardinal<Param>( param, p[size-2], p[size-1], p[0] );
@@ -241,8 +243,8 @@ static SplineStore qwtSplinePathPleasing( const QPolygonF &points,
     {
         const double d24 = qwtChordalLength( p[size-2], p[size-1] );
 
-        const Tension tn = qwtTensionPleasing( 
-            d13, qwtChordalLength( p[size-2], p[size-1] ), d24, 
+        const Tension tn = qwtTensionPleasing(
+            d13, qwtChordalLength( p[size-2], p[size-1] ), d24,
             p[size-3], p[size-2], p[size-1], p[size-1] );
 
         const QPointF vec2 = 0.5 * qwtVector<Param>( param, p[size-2], p[size-1] );
@@ -276,15 +278,15 @@ uint QwtSplinePleasing::locality() const
     return 2;
 }
 
-/*! 
+/*!
   \brief Interpolate a curve with Bezier curves
 
   Interpolates a polygon piecewise with cubic Bezier curves
   and returns them as QPainterPath.
-    
+
   \param points Control points
   \return QPainterPath Painter path, that can be rendered by QPainter
- */     
+ */
 QPainterPath QwtSplinePleasing::painterPath( const QPolygonF &points ) const
 {
     const int size = points.size();
@@ -298,12 +300,12 @@ QPainterPath QwtSplinePleasing::painterPath( const QPolygonF &points ) const
     PathStore store;
     if ( parametrization()->type() == QwtSplineParametrization::ParameterUniform )
     {
-        store = qwtSplinePathPleasing<PathStore>( points, 
+        store = qwtSplinePathPleasing<PathStore>( points,
             isClosing, paramUniform() );
     }
     else
     {
-        store = qwtSplinePathPleasing<PathStore>( points, 
+        store = qwtSplinePathPleasing<PathStore>( points,
             isClosing, param( parametrization() ) );
     }
 
@@ -313,16 +315,16 @@ QPainterPath QwtSplinePleasing::painterPath( const QPolygonF &points ) const
     return store.path;
 }
 
-/*! 
+/*!
   \brief Interpolate a curve with Bezier curves
-    
+
   Interpolates a polygon piecewise with cubic Bezier curves
   and returns the 2 control points of each curve as QLineF.
 
   \param points Control points
   \return Control points of the interpolating Bezier curves
  */
-QVector<QLineF> QwtSplinePleasing::bezierControlLines( 
+QVector<QLineF> QwtSplinePleasing::bezierControlLines(
     const QPolygonF &points ) const
 {
     const int size = points.size();
@@ -336,12 +338,12 @@ QVector<QLineF> QwtSplinePleasing::bezierControlLines(
     ControlPointsStore store;
     if ( parametrization()->type() == QwtSplineParametrization::ParameterUniform )
     {
-        store = qwtSplinePathPleasing<ControlPointsStore>( points, 
+        store = qwtSplinePathPleasing<ControlPointsStore>( points,
             isClosing, paramUniform() );
     }
     else
     {
-        store = qwtSplinePathPleasing<ControlPointsStore>( points, 
+        store = qwtSplinePathPleasing<ControlPointsStore>( points,
             isClosing, param( parametrization() ) );
     }
 

@@ -8,8 +8,9 @@
  *****************************************************************************/
 
 #include "qwt_arrow_button.h"
-#include "qwt_math.h"
 #include "qwt_counter.h"
+#include "qwt_math.h"
+
 #include <qlayout.h>
 #include <qlineedit.h>
 #include <qvalidator.h>
@@ -50,7 +51,7 @@ public:
 };
 
 /*!
-  The counter is initialized with a range is set to [0.0, 1.0] with 
+  The counter is initialized with a range is set to [0.0, 1.0] with
   0.01 as single step size. The value is invalid.
 
   The default number of buttons is set to 2. The default increments are:
@@ -81,8 +82,8 @@ void QwtCounter::initCounter()
         btn->setFocusPolicy( Qt::NoFocus );
         layout->addWidget( btn );
 
-        connect( btn, SIGNAL( released() ), SLOT( btnReleased() ) );
-        connect( btn, SIGNAL( clicked() ), SLOT( btnClicked() ) );
+        connect( btn, SIGNAL(released()), SLOT(btnReleased()) );
+        connect( btn, SIGNAL(clicked()), SLOT(btnClicked()) );
 
         d_data->buttonDown[i] = btn;
     }
@@ -92,8 +93,7 @@ void QwtCounter::initCounter()
     d_data->valueEdit->setValidator( new QDoubleValidator( d_data->valueEdit ) );
     layout->addWidget( d_data->valueEdit );
 
-    connect( d_data->valueEdit, SIGNAL( editingFinished() ),
-         SLOT( textChanged() ) );
+    connect( d_data->valueEdit, SIGNAL(editingFinished()), SLOT(textChanged()) );
 
     layout->setStretchFactor( d_data->valueEdit, 10 );
 
@@ -104,8 +104,8 @@ void QwtCounter::initCounter()
         btn->setFocusPolicy( Qt::NoFocus );
         layout->addWidget( btn );
 
-        connect( btn, SIGNAL( released() ), SLOT( btnReleased() ) );
-        connect( btn, SIGNAL( clicked() ), SLOT( btnClicked() ) );
+        connect( btn, SIGNAL(released()), SLOT(btnReleased()) );
+        connect( btn, SIGNAL(clicked()), SLOT(btnClicked()) );
 
         d_data->buttonUp[i] = btn;
     }
@@ -128,13 +128,13 @@ QwtCounter::~QwtCounter()
     delete d_data;
 }
 
-/*! 
+/*!
   Set the counter to be in valid/invalid state
 
   When the counter is set to invalid, no numbers are displayed and
   the buttons are disabled.
 
-  \param on If true the counter will be set as valid 
+  \param on If true the counter will be set as valid
 
   \sa setValue(), isValid()
 */
@@ -155,17 +155,17 @@ void QwtCounter::setValid( bool on )
         {
             d_data->valueEdit->setText( QString() );
         }
-    }   
-}   
+    }
+}
 
-/*! 
+/*!
   \return True, if the value is valid
   \sa setValid(), setValue()
  */
 bool QwtCounter::isValid() const
 {
     return d_data->isValid;
-}   
+}
 
 /*!
   \brief Allow/disallow the user to manually edit the value
@@ -178,7 +178,7 @@ void QwtCounter::setReadOnly( bool on )
     d_data->valueEdit->setReadOnly( on );
 }
 
-/*! 
+/*!
    \return True, when the line line edit is read only. (default is no)
   \sa setReadOnly()
  */
@@ -200,8 +200,8 @@ bool QwtCounter::isReadOnly() const
 
 void QwtCounter::setValue( double value )
 {
-    const double vmin = qMin( d_data->minimum, d_data->maximum );
-    const double vmax = qMax( d_data->minimum, d_data->maximum );
+    const double vmin = qwtMinF( d_data->minimum, d_data->maximum );
+    const double vmax = qwtMaxF( d_data->minimum, d_data->maximum );
 
     value = qBound( vmin, value, vmax );
 
@@ -239,7 +239,7 @@ double QwtCounter::value() const
  */
 void QwtCounter::setRange( double min, double max )
 {
-    max = qMax( min, max );
+    max = qwtMaxF( min, max );
 
     if ( d_data->maximum == max && d_data->minimum == min )
         return;
@@ -317,7 +317,7 @@ double QwtCounter::maximum() const
 */
 void QwtCounter::setSingleStep( double stepSize )
 {
-    d_data->singleStep = qMax( stepSize, 0.0 );
+    d_data->singleStep = qwtMaxF( stepSize, 0.0 );
 }
 
 /*!
@@ -332,8 +332,8 @@ double QwtCounter::singleStep() const
 /*!
   \brief En/Disable wrapping
 
-  If wrapping is true stepping up from maximum() value will take 
-  you to the minimum() value and vice versa. 
+  If wrapping is true stepping up from maximum() value will take
+  you to the minimum() value and vice versa.
 
   \param on En/Disable wrapping
   \sa wrapping()
@@ -635,7 +635,7 @@ void QwtCounter::incrementValue( int numSteps )
 
 
 #if 1
-    stepSize = qMax( stepSize, 1.0e-10 * ( max - min ) );
+    stepSize = qwtMaxF( stepSize, 1.0e-10 * ( max - min ) );
 #endif
 
     double value = d_data->value + numSteps * stepSize;
@@ -646,11 +646,11 @@ void QwtCounter::incrementValue( int numSteps )
 
         if ( value < min )
         {
-            value += ::ceil( ( min - value ) / range ) * range;
+            value += std::ceil( ( min - value ) / range ) * range;
         }
         else if ( value > max )
         {
-            value -= ::ceil( ( value - max ) / range ) * range;
+            value -= std::ceil( ( value - max ) / range ) * range;
         }
     }
     else
@@ -781,3 +781,7 @@ QSize QwtCounter::sizeHint() const
         d_data->valueEdit->minimumSizeHint().height() );
     return QSize( w, h );
 }
+
+#if QWT_MOC_INCLUDE
+#include "moc_qwt_counter.cpp"
+#endif

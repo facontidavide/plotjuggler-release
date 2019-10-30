@@ -8,14 +8,14 @@
  *****************************************************************************/
 
 #ifndef QWT_SPLINE_PLEASING_H
-#define QWT_SPLINE_PLEASING_H 1
+#define QWT_SPLINE_PLEASING_H
 
 #include "qwt_spline.h"
 
 /*!
   \brief A spline with G1 continuity
 
-  QwtSplinePleasing is some sort of cardinal spline, with 
+  QwtSplinePleasing is some sort of cardinal spline, with
   non C1 continous extra rules for narrow angles. It has a locality of 2.
 
   \note The algorithm is the one offered by a popular office package.
@@ -26,10 +26,10 @@ public:
     QwtSplinePleasing();
     virtual ~QwtSplinePleasing();
 
-    virtual uint locality() const;
+    virtual uint locality() const QWT_OVERRIDE;
 
-    virtual QPainterPath painterPath( const QPolygonF & ) const;
-    virtual QVector<QLineF> bezierControlLines( const QPolygonF &points ) const;
+    virtual QPainterPath painterPath( const QPolygonF & ) const QWT_OVERRIDE;
+    virtual QVector<QLineF> bezierControlLines( const QPolygonF & ) const QWT_OVERRIDE;
 };
 
 #endif

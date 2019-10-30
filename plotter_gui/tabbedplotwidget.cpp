@@ -1,10 +1,12 @@
 #include <QMenu>
 #include <QSignalMapper>
 #include <QAction>
+#include <QSvgGenerator>
 #include <QInputDialog>
 #include <QMouseEvent>
 #include <QFileDialog>
 #include <QApplication>
+#include <QPainter>
 #include "qwt_plot_renderer.h"
 #include "mainwindow.h"
 #include "tabbedplotwidget.h"
@@ -220,12 +222,17 @@ void TabbedPlotWidget::on_savePlotsToFile()
     int idx = tabWidget()->tabBar()->currentIndex();
     PlotMatrix* matrix = static_cast<PlotMatrix*>( tabWidget()->widget(idx) );
 
-    QFileDialog saveDialog;
+    QFileDialog saveDialog(this);
     saveDialog.setAcceptMode(QFileDialog::AcceptSave);
     saveDialog.setDefaultSuffix("png");
     saveDialog.selectFile(currentTab()->name());
 
-    saveDialog.setNameFilter("Compatible formats (*.jpg *.jpeg *.png)");
+    QStringList filters;
+    filters << "png (*.png)"
+            << "jpg (*.jpg *.jpeg)"
+            << "svg (*.svg)";
+
+    saveDialog.setNameFilters(filters);
 
     saveDialog.exec();
 
@@ -239,26 +246,61 @@ void TabbedPlotWidget::on_savePlotsToFile()
 
 void TabbedPlotWidget::saveTabImage(QString fileName, PlotMatrix* matrix)
 {
+    bool is_svg = ( QFileInfo(fileName).suffix().toLower() == "svg");
+
     QPixmap pixmap (1200,900);
-    QPainter * painter = new QPainter(&pixmap);
+    QRect documentRect(0,0,1200, 900);
 
-    if ( !fileName.isEmpty() )
+    QSvgGenerator generator;
+    QPainter* painter = nullptr;
+
+    if(is_svg)
     {
-        QwtPlotRenderer rend;
+        generator.setFileName( fileName );
+        generator.setResolution( 80 );
+        generator.setViewBox( documentRect );
+        painter = new QPainter( &generator );
+    }
+    else {
+        painter = new QPainter(&pixmap);
+    }
 
-        int delta_X = pixmap.width() /  matrix->colsCount();
-        int delta_Y = pixmap.height() /  matrix->rowsCount();
+    if ( fileName.isEmpty() )
+    {
+      return;
+    }
 
-        for (unsigned c=0; c< matrix->colsCount(); c++)
-        {
-            for (unsigned r=0; r< matrix->rowsCount(); r++)
-            {
-                PlotWidget* widget = matrix->plotAt(r,c);
-                QRect rect(delta_X*c, delta_Y*r, delta_X, delta_Y);
-                rend.render(widget,painter, rect);
-            }
-        }
-        pixmap.save(fileName);
+    QwtPlotRenderer rend;
+
+    int delta_X = pixmap.width() / matrix->colsCount();
+    int delta_Y = pixmap.height() / matrix->rowsCount();
+
+    for (unsigned c = 0; c < matrix->colsCount(); c++)
+    {
+      for (unsigned r = 0; r < matrix->rowsCount(); r++)
+      {
+          PlotWidget* widget = matrix->plotAt(r, c);
+          bool tracker_enabled = widget->isTrackerEnabled();
+          if (tracker_enabled)
+          {
+              widget->enableTracker(false);
+              widget->replot();
+          }
+
+          QRect rect(delta_X * c, delta_Y * r, delta_X, delta_Y);
+          rend.render(widget, painter, rect);
+
+          if (tracker_enabled)
+          {
+              widget->enableTracker(true);
+              widget->replot();
+          }
+      }
+    }
+    painter->end();
+    if (!is_svg)
+    {
+      pixmap.save(fileName);
     }
 }
 

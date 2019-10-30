@@ -8,14 +8,15 @@
  *****************************************************************************/
 
 #ifndef QWT_PLOT_RESCALER_H
-#define QWT_PLOT_RESCALER_H 1
+#define QWT_PLOT_RESCALER_H
 
 #include "qwt_global.h"
-#include "qwt_interval.h"
 #include "qwt_plot.h"
+
 #include <qobject.h>
 
 class QwtPlot;
+class QwtInterval;
 class QResizeEvent;
 
 /*!
@@ -27,6 +28,8 @@ class QResizeEvent;
 
 class QWT_EXPORT QwtPlotRescaler: public QObject
 {
+    Q_OBJECT
+
 public:
     /*!
       The rescale policy defines how to rescale the reference axis and
@@ -108,7 +111,7 @@ public:
     QwtPlot *plot();
     const QwtPlot *plot() const;
 
-    virtual bool eventFilter( QObject *, QEvent * );
+    virtual bool eventFilter( QObject *, QEvent * ) QWT_OVERRIDE;
 
     void rescale() const;
 
@@ -116,7 +119,7 @@ protected:
     virtual void canvasResizeEvent( QResizeEvent * );
 
     virtual void rescale( const QSize &oldSize, const QSize &newSize ) const;
-    virtual QwtInterval expandScale( 
+    virtual QwtInterval expandScale(
         int axis, const QSize &oldSize, const QSize &newSize ) const;
 
     virtual QwtInterval syncScale(

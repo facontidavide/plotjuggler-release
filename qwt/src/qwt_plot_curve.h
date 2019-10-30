@@ -12,16 +12,17 @@
 
 #include "qwt_global.h"
 #include "qwt_plot_seriesitem.h"
-#include "qwt_series_data.h"
-#include "qwt_text.h"
-#include <qpen.h>
+
 #include <qstring.h>
 
-class QPainter;
-class QPolygonF;
 class QwtScaleMap;
 class QwtSymbol;
 class QwtCurveFitter;
+template <typename T> class QwtSeriesData;
+class QwtText;
+class QPainter;
+class QPolygonF;
+class QPen;
 
 /*!
   \brief A plot item, that represents a series of points
@@ -33,7 +34,7 @@ class QwtCurveFitter;
   \par Usage
   <dl><dt>a) Assign curve properties</dt>
   <dd>When a curve is created, it is configured to draw black solid lines
-  with in QwtPlotCurve::Lines style and no symbols. 
+  with in QwtPlotCurve::Lines style and no symbols.
   You can change this by calling
   setPen(), setStyle() and setSymbol().</dd>
   <dt>b) Connect/Assign data.</dt>
@@ -52,7 +53,7 @@ class QwtCurveFitter;
 
   \sa QwtPointSeriesData, QwtSymbol, QwtScaleMap
 */
-class QWT_EXPORT QwtPlotCurve: 
+class QWT_EXPORT QwtPlotCurve:
     public QwtPlotSeriesItem, public QwtSeriesStore<QPointF>
 {
 public:
@@ -75,7 +76,7 @@ public:
         Lines,
 
         /*!
-           Draw vertical or horizontal sticks ( depending on the 
+           Draw vertical or horizontal sticks ( depending on the
            orientation() ) from a baseline which is defined by setBaseline().
         */
         Sticks,
@@ -90,18 +91,18 @@ public:
         /*!
            Draw dots at the locations of the data points. Note:
            This is different from a dotted line (see setPen()), and faster
-           as a curve in QwtPlotCurve::NoStyle style and a symbol 
+           as a curve in QwtPlotCurve::NoStyle style and a symbol
            painting a point.
         */
         Dots,
-
-        LinesAndDots,
 
         /*!
            Styles >= QwtPlotCurve::UserCurve are reserved for derived
            classes of QwtPlotCurve that overload drawCurve() with
            additional application specific curve types.
         */
+        LinesAndDots,
+
         UserCurve = 100
     };
 
@@ -112,7 +113,7 @@ public:
     enum CurveAttribute
     {
         /*!
-           For QwtPlotCurve::Steps only. 
+           For QwtPlotCurve::Steps only.
            Draws a step function from the right to the left.
          */
         Inverted = 0x01,
@@ -143,13 +144,13 @@ public:
     enum LegendAttribute
     {
         /*!
-          QwtPlotCurve tries to find a color representing the curve 
+          QwtPlotCurve tries to find a color representing the curve
           and paints a rectangle with it.
          */
         LegendNoAttribute = 0x00,
 
         /*!
-          If the style() is not QwtPlotCurve::NoCurve a line 
+          If the style() is not QwtPlotCurve::NoCurve a line
           is painted with the curve pen().
          */
         LegendShowLine = 0x01,
@@ -193,16 +194,16 @@ public:
         FilterPoints = 0x02,
 
         /*!
-          Minimize memory usage that is temporarily needed for the 
+          Minimize memory usage that is temporarily needed for the
           translated points, before they get painted.
-          This might slow down the performance of painting 
+          This might slow down the performance of painting
          */
         MinimizeMemory = 0x04,
 
         /*!
           Render the points to a temporary image and paint the image.
           This is a very special optimization for Dots style, when
-          having a huge amount of points. 
+          having a huge amount of points.
           With a reasonable number of points QPainter::drawPoints()
           will be faster.
          */
@@ -213,7 +214,7 @@ public:
           intermediate points, accepting minor visual differences.
 
           Has only an effect, when drawing the curve to a paint device
-          in integer coordinates ( f.e. all widgets on screen ) using the fact, 
+          in integer coordinates ( f.e. all widgets on screen ) using the fact,
           that consecutive points are often mapped to the same x or y coordinate.
           Each chunk of samples mapped to the same coordinate can be reduced to
           4 points ( first, min, max last ).
@@ -241,7 +242,7 @@ public:
 
     virtual ~QwtPlotCurve();
 
-    virtual int rtti() const;
+    virtual int rtti() const QWT_OVERRIDE;
 
     void setPaintAttribute( PaintAttribute, bool on = true );
     bool testPaintAttribute( PaintAttribute ) const;
@@ -249,11 +250,27 @@ public:
     void setLegendAttribute( LegendAttribute, bool on = true );
     bool testLegendAttribute( LegendAttribute ) const;
 
-#ifndef QWT_NO_COMPAT
+    void setLegendAttributes( LegendAttributes );
+    LegendAttributes legendAttributes() const;
+
     void setRawSamples( const double *xData, const double *yData, int size );
+    void setRawSamples( const float *xData, const float *yData, int size );
+
+    void setRawSamples( const double *yData, int size );
+    void setRawSamples( const float *yData, int size );
+
     void setSamples( const double *xData, const double *yData, int size );
+    void setSamples( const float *xData, const float *yData, int size );
+
+    void setSamples( const double *yData, int size );
+    void setSamples( const float *yData, int size );
+
+    void setSamples( const QVector<double> &yData );
+    void setSamples( const QVector<float> &yData );
+
     void setSamples( const QVector<double> &xData, const QVector<double> &yData );
-#endif
+    void setSamples( const QVector<float> &xData, const QVector<float> &yData );
+
     void setSamples( const QVector<QPointF> & );
     void setSamples( QwtSeriesData<QPointF> * );
 
@@ -288,40 +305,40 @@ public:
 
     virtual void drawSeries( QPainter *,
         const QwtScaleMap &xMap, const QwtScaleMap &yMap,
-        const QRectF &canvasRect, int from, int to ) const;
+        const QRectF &canvasRect, int from, int to ) const QWT_OVERRIDE;
 
-    virtual QwtGraphic legendIcon( int index, const QSizeF & ) const;
+    virtual QwtGraphic legendIcon( int index, const QSizeF & ) const QWT_OVERRIDE;
 
 protected:
 
     void init();
 
-    virtual void drawCurve( QPainter *p, int style,
+    virtual void drawCurve( QPainter *, int style,
         const QwtScaleMap &xMap, const QwtScaleMap &yMap,
         const QRectF &canvasRect, int from, int to ) const;
 
-    virtual void drawSymbols( QPainter *p, const QwtSymbol &,
+    virtual void drawSymbols( QPainter *, const QwtSymbol &,
         const QwtScaleMap &xMap, const QwtScaleMap &yMap,
         const QRectF &canvasRect, int from, int to ) const;
 
-    virtual void drawLines( QPainter *p,
+    virtual void drawLines( QPainter *,
         const QwtScaleMap &xMap, const QwtScaleMap &yMap,
         const QRectF &canvasRect, int from, int to ) const;
 
-    virtual void drawSticks( QPainter *p,
+    virtual void drawSticks( QPainter *,
         const QwtScaleMap &xMap, const QwtScaleMap &yMap,
         const QRectF &canvasRect, int from, int to ) const;
 
-    virtual void drawDots( QPainter *p,
+    virtual void drawDots( QPainter *,
         const QwtScaleMap &xMap, const QwtScaleMap &yMap,
         const QRectF &canvasRect, int from, int to ) const;
 
-    virtual void drawSteps( QPainter *p,
+    virtual void drawSteps( QPainter *,
         const QwtScaleMap &xMap, const QwtScaleMap &yMap,
         const QRectF &canvasRect, int from, int to ) const;
 
     virtual void fillCurve( QPainter *,
-        const QwtScaleMap &, const QwtScaleMap &, 
+        const QwtScaleMap &, const QwtScaleMap &,
         const QRectF &canvasRect, QPolygonF & ) const;
 
     void closePolyline( QPainter *,

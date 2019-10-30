@@ -11,25 +11,28 @@
 #define QWT_POINT_MAPPER_H
 
 #include "qwt_global.h"
-#include "qwt_series_data.h"
-#include <qimage.h>
 
 class QwtScaleMap;
+template <typename T> class QwtSeriesData;
 class QPolygonF;
+class QPointF;
+class QRectF;
 class QPolygon;
+class QPen;
+class QImage;
 
 /*!
   \brief A helper class for translating a series of points
 
   QwtPointMapper is a collection of methods and optimizations
-  for translating a series of points into paint device coordinates. 
-  It is used by QwtPlotCurve but might also be useful for 
+  for translating a series of points into paint device coordinates.
+  It is used by QwtPlotCurve but might also be useful for
   similar plot items displaying a QwtSeriesData<QPointF>.
  */
 class QWT_EXPORT QwtPointMapper
 {
 public:
-    /*!  
+    /*!
       \brief Flags affecting the transformation process
       \sa setFlag(), setFlags()
      */
@@ -38,7 +41,7 @@ public:
         //! Round points to integer values
         RoundPoints = 0x01,
 
-        /*! 
+        /*!
           Try to remove points, that are translated to the
           same position.
          */
@@ -59,13 +62,13 @@ public:
           In the worst case ( first and last points are never one of the extremes )
           the number of points will be 4 times the width.
 
-          As the algorithm is fast it can be used inside of 
+          As the algorithm is fast it can be used inside of
           a polyline render cycle.
          */
         WeedOutIntermediatePoints = 0x04
     };
 
-    /*!  
+    /*!
       \brief Flags affecting the transformation process
       \sa setFlag(), setFlags()
      */
@@ -96,7 +99,7 @@ public:
         const QwtSeriesData<QPointF> *series, int from, int to ) const;
 
     QImage toImage( const QwtScaleMap &xMap, const QwtScaleMap &yMap,
-        const QwtSeriesData<QPointF> *series, int from, int to, 
+        const QwtSeriesData<QPointF> *series, int from, int to,
         const QPen &, bool antialiased, uint numThreads ) const;
 
 private:

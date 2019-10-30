@@ -1,5 +1,5 @@
 
-#add_definitions( -DUSE_OPENGL )
+add_definitions( -DQWT_MOC_INCLUDE )
 
 include_directories( ./  )
 
@@ -83,7 +83,6 @@ set( QWT_SRC
     qwt_plot_legenditem.h
     qwt_plot_seriesitem.h
     qwt_plot_shapeitem.h
-    qwt_plot_abstract_canvas.h
     qwt_plot_canvas.h
     qwt_plot_panner.h
     qwt_plot_picker.h
@@ -133,7 +132,6 @@ set( QWT_SRC
     qwt_plot_marker.cpp
     qwt_plot_textlabel.cpp
     qwt_plot_layout.cpp
-    qwt_plot_abstract_canvas.cpp
     qwt_plot_canvas.cpp
     qwt_plot_panner.cpp
     qwt_plot_rasteritem.cpp
@@ -204,5 +202,6 @@ target_link_libraries(qwt_static
         ${Qt5Widgets_LIBRARIES}
         ${Qt5PrintSupport_LIBRARIES}
         ${Qt5Concurrent_LIBRARIES}
+        ${Qt5Svg_LIBRARIES}
         )
 

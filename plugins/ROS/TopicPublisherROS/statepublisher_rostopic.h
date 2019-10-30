@@ -45,6 +45,7 @@ private:
     ros::NodeHandlePtr _node;
     bool _publish_clock;
     std::unique_ptr<tf::TransformBroadcaster> _tf_publisher;
+    ros::Publisher _tf_static_pub;
     ros::Publisher _clock_publisher;
 
     QAction* _enable_self_action;

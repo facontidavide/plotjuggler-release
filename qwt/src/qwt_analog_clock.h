@@ -12,8 +12,8 @@
 
 #include "qwt_global.h"
 #include "qwt_dial.h"
-#include "qwt_dial_needle.h"
-#include <qdatetime.h>
+
+class QwtDialNeedle;
 
 /*!
   \brief An analog clock
@@ -21,7 +21,7 @@
   \image html analogclock.png
 
   \par Example
-  \code 
+  \code
   #include <qwt_analog_clock.h>
 
   QwtAnalogClock *clock = new QwtAnalogClock(...);
@@ -77,8 +77,8 @@ public Q_SLOTS:
     void setTime( const QTime & );
 
 protected:
-    virtual void drawNeedle( QPainter *, const QPointF &,
-        double radius, double direction, QPalette::ColorGroup ) const;
+    virtual void drawNeedle( QPainter *, const QPointF &, double radius,
+        double direction, QPalette::ColorGroup ) const QWT_OVERRIDE;
 
     virtual void drawHand( QPainter *, Hand, const QPointF &,
         double radius, double direction, QPalette::ColorGroup ) const;

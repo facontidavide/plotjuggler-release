@@ -8,7 +8,7 @@
  *****************************************************************************/
 
 #ifndef QWT_SPLINE_BASIS_H
-#define QWT_SPLINE_BASIS_H 1
+#define QWT_SPLINE_BASIS_H
 
 #include "qwt_global.h"
 #include "qwt_spline.h"
@@ -27,9 +27,8 @@ public:
     QwtSplineBasis();
     virtual ~QwtSplineBasis();
 
-    virtual QPainterPath painterPath( const QPolygonF & ) const;
-    virtual uint locality() const;
+    virtual QPainterPath painterPath( const QPolygonF & ) const QWT_OVERRIDE;
+    virtual uint locality() const QWT_OVERRIDE;
 };
 
-#endif  
-
+#endif

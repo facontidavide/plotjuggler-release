@@ -8,13 +8,12 @@
  *****************************************************************************/
 
 #ifndef QWT_DIAL_NEEDLE_H
-#define QWT_DIAL_NEEDLE_H 1
+#define QWT_DIAL_NEEDLE_H
 
 #include "qwt_global.h"
 #include <qpalette.h>
 
 class QPainter;
-class QPoint;
 
 /*!
   \brief Base class for needles that can be used in a QwtDial.
@@ -34,8 +33,8 @@ public:
     virtual void setPalette( const QPalette & );
     const QPalette &palette() const;
 
-    virtual void draw( QPainter *painter, const QPointF &center,
-        double length, double direction, 
+    virtual void draw( QPainter *, const QPointF &center,
+        double length, double direction,
         QPalette::ColorGroup = QPalette::Active ) const;
 
 protected:
@@ -43,9 +42,9 @@ protected:
       \brief Draw the needle
 
       The origin of the needle is at position (0.0, 0.0 )
-      pointing in direction 0.0 ( = east ). 
+      pointing in direction 0.0 ( = east ).
 
-      The painter is already initialized with translation and 
+      The painter is already initialized with translation and
       rotation.
 
       \param painter Painter
@@ -54,10 +53,10 @@ protected:
 
       \sa setPalette(), palette()
     */
-    virtual void drawNeedle( QPainter *painter, 
+    virtual void drawNeedle( QPainter *painter,
         double length, QPalette::ColorGroup colorGroup ) const = 0;
 
-    virtual void drawKnob( QPainter *, double width, 
+    virtual void drawKnob( QPainter *, double width,
         const QBrush &, bool sunken ) const;
 
 private:
@@ -100,7 +99,7 @@ public:
 
 protected:
     virtual void drawNeedle( QPainter *, double length,
-        QPalette::ColorGroup ) const;
+        QPalette::ColorGroup ) const QWT_OVERRIDE;
 
 private:
     Style d_style;
@@ -134,7 +133,7 @@ public:
         //! A needle with a triangular shape
         TriangleStyle,
 
-        //! A thin needle 
+        //! A thin needle
         ThinStyle
     };
 
@@ -142,8 +141,8 @@ public:
         const QColor &light = Qt::white, const QColor &dark = Qt::red );
 
 protected:
-    virtual void drawNeedle( QPainter *, 
-        double length, QPalette::ColorGroup ) const;
+    virtual void drawNeedle( QPainter *,
+        double length, QPalette::ColorGroup ) const QWT_OVERRIDE;
 
 private:
     Style d_style;
@@ -179,11 +178,11 @@ public:
         const QColor &dark = Qt::gray );
 
 protected:
-    virtual void drawNeedle( QPainter *, 
-        double length, QPalette::ColorGroup ) const;
+    virtual void drawNeedle( QPainter *,
+        double length, QPalette::ColorGroup ) const QWT_OVERRIDE;
 
 private:
     Style d_style;
 };
 
-#endif 
+#endif
