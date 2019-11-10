@@ -47,7 +47,7 @@ public:
                 }
             }
 
-            if( format.contains( "plot_area") && curves.size() == 1  )
+            if( format == "plot_area" && curves.size() == 1  )
             {
                 QApplication::setOverrideCursor(QCursor(Qt::DragMoveCursor));
                 ev->accept();

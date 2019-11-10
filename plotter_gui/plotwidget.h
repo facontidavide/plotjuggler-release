@@ -167,6 +167,7 @@ private:
     QAction *_action_1stDerivativeTransform;
     QAction *_action_2ndDerivativeTransform;
     QAction *_action_custom_transform;
+    QAction *_action_XY_transform;
     QAction *_action_saveToFile;
     QAction *_action_editLimits;
 
