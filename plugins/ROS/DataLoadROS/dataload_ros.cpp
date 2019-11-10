@@ -137,17 +137,15 @@ bool DataLoadROS::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_map)
         {
             return false;
         }
-        else{
-
-          // clean up previous MessageInstances
-          plot_map.user_defined.clear();
-          if(_bag){
-            _bag->close();
-          }
-          _bag = temp_bag;
-        }
         _config = dialog->getResult();
     }
+
+    // clean up previous MessageInstances
+    plot_map.user_defined.clear();
+    if(_bag){
+        _bag->close();
+    }
+    _bag = temp_bag;
 
     saveDefaultSettings();
 

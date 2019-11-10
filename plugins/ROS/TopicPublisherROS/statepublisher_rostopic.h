@@ -23,7 +23,7 @@ public:
 
     virtual void updateState(double current_time) override;
 
-    virtual const char* name() const override { return "TopicPublisherROS"; }
+    virtual const char* name() const override { return "ROS Topic Re-Publisher"; }
 
     virtual bool enabled() const override { return _enabled; }
 
