@@ -30,7 +30,7 @@ public:
 
     virtual ~DataStreamROS() override;
 
-    virtual const char* name() const override { return "ROS Topic Streamer";  }
+    virtual const char* name() const override { return "ROS Topic Subscriber";  }
 
     virtual bool xmlSaveState(QDomDocument &doc, QDomElement &parent_element) const override;
 
