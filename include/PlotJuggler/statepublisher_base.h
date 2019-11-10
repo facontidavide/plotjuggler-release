@@ -49,7 +49,7 @@ public:
     QDomElement xmlSaveState(QDomDocument &doc) const
     {
         QDomElement plugin_elem = doc.createElement("plugin");
-        plugin_elem.setAttribute("ID", QString(this->name()).replace(" ", "_") );
+        plugin_elem.setAttribute("ID", this->name() );
         xmlSaveState(doc, plugin_elem);
         return plugin_elem;
     }
