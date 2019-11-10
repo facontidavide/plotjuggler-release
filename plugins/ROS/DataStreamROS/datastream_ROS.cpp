@@ -69,24 +69,22 @@ void DataStreamROS::topicCallback(const topic_tools::ShapeShifter::ConstPtr& msg
     msg->write(stream);
 
     double msg_time = ros::Time::now().toSec();
+    if( msg_time == 0)
+    {
+      // corner case: use_sim_time == true but topic /clock is not published
+      msg_time = ros::WallTime::now().toSec();
+    }
 
     if( msg_time < _prev_clock_time )
     {
-        // clean
+        // clear
         for (auto& it: dataMap().numeric ) {
             it.second.clear();
-            auto dst = _destination_data->numeric.find(it.first);
-            if( dst != _destination_data->numeric.end()){
-                dst->second.clear();
-            }
         }
         for (auto& it: dataMap().user_defined ){
             it.second.clear();
-            auto dst = _destination_data->user_defined.find(it.first);
-            if( dst != _destination_data->user_defined.end()){
-                dst->second.clear();
-            }
         }
+        emit clearBuffers();
     }
     _prev_clock_time = msg_time;
 

@@ -35,7 +35,7 @@ public:
     RosoutPublisher();
 
     virtual void updateState(double current_time) override;
-    virtual const char* name() const override { return "RosoutPublisherROS"; }
+    virtual const char* name() const override { return "ROS /rosout Visualization"; }
     virtual ~RosoutPublisher();
 
     virtual bool enabled() const override { return _enabled; }
