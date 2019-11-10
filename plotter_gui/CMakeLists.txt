@@ -27,6 +27,8 @@ SET( PLOTTER_SRC
     customtracker.cpp
     curvecolorpick.cpp
     curvelist_panel.cpp
+    curvelist_view.cpp
+    curvetree_view.cpp
     main.cpp
     mainwindow.cpp
     menubar.cpp
