@@ -125,7 +125,6 @@ void PlotMatrix::removeColumn(unsigned column_to_delete)
     }
 
     updateLayout();
-
 }
 
 void PlotMatrix::removeRow(unsigned row_to_delete)
@@ -227,6 +226,7 @@ PlotWidget* PlotMatrix::plotAt( unsigned row, unsigned column )
         PlotWidget* plot = static_cast<PlotWidget*>( item->widget() );
         return plot;
     }
+    qDebug() << "Critical error in PlotMatrix::plotAt. Report the bug";
     return NULL;
 }
 
@@ -237,6 +237,7 @@ const PlotWidget* PlotMatrix::plotAt( unsigned row, unsigned column ) const
         PlotWidget* plot = static_cast<PlotWidget*>( item->widget() );
         return plot;
     }
+    qDebug() << "Critical error in PlotMatrix::plotAt. Report the bug";
     return NULL;
 }
 

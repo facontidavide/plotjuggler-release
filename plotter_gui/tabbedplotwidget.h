@@ -115,6 +115,8 @@ private:
 
     virtual void closeEvent(QCloseEvent *event) override;
 
+    void printPlotsNames();
+
 protected:
 
     virtual bool eventFilter(QObject *obj, QEvent *event) override;

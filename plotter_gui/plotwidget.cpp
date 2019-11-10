@@ -220,8 +220,9 @@ void PlotWidget::buildActions()
     _action_noTransform = new QAction(tr("&NO Transform"), this);
     _action_noTransform->setCheckable( true );
     _action_noTransform->setChecked( true );
-    connect(_action_noTransform, &QAction::triggered, this, [this, font]()
+    connect(_action_noTransform, &QAction::changed, this, [this, font]()
     {
+        if( !_action_noTransform->isChecked() ){ return; }
         QwtText text("");
         text.setFont(font);
         this->setFooter(text);
@@ -230,8 +231,9 @@ void PlotWidget::buildActions()
 
     _action_1stDerivativeTransform = new QAction(tr("&1st Derivative"), this);
     _action_1stDerivativeTransform->setCheckable( true );
-    connect(_action_1stDerivativeTransform, &QAction::triggered, this, [this, font]()
+    connect(_action_1stDerivativeTransform, &QAction::changed, this, [this, font]()
     {
+        if( !_action_1stDerivativeTransform->isChecked() ){ return; }
         QwtText text("1st Derivative");
         text.setFont(font);
         this->setFooter(text);
@@ -240,8 +242,9 @@ void PlotWidget::buildActions()
 
     _action_2ndDerivativeTransform = new QAction(tr("&2nd Derivative"), this);
     _action_2ndDerivativeTransform->setCheckable( true );
-    connect(_action_2ndDerivativeTransform, &QAction::triggered, this, [this, font]()
+    connect(_action_2ndDerivativeTransform, &QAction::changed, this, [this, font]()
     {
+        if( !_action_2ndDerivativeTransform->isChecked() ){ return; }
         QwtText text("2nd Derivative");
         text.setFont(font);
         this->setFooter(text);
@@ -256,12 +259,17 @@ void PlotWidget::buildActions()
     _action_saveToFile = new QAction("&Save plot to file", this);
     connect(_action_saveToFile, &QAction::triggered, this, &PlotWidget::on_savePlotToFile);
 
+    _action_XY_transform = new QAction(tr("&XY Plot"), this);
+    _action_XY_transform->setCheckable( true );
+    _action_XY_transform->setEnabled(false);
+
     auto transform_group = new QActionGroup(this);
 
     transform_group->addAction(_action_noTransform);
     transform_group->addAction(_action_1stDerivativeTransform);
     transform_group->addAction(_action_2ndDerivativeTransform);
     transform_group->addAction(_action_custom_transform);
+    transform_group->addAction(_action_XY_transform);
 }
 
 
@@ -303,6 +311,7 @@ void PlotWidget::canvasContextMenuTriggered(const QPoint &pos)
     menu.addAction(_action_zoomOutVertically);
     menu.addSeparator();
     menu.addAction( _action_noTransform );
+    menu.addAction( _action_XY_transform );
     menu.addAction( _action_1stDerivativeTransform );
     menu.addAction( _action_2ndDerivativeTransform );
     menu.addAction( _action_custom_transform );
@@ -318,7 +327,7 @@ void PlotWidget::canvasContextMenuTriggered(const QPoint &pos)
     _action_2ndDerivativeTransform->setEnabled( !_xy_mode );
     _action_custom_transform->setEnabled( !_xy_mode );
 
-    menu.exec( canvas()->mapToGlobal(pos) );
+     menu.exec(canvas()->mapToGlobal(pos));
 }
 
 
@@ -536,6 +545,8 @@ void PlotWidget::dragEnterEvent(QDragEnterEvent *event)
     QStringList mimeFormats = mimeData->formats();
     _dragging.curves.clear();
     _dragging.source = event->source();
+
+
     for(const QString& format: mimeFormats)
     {
         QByteArray encoded = mimeData->data( format );
@@ -550,17 +561,23 @@ void PlotWidget::dragEnterEvent(QDragEnterEvent *event)
             }
         }
 
-        if( format.contains( "curveslist/add_curve") )
+        if( format == "curveslist/add_curve" )
         {
             _dragging.mode = DragInfo::CURVES;
             event->acceptProposedAction();
         }
-        if( format.contains( "curveslist/new_XY_axis") && _dragging.curves.size() == 2 )
+        if( format == "curveslist/new_XY_axis" )
         {
+            if( _dragging.curves.size() != 2)
+            {
+                qDebug() << "FATAL: Dragging " << _dragging.curves.size() <<" curves";
+                return;
+            }
+
             _dragging.mode = DragInfo::NEW_XY;
             event->acceptProposedAction();
         }
-        if( format.contains( "plot_area")  )
+        if( format == "plot_area" )
         {
             if(_dragging.curves.size() == 1 &&
                     windowTitle() != _dragging.curves.front() )
@@ -889,7 +906,7 @@ bool PlotWidget::xmlLoadState(QDomElement &plot_widget)
     if( curve_removed || curve_added)
     {
         _tracker->redraw();
-        replot();
+        //replot();
         emit curveListChanged();
     }
 
@@ -1036,12 +1053,12 @@ void PlotWidget::setConstantRatioXY(bool active)
     _keep_aspect_ratio = active;
     if( isXYPlot() && active)
     {
-        // TODo rescaler
         _zoomer->keepAspectratio( true );
     }
     else{
         _zoomer->keepAspectratio( false );
     }
+    zoomOut(false);
 }
 
 void PlotWidget::setZoomRectangle(QRectF rect, bool emit_signal)
@@ -1173,17 +1190,18 @@ void PlotWidget::on_changeTimeOffset(double offset)
 
 void PlotWidget::on_changeDateTimeScale(bool enable)
 {
-    if( enable != _use_date_time_scale)
-    {
-        _use_date_time_scale = enable;
-        if( enable  )
-        {
-            setAxisScaleDraw(QwtPlot::xBottom, new TimeScaleDraw());
-        }
-        else{
-            setAxisScaleDraw(QwtPlot::xBottom, new QwtScaleDraw);
-        }
+  _use_date_time_scale = enable;
+  bool is_timescale = dynamic_cast<TimeScaleDraw*>(axisScaleDraw(QwtPlot::xBottom)) != nullptr;
+
+  if (enable && !isXYPlot()) {
+    if( !is_timescale ){
+      setAxisScaleDraw(QwtPlot::xBottom, new TimeScaleDraw());
     }
+  } else {
+    if( is_timescale ){
+      setAxisScaleDraw(QwtPlot::xBottom, new QwtScaleDraw);
+    }
+  }
 }
 
 
@@ -1439,10 +1457,6 @@ void PlotWidget::on_changeToBuiltinTransforms(QString new_transform )
 {
     _xy_mode = false;
 
-    if( _default_transform == new_transform)
-    {
-        return;
-    }
     enableTracker(true);
 
     for(auto& it : _curve_list)
@@ -1465,6 +1479,7 @@ void PlotWidget::on_changeToBuiltinTransforms(QString new_transform )
 
     _default_transform = new_transform;
     zoomOut(true);
+    on_changeDateTimeScale(_use_date_time_scale);
     replot();
 }
 
@@ -1478,6 +1493,7 @@ bool PlotWidget::isXYPlot() const
 void PlotWidget::convertToXY()
 {
     _xy_mode = true;
+    _action_XY_transform->setChecked(true);
 
     enableTracker(false);
     _default_transform = "XYPlot";
@@ -1490,6 +1506,7 @@ void PlotWidget::convertToXY()
     this->setFooter( text );
 
     zoomOut(true);
+    on_changeDateTimeScale(_use_date_time_scale);
     replot();
 }
 
@@ -1995,8 +2012,6 @@ bool PlotWidget::isZoomEnabled() const
 
 void PlotWidget::replot()
 {
-    static int replot_count = 0;
-
     if( _zoomer ){
         _zoomer->setZoomBase( false );
     }
