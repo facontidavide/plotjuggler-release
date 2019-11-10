@@ -17,55 +17,29 @@
 #include <QWheelEvent>
 #include <QItemSelectionModel>
 #include <QScrollBar>
-
-class SortedTableItem: public QStandardItem
-{
-
-public:
-    SortedTableItem(const QString& name): QStandardItem(name), str(name.toStdString()) {}
-
-    bool operator< (const SortedTableItem &other) const
-    {
-        return doj::alphanum_impl(this->str.c_str(),
-                                  other.str.c_str()) < 0;
-    }
-private:
-    std::string str;
-};
-
+#include <QTreeWidget>
 
 //-------------------------------------------------
 
 CurveListPanel::CurveListPanel(const CustomPlotMap &mapped_math_plots,
-                                           QWidget *parent) :
+                               QWidget *parent) :
     QWidget(parent),
     ui(new Ui::CurveListPanel),
-    _completer( new TreeModelCompleter(this) ),
-    _custom_plots(mapped_math_plots),
-    _point_size(9)
+    _table_view( new CurveTableView( this) ),
+    _custom_view( new CurveTableView( this) ),
+    _tree_view( new CurveTreeView(this)),
+    _custom_plots(mapped_math_plots)
 {
     ui->setupUi(this);
-    ui->tableView->viewport()->installEventFilter( this );
 
-    _model = new QStandardItemModel(0, 2, this);
-
-    for(auto table_view: {ui->tableView, ui->tableViewCustom})
-    {
-        table_view->viewport()->installEventFilter( this );
-        table_view->setModel( _model );
-        table_view->horizontalHeader()->setStretchLastSection (true);
-        table_view->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
-        table_view->setHorizontalScrollMode(QAbstractItemView::ScrollPerPixel);
-
-    }
+    ui->verticalLayout->addWidget(_table_view, 1 );
+    ui->verticalLayout->addWidget(_tree_view, 1 );
+    ui->verticalLayoutCustom->addWidget( _custom_view, 1 );
 
     ui->widgetOptions->setVisible(false);
 
     ui->radioRegExp->setAutoExclusive(true);
     ui->radioContains->setAutoExclusive(true);
-    ui->radioPrefix->setAutoExclusive(true);
-
-    _completer->setCompletionMode( QCompleter::PopupCompletion );
 
     QSettings settings;
 
@@ -74,25 +48,48 @@ CurveListPanel::CurveListPanel(const CustomPlotMap &mapped_math_plots,
 
         ui->radioRegExp->setChecked(true);
     }
-    else if( active_filter == "radioPrefix"){
-
-        ui->radioPrefix->setChecked(true);
-    }
     else if( active_filter == "radioContains"){
 
         ui->radioContains->setChecked(true);
     }
 
-    _point_size = settings.value("FilterableListWidget/table_point_size", 9).toInt();
-
-    _completer_need_update = ui->radioPrefix->isChecked();
-    ui->lineEdit->setCompleter( _completer_need_update ? _completer : nullptr );
+    int point_size = settings.value("FilterableListWidget/table_point_size", 9).toInt();
+    changeFontSize(point_size);
 
     ui->splitter->setStretchFactor(0,5);
     ui->splitter->setStretchFactor(1,1);
 
-    connect(  ui->tableViewCustom->selectionModel(), &QItemSelectionModel::selectionChanged,
+    connect(  _custom_view->selectionModel(), &QItemSelectionModel::selectionChanged,
               this, &CurveListPanel::onCustomSelectionChanged );
+
+    connect( _custom_view, &QAbstractItemView::pressed,
+             _table_view,  & QAbstractItemView::clearSelection );
+
+    connect( _table_view, &QAbstractItemView::pressed,
+             _custom_view, & QAbstractItemView::clearSelection );
+
+    connect( _table_view, &QAbstractItemView::pressed,
+            _custom_view, & QAbstractItemView::clearSelection );
+
+    connect( _table_view->verticalScrollBar(), &QScrollBar::valueChanged,
+            this, &CurveListPanel::refreshValues );
+
+    connect( _custom_view->verticalScrollBar(), &QScrollBar::valueChanged,
+            this, &CurveListPanel::refreshValues );
+
+    connect( _tree_view->verticalScrollBar(), &QScrollBar::valueChanged,
+            this, &CurveListPanel::refreshValues );
+
+    connect( _tree_view, &QTreeWidget::itemExpanded,
+            this, &CurveListPanel::refreshValues );
+
+    bool tree = settings.value("FilterableListWidget/isTreeView", false).toBool();
+
+    ui->radioFlat->setChecked( !tree );
+    ui->radioTree->setChecked( tree );
+
+    _tree_view->setHidden( !tree );
+    _table_view->setHidden( tree );
 }
 
 CurveListPanel::~CurveListPanel()
@@ -100,76 +97,34 @@ CurveListPanel::~CurveListPanel()
     delete ui;
 }
 
-int CurveListPanel::rowCount() const
-{
-    return _model->rowCount();
-}
-
 void CurveListPanel::clear()
 {
-    _model->setRowCount(0);
-    _completer->clear();
-    ui->labelNumberDisplayed->setText( "0 of 0");
+    _table_view->clear();
+    _custom_view->clear();
+    _tree_view->clear();
+    _numeric_data = nullptr;
+    ui->labelNumberDisplayed->setText("0 of 0");
 }
 
-void CurveListPanel::addItem(const QString &item_name)
+void CurveListPanel::addCurve(const QString &item_name)
 {
-    if( _model->findItems(item_name).size() > 0)
-    {
-        return;
-    }
+    _table_view->addItem(item_name);
+    _tree_view->addItem(item_name);
+}
 
-    auto item = new SortedTableItem(item_name);
-    QFont font = QFontDatabase::systemFont(QFontDatabase::GeneralFont);
-    font.setPointSize(_point_size);
-    item->setFont(font);
-    const int row = rowCount();
-    _model->setRowCount(row+1);
-    _model->setItem(row, 0, item);
-
-    auto val_cell = new QStandardItem("-");
-    val_cell->setTextAlignment(Qt::AlignRight);
-    val_cell->setFlags( Qt::NoItemFlags | Qt::ItemIsEnabled );
-    font = QFontDatabase::systemFont(QFontDatabase::FixedFont);
-    font.setPointSize( _point_size );
-    val_cell->setFont( font );
-    val_cell->setFlags(Qt::NoItemFlags);
-
-    _model->setItem(row, 1, val_cell );
-
-    if( _completer_need_update )
-    {
-        _completer->addToCompletionTree(item_name);
-    }
+void CurveListPanel::addCustom(const QString &item_name)
+{
+    _custom_view->addItem(item_name);
 }
 
 void CurveListPanel::refreshColumns()
 {
-    ui->tableView->sortByColumn(0,Qt::AscendingOrder);
-    ui->tableViewCustom->sortByColumn(0,Qt::AscendingOrder);
-
-    ui->tableView->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
-    ui->tableViewCustom->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
+    _table_view->refreshColumns();
+    _tree_view->refreshColumns();
+    _custom_view->refreshColumns();
 
     updateFilter();
 }
-
-
-int CurveListPanel::findRowByName(const std::string &text) const
-{
-    auto item_list = _model->findItems( QString::fromStdString( text ), Qt::MatchExactly);
-    if( item_list.isEmpty())
-    {
-        return -1;
-    }
-    if( item_list.count()>1)
-    {
-        qDebug() << "FilterableListWidget constins multiple rows with the same name";
-        return -1;
-    }
-    return item_list.front()->row();
-}
-
 
 void CurveListPanel::updateFilter()
 {
@@ -183,194 +138,118 @@ void CurveListPanel::keyPressEvent(QKeyEvent *event)
     }
 }
 
-bool CurveListPanel::eventFilter(QObject *object, QEvent *event)
+void CurveListPanel::changeFontSize(int point_size)
 {
-    auto obj = object;
-    while ( obj && obj != ui->tableView && obj != ui->tableViewCustom )
-    {
-        obj = obj->parent();
+    _table_view->setFontSize(point_size);
+    _custom_view->setFontSize(point_size);
+    _tree_view->setFontSize(point_size);
+
+    QSettings settings;
+    settings.setValue("FilterableListWidget/table_point_size", point_size);
+}
+
+bool CurveListPanel::is2ndColumnHidden() const
+{
+    return ui->checkBoxHideSecondColumn->isChecked();
+}
+
+void CurveListPanel::update2ndColumnValues(double tracker_time,
+                                           std::unordered_map<std::string, PlotData> *numeric_data)
+{
+    _tracker_time = tracker_time;
+    _numeric_data = numeric_data;
+
+    refreshValues();
+}
+
+void CurveListPanel::refreshValues()
+{
+    if( is2ndColumnHidden() || !_numeric_data ){
+        return;
     }
 
-    //Ignore obj different than tableViews
-    if(!obj)
+    auto FormattedNumber = [](double value)
     {
-        return QWidget::eventFilter(object,event);
-    }
+        QString num_text = QString::number( value, 'f', 3);
+        if(num_text.contains('.'))
+        {
+            int idx = num_text.length() -1;
+            while( num_text[idx] == '0' )
+            {
+                num_text[idx] = ' ';
+                idx--;
+            }
+            if(  num_text[idx] == '.') num_text[idx] = ' ';
+        }
+        return num_text + " ";
+    };
 
-    bool shift_modifier_pressed = (QGuiApplication::keyboardModifiers() == Qt::ShiftModifier);
-    bool ctrl_modifier_pressed  = (QGuiApplication::keyboardModifiers() == Qt::ControlModifier);
-
-    if(event->type() == QEvent::MouseButtonPress)
+    auto GetValue = [&](const std::string& name) -> nonstd::optional<double>
     {
-        QMouseEvent *mouse_event = static_cast<QMouseEvent*>(event);
-
-        _dragging = false;
-        _drag_start_pos = mouse_event->pos();
-
-        if( !shift_modifier_pressed && !ctrl_modifier_pressed && mouse_event->button() != Qt::RightButton  )
+        auto it = _numeric_data->find(name);
+        if( it !=  _numeric_data->end())
         {
-            if( obj == ui->tableView)
-            {
-                ui->tableViewCustom->clearSelection() ;
-            }
-            if( obj == ui->tableViewCustom)
-            {
-                ui->tableView->clearSelection() ;
-            }
-        }
+            auto& data = it->second;
 
-        if(mouse_event->button() == Qt::LeftButton )
-        {
-            _newX_modifier = false;
-        }
-        else if(mouse_event->button() == Qt::RightButton )
-        {
-            _newX_modifier = true;
-        }
-        else {
-            return false;
-        }
-        return QWidget::eventFilter(object,event);
-    }
-    else if(event->type() == QEvent::MouseMove)
-    {
-        QMouseEvent *mouse_event = static_cast<QMouseEvent*>(event);
-        double distance_from_click = (mouse_event->pos() - _drag_start_pos).manhattanLength();
-
-        if ((mouse_event->buttons() == Qt::LeftButton ||
-             mouse_event->buttons() == Qt::RightButton) &&
-            distance_from_click >= QApplication::startDragDistance() &&
-            !_dragging)
-        {
-            _dragging = true;
-            QDrag *drag = new QDrag(this);
-            QMimeData *mimeData = new QMimeData;
-
-            QByteArray mdata;
-            QDataStream stream(&mdata, QIODevice::WriteOnly);
-
-            for(const auto& curve_name: getNonHiddenSelectedRows())
+            if( _tracker_time < std::numeric_limits<double>::max())
             {
-                stream << QString::fromStdString(curve_name);
-            }
-
-            if( !_newX_modifier )
-            {
-                mimeData->setData("curveslist/add_curve", mdata);
-            }
-            else
-            {
-                if(getNonHiddenSelectedRows().size() != 2)
-                {
-                    if(getNonHiddenSelectedRows().size() >= 1)
-                    {
-                        QMessageBox::warning(this, "New in version 2.3+",
-                                             "To create a new XY curve, you must select two timeseries and "
-                                             "drag&drop them using the RIGHT mouse button.",
-                                             QMessageBox::Ok);
-                    }
-                    return false;
+                auto value = data.getYfromX( _tracker_time );
+                if(value){
+                    return value;
                 }
-                mimeData->setData("curveslist/new_XY_axis", mdata);
-
-                QPixmap cursor( QSize(160,30) );
-                cursor.fill(Qt::transparent);
-
-                QPainter painter;
-                painter.begin( &cursor);
-                painter.setPen(QColor(22, 22, 22));
-
-                QString text("Create a XY curve");
-                painter.setFont( QFont("Arial", 14 ) );
-
-                painter.setBackground(Qt::transparent);
-                painter.setPen( palette().foreground().color() );
-                painter.drawText( QRect(0, 0, 160, 30), Qt::AlignHCenter | Qt::AlignVCenter, text );
-                painter.end();
-
-                drag->setDragCursor(cursor, Qt::MoveAction);
             }
-
-            drag->setMimeData(mimeData);
-            drag->exec(Qt::CopyAction | Qt::MoveAction);
+            else if( data.size() > 0)
+            {
+                return data.back().y;
+            }
         }
-        return true;
-    }
-    else if(event->type() == QEvent::Wheel)
+        return {};
+    };
+
+    //------------------------------------
+    for(CurveTableView* table: { _table_view, _custom_view } )
     {
-        QWheelEvent *wheel_event = dynamic_cast<QWheelEvent*>(event);
-        int prev_size = _point_size;
-        if( ctrl_modifier_pressed )
+        const int vertical_height = table->visibleRegion().boundingRect().height();
+
+        for (int row = 0; row < table->rowCount(); row++)
         {
-            if( _point_size > 6 && wheel_event->delta() < 0 )
-            {
-                _point_size--;
-            }
-            else if( _point_size < 14 && wheel_event->delta() > 0 )
-            {
-                _point_size++;
-            }
-            if( _point_size != prev_size)
-            {
-                auto horizontal = ui->tableView->horizontalHeader();
-                horizontal->setSectionResizeMode(0, QHeaderView::Fixed);
-                horizontal->setSectionResizeMode(1, QHeaderView::Fixed);
+            int vertical_pos = table->rowViewportPosition(row);
+            if( vertical_pos < 0 || table->isRowHidden(row) ){ continue; }
+            if( vertical_pos > vertical_height){ break; }
 
-                auto vertical = ui->tableView->verticalHeader();
-                vertical->setSectionResizeMode(0, QHeaderView::Fixed);
-                vertical->setSectionResizeMode(1, QHeaderView::Fixed);
+            const std::string& name = table->item(row,0)->text().toStdString();
+            auto val = GetValue(name);
+            if (val)
+            {
+                table->item(row, 1)->setText(FormattedNumber( val.value() ));
+            }
+        }
+    }
+    //------------------------------------
+    {
+        const int vertical_height = _tree_view->visibleRegion().boundingRect().height();
 
-                for (int row=0; row< rowCount(); row++)
+        auto DisplayValue = [&](QTreeWidgetItem* cell)
+        {
+            QString curve_name = cell->data( 0, Qt::UserRole ).toString();
+
+            if( !curve_name.isEmpty() )
+            {
+                auto rect = cell->treeWidget()->visualItemRect(cell);
+
+                if( rect.bottom() < 0 || cell->isHidden() ){ return; }
+                if( rect.top() > vertical_height){ return; }
+
+                auto val = GetValue( curve_name.toStdString() );
+                if (val)
                 {
-                    for (int col=0; col< 2; col++)
-                    {
-                        auto item = _model->item( row, col );
-                        auto font = item->font();
-                        font.setPointSize( _point_size );
-                        item->setFont( font );
-                    }
+                    cell->setText(1, FormattedNumber( val.value() ));
                 }
-
-                horizontal->setSectionResizeMode(0, QHeaderView::ResizeToContents);
-                horizontal->setSectionResizeMode(1, QHeaderView::Stretch);
-                vertical->setSectionResizeMode(QHeaderView::ResizeToContents);
-
-                QSettings settings;
-                settings.setValue("FilterableListWidget/table_point_size", _point_size);
             }
-            return true;
-        }
+        };
+
+        _tree_view->treeVisitor( DisplayValue );
     }
-
-    return QWidget::eventFilter(object,event);
-}
-
-std::vector<std::string> CurveListPanel::getNonHiddenSelectedRows()
-{
-    std::vector<std::string> non_hidden_list;
-
-    for(auto table_view: {ui->tableView, ui->tableViewCustom})
-    {
-        for (const auto &selected_index : table_view->selectionModel()->selectedRows(0))
-        {
-            if (!table_view->isRowHidden(selected_index.row()))
-            {
-                auto item = _model->item( selected_index.row(), 0 );
-                non_hidden_list.push_back(item->text().toStdString());
-            }
-        }
-    }
-    return non_hidden_list;
-}
-
-QTableView *CurveListPanel::getTableView() const
-{
-    return ui->tableView;
-}
-
-QTableView *CurveListPanel::getCustomView() const
-{
-    return ui->tableViewCustom;
 }
 
 void CurveListPanel::on_radioContains_toggled(bool checked)
@@ -393,26 +272,6 @@ void CurveListPanel::on_radioRegExp_toggled(bool checked)
     }
 }
 
-void CurveListPanel::on_radioPrefix_toggled(bool checked)
-{
-    _completer_need_update = checked;
-
-    if( checked )
-    {
-        _completer->clear();
-        for (int row=0; row< rowCount(); row++)
-        {
-            auto item = _model->item(row,0);
-            _completer->addToCompletionTree(item->text());
-        }
-
-        updateFilter();
-        ui->lineEdit->setCompleter( _completer );
-        QSettings settings;
-        settings.setValue("FilterableListWidget.searchFilter", "radioPrefix");
-    }
-}
-
 void CurveListPanel::on_checkBoxCaseSensitive_toggled(bool )
 {
     updateFilter();
@@ -420,63 +279,26 @@ void CurveListPanel::on_checkBoxCaseSensitive_toggled(bool )
 
 void CurveListPanel::on_lineEdit_textChanged(const QString &search_string)
 {
-    int item_count = rowCount();
-    int visible_count = 0;
     bool updated = false;
 
-    Qt::CaseSensitivity cs = Qt::CaseInsensitive;
-    if( ui->checkBoxCaseSensitive->isChecked())
+    CurvesView* active_view = ui->radioFlat->isChecked() ? (CurvesView*)_table_view : (CurvesView*)_tree_view;
+
+    if (ui->radioRegExp->isChecked())
     {
-        cs = Qt::CaseSensitive;
+        updated = active_view->applyVisibilityFilter(CurvesView::REGEX,
+                                                     search_string);
     }
-    QRegExp regexp( search_string,  cs, QRegExp::Wildcard );
-    QRegExpValidator v(regexp, nullptr);
-
-    QStringList spaced_items = search_string.split(' ');
-
-    for (int row=0; row < rowCount(); row++)
+    else if (ui->radioContains->isChecked())
     {
-        auto item = _model->item(row,0);
-        QString name = item->text();
-        int pos = 0;
-        bool toHide = false;
-
-        if( search_string.isEmpty() == false )
-        {
-            if( ui->radioRegExp->isChecked())
-            {
-                toHide = v.validate( name, pos ) != QValidator::Acceptable;
-            }
-            else if( ui->radioPrefix->isChecked())
-            {
-                toHide = !name.startsWith( search_string, cs ) ;
-            }
-            else if( ui->radioContains->isChecked())
-            {
-                for (const auto& item: spaced_items)
-                {
-                    if( name.contains(item, cs) == false )
-                    {
-                        toHide = true;
-                        break;
-                    }
-                }
-            }
-        }
-        if( !toHide ) visible_count++;
-
-        if( toHide != ui->tableView->isRowHidden(row) ) updated = true;
-
-        const auto name_std = name.toStdString();
-        const bool is_custom_plot = _custom_plots.count(name_std) > 0;
-
-
-        ui->tableView->setRowHidden(row, toHide || is_custom_plot );
-        ui->tableViewCustom->setRowHidden(row, toHide || !is_custom_plot );
+        updated = active_view->applyVisibilityFilter(CurvesView::CONTAINS,
+                                                     search_string);
     }
+    auto h_c = active_view->hiddenItemsCount();
+    int item_count = h_c.second;
+    int visible_count = item_count - h_c.first;
+
     ui->labelNumberDisplayed->setText( QString::number( visible_count ) + QString(" of ") +
                                        QString::number( item_count ) );
-
     if(updated){
         emit hiddenItemsChanged();
     }
@@ -489,17 +311,9 @@ void CurveListPanel::on_pushButtonSettings_toggled(bool checked)
 
 void CurveListPanel::on_checkBoxHideSecondColumn_toggled(bool checked)
 {
-    for(auto table_view: {ui->tableView, ui->tableViewCustom})
-    {
-        if(checked){
-            table_view->hideColumn(1);
-        }
-        else{
-            table_view->showColumn(1);
-        }
-        table_view->horizontalHeader()->setStretchLastSection( !checked );
-    }
-
+    _tree_view->hideValuesColumn(checked);
+    _table_view->hideValuesColumn(checked);
+    _custom_view->hideValuesColumn(checked);
     emit hiddenItemsChanged();
 }
 
@@ -513,63 +327,47 @@ void CurveListPanel::removeSelectedCurves()
 
     if (reply == QMessageBox::Yes)
     {
-        emit deleteCurves(getNonHiddenSelectedRows());
-    }
-
-    // rebuild the tree model
-    if( _completer_need_update )
-    {
-        _completer->clear();
-        for (int row=0; row< rowCount(); row++)
-        {
-            auto item = _model->item(row);
-            _completer->addToCompletionTree(item->text());
-        }
+        emit deleteCurves( _table_view->getSelectedNames() );
+        emit deleteCurves( _tree_view->getSelectedNames() );
+        emit deleteCurves( _custom_view->getSelectedNames() );
     }
 
     updateFilter();
 }
 
-void CurveListPanel::removeRow(int row)
+void CurveListPanel::removeCurve(const std::string &name)
 {
-    _model->removeRow(row);
+    QString curve_name = QString::fromStdString(name);
+   _table_view->removeCurve(curve_name);
+   _tree_view->removeCurve(curve_name);
+   _custom_view->removeCurve(curve_name);
 }
 
 void CurveListPanel::on_buttonAddCustom_clicked()
 {
-    auto curve_names = getNonHiddenSelectedRows();
-    if( curve_names.empty() )
-    {
-        emit createMathPlot("");
-    }
-    else
-    {
-        createMathPlot( curve_names.front() );
-    }
-    on_lineEdit_textChanged( ui->lineEdit->text() );
-}
+    std::array<CurvesView*,3> views = { _table_view, _tree_view, _custom_view };
 
-//void FilterableListWidget::on_buttonRefreshAll_clicked()
-//{
-//    for(auto& it: _mapped_math_plots)
-//    {
-//        emit refreshMathPlot( it.second->name() );
-//    }
-//}
-
-void CurveListPanel::onCustomSelectionChanged(const QItemSelection&, const QItemSelection &)
-{
-    int selected_items = 0;
-
-    for (const auto &index : ui->tableViewCustom->selectionModel()->selectedRows(0))
+    std::string suggested_name;
+    for(CurvesView* view: views )
     {
-        if (! ui->tableViewCustom->isRowHidden(index.row()) )
+        auto curve_names = view->getSelectedNames();
+        if( curve_names.size() > 0)
         {
-            selected_items++;
+             suggested_name = ( curve_names.front() );
+             break;
         }
     }
 
-    bool enabled = selected_items == 1;
+    emit createMathPlot(suggested_name);
+    on_lineEdit_textChanged( ui->lineEdit->text() );
+}
+
+
+void CurveListPanel::onCustomSelectionChanged(const QItemSelection&, const QItemSelection &)
+{
+    auto selected = _custom_view->getSelectedNames();
+
+    bool enabled = (selected.size() == 1);
     ui->buttonEditCustom->setEnabled( enabled );
     ui->buttonEditCustom->setToolTip( enabled ? "Edit the selected custom timeserie" :
                                                 "Select a single custom Timeserie to Edit it");
@@ -577,34 +375,50 @@ void CurveListPanel::onCustomSelectionChanged(const QItemSelection&, const QItem
 
 void CurveListPanel::on_buttonEditCustom_clicked()
 {
-    int selected_count = 0;
-    QModelIndex selected_index;
-    auto table_view = ui->tableViewCustom;
+    QTableWidgetItem* selected_item = nullptr;
 
-    for (QModelIndex index : table_view->selectionModel()->selectedRows(0))
+    for (QModelIndex index : _custom_view->selectionModel()->selectedRows(0))
     {
-        if (!table_view->isRowHidden( index.row()) )
-        {
-            selected_count++;
-            selected_index = index;
-        }
+        selected_item = _custom_view->item( index.row(), 0 );
+        break;
     }
-    if( selected_count != 1)
+    if( !selected_item )
     {
         return;
     }
-
-    auto item = _model->item( selected_index.row(), 0 );
-    editMathPlot( item->text().toStdString() );
+    editMathPlot( selected_item->text().toStdString() );
 }
 
 void CurveListPanel::clearSelections()
 {
-    ui->tableViewCustom->clearSelection();
-    ui->tableView->clearSelection();
+    _custom_view->clearSelection();
+    _tree_view->clearSelection();
+    _table_view->clearSelection();
 }
 
 void CurveListPanel::on_stylesheetChanged(QString style_dir)
 {
     ui->pushButtonSettings->setIcon(QIcon(tr(":/%1/settings_cog.png").arg(style_dir)));
+}
+
+void CurveListPanel::on_radioTree_toggled(bool checked)
+{
+    _tree_view->setVisible(checked);
+    if( checked )
+    {
+        refreshValues();
+        QSettings settings;
+        settings.setValue("FilterableListWidget/isTreeView", true);
+    }
+}
+
+void CurveListPanel::on_radioFlat_toggled(bool checked)
+{
+    _table_view->setVisible(checked);
+    if( checked )
+    {
+        refreshValues();
+        QSettings settings;
+        settings.setValue("FilterableListWidget/isTreeView", false);
+    }
 }

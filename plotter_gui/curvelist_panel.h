@@ -11,8 +11,8 @@
 
 #include "transforms/custom_function.h"
 #include "tree_completer.h"
+#include "curvetree_view.h"
 
-class SortedTableItem;
 
 namespace Ui {
 class CurveListPanel;
@@ -28,35 +28,26 @@ public:
 
     ~CurveListPanel() override;
 
-    int rowCount() const;
-
     void clear();
 
-    void addItem(const QString& item_name);
+    void addCurve(const QString& item_name);
+
+    void addCustom(const QString& item_name);
 
     void refreshColumns();
 
-    int findRowByName(const std::string &text) const;
-
-    void removeRow(int row);
+    void removeCurve(const std::string &name);
 
     void rebuildEntireList(const std::vector<std::string> &names);
 
     void updateFilter();
 
-    QStandardItemModel *getTableModel() const
-    {
-        return _model;
-    }
+    void changeFontSize(int point_size);
 
-    QTableView* getTableView() const;
+    bool is2ndColumnHidden() const;
 
-    QTableView* getCustomView() const;
-
-    bool is2ndColumnHidden() const
-    {
-        return getTableView()->isColumnHidden(1);
-    }
+    void update2ndColumnValues(double time,
+                               std::unordered_map<std::string, PlotData>* numeric_data);
 
     virtual void keyPressEvent(QKeyEvent * event) override;
 
@@ -65,8 +56,6 @@ private slots:
     void on_radioContains_toggled(bool checked);
 
     void on_radioRegExp_toggled(bool checked);
-
-    void on_radioPrefix_toggled(bool checked);
 
     void on_checkBoxCaseSensitive_toggled(bool checked);
 
@@ -84,35 +73,33 @@ private slots:
 
     void onCustomSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
 
-public slots:
+    void on_radioTree_toggled(bool checked);
+
+    void on_radioFlat_toggled(bool checked);
+
+   public slots:
 
     void clearSelections();
 
     void on_stylesheetChanged(QString style_dir);
 
+    void refreshValues();
+
 private:
 
     Ui::CurveListPanel *ui;
 
-    QPoint _drag_start_pos;
-
-    bool _newX_modifier, _dragging;
-
-    TreeModelCompleter* _completer;
-
-    bool eventFilter(QObject *object, QEvent *event) override;
-
     void updateTreeModel();
     
-    std::vector<std::string> getNonHiddenSelectedRows();
+    CurveTableView* _table_view;
+    CurveTableView* _custom_view;
+    CurveTreeView* _tree_view;
 
-    bool _completer_need_update;
-
-    QStandardItemModel* _model;
+    double _tracker_time = 0;
+    std::unordered_map<std::string, PlotData> *_numeric_data = nullptr;
 
     const CustomPlotMap& _custom_plots;
 
-    int _point_size;
 signals:
 
     void hiddenItemsChanged();
