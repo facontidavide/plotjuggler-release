@@ -198,9 +198,15 @@ void CustomFunction::calculate(const PlotDataMapRef &plotData, PlotData* dst_dat
 
     QJSValue chan_values = _jsEngine->newArray(static_cast<quint32>(_used_channels.size()));
 
+    double last_updated_stamp = -std::numeric_limits<double>::max();
+    if (dst_data->size() != 0)
+    {
+        last_updated_stamp = dst_data->back().x;
+    }
+
     for(size_t i=0; i < src_data.size(); ++i)
     {
-        if( dst_data->size() == 0 || src_data.at(i).x > dst_data->back().x)
+        if( src_data.at(i).x > last_updated_stamp)
         {
             dst_data->pushBack( calculatePoint(calcFct, src_data, channel_data, chan_values, i ) );
         }

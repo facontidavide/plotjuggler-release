@@ -10,8 +10,8 @@ cmake_policy (SET CMP0020 NEW)
 
 add_definitions(
     -DPJ_MAJOR_VERSION=2
-    -DPJ_MINOR_VERSION=3
-    -DPJ_PATCH_VERSION=7 )
+    -DPJ_MINOR_VERSION=4
+    -DPJ_PATCH_VERSION=0 )
 
 add_subdirectory( fmt )
 

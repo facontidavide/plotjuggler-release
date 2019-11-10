@@ -32,7 +32,7 @@
    <string>About PlotJuggler</string>
   </property>
   <property name="styleSheet">
-   <string notr="true">background-color: rgb(255, 255, 255);</string>
+   <string notr="true"/>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
@@ -46,8 +46,12 @@
      <property name="maximumSize">
       <size>
        <width>16777215</width>
-       <height>50</height>
+       <height>60</height>
       </size>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">background-color: rgb(255,255,255,0);
+border-color: rgb(255, 255, 255,0);</string>
      </property>
      <property name="frameShape">
       <enum>QFrame::NoFrame</enum>
@@ -80,6 +84,10 @@ p, li { white-space: pre-wrap; }
        <pointsize>11</pointsize>
       </font>
      </property>
+     <property name="styleSheet">
+      <string notr="true">background-color: rgb(255,255,255,0);
+border-color: rgb(255, 255, 255,0);</string>
+     </property>
      <property name="text">
       <string>version:</string>
      </property>
@@ -90,6 +98,10 @@ p, li { white-space: pre-wrap; }
    </item>
    <item>
     <widget class="QTextBrowser" name="textBrowser">
+     <property name="styleSheet">
+      <string notr="true">background-color: rgb(255,255,255,0);
+border-color: rgb(255, 255, 255,0);</string>
+     </property>
      <property name="frameShape">
       <enum>QFrame::NoFrame</enum>
      </property>

@@ -349,44 +349,54 @@ void TabbedPlotWidget::on_pushButtonZoomMax_pressed()
     emit undoableChangeHappened();
 }
 
+void TabbedPlotWidget::printPlotsNames()
+{
+    for (int t=0; t < tabWidget()->count(); t++)
+    {
+        PlotMatrix* matrix =  static_cast<PlotMatrix*>(tabWidget()->widget(t));
+        for(unsigned row=0; row< matrix->rowsCount(); row++)
+        {
+            for(unsigned col=0; col< matrix->colsCount(); col++)
+            {
+                PlotWidget* plot = matrix->plotAt(row, col);
+                qDebug() <<  plot->windowTitle() << " at " << row << "/" << col << "/" << t;
+            }
+        }
+    }
+    qDebug() << "----------";
+}
+
 void TabbedPlotWidget::onMoveWidgetIntoNewTab(QString plot_name)
 {
     int src_row, src_col;
     PlotMatrix* src_matrix = nullptr;
     PlotWidget* source = nullptr;
 
-    auto func = [&](QTabWidget * tabs)
+    for (int t = 0; t < tabWidget()->count(); t++)
     {
-        for (int t=0; t < tabs->count(); t++)
-        {
-            PlotMatrix* matrix =  static_cast<PlotMatrix*>(tabs->widget(t));
+        PlotMatrix* matrix = static_cast<PlotMatrix*>(tabWidget()->widget(t));
 
-            for(unsigned row=0; row< matrix->rowsCount(); row++)
+        for (unsigned row = 0; row < matrix->rowsCount(); row++)
+        {
+            for (unsigned col = 0; col < matrix->colsCount(); col++)
             {
-                for(unsigned col=0; col< matrix->colsCount(); col++)
+                PlotWidget* plot = matrix->plotAt(row, col);
+                if (plot->windowTitle() == plot_name)
                 {
-                    PlotWidget* plot = matrix->plotAt(row, col);
-                    if( plot->windowTitle() == plot_name)
-                    {
-                        src_matrix = matrix;
-                        src_row = row;
-                        src_col = col;
-                        source = plot;
-                        return;
-                    }
+                    src_matrix = matrix;
+                    src_row = row;
+                    src_col = col;
+                    source = plot;
+                    break;
                 }
             }
         }
-    };
-
-    for(const auto& it: TabbedPlotWidget::instances())
-    {
-        func( it.second->tabWidget() );
     }
 
     addTab();
     PlotMatrix* dst_matrix  = currentTab();
     PlotWidget* destination = dst_matrix->plotAt(0,0);
+
 
     src_matrix->gridLayout()->removeWidget( source );
     dst_matrix->gridLayout()->removeWidget( destination );
@@ -400,7 +410,6 @@ void TabbedPlotWidget::onMoveWidgetIntoNewTab(QString plot_name)
     src_matrix->updateLayout();
     dst_matrix->updateLayout();
     emit undoableChangeHappened();
-
 }
 
 void TabbedPlotWidget::on_addTabButton_pressed()
@@ -475,6 +484,7 @@ void TabbedPlotWidget::on_tabWidget_tabCloseRequested(int index)
             plot->detachAllCurves();
             plot->deleteLater();
         }
+        matrix->deleteLater();
 
         tabWidget()->removeTab( index );
         emit undoableChangeHappened();
@@ -502,8 +512,6 @@ void TabbedPlotWidget::on_requestTabMovement(const QString & destination_name)
     const QString& tab_name =  this->tabWidget()->tabText(index);
 
     destination_widget->tabWidget()->addTab( tab_to_move, tab_name );
-
-    qDebug() << "move "<< tab_name<< " into " << destination_name;
     emit undoableChangeHappened();
 }
 
@@ -543,7 +551,6 @@ bool TabbedPlotWidget::eventFilter(QObject *obj, QEvent *event)
                 QMenu* submenu = new QMenu("Move tab to...");
                 _tab_menu->addMenu( submenu );
 
-                std::map<QString,TabbedPlotWidget*>::iterator it;
                 QSignalMapper* signalMapper = new QSignalMapper(submenu);
 
                 //-----------------------------------
