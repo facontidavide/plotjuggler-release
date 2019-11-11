@@ -209,6 +209,7 @@ void CurveListPanel::refreshValues()
     //------------------------------------
     for(CurveTableView* table: { _table_view, _custom_view } )
     {
+        table->setViewResizeEnabled(false);
         const int vertical_height = table->visibleRegion().boundingRect().height();
 
         for (int row = 0; row < table->rowCount(); row++)
@@ -224,6 +225,7 @@ void CurveListPanel::refreshValues()
                 table->item(row, 1)->setText(FormattedNumber( val.value() ));
             }
         }
+        table->setViewResizeEnabled(true);
     }
     //------------------------------------
     {
@@ -248,7 +250,9 @@ void CurveListPanel::refreshValues()
             }
         };
 
+        _tree_view->setViewResizeEnabled(false);
         _tree_view->treeVisitor( DisplayValue );
+        _tree_view->setViewResizeEnabled(true);
     }
 }
 
