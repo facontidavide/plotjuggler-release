@@ -12,6 +12,7 @@
 #include <QStandardItemModel>
 #include <QTableWidget>
 #include <vector>
+#include <QSet>
 
 #include "PlotJuggler/alphanum.hpp"
 
@@ -57,6 +58,8 @@ class CurvesView
 
     virtual void hideValuesColumn(bool hide) = 0;
 
+    virtual void setViewResizeEnabled(bool enable) = 0;
+
     bool eventFilterBase(QObject* object, QEvent* event);
 
     virtual std::pair<int,int> hiddenItemsCount() = 0;
@@ -85,6 +88,7 @@ class CurveTableView : public QTableWidget, public CurvesView
     void clear() override
     {
         setRowCount(0);
+        _inserted_curves.clear();
     }
 
     void addItem(const QString& item_name);
@@ -111,6 +115,8 @@ class CurveTableView : public QTableWidget, public CurvesView
         }
     }
 
+    void setViewResizeEnabled(bool enable) override;
+
     virtual std::pair<int,int> hiddenItemsCount()
     {
         return { _hidden_count, model()->rowCount() };
@@ -119,6 +125,7 @@ class CurveTableView : public QTableWidget, public CurvesView
     virtual void hideValuesColumn(bool hide) override;
    private:
     int _hidden_count = 0;
+    QSet<QString> _inserted_curves;
 };
 
 #endif  // CURVELIST_VIEW_H
