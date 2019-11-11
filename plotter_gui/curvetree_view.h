@@ -70,6 +70,8 @@ class CurveTreeView : public QTreeWidget, public CurvesView
         return { _hidden_count, _leaf_count };
     }
 
+    void setViewResizeEnabled(bool enable) override {}
+
     virtual void hideValuesColumn(bool hide) override;
 
    void treeVisitor(std::function<void(QTreeWidgetItem *)> visitor);
