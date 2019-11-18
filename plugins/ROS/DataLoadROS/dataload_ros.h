@@ -42,7 +42,8 @@ private:
 
     DialogSelectRosTopics::Configuration _config;
 
-    std::vector<std::pair<QString, QString>> getAllTopics(const rosbag::Bag *bag, RosMessageParser *parser);
+    std::vector<std::pair<QString, QString>> getAllTopics(const rosbag::Bag *bag,
+                                                          std::map<std::string, RosMessageParser> &parsers);
 
     void saveDefaultSettings();
 

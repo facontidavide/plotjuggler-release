@@ -39,6 +39,7 @@ target_link_libraries( commonROS PRIVATE
   ${Qt5Xml_LIBRARIES}
   ${catkin_LIBRARIES}
   fmt::fmt-header-only
+  marl
   )
 
 
