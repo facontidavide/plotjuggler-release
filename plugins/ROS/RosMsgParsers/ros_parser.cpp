@@ -9,6 +9,7 @@
 
 RosMessageParser::RosMessageParser()
 {
+  _introspection_parser.reset( new RosIntrospection::Parser );
 }
 
 void RosMessageParser::clear()
@@ -105,6 +106,7 @@ void RosMessageParser::pushMessageRef(const std::string &topic_name,
                                       const MessageRef &msg,
                                       double timestamp)
 {
+    std::unique_lock<std::mutex> lk(_mutex);
     auto builtin_it = _builtin_parsers.find( topic_name );
     if( builtin_it != _builtin_parsers.end() )
     {
@@ -115,13 +117,12 @@ void RosMessageParser::pushMessageRef(const std::string &topic_name,
 
     using namespace RosIntrospection;
 
-    FlatMessage flat_container;
-    RenamedValues renamed_values;
+    _introspection_parser->setBlobPolicy( RosIntrospection::Parser::STORE_BLOB_AS_REFERENCE );
 
     bool max_size_ok = _introspection_parser->deserializeIntoFlatContainer(
                 topic_name,
                 {const_cast<uint8_t*>(msg.data()), static_cast<long>(msg.size())},
-                &flat_container,
+                &_flat_container,
                 _max_array_size );
 
     if( !max_size_ok && _warnings_enabled )
@@ -130,11 +131,11 @@ void RosMessageParser::pushMessageRef(const std::string &topic_name,
     }
 
     _introspection_parser->applyNameTransform( topic_name,
-                                               flat_container,
-                                               &renamed_values );
+                                               _flat_container,
+                                               &_renamed_values );
     if(_use_header_stamp)
     {
-        for (const auto& it: flat_container.value)
+        for (const auto& it: _flat_container.value)
         {
             if( it.second.getTypeID() != RosIntrospection::TIME)
             {
@@ -186,7 +187,7 @@ void RosMessageParser::pushMessageRef(const std::string &topic_name,
 
     //----------------------------
 
-    for(const auto& it: renamed_values )
+    for(const auto& it: _renamed_values )
     {
         const auto& field_name = it.first;
 
