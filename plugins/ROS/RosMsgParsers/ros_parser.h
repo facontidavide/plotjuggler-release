@@ -52,6 +52,10 @@ private:
     PlotDataMapRef _plot_map;
 
     ParsersMap _builtin_parsers;
+    std::mutex _mutex;
+
+    RosIntrospection::FlatMessage _flat_container;
+    RosIntrospection::RenamedValues _renamed_values;
 
     uint32_t _max_array_size;
     bool _warnings_enabled;
