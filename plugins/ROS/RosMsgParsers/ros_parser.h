@@ -3,6 +3,7 @@
 
 #include "ros_parser_base.h"
 #include <ros_type_introspection/ros_introspection.hpp>
+#include "marl/ticket.h"
 
 class RosMessageParser : public RosParserBase
 {
@@ -46,13 +47,14 @@ public:
 
     typedef std::unordered_map<std::string, std::unique_ptr<RosParserBase> > ParsersMap;
 
+    marl::Ticket::Queue ticket_queue;
+
 private:
     std::unordered_set<std::string> _registered_md5sum;
     std::unique_ptr<RosIntrospection::Parser> _introspection_parser;
     PlotDataMapRef _plot_map;
 
     ParsersMap _builtin_parsers;
-    std::mutex _mutex;
 
     RosIntrospection::FlatMessage _flat_container;
     RosIntrospection::RenamedValues _renamed_values;
