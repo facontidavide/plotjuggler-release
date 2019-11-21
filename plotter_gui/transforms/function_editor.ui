@@ -170,6 +170,9 @@
                <property name="focusPolicy">
                 <enum>Qt::NoFocus</enum>
                </property>
+               <property name="toolTip">
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This timeseries will be used to provide the &lt;span style=&quot; font-weight:600;&quot;&gt;time/value&lt;/span&gt; arguments to your functions.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               </property>
                <property name="frame">
                 <bool>false</bool>
                </property>
@@ -205,12 +208,15 @@
        <item>
         <widget class="QLabel" name="label">
          <property name="text">
-          <string>function calc(time,value) {</string>
+          <string>function( time, value ) {</string>
          </property>
         </widget>
        </item>
        <item>
         <widget class="QPlainTextEdit" name="mathEquation">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Write your function implementation here. &lt;/p&gt;&lt;p&gt;It must return a new value. &lt;/p&gt;&lt;p&gt;The time used in the new time series will be the same.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
          <property name="plainText">
           <string/>
          </property>
@@ -308,7 +314,7 @@
          </property>
          <widget class="QWidget" name="tab_2">
           <attribute name="title">
-           <string>Snippets</string>
+           <string>Saved functions</string>
           </attribute>
           <layout class="QVBoxLayout" name="verticalLayout_2" stretch="0,1,0,1,0,2">
            <item>
@@ -341,6 +347,12 @@
              </item>
              <item>
               <widget class="QPushButton" name="buttonLoadFunctions">
+               <property name="maximumSize">
+                <size>
+                 <width>65</width>
+                 <height>16777215</height>
+                </size>
+               </property>
                <property name="focusPolicy">
                 <enum>Qt::NoFocus</enum>
                </property>
@@ -353,6 +365,12 @@
               <widget class="QPushButton" name="buttonSaveFunctions">
                <property name="enabled">
                 <bool>true</bool>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>65</width>
+                 <height>16777215</height>
+                </size>
                </property>
                <property name="focusPolicy">
                 <enum>Qt::NoFocus</enum>
@@ -375,7 +393,7 @@
              <item>
               <widget class="QLabel" name="label_6">
                <property name="text">
-                <string>Recent used:</string>
+                <string>Recently used:</string>
                </property>
               </widget>
              </item>
@@ -399,8 +417,17 @@
            </item>
            <item>
             <widget class="QLabel" name="label_7">
+             <property name="font">
+              <font>
+               <weight>75</weight>
+               <bold>true</bold>
+              </font>
+             </property>
              <property name="text">
-              <string>Function preview:</string>
+              <string>Function Preview:</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
              </property>
             </widget>
            </item>
@@ -421,7 +448,7 @@
            <item>
             <widget class="QLabel" name="label_8">
              <property name="text">
-              <string>Double click to insert at reference to a timeseries:</string>
+              <string>Double click a time series to insert into the function:</string>
              </property>
             </widget>
            </item>
@@ -459,38 +486,6 @@
             <widget class="QListWidget" name="curvesListWidget">
              <property name="focusPolicy">
               <enum>Qt::NoFocus</enum>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </widget>
-         <widget class="QWidget" name="tab_3">
-          <attribute name="title">
-           <string>Help</string>
-          </attribute>
-          <layout class="QVBoxLayout" name="verticalLayout_3">
-           <item>
-            <widget class="QTextBrowser" name="helpBrowser">
-             <property name="html">
-              <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
-&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
-p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Ubuntu'; font-size:11pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Noto Sans'; font-size:10pt; font-weight:600;&quot;&gt;Linked data&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Noto Sans'; font-size:10pt;&quot;&gt;This is the curve used for the x and y in the calc(x,y) method.&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'Noto Sans'; font-size:10pt;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Noto Sans'; font-size:10pt; font-weight:600;&quot;&gt;Global variables and equation fields&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Noto Sans'; font-size:10pt;&quot;&gt;These are the fields where you enter your equation.&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Noto Sans'; font-size:10pt;&quot;&gt;The code is parsed as javascript, with the &amp;quot;Math&amp;quot; namespace being sourced : e.g. &amp;quot;Math.cos()&amp;quot; and &amp;quot;cos()&amp;quot; are the same.&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Noto Sans'; font-size:10pt;&quot;&gt;In the top text field you can add methods or global variables.&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'Noto Sans'; font-size:10pt;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Noto Sans'; font-size:10pt;&quot;&gt;The method defined in the bottom text field is called for each point of the &amp;quot;linked data&amp;quot; and must return a number (or NaN).  The method contains the arguments &amp;quot;x&amp;quot;, &amp;quot;y&amp;quot; and &amp;quot;$$CURVE$$&amp;quot;, where &amp;quot;CURVE&amp;quot; can be any other curve's name.&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'Noto Sans'; font-size:10pt;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Noto Sans'; font-size:10pt; font-weight:600;&quot;&gt;Curves tab&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Noto Sans'; font-size:10pt;&quot;&gt;Double click on the curve to insert it at your cursor.&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'Noto Sans'; font-size:10pt;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Noto Sans'; font-size:10pt; font-weight:600;&quot;&gt;Snippets tab&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Noto Sans'; font-size:10pt;&quot;&gt;Single click to preview, double click to apply the snippet.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
             </widget>
            </item>
