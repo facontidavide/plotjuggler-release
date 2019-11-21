@@ -106,7 +106,6 @@ void RosMessageParser::pushMessageRef(const std::string &topic_name,
                                       const MessageRef &msg,
                                       double timestamp)
 {
-    std::unique_lock<std::mutex> lk(_mutex);
     auto builtin_it = _builtin_parsers.find( topic_name );
     if( builtin_it != _builtin_parsers.end() )
     {

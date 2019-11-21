@@ -239,11 +239,14 @@ bool DataLoadROS::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_map)
 
       RosMessageParser* ros_parser_ptr = &ros_parsers.find(topic_name)->second;
       wg.add();
+      auto ticket = ros_parser_ptr->ticket_queue.take();
 
       marl::schedule([=]
       {
+        ticket.wait();
         ros_parser_ptr->pushMessageRef( topic_name, MessageRef(buffer), msg_time );
         wg.done();
+        ticket.done();
       });
     }
 
