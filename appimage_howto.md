@@ -13,7 +13,7 @@ In the root folder of ws_plotjuggler:
 
     chmod +x linuxdeploy*.AppImage
 
-    rm -rf build devel install
+    rm -rf build devel install AppDir
     catkin_make -DCMAKE_BUILD_TYPE=Release  -j$(nproc) install  
     
     cd src/PlotJuggler;export VERSION=$(git describe --abbrev=0 --tags);cd -;echo $VERSION
