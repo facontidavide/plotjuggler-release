@@ -68,11 +68,14 @@ void DataStreamROS::topicCallback(const topic_tools::ShapeShifter::ConstPtr& msg
     ros::serialization::OStream stream(buffer.data(), buffer.size());
     msg->write(stream);
 
+    _ros_parser.setUseHeaderStamp( _config.use_header_stamp );
+
     double msg_time = ros::Time::now().toSec();
     if( msg_time == 0)
     {
       // corner case: use_sim_time == true but topic /clock is not published
       msg_time = ros::WallTime::now().toSec();
+      _ros_parser.setUseHeaderStamp( false );
     }
 
     if( msg_time < _prev_clock_time )
@@ -352,8 +355,6 @@ bool DataStreamROS::start(QStringList* selected_datasources)
     }
 
     saveDefaultSettings();
-
-    _ros_parser.setUseHeaderStamp( _config.use_header_stamp );
 
     if( _config.use_renaming_rules )
     {
