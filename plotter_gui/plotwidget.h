@@ -83,6 +83,8 @@ protected:
 
     bool canvasEventFilter(QEvent *event);
 
+    QColor getColorHint(PlotData *data);
+
 signals:
     void swapWidgetsRequested(PlotWidget* source, PlotWidget* destination);
     void rectChanged(PlotWidget* self, QRectF rect );
@@ -181,6 +183,9 @@ private:
     QwtPlotGrid* _grid;
 
     bool _use_date_time_scale;
+
+    int _color_index;
+    static int global_color_index;
 
     PlotDataMapRef& _mapped_data;
     QString _default_transform;
