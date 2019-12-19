@@ -248,7 +248,10 @@ bool CurvesView::eventFilterBase(QObject *object, QEvent *event)
             QByteArray mdata;
             QDataStream stream(&mdata, QIODevice::WriteOnly);
 
-            for (const auto &curve_name : getSelectedNames())
+            auto selected_names = getSelectedNames();
+            std::sort( selected_names.begin(), selected_names.end() );
+
+            for (const auto &curve_name : selected_names)
             {
                 stream << QString::fromStdString(curve_name);
             }
@@ -259,9 +262,9 @@ bool CurvesView::eventFilterBase(QObject *object, QEvent *event)
             }
             else
             {
-                if (getSelectedNames().size() != 2)
+                if (selected_names.size() != 2)
                 {
-                    if (getSelectedNames().size() >= 1)
+                    if (selected_names.size() >= 1)
                     {
                         QMessageBox::warning(
                             table_widget, "New in version 2.3+",

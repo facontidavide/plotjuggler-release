@@ -62,7 +62,17 @@ DialogSelectRosTopics::DialogSelectRosTopics(const std::vector<std::pair<QString
     _deselect_all.setContext(Qt::WindowShortcut);
 
     connect( &_select_all, &QShortcut::activated,
-             ui->listRosTopics, &QAbstractItemView::selectAll );
+            ui->listRosTopics, [this]()
+            {
+              for (int row=0; row< ui->listRosTopics->rowCount(); row++)
+              {
+                if( !ui->listRosTopics->isRowHidden(row) &&
+                    !ui->listRosTopics->item(row,0)->isSelected())
+                {
+                  ui->listRosTopics->selectRow(row);
+                }
+              }
+            });
 
     connect( &_deselect_all, &QShortcut::activated,
              ui->listRosTopics, &QAbstractItemView::clearSelection );
