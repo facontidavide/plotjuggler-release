@@ -276,11 +276,6 @@ void CurveListPanel::on_radioRegExp_toggled(bool checked)
     }
 }
 
-void CurveListPanel::on_checkBoxCaseSensitive_toggled(bool )
-{
-    updateFilter();
-}
-
 void CurveListPanel::on_lineEdit_textChanged(const QString &search_string)
 {
     bool updated = false;
@@ -379,18 +374,11 @@ void CurveListPanel::onCustomSelectionChanged(const QItemSelection&, const QItem
 
 void CurveListPanel::on_buttonEditCustom_clicked()
 {
-    QTableWidgetItem* selected_item = nullptr;
-
-    for (QModelIndex index : _custom_view->selectionModel()->selectedRows(0))
+    auto selected = _custom_view->getSelectedNames();
+    if( selected.size() == 1 )
     {
-        selected_item = _custom_view->item( index.row(), 0 );
-        break;
+        editMathPlot( selected.front() );
     }
-    if( !selected_item )
-    {
-        return;
-    }
-    editMathPlot( selected_item->text().toStdString() );
 }
 
 void CurveListPanel::clearSelections()
