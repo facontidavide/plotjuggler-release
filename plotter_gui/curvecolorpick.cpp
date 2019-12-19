@@ -3,7 +3,8 @@
 #include <QColorDialog>
 
 
-CurveColorPick::CurveColorPick(const std::map<std::string, QColor> &mapped_colors, QWidget *parent) :
+CurveColorPick::CurveColorPick(const std::map<std::string, QColor> &mapped_colors,
+                               QWidget *parent) :
     QDialog(parent),
     ui(new Ui::CurveColorPick),
     _any_modified(false),
@@ -23,16 +24,35 @@ CurveColorPick::CurveColorPick(const std::map<std::string, QColor> &mapped_color
     _color_wheel->setMinimumWidth(150);
     _color_wheel->setMinimumHeight(150);
 
+    ui->verticalLayoutRight->insertWidget(1, new QLabel("Default colors", this) );
+
+    _color_palette = new  color_widgets::Swatch(this);
+    ui->verticalLayoutRight->insertWidget(2, _color_palette );
+    _color_palette->setMinimumWidth(150);
+    _color_palette->setMinimumHeight(30);
+    _color_palette->setMaximumHeight(30);
+
+    ui->verticalLayoutRight->insertWidget(3, new QLabel("Preview", this) );
+
     _color_preview = new  color_widgets::ColorPreview(this);
-    ui->verticalLayoutRight->insertWidget(1, _color_preview );
+    ui->verticalLayoutRight->insertWidget(4, _color_preview );
     _color_preview->setMinimumWidth(150);
     _color_preview->setMinimumHeight(100);
+
+    QVector<QColor> colors = {QColor("#1f77b4"), QColor("#d62728"), QColor("#1ac938"), QColor("#ff7f0e"),
+                              QColor("#f14cc1"), QColor("#9467bd"), QColor("#17becf"), QColor("#bcbd22")};
+
+    color_widgets::ColorPalette palette(colors, "default colors", 8);
+    _color_palette->setPalette(palette);
 
     connect(_color_wheel,   &color_widgets::ColorWheel::colorChanged,
             _color_preview, &color_widgets::ColorPreview::setColor );
 
     connect(_color_wheel,   &color_widgets::ColorWheel::colorChanged,
             this, &CurveColorPick::on_colorChanged );
+
+    connect(_color_palette,   &color_widgets::Swatch::colorSelected,
+            _color_wheel, &color_widgets::ColorWheel::setColor );
 }
 
 CurveColorPick::~CurveColorPick()
