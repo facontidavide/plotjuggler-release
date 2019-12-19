@@ -2,6 +2,15 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.5.0 (2019-12-19)
+------------------
+* Fix issues `#196 <https://github.com/facontidavide/PlotJuggler/issues/196>`_ and `#236 <https://github.com/facontidavide/PlotJuggler/issues/236>`_: allow user to use deterministic color sequence
+* fix the edit button
+* fix issue `#235 <https://github.com/facontidavide/PlotJuggler/issues/235>`_
+* Update appimage_howto.md
+* fix timestamp problem in streaming
+* Contributors: Davide Faconti
+
 2.4.3 (2019-11-21)
 ------------------
 * less dark theme

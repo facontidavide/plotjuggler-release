@@ -33,11 +33,49 @@
 #include "qwt_plot_renderer.h"
 #include "qwt_series_data.h"
 #include "qwt_date_scale_draw.h"
-#include "PlotJuggler/random_color.h"
 #include "point_series_xy.h"
 #include "suggest_dialog.h"
 #include "transforms/custom_function.h"
 #include "transforms/custom_timeseries.h"
+
+int PlotWidget::global_color_index = 0;
+
+QColor PlotWidget::getColorHint(PlotData* data)
+{
+  QSettings settings;
+  bool remember_color = settings.value("Preferences::remember_color", true).toBool();
+  if( data && remember_color && data->getColorHint() != Qt::black )
+  {
+    return data->getColorHint();
+  }
+  QColor color;
+  bool use_plot_color_index = settings.value("Preferences::use_plot_color_index", false).toBool();
+  int index = _curve_list.size();
+
+  if( !use_plot_color_index )
+  {
+    index = (PlotWidget::global_color_index++);
+  }
+
+  // https://matplotlib.org/3.1.1/users/dflt_style_changes.html
+  switch( index%8 )
+  {
+    case 0:  color =  QColor("#1f77b4");   break;
+    case 1:  color =  QColor("#d62728");   break;
+    case 2:  color =  QColor("#1ac938");   break;
+    case 3:  color =  QColor("#ff7f0e");   break;
+
+    case 4:  color =  QColor("#f14cc1");   break;
+    case 5:  color =  QColor("#9467bd");   break;
+    case 6:  color =  QColor("#17becf");   break;
+    case 7:  color =  QColor("#bcbd22");   break;
+  }
+  if( data ){
+    data->setColorHint(color);
+  }
+
+  return color;
+}
 
 class TimeScaleDraw: public QwtScaleDraw
 {
@@ -82,6 +120,7 @@ PlotWidget::PlotWidget(PlotDataMapRef &datamap, QWidget *parent):
     _xy_mode(false),
     _transform_select_dialog(nullptr),
     _use_date_time_scale(false),
+    _color_index(0),
     _zoom_enabled(true),
     _keep_aspect_ratio(true)
 {
@@ -369,12 +408,8 @@ bool PlotWidget::addCurve(const std::string &name)
 
     curve->setStyle( _curve_style );
 
-    QColor color = data.getColorHint();
-    if( color == Qt::black)
-    {
-        color = randomColorHint();
-        data.setColorHint(color);
-    }
+    QColor color = getColorHint(&data);
+
     curve->setPen( color,  (_curve_style == QwtPlotCurve::Dots) ? 4 : 1.0 );
     curve->setRenderHint( QwtPlotItem::RenderAntialiased, true );
 
@@ -443,7 +478,6 @@ bool PlotWidget::addCurveXY(std::string name_x, std::string name_y,
         return false;
     }
 
-    PlotData& data = it->second;
     const auto qname = QString::fromStdString( name );
 
     auto curve = new QwtPlotCurve( qname );
@@ -463,7 +497,7 @@ bool PlotWidget::addCurveXY(std::string name_x, std::string name_y,
 
     curve->setStyle( _curve_style );
 
-    QColor color =  randomColorHint();
+    QColor color = getColorHint(nullptr);
 
     curve->setPen( color,  (_curve_style == QwtPlotCurve::Dots) ? 4 : 1.0 );
     curve->setRenderHint( QwtPlotItem::RenderAntialiased, true );
