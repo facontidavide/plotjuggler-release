@@ -7,6 +7,50 @@
 #include <QDesktopWidget>
 #include <QFontDatabase>
 #include <QSettings>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QJsonDocument>
+
+#include "new_release_dialog.h"
+
+static QString VERSION_STRING = QString("%1.%2.%3").
+                                arg(PJ_MAJOR_VERSION).
+                                arg(PJ_MINOR_VERSION).
+                                arg(PJ_PATCH_VERSION);
+
+inline int GetVersionNumber(QString str)
+{
+  QStringList online_version = str.split('.');
+  int major = online_version[0].toInt();
+  int minor = online_version[1].toInt();
+  int patch = online_version[2].toInt();
+  return major*10000 + minor*100 + patch;
+}
+
+void OpenNewReleaseDialog(QNetworkReply *reply)
+{
+  if (reply->error()) {
+    return;
+  }
+  QString answer = reply->readAll();
+  QJsonDocument document = QJsonDocument::fromJson(answer.toUtf8());
+  QJsonObject data = document.object();
+  QString url = data["html_url"].toString();
+  QString name = data["name"].toString();
+  QString tag_name = data["tag_name"].toString();
+  QSettings settings;
+  int online_number = GetVersionNumber( tag_name );
+  QString dont_show = settings.value("NewRelease/dontShowThisVersion", VERSION_STRING).toString();
+  int dontshow_number = GetVersionNumber( dont_show );
+  int current_number = GetVersionNumber( VERSION_STRING );
+
+  if( online_number > current_number &&
+      online_number > dontshow_number )
+  {
+    NewReleaseDialog dialog(nullptr, tag_name, name, url );
+    dialog.exec();
+  }
+}
 
 QPixmap getFunnySplashscreen(){
 
@@ -36,11 +80,6 @@ int main(int argc, char *argv[])
 
     app.setOrganizationName("IcarusTechnology");
     app.setApplicationName("PlotJuggler");
-
-    QString VERSION_STRING = QString("%1.%2.%3").
-            arg(PJ_MAJOR_VERSION).
-            arg(PJ_MINOR_VERSION).
-            arg(PJ_PATCH_VERSION);
 
     app.setApplicationVersion(VERSION_STRING);
 
@@ -115,6 +154,13 @@ int main(int argc, char *argv[])
         splash.raise();
 
         const auto deadline = QDateTime::currentDateTime().addMSecs( 3500 );
+
+        QNetworkAccessManager manager;
+        QObject::connect( &manager, &QNetworkAccessManager::finished, OpenNewReleaseDialog);
+
+        QNetworkRequest request;
+        request.setUrl(QUrl("https://api.github.com/repos/facontidavide/plotjuggler/releases/latest"));
+        manager.get(request);
 
         MainWindow w( parser );
         while( QDateTime::currentDateTime() < deadline && !splash.isHidden() )
