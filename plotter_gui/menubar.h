@@ -3,12 +3,17 @@
 
 #include <QMenuBar>
 #include <QPaintEvent>
+#include <QPainter>
 
 class MenuBar : public QMenuBar
 {
 public:
-    MenuBar(QWidget* parent): QMenuBar(parent){}
+    MenuBar(QWidget* parent);
     void paintEvent(QPaintEvent *event);
+  private:
+    QPainter _painter;
+    int _width_plot;
+    int _width_juggler;
 };
 
 #endif // MENUBAR_H

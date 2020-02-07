@@ -2,6 +2,17 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.5.1 (2020-02-07)
+------------------
+* Fixed slow Menu Bar
+* Use ordered map, appendData needs to insert data in order (`#245 <https://github.com/facontidavide/PlotJuggler/issues/245>`_)
+  Otherwise the time order may not be respected and the data is loaded
+  incorrectly
+* prevent call of dropEvent() when not needed
+* fix issue `#239 <https://github.com/facontidavide/PlotJuggler/issues/239>`_
+* add include array header file to fix build error (`#234 <https://github.com/facontidavide/PlotJuggler/issues/234>`_)
+* Contributors: Davide Faconti, Victor Lopez, xiaowei zhao
+
 2.5.0 (2019-12-19)
 ------------------
 * Fix issues `#196 <https://github.com/facontidavide/PlotJuggler/issues/196>`_ and `#236 <https://github.com/facontidavide/PlotJuggler/issues/236>`_: allow user to use deterministic color sequence
