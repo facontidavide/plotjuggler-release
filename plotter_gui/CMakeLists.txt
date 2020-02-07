@@ -15,6 +15,7 @@ QT5_WRAP_UI ( UI_SRC
     curvelist_panel.ui
     preferences_dialog.ui
     suggest_dialog.ui
+    new_release_dialog.ui
 
     transforms/function_editor.ui
     transforms/transform_selector.ui
@@ -32,6 +33,7 @@ SET( PLOTTER_SRC
     main.cpp
     mainwindow.cpp
     menubar.cpp
+    new_release_dialog.cpp
     plotlegend.cpp
     plotwidget.cpp
     plotmatrix.cpp
