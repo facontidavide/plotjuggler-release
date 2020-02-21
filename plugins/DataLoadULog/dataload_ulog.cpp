@@ -7,7 +7,7 @@
 #include <QSettings>
 #include <QProgressDialog>
 #include <QMainWindow>
-#include "selectlistdialog.h"
+#include "PlotJuggler/selectlistdialog.h"
 #include "ulog_parser.h"
 #include "ulog_parameters_dialog.h"
 

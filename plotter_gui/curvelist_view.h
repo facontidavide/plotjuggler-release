@@ -48,9 +48,7 @@ class CurvesView
 
     virtual std::vector<std::string> getSelectedNames() = 0;
 
-    enum FilterType{ CONTAINS, REGEX };
-
-    virtual bool applyVisibilityFilter(FilterType type, const QString& filter_string) = 0;
+    virtual bool applyVisibilityFilter(const QString& filter_string) = 0;
 
     virtual void refreshFontSize() = 0;
 
@@ -101,7 +99,7 @@ class CurveTableView : public QTableWidget, public CurvesView
 
     void removeCurve(const QString& name) override;
 
-    bool applyVisibilityFilter(FilterType type, const QString& filter_string) override;
+    bool applyVisibilityFilter(const QString& filter_string) override;
 
     bool eventFilter(QObject* object, QEvent* event) override
     {

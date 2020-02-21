@@ -5,7 +5,7 @@ add_definitions(${QT_DEFINITIONS})
 add_definitions(-DQT_PLUGIN)
 
 QT5_WRAP_UI ( UI_SRC
-    ../../common/selectlistdialog.ui
+    ../../include/PlotJuggler/selectlistdialog.ui
     ulog_parameters_dialog.ui
     )
 

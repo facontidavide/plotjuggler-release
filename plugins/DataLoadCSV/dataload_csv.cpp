@@ -5,7 +5,7 @@
 #include <QDebug>
 #include <QSettings>
 #include <QProgressDialog>
-#include "selectlistdialog.h"
+#include "PlotJuggler/selectlistdialog.h"
 
 DataLoadCSV::DataLoadCSV()
 {
