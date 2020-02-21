@@ -5,6 +5,7 @@
 #include "pal_statistics_msg.h"
 #include "odometry_msg.h"
 #include "fiveai_stamped_diagnostic.h"
+#include "imu_msg.h"
 
 
 RosMessageParser::RosMessageParser()
@@ -94,7 +95,8 @@ bool RosMessageParser::registerSchema(const std::string &topic_name,
             InsertParser<DiagnosticMsg>( _builtin_parsers, topic_name, md5sum ) ||
             InsertParser<FiveAiDiagnosticMsg>( _builtin_parsers, topic_name, md5sum ) ||
             InsertParser<PalStatisticsNamesParser>( _builtin_parsers, topic_name, md5sum ) ||
-            InsertParser<PalStatisticsValuesParser>( _builtin_parsers, topic_name, md5sum );
+            InsertParser<PalStatisticsValuesParser>( _builtin_parsers, topic_name, md5sum ) ||
+            InsertParser<ImuMsgParser>( _builtin_parsers, topic_name, md5sum );
 
     if( !inserted ) {
         _introspection_parser->registerMessageDefinition(topic_name, type, definition);

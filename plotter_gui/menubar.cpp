@@ -13,7 +13,7 @@ MenuBar::MenuBar(QWidget *parent): QMenuBar(parent)
 
   _font.setFamily(family);
   _font.setStyleStrategy(QFont::PreferAntialias);
-  _font.setPixelSize(12);
+  _font.setPixelSize(18);
 
   QFontMetrics fm(_font);
   _width_plot = fm.width("Plot");
