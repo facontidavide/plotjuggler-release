@@ -38,8 +38,6 @@ public:
 
     virtual void addActionsToParentMenu( QMenu* menu ) {}
 
-private:
-
 };
 
 #endif // PJ_PLUGIN_H
