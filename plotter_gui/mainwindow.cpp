@@ -33,7 +33,7 @@
 #include "mainwindow.h"
 #include "curvelist_panel.h"
 #include "tabbedplotwidget.h"
-#include "selectlistdialog.h"
+#include "PlotJuggler/selectlistdialog.h"
 #include "PlotJuggler/plotdata.h"
 #include "qwt_plot_canvas.h"
 #include "transforms/function_editor.h"
@@ -350,7 +350,7 @@ void MainWindow::initializeActions()
     connect( &_redo_shortcut, &QShortcut::activated, this, &MainWindow::onRedoInvoked );
     connect( &_streaming_shortcut, &QShortcut::activated, this, &MainWindow::on_streamingToggled );
     connect( &_playback_shotcut, &QShortcut::activated, ui->pushButtonPlay, &QPushButton::toggle );
-    connect( &_fullscreen_shortcut, &QShortcut::activated, this, &MainWindow::on_actionFullscreen_triggered);
+    connect( &_fullscreen_shortcut, &QShortcut::activated, this, &MainWindow::onActionFullscreenTriggered);
 
     QShortcut* open_menu_shortcut = new QShortcut(QKeySequence(Qt::ALT + Qt::Key_F), this);
     connect( open_menu_shortcut, &QShortcut::activated, [this](){
@@ -516,7 +516,7 @@ void MainWindow::buildDummyData()
                << "fly/high/mai" << "fly/high/nessun" << "fly/low/ci" << "fly/low/dividera"
                << "data_1" << "data_2" << "data_3" << "data_10";
 
-    for( int i=0; i<10; i++)
+    for( int i=0; i<100; i++)
     {
         words_list.append(QString("data_vect/%1").arg(count++));
     }
@@ -2145,18 +2145,20 @@ void MainWindow::addOrEditMathPlot(const std::string &name, bool modifying)
             qWarning("failed to find custom equation");
             return;
         }
-
-        // clear already existing data first
-        auto data_it = _mapped_plot_data.numeric.find( name );
-        if( data_it != _mapped_plot_data.numeric.end())
-        {
-            data_it->second.clear();
-        }
         dialog.editExistingPlot(custom_it->second);
     }
 
     if(dialog.exec() == QDialog::Accepted)
     {
+        if(modifying){
+          // clear already existing data first
+          auto data_it = _mapped_plot_data.numeric.find( name );
+          if( data_it != _mapped_plot_data.numeric.end())
+          {
+              data_it->second.clear();
+          }
+        }
+
         const QString& qplot_name = dialog.getName();
         std::string plot_name = qplot_name.toStdString();
         CustomPlotPtr eq = dialog.getCustomPlotData();
@@ -2569,7 +2571,7 @@ void MainWindow::on_actionSaveLayout_triggered()
     }
 }
 
-void MainWindow::on_actionFullscreen_triggered()
+void MainWindow::onActionFullscreenTriggered()
 {
     static bool first_call = true;
     if( first_call && !_minimized )
