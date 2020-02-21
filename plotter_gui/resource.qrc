@@ -239,5 +239,16 @@
         <file>resources/memes/meme_44.jpg</file>
         <file>resources/github.png</file>
         <file>resources/twitter.png</file>
+        <file>resources/memes/meme_45.jpg</file>
+        <file>resources/memes/meme_46.jpg</file>
+        <file>resources/memes/meme_47.jpg</file>
+        <file>resources/memes/meme_48.jpg</file>
+        <file>resources/memes/meme_49.jpg</file>
+        <file>resources/memes/meme_50.jpg</file>
+        <file>resources/memes/meme_51.jpg</file>
+        <file>style_light/tree_view.png</file>
+        <file>style_light/list_view.png</file>
+        <file>style_dark/list_view.png</file>
+        <file>style_dark/tree_view.png</file>
     </qresource>
 </RCC>

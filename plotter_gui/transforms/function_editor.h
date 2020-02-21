@@ -34,6 +34,7 @@ public:
     QString getGlobalVars() const;
     QString getEquation() const;
     QString getName() const;
+    QString getLanuguage() const;
     const PlotData& getPlotData() const;
     void editExistingPlot(CustomPlotPtr data);
     CustomPlotPtr getCustomPlotData() const;
@@ -68,7 +69,9 @@ private slots:
 
     void on_lineEditFilter_textChanged(const QString &arg1);
 
-private:
+    void on_pushButtonCancel_pressed();
+
+  private:
     void importSnippets(const QByteArray &xml_text);
 
     QByteArray exportSnippets() const;

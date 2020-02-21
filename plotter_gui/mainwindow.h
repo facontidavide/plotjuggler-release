@@ -192,7 +192,7 @@ public slots:
     void on_actionDeleteAllData_triggered();
     void on_actionClearBuffer_triggered();
 
-    void on_actionFullscreen_triggered();
+    void onActionFullscreenTriggered();
 
     void on_actionReportBug_triggered();
     void on_actionCheatsheet_triggered();
