@@ -1,13 +1,23 @@
 #include "custom_timeseries.h"
-
+#include <QSettings>
+#include "lua_custom_function.h"
+#include "qml_custom_function.h"
 
 CustomTimeseries::CustomTimeseries(const PlotData *source_data,
                                    const SnippetData &snippet,
                                    PlotDataMapRef &mapped_data):
     TimeseriesQwt( source_data, &_cached_data ),
-    _transform(source_data->name(), snippet),
     _mapped_data(mapped_data)
 {
+    if( snippet.language == "LUA"){
+      _transform = std::make_unique<LuaCustomFunction>(source_data->name(), snippet);
+    }
+    else if( snippet.language == "JS"){
+      _transform = std::make_unique<JsCustomFunction>(source_data->name(), snippet);
+    }
+    else{
+      throw std::runtime_error("Snippet language not recognized");
+    }
     updateCache();
 }
 
@@ -20,7 +30,7 @@ bool CustomTimeseries::updateCache()
         return true;
     }
 
-    _transform.calculate( _mapped_data, &_cached_data );
+    _transform->calculate( _mapped_data, &_cached_data );
     calculateBoundingBox();
 
     return true;

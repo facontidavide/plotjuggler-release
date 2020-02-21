@@ -69,6 +69,9 @@ TabbedPlotWidget::TabbedPlotWidget(QString name,
     connect( ui->tabWidget, &TabWidget::movingPlotWidgetToTab, this, &TabbedPlotWidget::onMoveWidgetIntoNewTab);
 
     this->addTab(first_tab);
+
+    this->layout()->removeWidget( ui->widgetControls );
+    ui->tabWidget->setCornerWidget(  ui->widgetControls );
 }
 
 //void TabbedPlotWidget::setSiblingsList(const std::map<QString, TabbedPlotWidget *> &other_tabbed_widgets)

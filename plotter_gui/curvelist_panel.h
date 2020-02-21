@@ -53,15 +53,7 @@ public:
 
 private slots:
 
-    void on_radioContains_toggled(bool checked);
-
-    void on_radioRegExp_toggled(bool checked);
-
     void on_lineEdit_textChanged(const QString &search_string);
-
-    void on_pushButtonSettings_toggled(bool checked);
-
-    void on_checkBoxHideSecondColumn_toggled(bool checked);
 
     void removeSelectedCurves();
 
@@ -71,11 +63,11 @@ private slots:
 
     void onCustomSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
 
-    void on_radioTree_toggled(bool checked);
+    void on_pushButtonView_pressed();
 
-    void on_radioFlat_toggled(bool checked);
+    void on_checkBoxShowValues_toggled(bool show);
 
-   public slots:
+  public slots:
 
     void clearSelections();
 
@@ -97,6 +89,10 @@ private:
     std::unordered_map<std::string, PlotData> *_numeric_data = nullptr;
 
     const CustomPlotMap& _custom_plots;
+
+    enum ViewType { TREE, LIST };
+    ViewType _view_type;
+    QString _style_dir;
 
 signals:
 
