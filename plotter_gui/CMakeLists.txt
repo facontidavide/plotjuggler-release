@@ -63,9 +63,11 @@ SET( PLOTTER_SRC
     mainwindow.h
     realslider.h
     utils.h
-    ../include/PlotJuggler/selectlistdialog.h
+
     ../include/PlotJuggler/plotdata.h
+    ../include/PlotJuggler/selectlistdialog.h
     ../include/PlotJuggler/datastreamer_base.h
+    ../include/PlotJuggler/statepublisher_base.h
     )
 
 add_executable(PlotJuggler ${PLOTTER_SRC} ${RES_SRC} ${UI_SRC}
