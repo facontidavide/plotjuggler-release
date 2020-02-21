@@ -115,14 +115,12 @@ void CurveTableView::removeCurve(const QString &name)
     _inserted_curves.remove( name );
 }
 
-bool CurveTableView::applyVisibilityFilter(CurvesView::FilterType type, const QString &search_string)
+bool CurveTableView::applyVisibilityFilter(const QString &search_string)
 {
     setViewResizeEnabled(false);
 
     bool updated = false;
     _hidden_count = 0;
-    QRegExp regexp( search_string, Qt::CaseInsensitive, QRegExp::Wildcard );
-    QRegExpValidator v(regexp, nullptr);
 
     QStringList spaced_items = search_string.split(' ');
 
@@ -134,22 +132,12 @@ bool CurveTableView::applyVisibilityFilter(CurvesView::FilterType type, const QS
 
         if( search_string.isEmpty() == false )
         {
-            if( type == REGEX)
-            {
-                int pos = 0;
-                toHide = v.validate( name, pos ) != QValidator::Acceptable;
+          for (const auto & item : spaced_items) {
+            if (name.contains(item, Qt::CaseInsensitive) == false) {
+              toHide = true;
+              break;
             }
-            else if( type == CONTAINS)
-            {
-                for (const auto& item: spaced_items)
-                {
-                    if( name.contains(item, Qt::CaseInsensitive) == false )
-                    {
-                        toHide = true;
-                        break;
-                    }
-                }
-            }
+          }
         }
         if( toHide ){ _hidden_count++; }
 
@@ -182,6 +170,7 @@ void CurveTableView::setViewResizeEnabled(bool enable)
 
 void CurveTableView::hideValuesColumn(bool hide)
 {
+    setViewResizeEnabled(true);
     if(hide){
         hideColumn(1);
     }

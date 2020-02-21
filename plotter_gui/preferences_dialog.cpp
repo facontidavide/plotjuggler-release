@@ -41,5 +41,4 @@ void PreferencesDialog::on_buttonBox_accepted()
 
     settings.setValue("Preferences::use_plot_color_index",
                       ui->radioLocalColorIndex->isChecked());
-
 }

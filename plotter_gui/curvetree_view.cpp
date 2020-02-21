@@ -136,13 +136,10 @@ void CurveTreeView::refreshFontSize()
     header()->setSectionResizeMode(1, QHeaderView::Stretch);
 }
 
-bool CurveTreeView::applyVisibilityFilter(CurvesView::FilterType type,
-                                          const QString& search_string)
+bool CurveTreeView::applyVisibilityFilter(const QString& search_string)
 {
     bool updated = false;
     _hidden_count = 0;
-    QRegExp regexp(search_string, Qt::CaseInsensitive, QRegExp::Wildcard);
-    QRegExpValidator v(regexp, nullptr);
 
     QStringList spaced_items = search_string.split(' ');
 
@@ -157,22 +154,12 @@ bool CurveTreeView::applyVisibilityFilter(CurvesView::FilterType type,
 
         if (search_string.isEmpty() == false)
         {
-            if (type == REGEX)
-            {
-                int pos = 0;
-                toHide = (v.validate(name, pos) != QValidator::Acceptable);
+          for (const auto & item : spaced_items) {
+            if (name.contains(item, Qt::CaseInsensitive) == false) {
+              toHide = true;
+              break;
             }
-            else if (type == CONTAINS)
-            {
-                for (const auto& item : spaced_items)
-                {
-                    if (name.contains(item, Qt::CaseInsensitive) == false)
-                    {
-                        toHide = true;
-                        break;
-                    }
-                }
-            }
+          }
         }
         if (toHide)
         {
@@ -251,6 +238,7 @@ void CurveTreeView::removeCurve(const QString &to_be_deleted)
 
 void CurveTreeView::hideValuesColumn(bool hide)
 {
+    setViewResizeEnabled(true);
     if(hide){
         hideColumn(1);
     }
