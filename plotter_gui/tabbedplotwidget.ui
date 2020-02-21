@@ -19,7 +19,7 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_2">
    <property name="spacing">
-    <number>4</number>
+    <number>0</number>
    </property>
    <property name="leftMargin">
     <number>4</number>
@@ -65,19 +65,19 @@
     <widget class="QWidget" name="widgetControls" native="true">
      <layout class="QHBoxLayout" name="controlsLayout">
       <property name="spacing">
-       <number>4</number>
+       <number>2</number>
       </property>
       <property name="sizeConstraint">
        <enum>QLayout::SetMinimumSize</enum>
       </property>
       <property name="leftMargin">
-       <number>8</number>
+       <number>0</number>
       </property>
       <property name="topMargin">
-       <number>2</number>
+       <number>0</number>
       </property>
       <property name="rightMargin">
-       <number>8</number>
+       <number>0</number>
       </property>
       <property name="bottomMargin">
        <number>2</number>
@@ -89,8 +89,8 @@
         </property>
         <property name="sizeHint" stdset="0">
          <size>
-          <width>40</width>
-          <height>40</height>
+          <width>24</width>
+          <height>24</height>
          </size>
         </property>
        </spacer>
@@ -105,14 +105,14 @@
         </property>
         <property name="minimumSize">
          <size>
-          <width>40</width>
-          <height>40</height>
+          <width>28</width>
+          <height>28</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
-          <width>40</width>
-          <height>40</height>
+          <width>28</width>
+          <height>28</height>
          </size>
         </property>
         <property name="focusPolicy">
@@ -130,8 +130,8 @@
         </property>
         <property name="iconSize">
          <size>
-          <width>32</width>
-          <height>32</height>
+          <width>24</width>
+          <height>24</height>
          </size>
         </property>
         <property name="flat">
@@ -143,14 +143,14 @@
        <widget class="QPushButton" name="pushVerticalResize">
         <property name="minimumSize">
          <size>
-          <width>40</width>
-          <height>40</height>
+          <width>28</width>
+          <height>28</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
-          <width>40</width>
-          <height>40</height>
+          <width>28</width>
+          <height>28</height>
          </size>
         </property>
         <property name="focusPolicy">
@@ -174,8 +174,8 @@
         </property>
         <property name="iconSize">
          <size>
-          <width>32</width>
-          <height>32</height>
+          <width>24</width>
+          <height>24</height>
          </size>
         </property>
         <property name="flat">
@@ -187,14 +187,14 @@
        <widget class="QPushButton" name="pushHorizontalResize">
         <property name="minimumSize">
          <size>
-          <width>40</width>
-          <height>40</height>
+          <width>28</width>
+          <height>28</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
-          <width>40</width>
-          <height>40</height>
+          <width>28</width>
+          <height>28</height>
          </size>
         </property>
         <property name="focusPolicy">
@@ -215,22 +215,12 @@
         </property>
         <property name="iconSize">
          <size>
-          <width>32</width>
-          <height>32</height>
+          <width>24</width>
+          <height>24</height>
          </size>
         </property>
         <property name="flat">
          <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="Line" name="line_2">
-        <property name="frameShadow">
-         <enum>QFrame::Plain</enum>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Vertical</enum>
         </property>
        </widget>
       </item>
@@ -244,14 +234,14 @@
         </property>
         <property name="minimumSize">
          <size>
-          <width>40</width>
-          <height>40</height>
+          <width>28</width>
+          <height>28</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
-          <width>40</width>
-          <height>40</height>
+          <width>28</width>
+          <height>28</height>
          </size>
         </property>
         <property name="font">
@@ -277,8 +267,8 @@
         </property>
         <property name="iconSize">
          <size>
-          <width>32</width>
-          <height>32</height>
+          <width>24</width>
+          <height>24</height>
          </size>
         </property>
         <property name="flat">
@@ -296,14 +286,14 @@
         </property>
         <property name="minimumSize">
          <size>
-          <width>40</width>
-          <height>40</height>
+          <width>28</width>
+          <height>28</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
-          <width>40</width>
-          <height>40</height>
+          <width>28</width>
+          <height>28</height>
          </size>
         </property>
         <property name="font">
@@ -329,8 +319,8 @@
         </property>
         <property name="iconSize">
          <size>
-          <width>32</width>
-          <height>32</height>
+          <width>24</width>
+          <height>24</height>
          </size>
         </property>
         <property name="flat">
@@ -342,14 +332,14 @@
        <widget class="QPushButton" name="addTabButton">
         <property name="minimumSize">
          <size>
-          <width>40</width>
-          <height>40</height>
+          <width>28</width>
+          <height>28</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
-          <width>40</width>
-          <height>40</height>
+          <width>24</width>
+          <height>24</height>
          </size>
         </property>
         <property name="font">
@@ -361,7 +351,7 @@
          <enum>Qt::NoFocus</enum>
         </property>
         <property name="toolTip">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Add a new plot matrix in a new tab&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Add a new tab&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="styleSheet">
          <string notr="true"/>
@@ -375,8 +365,8 @@
         </property>
         <property name="iconSize">
          <size>
-          <width>32</width>
-          <height>32</height>
+          <width>24</width>
+          <height>24</height>
          </size>
         </property>
         <property name="flat">
@@ -391,14 +381,14 @@
         </property>
         <property name="minimumSize">
          <size>
-          <width>40</width>
-          <height>40</height>
+          <width>28</width>
+          <height>28</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
-          <width>40</width>
-          <height>40</height>
+          <width>28</width>
+          <height>28</height>
          </size>
         </property>
         <property name="font">
@@ -424,8 +414,8 @@
         </property>
         <property name="iconSize">
          <size>
-          <width>32</width>
-          <height>32</height>
+          <width>24</width>
+          <height>24</height>
          </size>
         </property>
         <property name="flat">
@@ -434,36 +424,17 @@
        </widget>
       </item>
       <item>
-       <widget class="Line" name="line">
-        <property name="minimumSize">
-         <size>
-          <width>10</width>
-          <height>42</height>
-         </size>
-        </property>
-        <property name="frameShadow">
-         <enum>QFrame::Plain</enum>
-        </property>
-        <property name="lineWidth">
-         <number>1</number>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Vertical</enum>
-        </property>
-       </widget>
-      </item>
-      <item>
        <widget class="QPushButton" name="pushButtonShowLabel">
         <property name="minimumSize">
          <size>
-          <width>40</width>
-          <height>40</height>
+          <width>28</width>
+          <height>28</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
-          <width>40</width>
-          <height>40</height>
+          <width>28</width>
+          <height>28</height>
          </size>
         </property>
         <property name="focusPolicy">
@@ -487,8 +458,8 @@
         </property>
         <property name="iconSize">
          <size>
-          <width>30</width>
-          <height>30</height>
+          <width>24</width>
+          <height>24</height>
          </size>
         </property>
         <property name="checkable">
@@ -506,21 +477,21 @@
        <widget class="QPushButton" name="buttonLinkHorizontalScale">
         <property name="minimumSize">
          <size>
-          <width>40</width>
-          <height>40</height>
+          <width>28</width>
+          <height>28</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
-          <width>40</width>
-          <height>34</height>
+          <width>28</width>
+          <height>28</height>
          </size>
         </property>
         <property name="focusPolicy">
          <enum>Qt::NoFocus</enum>
         </property>
         <property name="toolTip">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Link the horizontal between plots&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Link the horizontal zoom between plots&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="whatsThis">
          <string/>
@@ -537,8 +508,8 @@
         </property>
         <property name="iconSize">
          <size>
-          <width>30</width>
-          <height>30</height>
+          <width>24</width>
+          <height>24</height>
          </size>
         </property>
         <property name="checkable">

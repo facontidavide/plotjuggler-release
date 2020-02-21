@@ -49,7 +49,7 @@ class CurveTreeView : public QTreeWidget, public CurvesView
 
     void refreshFontSize() override;
 
-    bool applyVisibilityFilter(FilterType type, const QString& filter_string) override;
+    bool applyVisibilityFilter(const QString& filter_string) override;
 
     bool eventFilter(QObject* object, QEvent* event) override
     {

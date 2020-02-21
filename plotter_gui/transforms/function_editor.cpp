@@ -17,6 +17,9 @@
 #include <QByteArray>
 #include <QInputDialog>
 
+#include "lua_custom_function.h"
+#include "qml_custom_function.h"
+
 AddCustomPlotDialog::AddCustomPlotDialog(PlotDataMapRef &plotMapData,
                                      const CustomPlotMap &mapped_custom_plots,
                                      QWidget *parent) :
@@ -28,8 +31,17 @@ AddCustomPlotDialog::AddCustomPlotDialog(PlotDataMapRef &plotMapData,
 {
     ui->setupUi(this);
 
+    QSettings settings;
+    bool is_qml = settings.value("CustomFunction/language", "qml").toString() == "qml";
+    if( is_qml )
+    {
+      ui->labelLanguage->setText("Used language: Javascript");
+    }
+    else{
+      ui->labelLanguage->setText("Used language: Lua");
+    }
+
     this->setWindowTitle("Create a custom timeseries");
-    ui->mathEquation->setPlainText("return value*2");
 
     const QFont fixedFont = QFontDatabase::systemFont(QFontDatabase::FixedFont);
     ui->globalVarsTextField->setFont(fixedFont);
@@ -49,7 +61,6 @@ AddCustomPlotDialog::AddCustomPlotDialog(PlotDataMapRef &plotMapData,
         ui->curvesListWidget->addItem(name);
     }
 
-    QSettings settings;
     QByteArray saved_xml = settings.value("AddCustomPlotDialog.savedXML", QByteArray() ).toByteArray();
     restoreGeometry(settings.value("AddCustomPlotDialog.geometry").toByteArray());
 
@@ -77,6 +88,21 @@ AddCustomPlotDialog::AddCustomPlotDialog(PlotDataMapRef &plotMapData,
 
     ui->splitter->setStretchFactor(0,3);
     ui->splitter->setStretchFactor(1,2);
+
+    ui->globalVarsTextField->setPlainText(
+      settings.value("AddCustomPlotDialog.previousGlobals","").toString());
+
+    ui->mathEquation->setPlainText(
+      settings.value("AddCustomPlotDialog.previousFunction","return value").toString());
+
+    QString language = settings.value("AddCustomPlotDialog.previousLanguage","LUA").toString();
+
+    if( language == "JS" ){
+      ui->radioButtonJS->setChecked(true);
+    }
+    else if( language == "LUA" ){
+      ui->radioButtonLua->setChecked(true);
+    }
 }
 
 AddCustomPlotDialog::~AddCustomPlotDialog()
@@ -84,6 +110,16 @@ AddCustomPlotDialog::~AddCustomPlotDialog()
     QSettings settings;
     settings.setValue("AddCustomPlotDialog.savedXML", exportSnippets() );
     settings.setValue("AddCustomPlotDialog.geometry", saveGeometry());
+    settings.setValue("AddCustomPlotDialog.previousGlobals",
+                      ui->globalVarsTextField->toPlainText() );
+    settings.setValue("AddCustomPlotDialog.previousFunction",
+                      ui->mathEquation->toPlainText());
+    if( ui->radioButtonJS->isChecked() ){
+      settings.setValue("AddCustomPlotDialog.previousLanguage", "JS");
+    }
+    else if( ui->radioButtonLua->isChecked() ){
+      settings.setValue("AddCustomPlotDialog.previousLanguage", "LUA");
+    }
     delete ui;
 }
 
@@ -124,7 +160,15 @@ QString AddCustomPlotDialog::getEquation() const
 
 QString AddCustomPlotDialog::getName() const
 {
-    return ui->nameLineEdit->text();
+  return ui->nameLineEdit->text();
+}
+
+QString AddCustomPlotDialog::getLanuguage() const
+{
+  if( ui->radioButtonLua->isChecked() ){
+    return "LUA";
+  }
+  return "JS";
 }
 
 void AddCustomPlotDialog::editExistingPlot(CustomPlotPtr data)
@@ -135,6 +179,15 @@ void AddCustomPlotDialog::editExistingPlot(CustomPlotPtr data)
     ui->pushButtonCreate->setText("Update");
     ui->nameLineEdit->setText(QString::fromStdString(data->name()));
     ui->nameLineEdit->setEnabled(false);
+
+    if( data->language() == "LUA"){
+      ui->radioButtonLua->setChecked(true);
+    }
+    else{
+      ui->radioButtonJS->setChecked(true);
+    }
+    ui->radioButtonLua->setEnabled(false);
+    ui->radioButtonJS->setEnabled(false);
 
     _is_new = false;
 }
@@ -224,6 +277,13 @@ void AddCustomPlotDialog::on_snippetsListSaved_doubleClicked(const QModelIndex &
 
     ui->globalVarsTextField->setPlainText(snippet.globalVars);
     ui->mathEquation->setPlainText(snippet.equation);
+    if( snippet.language == "LUA")
+    {
+      ui->radioButtonLua->setChecked(true);
+    }
+    else if( snippet.language == "JS"){
+      ui->radioButtonJS->setChecked(true);
+    }
 }
 
 void AddCustomPlotDialog::on_snippetsListRecent_currentRowChanged(int current_row)
@@ -460,10 +520,22 @@ void AddCustomPlotDialog::on_pushButtonCreate_clicked()
             throw std::runtime_error("plot name already exists and can't be modified");
         }
 
-        _plot = std::make_shared<CustomFunction>(getLinkedData().toStdString(),
-                                           plotName,
-                                           getGlobalVars(),
-                                           getEquation());
+        SnippetData snippet;
+        snippet.equation =  getEquation();
+        snippet.globalVars = getGlobalVars();
+        snippet.language = getLanuguage();
+        snippet.name = getName();
+
+        if( snippet.language == "LUA"){
+          _plot = std::make_unique<LuaCustomFunction>(getLinkedData().toStdString(), snippet);
+        }
+        else if( snippet.language == "JS"){
+          _plot = std::make_unique<JsCustomFunction>(getLinkedData().toStdString(), snippet);
+        }
+        else{
+          throw std::runtime_error("Snippet language not recognized");
+        }
+
         QDialog::accept();
     }
     catch (const std::runtime_error &e) {
@@ -494,4 +566,9 @@ void AddCustomPlotDialog::on_lineEditFilter_textChanged(const QString &search_st
         }
         ui->curvesListWidget->setRowHidden(row, toHide );
     }
+}
+
+void AddCustomPlotDialog::on_pushButtonCancel_pressed()
+{
+
 }
