@@ -15,7 +15,7 @@ class RosoutWindow: public QMainWindow
     Q_OBJECT
 public:
     RosoutWindow():QMainWindow() {}
-    ~ RosoutWindow(){}
+    ~RosoutWindow(){}
 
     void closeEvent ( QCloseEvent* ) override{
         emit closed();
@@ -25,7 +25,7 @@ signals:
 };
 
 
-class  RosoutPublisher: public QObject, StatePublisher
+class  RosoutPublisher: public StatePublisher
 {
     Q_OBJECT
     Q_PLUGIN_METADATA(IID "com.icarustechnology.PlotJuggler.StatePublisher" "../statepublisher.json")
