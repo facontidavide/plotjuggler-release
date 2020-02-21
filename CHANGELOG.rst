@@ -2,6 +2,40 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.6.0 (2020-02-19)
+------------------
+* bug fix
+* fix splashscreen delay
+* GUI refinement
+* regex filter removed. bug fix in column resize
+* new icons in CurveList panel
+* add text placeholder
+* smaller buttons
+* moved buttons to top right corner to gain more space
+* changed style (sharper corners)
+* bug fix: potential crash trying to save data into rosbag
+* more ememes `#248 <https://github.com/facontidavide/PlotJuggler/issues/248>`_
+* bug fix in Lua functions
+* cleanups
+* Merge branch 'lua_scripting'
+* Adding custom parser for Imu message (issue `#238 <https://github.com/facontidavide/PlotJuggler/issues/238>`_)
+* remember the last value in the function editor
+* minor update
+* Both javascript and Lua langiages can be selected in preferences
+* WIP to support both QML and Lua
+* fix menu bar size of PlotJuggler
+* scripting moved to Lua
+* adding lua stuff to 3rd party libraries
+* preliminary change to support `#244 <https://github.com/facontidavide/PlotJuggler/issues/244>`_ (`#247 <https://github.com/facontidavide/PlotJuggler/issues/247>`_)
+* preliminary change to support `#244 <https://github.com/facontidavide/PlotJuggler/issues/244>`_
+* Update .appveyor.yml
+* Update README.md
+* Update .appveyor.yml
+* Update .appveyor.yml
+* further cleanup
+* moved files and cleanup
+* Contributors: Davide Faconti
+
 2.5.1 (2020-02-07)
 ------------------
 * Fixed slow Menu Bar

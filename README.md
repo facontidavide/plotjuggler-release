@@ -1,14 +1,13 @@
 | Platform  | Build Status  |
 |---------------------|-----------|
 | Windows (Appveyor)  | [![Build status](https://ci.appveyor.com/api/projects/status/mqdmxpt0kf1cf2h3?svg=true)](https://ci.appveyor.com/project/facontidavide59577/plotjuggler)  |
-| Ubuntu (Semaphore)  | [![Build Status](https://semaphoreci.com/api/v1/facontidavide/plotjuggler/branches/master/shields_badge.svg)](https://semaphoreci.com/facontidavide/plotjuggler) |
 | Ubuntu ROS (Travis) | [![Build Status](https://travis-ci.org/facontidavide/PlotJuggler.svg?branch=master)](https://travis-ci.org/facontidavide/PlotJuggler) |
 
 
 [![Join the chat at https://gitter.im/PlotJuggler/Lobby](https://badges.gitter.im/PlotJuggler/Lobby.svg)](https://gitter.im/PlotJuggler/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Tweet](https://img.shields.io/twitter/url/http/shields.io.svg?style=social)](https://twitter.com/intent/tweet?text=I%20use%20PlotJuggler%20and%20it%20is%20amazing%0D%0A&url=https://github.com/facontidavide/PlotJuggler&via=facontidavide&hashtags=dataviz,plotjuggler,GoROS,PX4)
 
-# PlotJuggler 2.5.1
+# PlotJuggler 2.6.0
 
 QT5 based application to display time series in plots, using an intuitive "drag and drop" interface.
 
@@ -52,7 +51,7 @@ Watch this video to learn how to use it.
 
 For those of you that can't wait and want to get their hands dirty, just download this AppImage:
 
-[PlotJuggler-2.5.1-x86_64.AppImage](https://github.com/facontidavide/PlotJuggler/releases/download/2.5.1/PlotJuggler-2.5.1-x86_64.AppImage).
+[PlotJuggler-2.6.x-x86_64.AppImage](https://github.com/facontidavide/PlotJuggler/releases/download/2.6.0/PlotJuggler-2.6.0-x86_64.AppImage).
    
 Do not forget to make it executable with the command 
 

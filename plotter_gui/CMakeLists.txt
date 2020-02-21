@@ -1,5 +1,5 @@
 
-include_directories( ./ ../  ../include  ../common)
+include_directories( ./ ../  ../include)
 
 QT5_ADD_RESOURCES (RES_SRC  resource.qrc )
 
@@ -20,7 +20,7 @@ QT5_WRAP_UI ( UI_SRC
     transforms/function_editor.ui
     transforms/transform_selector.ui
 
-    ../common/selectlistdialog.ui
+    ../include/PlotJuggler/selectlistdialog.ui
     )
 
 SET( PLOTTER_SRC
@@ -53,6 +53,8 @@ SET( PLOTTER_SRC
     transforms/custom_timeseries.cpp
     transforms/function_editor.cpp
     transforms/transform_selector.cpp
+    transforms/lua_custom_function.cpp
+    transforms/qml_custom_function.cpp
 
     cheatsheet/video_cheatsheet.cpp
 
@@ -61,7 +63,7 @@ SET( PLOTTER_SRC
     mainwindow.h
     realslider.h
     utils.h
-    ../common/selectlistdialog.h
+    ../include/PlotJuggler/selectlistdialog.h
     ../include/PlotJuggler/plotdata.h
     ../include/PlotJuggler/datastreamer_base.h
     )
@@ -73,6 +75,7 @@ target_link_libraries(PlotJuggler
     ${QT_LINK_LIBRARIES}
     colorwidgets
     qwt_static
+    lua_static
     ${BACKWARD_LIBS} )
 
 if(COMPILING_WITH_CATKIN)

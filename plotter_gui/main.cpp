@@ -58,7 +58,7 @@ QPixmap getFunnySplashscreen(){
     qsrand(time(nullptr));
 
     auto getNum = [](){
-        const int last_image_num = 44;
+        const int last_image_num = 51;
         int n = qrand() % (last_image_num+2);
         if ( n > last_image_num ){ n = 0; }
         return n;
@@ -70,7 +70,6 @@ QPixmap getFunnySplashscreen(){
     }
     settings.setValue("previousFunnySubtitle", n);
     auto filename = QString("://resources/memes/meme_%1.jpg").arg(n, 2, 10, QChar('0'));
-    //qDebug() << filename;
     return QPixmap(filename);
 }
 
@@ -126,15 +125,22 @@ int main(int argc, char *argv[])
     QIcon app_icon( ":/resources/office_chart_line_stacked.ico" );
     QApplication::setWindowIcon(app_icon);
 
+    QNetworkAccessManager manager;
+    QObject::connect( &manager, &QNetworkAccessManager::finished, OpenNewReleaseDialog);
+
+    QNetworkRequest request;
+    request.setUrl(QUrl("https://api.github.com/repos/facontidavide/plotjuggler/releases/latest"));
+    manager.get(request);
+
     /*
      * You, fearless code reviewer, decided to start a journey into my source code.
-     * For your bravery, you deserve to know the truth, no matter how hard it is to accept it.
+     * For your bravery, you deserve to know the truth.
      * The splashscreen is useless; not only it is useless, it will make your start-up
-     * time slower by a couple of seconds for absolutely no reason.
+     * time slower by few seconds for absolutely no reason.
      * But what are two seconds compared with the time that PlotJuggler will save you?
      * The splashscreen is the connection between me and my users, the glue that keeps
      * together our invisible relationship.
-     * Now it is up to you to decide: you can block the splashscreen forever or not,
+     * Now, it is up to you to decide: you can block the splashscreen forever or not,
      * reject a message that brings a little of happiness into your day, spent analyzing data.
      * Please don't do it.
      */
@@ -143,7 +149,7 @@ int main(int argc, char *argv[])
     // if(false) // if you uncomment this line, a kitten will die somewhere in the world.
     {
         QPixmap main_pixmap = getFunnySplashscreen();
-        QSplashScreen splash(main_pixmap);
+        QSplashScreen splash(main_pixmap, Qt::WindowStaysOnTopHint);
         QDesktopWidget* desktop = QApplication::desktop();
         const int scrn = desktop->screenNumber(QCursor::pos());
         const QPoint currentDesktopsCenter = desktop->availableGeometry(scrn).center();
@@ -151,34 +157,28 @@ int main(int argc, char *argv[])
 
         splash.show();
         app.processEvents();
-        splash.raise();
 
-        const auto deadline = QDateTime::currentDateTime().addMSecs( 3500 );
+        auto deadline = QDateTime::currentDateTime().addMSecs( 500 );
+        while( QDateTime::currentDateTime() < deadline)
+        {
+          app.processEvents();
+        }
 
-        QNetworkAccessManager manager;
-        QObject::connect( &manager, &QNetworkAccessManager::finished, OpenNewReleaseDialog);
+        MainWindow w(parser);
 
-        QNetworkRequest request;
-        request.setUrl(QUrl("https://api.github.com/repos/facontidavide/plotjuggler/releases/latest"));
-        manager.get(request);
-
-        MainWindow w( parser );
+        deadline = QDateTime::currentDateTime().addMSecs( 3000 );
         while( QDateTime::currentDateTime() < deadline && !splash.isHidden() )
         {
-            app.processEvents();
-            QThread::msleep(100);
-            splash.raise();
+          app.processEvents();
         }
-        splash.close();
+
         w.setWindowIcon(app_icon);
         w.show();
+        splash.finish(&w);
         return app.exec();
     }
-    else{
-        MainWindow w( parser );
-        w.setWindowIcon(app_icon);
-        w.show();
-        return app.exec();
-    }
-    return 0;
+    MainWindow w(parser);
+    w.setWindowIcon(app_icon);
+    w.show();
+    return app.exec();
 }

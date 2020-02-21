@@ -36,22 +36,7 @@ CurveListPanel::CurveListPanel(const CustomPlotMap &mapped_math_plots,
     ui->verticalLayout->addWidget(_tree_view, 1 );
     ui->verticalLayoutCustom->addWidget( _custom_view, 1 );
 
-    ui->widgetOptions->setVisible(false);
-
-    ui->radioRegExp->setAutoExclusive(true);
-    ui->radioContains->setAutoExclusive(true);
-
     QSettings settings;
-
-    QString active_filter = settings.value("FilterableListWidget.searchFilter").toString();
-    if( active_filter == "radioRegExp"){
-
-        ui->radioRegExp->setChecked(true);
-    }
-    else if( active_filter == "radioContains"){
-
-        ui->radioContains->setChecked(true);
-    }
 
     int point_size = settings.value("FilterableListWidget/table_point_size", 9).toInt();
     changeFontSize(point_size);
@@ -83,13 +68,11 @@ CurveListPanel::CurveListPanel(const CustomPlotMap &mapped_math_plots,
     connect( _tree_view, &QTreeWidget::itemExpanded,
             this, &CurveListPanel::refreshValues );
 
-    bool tree = settings.value("FilterableListWidget/isTreeView", false).toBool();
+    bool is_tree = settings.value("FilterableListWidget/isTreeView", false).toBool();
+    _view_type = is_tree ? TREE : LIST;
 
-    ui->radioFlat->setChecked( !tree );
-    ui->radioTree->setChecked( tree );
-
-    _tree_view->setHidden( !tree );
-    _table_view->setHidden( tree );
+    _tree_view->setHidden( !is_tree );
+    _table_view->setHidden( is_tree );
 }
 
 CurveListPanel::~CurveListPanel()
@@ -150,7 +133,8 @@ void CurveListPanel::changeFontSize(int point_size)
 
 bool CurveListPanel::is2ndColumnHidden() const
 {
-    return ui->checkBoxHideSecondColumn->isChecked();
+    //return ui->checkBoxHideSecondColumn->isChecked();
+    return false;
 }
 
 void CurveListPanel::update2ndColumnValues(double tracker_time,
@@ -256,42 +240,14 @@ void CurveListPanel::refreshValues()
     }
 }
 
-void CurveListPanel::on_radioContains_toggled(bool checked)
-{
-    if(checked) {
-        updateFilter();
-        ui->lineEdit->setCompleter( nullptr );
-        QSettings settings;
-        settings.setValue("FilterableListWidget.searchFilter", "radioContains");
-    }
-}
-
-void CurveListPanel::on_radioRegExp_toggled(bool checked)
-{
-    if(checked) {
-        updateFilter();
-        ui->lineEdit->setCompleter( nullptr );
-        QSettings settings;
-        settings.setValue("FilterableListWidget.searchFilter", "radioRegExp");
-    }
-}
-
 void CurveListPanel::on_lineEdit_textChanged(const QString &search_string)
 {
     bool updated = false;
 
-    CurvesView* active_view = ui->radioFlat->isChecked() ? (CurvesView*)_table_view : (CurvesView*)_tree_view;
+    CurvesView* active_view = _view_type == LIST ? (CurvesView*)_table_view : (CurvesView*)_tree_view;
 
-    if (ui->radioRegExp->isChecked())
-    {
-        updated = active_view->applyVisibilityFilter(CurvesView::REGEX,
-                                                     search_string);
-    }
-    else if (ui->radioContains->isChecked())
-    {
-        updated = active_view->applyVisibilityFilter(CurvesView::CONTAINS,
-                                                     search_string);
-    }
+    updated = active_view->applyVisibilityFilter(search_string);
+
     auto h_c = active_view->hiddenItemsCount();
     int item_count = h_c.second;
     int visible_count = item_count - h_c.first;
@@ -301,19 +257,6 @@ void CurveListPanel::on_lineEdit_textChanged(const QString &search_string)
     if(updated){
         emit hiddenItemsChanged();
     }
-}
-
-void CurveListPanel::on_pushButtonSettings_toggled(bool checked)
-{
-    ui->widgetOptions->setVisible(checked);
-}
-
-void CurveListPanel::on_checkBoxHideSecondColumn_toggled(bool checked)
-{
-    _tree_view->hideValuesColumn(checked);
-    _table_view->hideValuesColumn(checked);
-    _custom_view->hideValuesColumn(checked);
-    emit hiddenItemsChanged();
 }
 
 void CurveListPanel::removeSelectedCurves()
@@ -390,27 +333,44 @@ void CurveListPanel::clearSelections()
 
 void CurveListPanel::on_stylesheetChanged(QString style_dir)
 {
-    ui->pushButtonSettings->setIcon(QIcon(tr(":/%1/settings_cog.png").arg(style_dir)));
-}
+    _style_dir = style_dir;
 
-void CurveListPanel::on_radioTree_toggled(bool checked)
-{
-    _tree_view->setVisible(checked);
-    if( checked )
-    {
-        refreshValues();
-        QSettings settings;
-        settings.setValue("FilterableListWidget/isTreeView", true);
+    if( _view_type == LIST ){
+      ui->pushButtonView->setIcon(QIcon(tr(":/%1/list_view.png").arg(style_dir)));
+    }
+    else{
+      ui->pushButtonView->setIcon(QIcon(tr(":/%1/tree_view.png").arg(style_dir)));
     }
 }
 
-void CurveListPanel::on_radioFlat_toggled(bool checked)
+void CurveListPanel::on_pushButtonView_pressed()
 {
-    _table_view->setVisible(checked);
-    if( checked )
-    {
-        refreshValues();
-        QSettings settings;
-        settings.setValue("FilterableListWidget/isTreeView", false);
-    }
+  if( _view_type == TREE)
+  {
+    _view_type = LIST;
+  }
+  else{
+    _view_type = TREE;
+  }
+
+  const bool is_tree = _view_type == TREE;
+
+  _tree_view->setVisible(is_tree);
+  _table_view->setVisible(!is_tree);
+
+  on_stylesheetChanged(_style_dir);
+
+  refreshValues();
+  QSettings settings;
+  settings.setValue("FilterableListWidget/isTreeView", is_tree);
+
+
+}
+
+void CurveListPanel::on_checkBoxShowValues_toggled(bool show)
+{
+  _tree_view->hideValuesColumn(!show);
+  _table_view->hideValuesColumn(!show);
+  _custom_view->hideValuesColumn(!show);
+  emit hiddenItemsChanged();
 }

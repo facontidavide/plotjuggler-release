@@ -17,7 +17,7 @@ PlotLegend::PlotLegend(QwtPlot *parent):
     setAlignmentInCanvas( Qt::Alignment( Qt::AlignTop | Qt::AlignRight ) );
     setBackgroundMode( QwtPlotLegendItem::BackgroundMode::LegendBackground   );
 
-    setBorderRadius( 2 );
+    setBorderRadius( 0 );
     setMargin( 2 );
     setSpacing( 1 );
     setItemMargin( 2 );
