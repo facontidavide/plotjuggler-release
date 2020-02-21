@@ -266,13 +266,6 @@ void DataStreamROS::saveIntoRosbag(const PlotDataMapRef& data)
 void DataStreamROS::subscribe()
 {
     _subscribers.clear();
-    {
-        boost::function<void(const rosgraph_msgs::Clock::ConstPtr&) > callback;
-        callback = [this](const rosgraph_msgs::Clock::ConstPtr& msg) -> void
-        {
-            this->clockCallback(msg) ;
-        };
-    }
 
     for (int i=0; i< _config.selected_topics.size(); i++ )
     {

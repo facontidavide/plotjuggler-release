@@ -456,11 +456,11 @@ void MainWindow::initializePlugins(QString directory_name)
                     ui->menuPublishers->addAction(activatePublisher);
                     publisher->setParentMenu( ui->menuPublishers, activatePublisher );
 
-                    connect(activatePublisher, &QAction::toggled,
-                            [=](bool enable)
-                    {
-                        publisher->setEnabled( enable );
-                    } );
+                    connect(activatePublisher, &QAction::toggled, this,
+                            [=](bool enable) { publisher->setEnabled( enable ); });
+
+                    connect(publisher, &StatePublisher::connectionClosed, this,
+                            [=](){ activatePublisher->setChecked(false); });
                 }
             }
             else if (streamer)
@@ -480,11 +480,8 @@ void MainWindow::initializePlugins(QString directory_name)
                     streamer->addActionsToParentMenu( ui->menuStreaming );
                     ui->menuStreaming->addSeparator();
 
-                    connect(startStreamer, &QAction::triggered, this, [this, plugin_name]()
-                    {
-                        on_actionStartStreaming(plugin_name);
-                    });
-
+                    connect(startStreamer, &QAction::triggered, this,
+                            [=](){  on_actionStartStreaming(plugin_name); });
 
                     connect(streamer, &DataStreamer::connectionClosed,
                             ui->actionStopStreaming, &QAction::trigger );

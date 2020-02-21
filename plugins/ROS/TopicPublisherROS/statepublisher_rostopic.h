@@ -11,7 +11,7 @@
 #include "../shape_shifter_factory.hpp"
 #include <rosbag/bag.h>
 
-class  TopicPublisherROS: public QObject, StatePublisher
+class  TopicPublisherROS: public StatePublisher
 {
     Q_OBJECT
     Q_PLUGIN_METADATA(IID "com.icarustechnology.PlotJuggler.StatePublisher" "../statepublisher.json")
