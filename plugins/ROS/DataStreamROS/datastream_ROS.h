@@ -50,8 +50,6 @@ private:
 
     void topicCallback(const topic_tools::ShapeShifter::ConstPtr& msg, const std::string &topic_name);
 
-    void clockCallback(const rosgraph_msgs::Clock::ConstPtr& msg);
-
     void extractInitialSamples();
 
     void timerCallback();

@@ -74,6 +74,8 @@ void RosoutPublisher::onWindowClosed()
       _log_window = nullptr;
     }
     _enabled = false;
+
+    emit connectionClosed();
 }
 
 

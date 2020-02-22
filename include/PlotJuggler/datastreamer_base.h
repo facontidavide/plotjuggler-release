@@ -19,22 +19,15 @@ class DataStreamer: public PlotJugglerPlugin
     Q_OBJECT
 public:
 
-    DataStreamer():
-        PlotJugglerPlugin()
-    {
-
-    }
-
     virtual bool start(QStringList*) = 0;
 
     virtual void shutdown() = 0;
 
     virtual bool isRunning() const = 0;
 
-    virtual ~DataStreamer() {}
+    virtual ~DataStreamer() = default;
 
-    std::mutex& mutex()
-    {
+    std::mutex& mutex(){
         return _mutex;
     }
 
@@ -69,8 +62,6 @@ private:
 QT_BEGIN_NAMESPACE
 
 #define DataStream_iid "com.icarustechnology.PlotJuggler.DataStreamer"
-
-
 
 Q_DECLARE_INTERFACE(DataStreamer, DataStream_iid)
 
