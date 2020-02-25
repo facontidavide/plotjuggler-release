@@ -31,9 +31,9 @@ public:
         _data.emplace_back( "/linear_acceleration/y" );
         _data.emplace_back( "/linear_acceleration/z" );
 
-        for(int i=0; i<6; i++)
+        for(int i=0; i<3; i++)
         {
-            for(int j=i; j<6; j++)
+            for(int j=i; j<3; j++)
             {
                 char buffer[100];
                 sprintf(buffer,"/orientation_covariance/[%d,%d]",i,j);
@@ -118,13 +118,13 @@ public:
         _data[count++].pushBack( {timestamp, imu.linear_acceleration.z} );
 
 
-        for(int i=0; i<6; i++)
+        for(int i=0; i<3; i++)
         {
-            for(int j=i; j<6; j++)
+            for(int j=i; j<3; j++)
             {
-                _data[count++].pushBack( {timestamp, imu.orientation_covariance[i*6+j]} );
-                _data[count++].pushBack( {timestamp, imu.angular_velocity_covariance[i*6+j]} );
-                _data[count++].pushBack( {timestamp, imu.linear_acceleration_covariance[i*6+j]} );
+                _data[count++].pushBack( {timestamp, imu.orientation_covariance[i*3+j]} );
+                _data[count++].pushBack( {timestamp, imu.angular_velocity_covariance[i*3+j]} );
+                _data[count++].pushBack( {timestamp, imu.linear_acceleration_covariance[i*3+j]} );
             }
         }
     }
