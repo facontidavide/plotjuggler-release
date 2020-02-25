@@ -102,7 +102,10 @@ MainWindow::MainWindow(const QCommandLineParser &commandline_parser, QWidget *pa
     {
         ui->playbackRate->clearFocus();
     });
-
+    connect( ui->playbackStep, &QDoubleSpinBox::editingFinished, this, [this]()
+    {
+        ui->playbackStep->clearFocus();
+    });
 
     _main_tabbed_widget = new TabbedPlotWidget("Main Window", this, nullptr, _mapped_plot_data, this);
 
@@ -2678,7 +2681,6 @@ void MainWindow::on_actionPreferences_triggered()
     QSettings settings;
     QString theme = settings.value("Preferences::theme", _style_directory).toString();
 
-
     if( theme != _style_directory)
     {
         _style_directory = theme;
@@ -2686,3 +2688,9 @@ void MainWindow::on_actionPreferences_triggered()
     }
 }
 
+
+void MainWindow::on_playbackStep_valueChanged(double step)
+{
+  ui->timeSlider->setFocus();
+  ui->timeSlider->setRealStepValue(step);
+}
