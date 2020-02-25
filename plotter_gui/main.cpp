@@ -47,8 +47,8 @@ void OpenNewReleaseDialog(QNetworkReply *reply)
   if( online_number > current_number &&
       online_number > dontshow_number )
   {
-    NewReleaseDialog dialog(nullptr, tag_name, name, url );
-    dialog.exec();
+    NewReleaseDialog* dialog = new NewReleaseDialog(nullptr, tag_name, name, url );
+    dialog->show();
   }
 }
 

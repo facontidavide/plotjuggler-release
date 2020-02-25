@@ -11,12 +11,16 @@ public:
     RealSlider(QWidget* parent = nullptr);
 
     void setLimits(double min, double max, int steps);
+
     double getValue() const;
+
     void setRealValue(double val);
 
     double getMaximum() const { return _max_value; }
 
     double getMinimum() const { return _min_value; }
+
+    void setRealStepValue(double step);
 
 private slots:
     void onValueChanged(int value);
@@ -52,6 +56,14 @@ inline void RealSlider::setRealValue(double val)
     const double ratio = (val -_min_value)  / (_max_value - _min_value );
     long pos = std::round( (double)(maximum() - minimum()) * ratio  + minimum()) ;
     QSlider::setValue(pos);
+}
+
+inline void RealSlider::setRealStepValue(double step)
+{
+  const double ratio = (_max_value - _min_value) /
+                       (double)(maximum() - minimum());
+  int new_step = std::max(1, static_cast<int>(std::round( step/ratio )));
+  QSlider::setSingleStep( new_step );
 }
 
 inline void RealSlider::onValueChanged(int value)
