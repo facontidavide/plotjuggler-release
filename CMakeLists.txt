@@ -11,7 +11,7 @@ cmake_policy (SET CMP0020 NEW)
 add_definitions(
     -DPJ_MAJOR_VERSION=2
     -DPJ_MINOR_VERSION=6
-    -DPJ_PATCH_VERSION=2 )
+    -DPJ_PATCH_VERSION=3 )
 
 add_subdirectory( 3rdparty/fmt )
 
@@ -90,7 +90,6 @@ if(COMPILING_WITH_CATKIN)
         rosbag_storage
         roscpp
         roscpp_serialization
-        ros_type_introspection
         rostime
         topic_tools
         tf
@@ -149,12 +148,13 @@ else()
     set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
     set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-
-    INSTALL( FILES ${CMAKE_CURRENT_SOURCE_DIR}/plotjuggler-icon.png
-                         DESTINATION share/icons/hicolor/128x128)
-    INSTALL( FILES ${CMAKE_CURRENT_SOURCE_DIR}/PlotJuggler.desktop
-                         DESTINATION share/applications)
 endif()
+
+
+INSTALL( FILES ${CMAKE_CURRENT_SOURCE_DIR}/plotjuggler-icon.svg
+                    DESTINATION /usr/share/icons/hicolor/scalable/apps)
+INSTALL( FILES ${CMAKE_CURRENT_SOURCE_DIR}/PlotJuggler.desktop
+                    DESTINATION /usr/share/applications)
 
 #############################################################
 
