@@ -227,7 +227,6 @@ void TabbedPlotWidget::on_savePlotsToFile()
 
     QFileDialog saveDialog(this);
     saveDialog.setAcceptMode(QFileDialog::AcceptSave);
-    saveDialog.setDefaultSuffix("png");
     saveDialog.selectFile(currentTab()->name());
 
     QStringList filters;
@@ -236,13 +235,29 @@ void TabbedPlotWidget::on_savePlotsToFile()
             << "svg (*.svg)";
 
     saveDialog.setNameFilters(filters);
-
     saveDialog.exec();
 
     if(saveDialog.result() == QDialog::Accepted && !saveDialog.selectedFiles().empty())
     {
         QString fileName = saveDialog.selectedFiles().first();
 
+        QFileInfo fileinfo(fileName);
+        if( fileinfo.suffix().isEmpty() )
+        {
+          auto filter = saveDialog.selectedNameFilter();
+          if( filter == filters[0] )
+          {
+            fileName.append(".png");
+          }
+          else if( filter == filters[1] )
+          {
+            fileName.append(".jpg");
+          }
+          else if( filter == filters[2] )
+          {
+            fileName.append(".svg");
+          }
+        }
         saveTabImage(fileName, matrix);
     }
 }
