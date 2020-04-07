@@ -2,6 +2,25 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.6.3 (2020-04-07)
+------------------
+* Fix issue `#271 <https://github.com/facontidavide/PlotJuggler/issues/271>`_
+* @veimox added
+* Bugfix/executable (`#264 <https://github.com/facontidavide/PlotJuggler/issues/264>`_)
+  * created launching script , installing and making use of it in the icon
+  * ignoring temporary folders when creating binary locally
+  * corrected intsallation of script
+  * using PROGRAM to install it with executable permissions
+  Co-authored-by: Jorge Rodriguez <jr@blue-ocean-robotics.com>
+* Feature/scalable icon (`#265 <https://github.com/facontidavide/PlotJuggler/issues/265>`_)
+  * installing icons in /usr/share and do it at any build type
+  * added scalable icon
+  * removed old icon
+  Co-authored-by: Jorge Rodriguez <jr@blue-ocean-robotics.com>
+* fix default suffix
+* Fix bug `#258 <https://github.com/facontidavide/PlotJuggler/issues/258>`_
+* Contributors: Davide Faconti, Jorge Rodriguez
+
 2.6.2 (2020-02-25)
 ------------------
 * bug fix in IMU parser
