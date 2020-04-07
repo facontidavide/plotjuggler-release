@@ -1,12 +1,15 @@
 
-include_directories( ../  ${catkin_INCLUDE_DIRS}  )
+include_directories(
+    ../
+    ros_type_introspection/include
+    ${catkin_INCLUDE_DIRS}  )
 
 # Qt related stuff
 set(CMAKE_AUTOMOC ON)
 SET(CMAKE_AUTOUIC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-
+add_subdirectory(ros_type_introspection)
 
 #############
 add_definitions(${QT_DEFINITIONS})
@@ -38,10 +41,10 @@ target_link_libraries( commonROS PRIVATE
   ${Qt5Widgets_LIBRARIES}
   ${Qt5Xml_LIBRARIES}
   ${catkin_LIBRARIES}
+  ros_type_introspection_static
   fmt::fmt-header-only
   marl
   )
-
 
 #############
 SET( DATALOAD_SRC

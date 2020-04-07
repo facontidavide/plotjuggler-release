@@ -241,6 +241,8 @@ void AddCustomPlotDialog::importSnippets(const QByteArray& xml_text)
 
         snippet.globalVars = math_plot->globalVars();
         snippet.equation = math_plot->function();
+        snippet.language = math_plot->language();
+
         _snipped_recent.insert( {snippet.name, snippet } );
         ui->snippetsListRecent->addItem( snippet.name );
     }
@@ -307,6 +309,13 @@ void AddCustomPlotDialog::on_snippetsListRecent_doubleClicked(const QModelIndex 
     const auto& name = ui->snippetsListRecent->item( index.row() )->text();
     const SnippetData& snippet = _snipped_recent.at(name);
 
+    if( snippet.language == "LUA")
+    {
+      ui->radioButtonLua->setChecked(true);
+    }
+    else if( snippet.language == "JS"){
+      ui->radioButtonJS->setChecked(true);
+    }
     ui->globalVarsTextField->setPlainText(snippet.globalVars);
     ui->mathEquation->setPlainText(snippet.equation);
 }
@@ -451,6 +460,7 @@ void AddCustomPlotDialog::on_pushButtonSave_clicked()
     snippet.name = name;
     snippet.globalVars = ui->globalVarsTextField->toPlainText();
     snippet.equation   = ui->mathEquation->toPlainText();
+    snippet.language   = getLanuguage();
 
     addToSaved( name, snippet);
 
