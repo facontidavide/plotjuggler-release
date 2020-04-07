@@ -12,12 +12,11 @@ CustomTimeseries::CustomTimeseries(const PlotData *source_data,
     if( snippet.language == "LUA"){
       _transform = std::make_unique<LuaCustomFunction>(source_data->name(), snippet);
     }
-    else if( snippet.language == "JS"){
+    else // JS by default for back compatibility
+    {
       _transform = std::make_unique<JsCustomFunction>(source_data->name(), snippet);
     }
-    else{
-      throw std::runtime_error("Snippet language not recognized");
-    }
+
     updateCache();
 }
 
