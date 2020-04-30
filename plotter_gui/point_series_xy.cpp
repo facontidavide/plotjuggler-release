@@ -89,7 +89,7 @@ bool PointSeriesXY::updateCache()
         max_y = std::max( max_y, p.y() );
     }
 
-    _bounding_box.setLeft(  min_x );
+    _bounding_box.setLeft( min_x );
     _bounding_box.setRight( max_x );
     _bounding_box.setBottom( min_y );
     _bounding_box.setTop( max_y );
