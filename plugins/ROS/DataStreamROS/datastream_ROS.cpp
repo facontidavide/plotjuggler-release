@@ -78,6 +78,8 @@ void DataStreamROS::topicCallback(const topic_tools::ShapeShifter::ConstPtr& msg
       _ros_parser.setUseHeaderStamp( false );
     }
 
+    // time wrapping may happen using use_sim_time = true and
+    // rosbag play --clock --loop
     if( msg_time < _prev_clock_time )
     {
         // clear

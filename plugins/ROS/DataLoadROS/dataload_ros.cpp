@@ -30,6 +30,13 @@ DataLoadROS::DataLoadROS()
 {
     _extensions.push_back( "bag");
     loadDefaultSettings();
+
+    scheduler_.bind();
+}
+
+DataLoadROS::~DataLoadROS()
+{
+  scheduler_.unbind();
 }
 
 void StrCat(const std::string& a, const std::string& b,  std::string& out)
@@ -196,10 +203,11 @@ bool DataLoadROS::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_map)
 
     marl::Scheduler scheduler;
     scheduler.setWorkerThreadCount( 3 );
-    scheduler.bind();
-    defer(scheduler.unbind());  // unbind before destructing the scheduler.
 
     marl::WaitGroup wg;
+
+    bool abort_marl = false;
+    std::exception_ptr thrown_error;
 
     for(const rosbag::MessageInstance& msg_instance: bag_view)
     {
@@ -241,13 +249,24 @@ bool DataLoadROS::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_map)
       wg.add();
       auto ticket = ros_parser_ptr->ticket_queue.take();
 
-      marl::schedule([=]
+      marl::schedule([=, &abort_marl, &thrown_error]
       {
-        ticket.wait();
-        ros_parser_ptr->pushMessageRef( topic_name, MessageRef(buffer), msg_time );
-        wg.done();
+        try{
+          ticket.wait();
+          ros_parser_ptr->pushMessageRef( topic_name, MessageRef(buffer), msg_time );
+        }
+        catch(std::exception&)
+        {
+          abort_marl = true;
+          thrown_error = std::current_exception();
+        }
         ticket.done();
+        wg.done();
       });
+
+      if( abort_marl ){
+        std::rethrow_exception(thrown_error);
+      }
     }
 
     wg.wait();
@@ -260,11 +279,6 @@ bool DataLoadROS::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_map)
 
     info->selected_datasources = _config.selected_topics;
     return true;
-}
-
-DataLoadROS::~DataLoadROS()
-{
-
 }
 
 bool DataLoadROS::xmlSaveState(QDomDocument &doc, QDomElement &plugin_elem) const
