@@ -70,15 +70,14 @@ SET( PLOTTER_SRC
     ../include/PlotJuggler/statepublisher_base.h
     )
 
-add_executable(PlotJuggler ${PLOTTER_SRC} ${RES_SRC} ${UI_SRC}
-    ../3rdparty/backward-cpp/backward.cpp)
+add_executable(PlotJuggler ${PLOTTER_SRC} ${RES_SRC} ${UI_SRC} ${BACKWARD_ENABLE})
+add_backward(PlotJuggler)
 
 target_link_libraries(PlotJuggler
     ${QT_LINK_LIBRARIES}
     colorwidgets
     qwt_static
-    lua_static
-    ${BACKWARD_LIBS} )
+    lua_static )
 
 if(COMPILING_WITH_CATKIN)
     install(TARGETS PlotJuggler
