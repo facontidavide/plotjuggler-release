@@ -140,6 +140,8 @@ private slots:
 
     void on_editAxisLimits_triggered();
 
+    void on_copyToClipboard();
+
 private slots:
     void launchRemoveCurveDialog();
 
@@ -172,6 +174,7 @@ private:
     QAction *_action_XY_transform;
     QAction *_action_saveToFile;
     QAction *_action_editLimits;
+    QAction *_action_clipboard;
 
     PlotZoomer* _zoomer;
     PlotMagnifier* _magnifier;
