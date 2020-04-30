@@ -11,7 +11,7 @@ cmake_policy (SET CMP0020 NEW)
 add_definitions(
     -DPJ_MAJOR_VERSION=2
     -DPJ_MINOR_VERSION=6
-    -DPJ_PATCH_VERSION=3 )
+    -DPJ_PATCH_VERSION=4 )
 
 add_subdirectory( 3rdparty/fmt )
 
@@ -109,8 +109,6 @@ if(COMPILING_WITH_CATKIN)
 
 endif()
 
-
-
 IF (NOT WIN32)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  -fPIC")
 ENDIF()
@@ -150,14 +148,7 @@ else()
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 endif()
 
-
-INSTALL( FILES ${CMAKE_CURRENT_SOURCE_DIR}/plotjuggler-icon.svg
-                    DESTINATION /usr/share/icons/hicolor/scalable/apps)
-INSTALL( FILES ${CMAKE_CURRENT_SOURCE_DIR}/PlotJuggler.desktop
-                    DESTINATION /usr/share/applications)
-
 #############################################################
-
 
 add_subdirectory( 3rdparty/backward-cpp )
 add_subdirectory( 3rdparty/color_widgets )
@@ -185,7 +176,22 @@ if(COMPILING_WITH_CATKIN)
     add_subdirectory( plugins/ROS )
 endif()
 
+#############################################################
+
+if("${CMAKE_INSTALL_PREFIX}" MATCHES "^/opt/")
+    set(DESKTOP_ICON_DIR "$ENV{HOME}/.local/share/icons")
+
+    install( FILES ${CMAKE_CURRENT_SOURCE_DIR}/PlotJuggler.desktop.ros
+             RENAME PlotJuggler.desktop
+             DESTINATION  "$ENV{HOME}/.local/share/applications"  )
+else()
+    set(DESKTOP_ICON_DIR "${CMAKE_INSTALL_PREFIX}/share/icons")
+
+    install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/PlotJuggler.desktop
+            DESTINATION  "${CMAKE_INSTALL_PREFIX}/share/applications"  )
+endif()
 
 
-
+install( FILES ${CMAKE_CURRENT_SOURCE_DIR}/plotjuggler.svg
+    DESTINATION ${DESKTOP_ICON_DIR}  )
 
