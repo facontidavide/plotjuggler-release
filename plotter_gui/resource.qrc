@@ -1,6 +1,5 @@
 <RCC>
     <qresource prefix="/">
-        <file>resources/office_chart_line_stacked.ico</file>
         <file>resources/office_chart_line_stacked.png</file>
         <file>resources/Davide.jpg</file>
         <file>resources/splash.jpg</file>
@@ -250,5 +249,8 @@
         <file>style_light/list_view.png</file>
         <file>style_dark/list_view.png</file>
         <file>style_dark/tree_view.png</file>
+        <file>style_dark/copy_clipboard.png</file>
+        <file>style_light/copy_clipboard.png</file>
+        <file>resources/plotjuggler.svg</file>
     </qresource>
 </RCC>

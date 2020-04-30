@@ -18,6 +18,7 @@ void RosMessageParser::clear()
     _plot_map.numeric.clear();
     _registered_md5sum.clear();
     _introspection_parser.reset( new RosIntrospection::Parser );
+    _introspection_parser->setBlobPolicy( RosIntrospection::Parser::STORE_BLOB_AS_REFERENCE );
     _builtin_parsers.clear();
     _warn_cancellation.clear();
     _warn_max_arraysize.clear();

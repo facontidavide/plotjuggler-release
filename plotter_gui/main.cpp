@@ -122,7 +122,7 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-    QIcon app_icon( ":/resources/office_chart_line_stacked.ico" );
+    QIcon app_icon( "://resources/plotjuggler.svg" );
     QApplication::setWindowIcon(app_icon);
 
     QNetworkAccessManager manager;
@@ -172,13 +172,11 @@ int main(int argc, char *argv[])
           app.processEvents();
         }
 
-        w.setWindowIcon(app_icon);
         w.show();
         splash.finish(&w);
         return app.exec();
     }
     MainWindow w(parser);
-    w.setWindowIcon(app_icon);
     w.show();
     return app.exec();
 }

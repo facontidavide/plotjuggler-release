@@ -20,13 +20,13 @@ class  DataLoadROS: public DataLoader
 public:
     DataLoadROS();
 
+    virtual ~DataLoadROS() override;
+
     virtual const std::vector<const char*>& compatibleFileExtensions() const override;
 
     virtual bool readDataFromFile(FileLoadInfo* fileload_info, PlotDataMapRef& destination) override;
 
     virtual const char* name() const override { return "DataLoad ROS bags"; }
-
-    virtual ~DataLoadROS() override;
 
     virtual bool xmlSaveState(QDomDocument &doc, QDomElement &parent_element) const override;
 
@@ -41,6 +41,8 @@ private:
     std::vector<const char*> _extensions;
 
     DialogSelectRosTopics::Configuration _config;
+
+    marl::Scheduler scheduler_;
 
     std::vector<std::pair<QString, QString>> getAllTopics(const rosbag::Bag *bag,
                                                           std::map<std::string, RosMessageParser> &parsers);
