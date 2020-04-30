@@ -526,7 +526,8 @@ bool Parser::deserializeIntoFlatContainer(const std::string& msg_identifier,
   flat_container->blob.resize( blob_index );
   flat_container->blob_storage.resize( blob_storage_index );
 
-  if( buffer_offset != static_cast<std::size_t>(buffer.size()) )
+  // WORKAROUNG: messages created with ROS serial might have 1 extra byte :(
+  if( buffer.size() - buffer_offset > 1 )
   {
       char msg_buff[1000];
       sprintf(msg_buff, "buildRosFlatType: There was an error parsing the buffer.\n"
