@@ -15,10 +15,10 @@
 #include <functional>
 #include <thread>
 
-#include "../dialog_select_ros_topics.h"
-#include "../shape_shifter_factory.hpp"
-#include "../rule_editing.h"
-#include "../dialog_with_itemlist.h"
+#include "dialog_select_ros_topics.h"
+#include "shape_shifter_factory.hpp"
+#include "rule_editing.h"
+#include "dialog_with_itemlist.h"
 
 #include "marl/defer.h"
 #include "marl/scheduler.h"

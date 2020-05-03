@@ -8,7 +8,10 @@
 #include <QCheckBox>
 #include <QShortcut>
 #include "PlotJuggler/optional.hpp"
-#include <ros_type_introspection/ros_introspection.hpp>
+
+#ifndef DISABLE_RULE_EDITING
+#include "rule_editing.h"
+#endif
 
 namespace Ui {
 class dialogSelectRosTopics;
@@ -68,8 +71,6 @@ private:
     Ui::dialogSelectRosTopics *ui;
 
 };
-
-nonstd::optional<double>FlatContainerContainHeaderStamp(const RosIntrospection::FlatMessage& flat_msg);
 
 
 

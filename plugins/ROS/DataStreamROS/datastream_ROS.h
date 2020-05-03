@@ -5,12 +5,12 @@
 #include <QAction>
 #include <QTimer>
 #include <thread>
-#include <topic_tools/shape_shifter.h>
+#include <ros_type_introspection/utils/shape_shifter.hpp>
 #include "PlotJuggler/datastreamer_base.h"
 #include <ros_type_introspection/ros_introspection.hpp>
 #include <rosgraph_msgs/Clock.h>
-#include "../dialog_select_ros_topics.h"
-#include "../RosMsgParsers/ros_parser.h"
+#include "dialog_select_ros_topics.h"
+#include "ros1_parsers/ros_parser.h"
 
 class  DataStreamROS: public DataStreamer
 {
@@ -48,7 +48,7 @@ private:
 
     PlotDataMapRef* _destination_data;
 
-    void topicCallback(const topic_tools::ShapeShifter::ConstPtr& msg, const std::string &topic_name);
+    void topicCallback(const RosIntrospection::ShapeShifter::ConstPtr& msg, const std::string &topic_name);
 
     void extractInitialSamples();
 

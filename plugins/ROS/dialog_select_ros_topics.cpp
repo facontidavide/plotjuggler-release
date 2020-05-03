@@ -10,9 +10,8 @@
 #include <QDebug>
 #include <QMessageBox>
 #include <QAbstractItemView>
-
+#include <set>
 #include "dialog_select_ros_topics.h"
-#include "rule_editing.h"
 #include "ui_dialog_select_ros_topics.h"
 
 
@@ -82,6 +81,11 @@ DialogSelectRosTopics::DialogSelectRosTopics(const std::vector<std::pair<QString
     QSettings settings;
     restoreGeometry(settings.value("DialogSelectRosTopics.geometry").toByteArray());
 
+
+#ifdef DISABLE_RULE_EDITING
+    ui->checkBoxEnableRules->setHidden(true);
+    ui->pushButtonEditRules->setHidden(true);
+#endif
 }
 
 void DialogSelectRosTopics::updateTopicList(std::vector<std::pair<QString, QString> > topic_list )
@@ -116,10 +120,12 @@ void DialogSelectRosTopics::updateTopicList(std::vector<std::pair<QString, QStri
         }
     }
 
-    ui->listRosTopics->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
-    ui->listRosTopics->horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
-    ui->listRosTopics->sortByColumn(0, Qt::AscendingOrder);
-    //----------------------------------------------
+    if( newly_added.size() > 1 )
+    {
+        ui->listRosTopics->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
+        ui->listRosTopics->horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
+        ui->listRosTopics->sortByColumn(0, Qt::AscendingOrder);
+    }
 
     QModelIndexList selection = ui->listRosTopics->selectionModel()->selectedRows();
 
@@ -196,10 +202,13 @@ void DialogSelectRosTopics::on_checkBoxEnableRules_toggled(bool checked)
 
 void DialogSelectRosTopics::on_pushButtonEditRules_pressed()
 {
-    RuleEditing* rule_editing = new RuleEditing(this);
-    rule_editing->exec();
+#ifndef DISABLE_RULE_EDITING
+  RuleEditing* rule_editing = new RuleEditing(this);
+  rule_editing->exec();
+#endif
 }
 
+/*
 nonstd::optional<double> FlatContainerContainHeaderStamp(const RosIntrospection::FlatMessage& flat_msg)
 {
     for (const auto& it: flat_msg.value)
@@ -217,6 +226,7 @@ nonstd::optional<double> FlatContainerContainHeaderStamp(const RosIntrospection:
     }
     return nonstd::optional<double>();
 }
+*/
 
 void DialogSelectRosTopics::on_maximumSizeHelp_pressed()
 {

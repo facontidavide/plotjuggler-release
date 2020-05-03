@@ -16,13 +16,13 @@
 #include <QFileDialog>
 #include <ros/callback_queue.h>
 #include <rosbag/bag.h>
-#include <topic_tools/shape_shifter.h>
+#include <ros_type_introspection/utils/shape_shifter.hpp>
 #include <ros/transport_hints.h>
 
-#include "../dialog_select_ros_topics.h"
-#include "../rule_editing.h"
-#include "../qnodedialog.h"
-#include "../shape_shifter_factory.hpp"
+#include "dialog_select_ros_topics.h"
+#include "rule_editing.h"
+#include "qnodedialog.h"
+#include "shape_shifter_factory.hpp"
 
 DataStreamROS::DataStreamROS():
     DataStreamer(),
@@ -39,7 +39,7 @@ DataStreamROS::DataStreamROS():
     loadDefaultSettings();
 }
 
-void DataStreamROS::topicCallback(const topic_tools::ShapeShifter::ConstPtr& msg,
+void DataStreamROS::topicCallback(const RosIntrospection::ShapeShifter::ConstPtr& msg,
                                   const std::string &topic_name)
 {
     if( !_running ){
@@ -272,8 +272,8 @@ void DataStreamROS::subscribe()
     for (int i=0; i< _config.selected_topics.size(); i++ )
     {
         const std::string topic_name = _config.selected_topics[i].toStdString();
-        boost::function<void(const topic_tools::ShapeShifter::ConstPtr&) > callback;
-        callback = [this, topic_name](const topic_tools::ShapeShifter::ConstPtr& msg) -> void
+        boost::function<void(const RosIntrospection::ShapeShifter::ConstPtr&) > callback;
+        callback = [this, topic_name](const RosIntrospection::ShapeShifter::ConstPtr& msg) -> void
         {
             this->topicCallback(msg, topic_name) ;
         };
@@ -330,17 +330,14 @@ bool DataStreamROS::start(QStringList* selected_datasources)
         ros::master::getTopics(topic_infos);
         for (ros::master::TopicInfo topic_info: topic_infos)
         {
-            all_topics.push_back(
-                        std::make_pair(QString(topic_info.name.c_str()),
-                                       QString(topic_info.datatype.c_str()) ) );
+            all_topics.push_back( {QString::fromStdString(topic_info.name),
+                                   QString::fromStdString(topic_info.datatype) } );
         }
         dialog.updateTopicList(all_topics);
     });
 
     int res = dialog.exec();
-
     _config = dialog.getResult();
-
     timer.stop();
 
     if( res != QDialog::Accepted || _config.selected_topics.empty() )

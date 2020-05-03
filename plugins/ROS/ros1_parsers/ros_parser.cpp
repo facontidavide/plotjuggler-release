@@ -1,11 +1,11 @@
 #include "ros_parser.h"
-#include "dialog_with_itemlist.h"
 #include "geometry_twist_msg.h"
 #include "diagnostic_msg.h"
 #include "pal_statistics_msg.h"
 #include "odometry_msg.h"
 #include "fiveai_stamped_diagnostic.h"
 #include "imu_msg.h"
+#include "dialog_with_itemlist.h"
 
 
 RosMessageParser::RosMessageParser()

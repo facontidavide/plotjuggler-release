@@ -1,13 +1,13 @@
+![PlotJuggler](docs/images/plotjuggler_banner.svg)
+
 | Platform  | Build Status  |
 |---------------------|-----------|
-| Windows (Appveyor)  | [![Build status](https://ci.appveyor.com/api/projects/status/mqdmxpt0kf1cf2h3?svg=true)](https://ci.appveyor.com/project/facontidavide59577/plotjuggler)  |
-| Ubuntu ROS (Travis) | [![Build Status](https://travis-ci.org/facontidavide/PlotJuggler.svg?branch=master)](https://travis-ci.org/facontidavide/PlotJuggler) |
-
+| Ubuntu ROS Kinetic / Melodic / Eloquent   | ![CI](https://github.com/facontidavide/PlotJuggler/workflows/CI/badge.svg) |
 
 [![Join the chat at https://gitter.im/PlotJuggler/Lobby](https://badges.gitter.im/PlotJuggler/Lobby.svg)](https://gitter.im/PlotJuggler/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Tweet](https://img.shields.io/twitter/url/http/shields.io.svg?style=social)](https://twitter.com/intent/tweet?text=I%20use%20PlotJuggler%20and%20it%20is%20amazing%0D%0A&url=https://github.com/facontidavide/PlotJuggler&via=facontidavide&hashtags=dataviz,plotjuggler,GoROS,PX4)
 
-# PlotJuggler 2.6.4
+# PlotJuggler 2.7.0
 
 QT5 based application to display time series in plots, using an intuitive "drag and drop" interface.
 
@@ -26,14 +26,14 @@ To understand what PlotJuggler can do for you, take a look to the following vide
 ## Supported formats
 
 - CSV
-- Rosbags / ROS topics
+- Rosbags / ROS topics (both ROS1 and ROS2)
 - ULog (PX4)
 - Your custom format... [contact me to know more](https://www.plotjuggler.io/support).
 
-## New in version 2.X
+## Compute calculations and transform your data
 
 It is now possible to create custom timeseries! Simply write your own
-JavaScript function and apply it to one of more existing timeseries.
+**JavaScript** or **Lua** function and apply it to one of more existing timeseries.
 
 Many thanks to [@1r0b1n0](https://github.com/1r0b1n0), who developed the
 initial version of this feature, and to our first __sponsor__, 
@@ -43,15 +43,12 @@ Watch this video to learn how to use it.
 
 [![Custom timeseries](docs/images/custom_functions.png)](https://vimeo.com/311245098)
 
-## Windows Installer (experimental)
-
-[PlotJugglerInstaller-2.1.5.exe](https://github.com/facontidavide/PlotJuggler/releases/download/2.1.5/PlotJugglerInstaller-2.1.5.exe)
 
 ## "Download and Run" (Ubuntu 16.04 Xenial or later)
 
 For those of you that can't wait and want to get their hands dirty, just download this AppImage:
 
-[PlotJuggler-2.6.x-x86_64.AppImage](https://github.com/facontidavide/PlotJuggler/releases/download/2.6.4/PlotJuggler-2.6.4-x86_64.AppImage).
+[PlotJuggler-2.6.x-x86_64.AppImage](https://github.com/facontidavide/PlotJuggler/releases/download/2.6.3/PlotJuggler-2.6.3-x86_64.AppImage).
    
 Do not forget to make it executable with the command 
 
@@ -81,24 +78,22 @@ Then compile using cmake (qmake is NOT supported):
  
  Note: the plugins need to be installed in the same folder of the executable or in __/usr/local/lib/PlotJuggler/__.
 
-## How to build (ROS users)
+## How to build (ROS/ROS2 users)
 
- The following instructions are for __ROS Kinetic__. Adapt them accordingly if you are using a different version of ROS.
- 
  The easiest way to install PlotJuggler is through the command:
  
-    sudo apt-get install ros-kinetic-plotjuggler 
+    sudo apt-get install ros-${ROS_DISTRO}-plotjuggler 
 
 Nevertheless, if you want to compile it from source, for instance to try the very latest version on the master branch, 
-you __must__ build PlotJuggler using __catkin__, otherwise the ROS related plugins will not be included.
+you **must** build PlotJuggler using either **catkin** or **colcon**, otherwise the ROS related plugins will **not** be included.
 
-Follow these instructions:
+Compiling with catkin_tools:
 
-    sudo apt-get install qtbase5-dev libqt5svg5-dev libqt5multimedia ros-$ROS_DISTRO-ros-type-introspection
     mkdir -p ws_plotjuggler/src; cd ws_plotjuggler/src
     git clone https://github.com/facontidavide/PlotJuggler.git
     cd ..
-    catkin_make
+    rosdep install --from-paths src --ignore-src --rosdistro=${ROS_DISTRO} -y
+    catkin build
     source devel/setup.bash
     
 You should see the following message at the beginning of the compilation step:
@@ -109,11 +104,7 @@ Both the executable and the plugins will be created in __ws_plotjuggler/devel/li
 
 To run the application, use the command:
 
-    rosrun plotjuggler PlotJuggler 
-    
-# Stargazers over time
-
-[![Stargazers over time](https://starchart.cc/facontidavide/PlotJuggler.svg)](https://starchart.cc/facontidavide/PlotJuggler)    
+    rosrun plotjuggler PlotJuggler  
 
 # If you like PlotJuggler...
 
@@ -128,7 +119,8 @@ If you use PlotJuggler at work, your company can become a __sponsor__ and suppor
 the development of those specific features they need.
 
 [Contact me](https://www.plotjuggler.io/support) for more details.
- 
 
-# Credits
-* [Icon ](https://www.svgrepo.com/svg/283627/line-chart-line-graphic)
+
+# Stargazers over time
+
+[![Stargazers over time](https://starchart.cc/facontidavide/PlotJuggler.svg)](https://starchart.cc/facontidavide/PlotJuggler)

@@ -67,7 +67,6 @@ void CurveTableView::refreshColumns()
     horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
     horizontalHeader()->setSectionResizeMode(1, QHeaderView::Fixed);
     setColumnWidth(1, 120);
-    // TODO emit updateFilter();
 }
 
 std::vector<std::string> CurveTableView::getSelectedNames()

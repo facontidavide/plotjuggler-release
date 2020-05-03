@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
-<package>
+<package format="3">
 <name>plotjuggler</name>
-<version>2.6.4</version>
+<version>2.7.0</version>
 <description>PlotJuggler: juggle with data</description>
 
 <maintainer email="davide.faconti@gmail.com">Davide Faconti</maintainer>
@@ -11,39 +11,35 @@
 
 <author email="davide.faconti@gmail.com">Davide Faconti</author>
 
-<buildtool_depend>catkin</buildtool_depend>
+<!-- ROS1 dependencies -->
+<buildtool_depend condition="$ROS_VERSION == 1">catkin</buildtool_depend>
 
-<build_depend>rosbag</build_depend>
-<build_depend>rosbag_storage</build_depend>
-<build_depend>roscpp</build_depend>
-<build_depend>roscpp_serialization</build_depend>
-<build_depend>rostime</build_depend>
-<build_depend>topic_tools</build_depend>
-<build_depend>tf</build_depend>
-<build_depend>binutils</build_depend>
-<build_depend>diagnostic_msgs</build_depend>
-<build_depend>nav_msgs</build_depend>
-<build_depend>qtbase5-dev</build_depend>
-<build_depend>qtdeclarative5-dev</build_depend>
-<build_depend>qtmultimedia5-dev</build_depend>
-<build_depend>libqt5-svg-dev</build_depend>
-<build_depend>libqt5multimedia5-plugins</build_depend>
+<depend condition="$ROS_VERSION == 1">rosbag_storage</depend>
+<depend condition="$ROS_VERSION == 1">roscpp</depend>
+<depend condition="$ROS_VERSION == 1">roscpp_serialization</depend>
+<depend condition="$ROS_VERSION == 1">tf</depend>
+<depend condition="$ROS_VERSION == 1">diagnostic_msgs</depend>
+<depend condition="$ROS_VERSION == 1">nav_msgs</depend>
+<depend condition="$ROS_VERSION == 1">sensor_msgs</depend>
 
-<run_depend>rosbag</run_depend>
-<run_depend>rosbag_storage</run_depend>
-<run_depend>roscpp</run_depend>
-<run_depend>roscpp_serialization</run_depend>
-<run_depend>rostime</run_depend>
-<run_depend>topic_tools</run_depend>
-<run_depend>binutils</run_depend>
-<run_depend>tf</run_depend>
-<run_depend>diagnostic_msgs</run_depend>
-<run_depend>nav_msgs</run_depend>
-<run_depend>qtbase5-dev</run_depend>
-<run_depend>qtdeclarative5-dev</run_depend>
-<run_depend>qtmultimedia5-dev</run_depend>
-<run_depend>libqt5-svg-dev</run_depend>
-<run_depend>libqt5multimedia5-plugins</run_depend>
+<!-- ROS2 dependencies -->
+<buildtool_depend condition="$ROS_VERSION == 2">ament_cmake</buildtool_depend>
+
+<depend condition="$ROS_VERSION == 2">rclcpp</depend>
+<depend condition="$ROS_VERSION == 2">rcpputils</depend>
+<depend condition="$ROS_VERSION == 2">rosbag2</depend>
+<depend condition="$ROS_VERSION == 2">rosbag2_transport</depend>
+<depend condition="$ROS_VERSION == 2">fastcdr</depend>
+
+
+<!-- common dependancies -->
+<depend>qtbase5-dev</depend>
+<depend>qtdeclarative5-dev</depend>
+<depend>qtmultimedia5-dev</depend>
+<depend>binutils</depend>
+<depend>libqt5-svg-dev</depend>
+<depend>libqt5multimedia5-plugins</depend>
+<depend>boost</depend>
 
 <!-- The export tag contains other, unspecified, tags -->
 <export>

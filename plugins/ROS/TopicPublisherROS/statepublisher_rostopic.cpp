@@ -1,6 +1,6 @@
 #include "statepublisher_rostopic.h"
 #include "PlotJuggler/any.hpp"
-#include "../qnodedialog.h"
+#include "qnodedialog.h"
 
 #include "ros_type_introspection/ros_introspection.hpp"
 #include <QDialog>
