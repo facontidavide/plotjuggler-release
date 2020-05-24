@@ -1,13 +1,13 @@
 ![PlotJuggler](docs/images/plotjuggler_banner.svg)
 
-| Platform  | Build Status  |
-|---------------------|-----------|
-| Ubuntu ROS Kinetic / Melodic / Eloquent   | ![CI](https://github.com/facontidavide/PlotJuggler/workflows/CI/badge.svg) |
+| ROS (Kinetic / Melodic)  | ROS2 (Eloquent) | Windows (Mingw)  |
+|---------------------|-----------|-----------|
+| ![CI](https://github.com/facontidavide/PlotJuggler/workflows/ros1/badge.svg) | ![CI](https://github.com/facontidavide/PlotJuggler/workflows/ros2/badge.svg) | ![CI](https://github.com/facontidavide/PlotJuggler/workflows/win/badge.svg) |
 
 [![Join the chat at https://gitter.im/PlotJuggler/Lobby](https://badges.gitter.im/PlotJuggler/Lobby.svg)](https://gitter.im/PlotJuggler/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Tweet](https://img.shields.io/twitter/url/http/shields.io.svg?style=social)](https://twitter.com/intent/tweet?text=I%20use%20PlotJuggler%20and%20it%20is%20amazing%0D%0A&url=https://github.com/facontidavide/PlotJuggler&via=facontidavide&hashtags=dataviz,plotjuggler,GoROS,PX4)
 
-# PlotJuggler 2.7.0
+# PlotJuggler 2.8.0
 
 QT5 based application to display time series in plots, using an intuitive "drag and drop" interface.
 
@@ -46,9 +46,9 @@ Watch this video to learn how to use it.
 
 ## "Download and Run" (Ubuntu 16.04 Xenial or later)
 
-For those of you that can't wait and want to get their hands dirty, just download this AppImage:
+For those of you that can't wait and want to get their hands dirty, just download the AppImage:
 
-[PlotJuggler-2.6.x-x86_64.AppImage](https://github.com/facontidavide/PlotJuggler/releases/download/2.6.3/PlotJuggler-2.6.3-x86_64.AppImage).
+ROS1 only: [PlotJuggler-2.7.x-x86_64.AppImage](https://github.com/facontidavide/PlotJuggler/releases/download/2.7.0/PlotJuggler-2.7.0-x86_64.AppImage).
    
 Do not forget to make it executable with the command 
 

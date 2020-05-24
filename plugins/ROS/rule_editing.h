@@ -8,77 +8,74 @@
 #include <QTextEdit>
 #include <ros_type_introspection/ros_introspection.hpp>
 
-namespace Ui {
+namespace Ui
+{
 class RuleEditing;
 }
 
 class XMLSyntaxHighlighter : public QSyntaxHighlighter
 {
-    Q_OBJECT
+  Q_OBJECT
 public:
-    XMLSyntaxHighlighter(QObject * parent);
-    XMLSyntaxHighlighter(QTextDocument * parent);
-    XMLSyntaxHighlighter(QTextEdit * parent);
+  XMLSyntaxHighlighter(QObject* parent);
+  XMLSyntaxHighlighter(QTextDocument* parent);
+  XMLSyntaxHighlighter(QTextEdit* parent);
 
 protected:
-    virtual void highlightBlock(const QString & text);
+  virtual void highlightBlock(const QString& text);
 
 private:
-    void highlightByRegex(const QTextCharFormat & format,
-                          const QRegExp & regex, const QString & text);
-    void setRegexes();
-    void setFormats();
+  void highlightByRegex(const QTextCharFormat& format, const QRegExp& regex, const QString& text);
+  void setRegexes();
+  void setFormats();
 
 private:
-    QTextCharFormat     _xmlKeywordFormat;
-    QTextCharFormat     _xmlElementFormat;
-    QTextCharFormat     _xmlAttributeFormat;
-    QTextCharFormat     _xmlValueFormat;
-    QTextCharFormat     _xmlCommentFormat;
+  QTextCharFormat _xmlKeywordFormat;
+  QTextCharFormat _xmlElementFormat;
+  QTextCharFormat _xmlAttributeFormat;
+  QTextCharFormat _xmlValueFormat;
+  QTextCharFormat _xmlCommentFormat;
 
-    QList<QRegExp>      _xmlKeywordRegexes;
-    QRegExp             _xmlElementRegex;
-    QRegExp             _xmlAttributeRegex;
-    QRegExp             _xmlValueRegex;
-    QRegExp             _xmlCommentRegex;
+  QList<QRegExp> _xmlKeywordRegexes;
+  QRegExp _xmlElementRegex;
+  QRegExp _xmlAttributeRegex;
+  QRegExp _xmlValueRegex;
+  QRegExp _xmlCommentRegex;
 };
-
 
 class RuleEditing : public QDialog
 {
-    Q_OBJECT
+  Q_OBJECT
 
 public:
-    explicit RuleEditing(QWidget *parent = 0);
-    ~RuleEditing();
+  explicit RuleEditing(QWidget* parent = 0);
+  ~RuleEditing();
 
-    static RosIntrospection::SubstitutionRuleMap getRenamingRules();
+  static RosIntrospection::SubstitutionRuleMap getRenamingRules();
 
-    static QString getRenamingXML();
+  static QString getRenamingXML();
 
 private slots:
 
-    void on_pushButtonSave_pressed();
+  void on_pushButtonSave_pressed();
 
-    void on_pushButtonReset_pressed();
+  void on_pushButtonReset_pressed();
 
-    void on_timer();
+  void on_timer();
 
-    void on_pushButtonCancel_pressed();
+  void on_pushButtonCancel_pressed();
 
 private:
+  bool isValidXml();
 
-    bool isValidXml();
+  Ui::RuleEditing* ui;
 
-    Ui::RuleEditing *ui;
-
-    XMLSyntaxHighlighter *_highlighter;
-    QTimer _timer;
+  XMLSyntaxHighlighter* _highlighter;
+  QTimer _timer;
 
 private slots:
 
-    virtual void closeEvent(QCloseEvent *event) override;
-
+  virtual void closeEvent(QCloseEvent* event) override;
 };
 
-#endif // RULE_EDITING_H
+#endif  // RULE_EDITING_H

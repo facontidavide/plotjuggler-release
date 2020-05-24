@@ -10,89 +10,82 @@
 #include <ros_type_introspection/ros_introspection.hpp>
 #include <rosgraph_msgs/Clock.h>
 #include "dialog_select_ros_topics.h"
-#include "ros1_parsers/ros_parser.h"
+#include "ros1_parsers/ros1_parser.h"
 
-class  DataStreamROS: public DataStreamer
+class DataStreamROS : public DataStreamer
 {
-    Q_OBJECT
-    Q_PLUGIN_METADATA(IID "com.icarustechnology.PlotJuggler.DataStreamer" "../datastreamer.json")
-    Q_INTERFACES(DataStreamer)
+  Q_OBJECT
+  Q_PLUGIN_METADATA(IID "com.icarustechnology.PlotJuggler.DataStreamer"
+                        "../datastreamer.json")
+  Q_INTERFACES(DataStreamer)
 
 public:
+  DataStreamROS();
 
-    DataStreamROS();
+  virtual bool start(QStringList* selected_datasources) override;
 
-    virtual bool start(QStringList* selected_datasources) override;
+  virtual void shutdown() override;
 
-    virtual void shutdown() override;
+  virtual bool isRunning() const override;
 
-    virtual bool isRunning() const override;
+  virtual ~DataStreamROS() override;
 
-    virtual ~DataStreamROS() override;
+  virtual const char* name() const override
+  {
+    return "ROS Topic Subscriber";
+  }
 
-    virtual const char* name() const override { return "ROS Topic Subscriber";  }
+  virtual bool xmlSaveState(QDomDocument& doc, QDomElement& parent_element) const override;
 
-    virtual bool xmlSaveState(QDomDocument &doc, QDomElement &parent_element) const override;
+  virtual bool xmlLoadState(const QDomElement& parent_element) override;
 
-    virtual bool xmlLoadState(const QDomElement &parent_element ) override;
-
-    virtual void addActionsToParentMenu( QMenu* menu ) override;
-
-    virtual std::vector<QString> appendData(PlotDataMapRef& destination) override
-    {
-        _destination_data = &destination;
-        return DataStreamer::appendData(destination);
-    }
+  virtual void addActionsToParentMenu(QMenu* menu) override;
 
 private:
+  void topicCallback(const RosIntrospection::ShapeShifter::ConstPtr& msg, const std::string& topic_name);
 
-    PlotDataMapRef* _destination_data;
+  void extractInitialSamples();
 
-    void topicCallback(const RosIntrospection::ShapeShifter::ConstPtr& msg, const std::string &topic_name);
+  void timerCallback();
 
-    void extractInitialSamples();
+  void subscribe();
 
-    void timerCallback();
+  void saveDefaultSettings();
 
-    void subscribe();
+  void loadDefaultSettings();
 
-    void saveDefaultSettings();
+  bool _running;
 
-    void loadDefaultSettings();
+  std::shared_ptr<ros::AsyncSpinner> _spinner;
 
-    bool _running;
+  double _initial_time;
 
-    std::shared_ptr<ros::AsyncSpinner> _spinner;
+  std::string _prefix;
 
-    double _initial_time;
+  ros::NodeHandlePtr _node;
 
-    std::string _prefix;
+  std::map<std::string, ros::Subscriber> _subscribers;
 
-    ros::NodeHandlePtr _node;
+  RosIntrospection::SubstitutionRuleMap _rules;
 
-    std::map<std::string, ros::Subscriber> _subscribers;
+  int _received_msg_count;
 
-    RosIntrospection::SubstitutionRuleMap _rules;
+  QAction* _action_saveIntoRosbag;
 
-    int _received_msg_count;
+  std::map<std::string, int> _msg_index;
 
-    QAction* _action_saveIntoRosbag;
+  DialogSelectRosTopics::Configuration _config;
 
-    std::map<std::string, int> _msg_index;
+  CompositeParser _parser;
 
-    DialogSelectRosTopics::Configuration _config;
+  QTimer* _periodic_timer;
 
-    RosMessageParser _ros_parser;
+  bool _roscore_disconnection_already_notified;
 
-    QTimer* _periodic_timer;
-
-    bool _roscore_disconnection_already_notified;
-
-    double _prev_clock_time;
+  double _prev_clock_time;
 
 private:
-
-    static void saveIntoRosbag(const PlotDataMapRef& data);
+  static void saveIntoRosbag(const PlotDataMapRef& data);
 };
 
-#endif // DATALOAD_CSV_H
+#endif  // DATALOAD_CSV_H

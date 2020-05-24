@@ -16,7 +16,8 @@ if( CATKIN_DEVEL_PREFIX OR catkin_FOUND OR CATKIN_BUILD_BINARY_PACKAGE)
         tf
         diagnostic_msgs
         nav_msgs
-        sensor_msgs )
+        sensor_msgs
+        plotjuggler_msgs )
 
     find_package(catkin REQUIRED COMPONENTS ${ROS_DEPENDENCIES} )
 
@@ -40,7 +41,7 @@ cmake_policy (SET CMP0020 NEW)
 
 add_definitions(
     -DPJ_MAJOR_VERSION=2
-    -DPJ_MINOR_VERSION=7
+    -DPJ_MINOR_VERSION=8
     -DPJ_PATCH_VERSION=0 )
 
 add_subdirectory( 3rdparty/fmt )
@@ -178,6 +179,7 @@ if(COMPILING_WITH_CATKIN)
     add_subdirectory( plugins/ROS )
 elseif(COMPILING_WITH_AMENT)
     add_subdirectory( plugins/ROS )
+    ament_package()
 endif()
 
 #############################################################

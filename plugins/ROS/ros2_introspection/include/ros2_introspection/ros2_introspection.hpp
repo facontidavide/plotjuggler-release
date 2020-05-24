@@ -63,87 +63,51 @@ struct FlatMessage {
 
 typedef std::vector< std::pair<std::string, double> > RenamedValues;
 
-struct Ros2MessageInfo{
-  const rosidl_message_type_support_t* type_support;
-  StringTree field_tree;
+
+struct TopicInfo{
+
+  TopicInfo(const std::string& type);
+
+  std::string topic_type;
+  bool has_header_stamp;
+  const rosidl_message_type_support_t *introspection_support;
+  const rosidl_message_type_support_t *type_support;
+
+  static rcutils_allocator_t allocator;
+};
+
+enum MaxArrayPolicy: bool {
+  DISCARD_LARGE_ARRAYS = true,
+  KEEP_LARGE_ARRAYS = false
 };
 
 class Parser{
 
 public:
-  Parser(): _discard_large_array(DISCARD_LARGE_ARRAYS)
- {}
+  Parser(const std::string &topic_name, const std::string& type_name);
 
-  enum MaxArrayPolicy: bool {
-    DISCARD_LARGE_ARRAYS = true,
-    KEEP_LARGE_ARRAYS = false
-  };
+  enum{ MAX_ARRAY_SIZE = 9999 };
 
-  enum{ MAX_ARRAY_SIZE = 999 };
+  void setMaxArrayPolicy( MaxArrayPolicy discard_policy, size_t max_size );
 
-  void setMaxArrayPolicy( MaxArrayPolicy discard_entire_array )
-  {
-      _discard_large_array = discard_entire_array;
-  }
+  MaxArrayPolicy maxArrayPolicy() const;
 
-  void setMaxArrayPolicy( bool discard_entire_array )
-  {
-    _discard_large_array = static_cast<MaxArrayPolicy>(discard_entire_array);
-  }
+  size_t maxArraySize() const;
 
-  MaxArrayPolicy maxArrayPolicy() const
-  {
-    return _discard_large_array;
-  }
+  bool deserializeIntoFlatMessage(const rcutils_uint8_array_t *msg,
+                                  FlatMessage* flat_container_output) const;
 
-
-  void registerMessageType(const std::string& message_identifier,
-                           const std::string& type_name);
-
-  /**
-   * @brief deserializeIntoFlatContainer takes a raw buffer of memory and extract information from it.
-   *  This data is stored in two key/value vectors, FlatMessage::value and FlatMessage::name.
-   * It must be noted that the key type is StringTreeLeaf. this type is not particularly user-friendly,
-   * but allows a much faster post-processing.
-   *
-   * IMPORTANT: this approach is not meant to be used with use arrays such as maps, point clouds and images.
-   * It would require a ridicoulous amount of memory and, franckly, make little sense.
-   * For this reason the argument max_array_size is used.
-   *
-   * This funtion is almost always followed by applyNameTransform, which provide a more human-readable
-   * key-value representation.
-   *
-   * @param msg_identifier   String ID to identify the registered message (use registerMessageDefinition first).
-   * @param buffer           raw memory to be parsed.
-   * @param flat_container_output  output to store the result. It is recommended to reuse the same object multiple times to
-   *                               avoid memory allocations and speed up the parsing.
-   * @param max_array_size   Usually we want to avoid special cases like maps and images, which contain very large arrays.
-   *                         max_array_size is used to skip these arrays that are too large.
-   *
-   * return true if the entire message was parsed or false if parts of the message were
-   * skipped because an array has (size > max_array_size)
-   */
-  bool deserializeIntoFlatMessage(const std::string& msg_identifier,
-                                  const rcutils_uint8_array_t *msg,
-                                  FlatMessage* flat_container_output,
-                                  const uint32_t max_array_size ) const;
-
-
-  const rosidl_message_type_support_t* getIntrospectionSupport(const std::string& msg_identifier)
-  {
-      const auto message_info_it = _registered_messages.find(msg_identifier);
-      if(message_info_it == _registered_messages.end())
-      {
-          throw std::runtime_error("Message identifier not registered");
-      }
-      return message_info_it->second.type_support;
-  }
+  const TopicInfo& topicInfo() const;
 
 private:
 
-  std::unordered_map<std::string, Ros2MessageInfo> _registered_messages;
+  MaxArrayPolicy _discard_policy;
 
-  MaxArrayPolicy _discard_large_array;
+  size_t _max_array_size;
+
+  StringTree _field_tree;
+
+  TopicInfo _topic_info;
 };
 
 void ConvertFlatMessageToRenamedValues(const FlatMessage& flat, RenamedValues& renamed );
