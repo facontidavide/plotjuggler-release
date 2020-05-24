@@ -14,95 +14,97 @@
 #include "curvetree_view.h"
 #include <array>
 
-namespace Ui {
+namespace Ui
+{
 class CurveListPanel;
 }
 
 class CurveListPanel : public QWidget
 {
-    Q_OBJECT
+  Q_OBJECT
 
 public:
-    explicit CurveListPanel(const CustomPlotMap& mapped_math_plots,
-                                  QWidget *parent);
+  explicit CurveListPanel(const CustomPlotMap& mapped_math_plots, QWidget* parent);
 
-    ~CurveListPanel() override;
+  ~CurveListPanel() override;
 
-    void clear();
+  void clear();
 
-    void addCurve(const QString& item_name);
+  void addCurve(const QString& item_name);
 
-    void addCustom(const QString& item_name);
+  void addCustom(const QString& item_name);
 
-    void refreshColumns();
+  void refreshColumns();
 
-    void removeCurve(const std::string &name);
+  void removeCurve(const std::string& name);
 
-    void rebuildEntireList(const std::vector<std::string> &names);
+  void rebuildEntireList(const std::vector<std::string>& names);
 
-    void updateFilter();
+  void updateFilter();
 
-    void changeFontSize(int point_size);
+  void changeFontSize(int point_size);
 
-    bool is2ndColumnHidden() const;
+  bool is2ndColumnHidden() const;
 
-    void update2ndColumnValues(double time,
-                               std::unordered_map<std::string, PlotData>* numeric_data);
+  void update2ndColumnValues(double time, std::unordered_map<std::string, PlotData>* numeric_data);
 
-    virtual void keyPressEvent(QKeyEvent * event) override;
+  virtual void keyPressEvent(QKeyEvent* event) override;
 
 private slots:
 
-    void on_lineEdit_textChanged(const QString &search_string);
+  void on_lineEdit_textChanged(const QString& search_string);
 
-    void removeSelectedCurves();
+  void removeSelectedCurves();
 
-    void on_buttonAddCustom_clicked();
+  void on_buttonAddCustom_clicked();
 
-    void on_buttonEditCustom_clicked();
+  void on_buttonEditCustom_clicked();
 
-    void onCustomSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
+  void onCustomSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
 
-    void on_pushButtonView_pressed();
+  void on_pushButtonView_pressed();
 
-    void on_checkBoxShowValues_toggled(bool show);
+  void on_checkBoxShowValues_toggled(bool show);
 
-  public slots:
+public slots:
 
-    void clearSelections();
+  void clearSelections();
 
-    void on_stylesheetChanged(QString style_dir);
+  void on_stylesheetChanged(QString style_dir);
 
-    void refreshValues();
+  void refreshValues();
 
 private:
+  Ui::CurveListPanel* ui;
 
-    Ui::CurveListPanel *ui;
+  void updateTreeModel();
 
-    void updateTreeModel();
-    
-    CurveTableView* _table_view;
-    CurveTableView* _custom_view;
-    CurveTreeView* _tree_view;
+  CurveTableView* _table_view;
+  CurveTableView* _custom_view;
+  CurveTreeView* _tree_view;
 
-    double _tracker_time = 0;
-    std::unordered_map<std::string, PlotData> *_numeric_data = nullptr;
+  double _tracker_time = 0;
+  std::unordered_map<std::string, PlotData>* _numeric_data = nullptr;
 
-    const CustomPlotMap& _custom_plots;
+  const CustomPlotMap& _custom_plots;
 
-    enum ViewType { TREE, LIST };
-    ViewType _view_type;
-    QString _style_dir;
+  enum ViewType
+  {
+    TREE,
+    LIST
+  };
+  ViewType _view_type;
+  QString _style_dir;
 
 signals:
 
-    void hiddenItemsChanged();
+  void hiddenItemsChanged();
 
-    void createMathPlot(const std::string& linked_plot);
-    void editMathPlot(const std::string& plot_name);
-    void refreshMathPlot(const std::string& curve_name);
+  void createMathPlot(const std::string& linked_plot);
+  void editMathPlot(const std::string& plot_name);
+  void refreshMathPlot(const std::string& curve_name);
 
-    void deleteCurves(const std::vector<std::string>& curve_names);
+  void deleteCurves(const std::vector<std::string>& curve_names);
 };
 
-#endif // CURVE_SELECTOR_H
+#endif  // CURVE_SELECTOR_H
