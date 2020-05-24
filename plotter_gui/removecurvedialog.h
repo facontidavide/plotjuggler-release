@@ -5,7 +5,8 @@
 #include <QListWidgetItem>
 #include "qwt_plot_curve.h"
 
-namespace Ui {
+namespace Ui
+{
 class RemoveCurveDialog;
 }
 
@@ -13,24 +14,24 @@ class PlotWidget;
 
 class RemoveCurveDialog : public QDialog
 {
-    Q_OBJECT
+  Q_OBJECT
 
 public:
-    explicit RemoveCurveDialog(PlotWidget *parent);
-    ~RemoveCurveDialog();
+  explicit RemoveCurveDialog(PlotWidget* parent);
+  ~RemoveCurveDialog();
 
-    void addCurveName(const QString& name, const QColor &color);
+  void addCurveName(const QString& name, const QColor& color);
 
 private slots:
 
-    void on_pushButtonRemove_pressed();
+  void on_pushButtonRemove_pressed();
 
 private:
-    Ui::RemoveCurveDialog *ui;
+  Ui::RemoveCurveDialog* ui;
 
-    void closeIfEmpty();
+  void closeIfEmpty();
 
-    PlotWidget *_parent;
+  PlotWidget* _parent;
 };
 
-#endif // REMOVECURVEDIALOG_H
+#endif  // REMOVECURVEDIALOG_H

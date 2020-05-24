@@ -4,7 +4,8 @@
 #include <QDialog>
 #include <ros/ros.h>
 
-namespace Ui {
+namespace Ui
+{
 class QNodeDialog;
 }
 
@@ -14,10 +15,9 @@ class QNodeDialog : public QDialog
 
 public:
   ~QNodeDialog();
-  explicit QNodeDialog(QWidget *parent = 0);
+  explicit QNodeDialog(QWidget* parent = 0);
 
-  static bool Connect(const std::string &ros_master_uri,
-                      const std::string &hostname = "localhost");
+  static bool Connect(const std::string& ros_master_uri, const std::string& hostname = "localhost");
 
 private slots:
   void on_checkBoxUseEnvironment_toggled(bool checked);
@@ -27,24 +27,22 @@ private slots:
   void on_pushButtonCancel_pressed();
 
 private:
-  Ui::QNodeDialog *ui;
-
+  Ui::QNodeDialog* ui;
 };
-
 
 class RosManager
 {
 private:
-    ros::NodeHandlePtr _node;
-    RosManager(): _node(nullptr) {}
-    void stopROS();
+  ros::NodeHandlePtr _node;
+  RosManager() : _node(nullptr)
+  {
+  }
+  void stopROS();
 
 public:
-    static RosManager& get();
-    ~RosManager();
-    static ros::NodeHandlePtr getNode();
+  static RosManager& get();
+  ~RosManager();
+  static ros::NodeHandlePtr getNode();
 };
 
-
-
-#endif // QNODEDIALOG_H
+#endif  // QNODEDIALOG_H

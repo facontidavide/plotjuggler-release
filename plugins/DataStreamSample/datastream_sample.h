@@ -5,48 +5,53 @@
 #include <thread>
 #include "PlotJuggler/datastreamer_base.h"
 
-
-class  DataStreamSample: public DataStreamer
+class DataStreamSample : public DataStreamer
 {
-    Q_OBJECT
-    Q_PLUGIN_METADATA(IID "com.icarustechnology.PlotJuggler.DataStreamer" "../datastreamer.json")
-    Q_INTERFACES(DataStreamer)
+  Q_OBJECT
+  Q_PLUGIN_METADATA(IID "com.icarustechnology.PlotJuggler.DataStreamer"
+                        "../datastreamer.json")
+  Q_INTERFACES(DataStreamer)
 
 public:
+  DataStreamSample();
 
-    DataStreamSample();
+  virtual bool start(QStringList*) override;
 
-    virtual bool start(QStringList*) override;
+  virtual void shutdown() override;
 
-    virtual void shutdown() override;
+  virtual bool isRunning() const override;
 
-    virtual bool isRunning() const override;
+  virtual ~DataStreamSample();
 
-    virtual ~DataStreamSample();
+  virtual const char* name() const override
+  {
+    return "Dummy Streamer";
+  }
 
-    virtual const char* name() const override { return "Dummy Streamer"; }
+  virtual bool isDebugPlugin() override
+  {
+    return true;
+  }
 
-    virtual bool isDebugPlugin() override { return true; }
+  virtual bool xmlSaveState(QDomDocument& doc, QDomElement& parent_element) const override;
 
-    virtual bool xmlSaveState(QDomDocument &doc, QDomElement &parent_element) const override;
-
-    virtual bool xmlLoadState(const QDomElement &parent_element ) override;
+  virtual bool xmlLoadState(const QDomElement& parent_element) override;
 
 private:
+  struct Parameters
+  {
+    double A, B, C, D;
+  };
 
-    struct Parameters{
-        double A,B,C,D;
-    };
+  void loop();
 
-    void loop();
+  std::thread _thread;
 
-    std::thread _thread;
+  bool _running;
 
-    bool _running;
+  std::map<std::string, Parameters> _parameters;
 
-    std::map<std::string,Parameters> _parameters;
-
-    void pushSingleCycle();
+  void pushSingleCycle();
 };
 
-#endif // DATALOAD_CSV_H
+#endif  // DATALOAD_CSV_H

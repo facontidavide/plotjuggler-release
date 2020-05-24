@@ -62,67 +62,60 @@
 QT_USE_NAMESPACE
 
 //! [constructor]
-Client::Client(const QUrl &url, bool debug, QObject *parent) :
-    QObject(parent),
-    m_url(url),
-    m_debug(debug),timer_(this),timer2_(this)
+Client::Client(const QUrl& url, bool debug, QObject* parent)
+  : QObject(parent), m_url(url), m_debug(debug), timer_(this), timer2_(this)
 {
-    if (m_debug)
-        qDebug() << "WebSocket server:" << url;
-    connect(&m_webSocket, &QWebSocket::connected, this, &Client::onConnected);
-    connect(&m_webSocket, &QWebSocket::disconnected, this, &Client::closed);
-    m_webSocket.open(QUrl(url));
+  if (m_debug)
+    qDebug() << "WebSocket server:" << url;
+  connect(&m_webSocket, &QWebSocket::connected, this, &Client::onConnected);
+  connect(&m_webSocket, &QWebSocket::disconnected, this, &Client::closed);
+  m_webSocket.open(QUrl(url));
 }
 //! [constructor]
 
 //! [onConnected]
 void Client::onConnected()
 {
-    if (m_debug)
-        qDebug() << "WebSocket connected";
-    m_webSocket.sendTextMessage("start");
+  if (m_debug)
+    qDebug() << "WebSocket connected";
+  m_webSocket.sendTextMessage("start");
 
-    i_ = 0.0;
+  i_ = 0.0;
 
-    timer_.setInterval(50);
-    timer2_.setInterval(10);
-    double i=0.0;
-    connect(&timer_, &QTimer::timeout, [&](){
-        sendMsg("sin");
-    });
-    connect(&timer2_, &QTimer::timeout, [&](){
-        sendMsg("cos");
-    });
+  timer_.setInterval(50);
+  timer2_.setInterval(10);
+  double i = 0.0;
+  connect(&timer_, &QTimer::timeout, [&]() { sendMsg("sin"); });
+  connect(&timer2_, &QTimer::timeout, [&]() { sendMsg("cos"); });
 
-    timer_.start();
-    timer2_.start();
+  timer_.start();
+  timer2_.start();
 }
 
-void Client::sendMsg(const QString &key){
-    using namespace std::chrono;
-    static std::chrono::high_resolution_clock::time_point initial_time = high_resolution_clock::now();
+void Client::sendMsg(const QString& key)
+{
+  using namespace std::chrono;
+  static std::chrono::high_resolution_clock::time_point initial_time = high_resolution_clock::now();
 
-    double steps = 1000.0;
-    i_ +=M_PI/steps;    
+  double steps = 1000.0;
+  i_ += M_PI / steps;
 
-     double value = qSin(i_);
-     if(key=="cos")
-         value = qCos(i_);
-     auto now =  high_resolution_clock::now();
-     const double t = duration_cast< duration<double>>( now - initial_time ).count() ;
-     QString str = key+QString(":")
-             + QString::number(t)+":"
-             + QString::number(value);
-     qDebug() << str;
-     m_webSocket.sendTextMessage(str);
+  double value = qSin(i_);
+  if (key == "cos")
+    value = qCos(i_);
+  auto now = high_resolution_clock::now();
+  const double t = duration_cast<duration<double>>(now - initial_time).count();
+  QString str = key + QString(":") + QString::number(t) + ":" + QString::number(value);
+  qDebug() << str;
+  m_webSocket.sendTextMessage(str);
 }
 //! [onConnected]
 
 //! [onTextMessageReceived]
 void Client::onTextMessageReceived(QString message)
 {
-    if (m_debug)
-        qDebug() << "Message received:" << message;
-    m_webSocket.close();
+  if (m_debug)
+    qDebug() << "Message received:" << message;
+  m_webSocket.close();
 }
 //! [onTextMessageReceived]

@@ -55,149 +55,142 @@
 #include <QDebug>
 #include <QSize>
 
-HelpVideo::HelpVideo(QWidget *parent)
-    : QDialog(parent)
+HelpVideo::HelpVideo(QWidget* parent) : QDialog(parent)
 {
-    setWindowTitle("Cheatsheet");
-    _media_player = new QMediaPlayer(this, QMediaPlayer::VideoSurface);
-    QVideoWidget *videoWidget = new QVideoWidget;
+  setWindowTitle("Cheatsheet");
+  _media_player = new QMediaPlayer(this, QMediaPlayer::VideoSurface);
+  QVideoWidget* videoWidget = new QVideoWidget;
 
-    videoWidget->setAutoFillBackground(true);
-    auto palette = videoWidget->palette();
-    palette.setColor( QPalette::Window, Qt::white);
-    videoWidget->setPalette(palette);
-    videoWidget->setAttribute(Qt::WA_OpaquePaintEvent, true);
+  videoWidget->setAutoFillBackground(true);
+  auto palette = videoWidget->palette();
+  palette.setColor(QPalette::Window, Qt::white);
+  videoWidget->setPalette(palette);
+  videoWidget->setAttribute(Qt::WA_OpaquePaintEvent, true);
 
-    _playlist = new QMediaPlaylist();
-    QListWidget* list_widget = new QListWidget();
-    _text = new QLabel("placeholder");
+  _playlist = new QMediaPlaylist();
+  QListWidget* list_widget = new QListWidget();
+  _text = new QLabel("placeholder");
 
-    _media_player->setPlaylist(_playlist);
+  _media_player->setPlaylist(_playlist);
 
-    _playlist->setPlaybackMode(QMediaPlaylist::CurrentItemInLoop);
+  _playlist->setPlaybackMode(QMediaPlaylist::CurrentItemInLoop);
 
-    list_widget->setSelectionMode(QAbstractItemView::SingleSelection);
+  list_widget->setSelectionMode(QAbstractItemView::SingleSelection);
 
-    _text->setFixedWidth(600);
+  _text->setFixedWidth(600);
 
-    videoWidget->setFixedSize( QSize(900,600) );
-    list_widget->setMinimumWidth(200);
+  videoWidget->setFixedSize(QSize(900, 600));
+  list_widget->setMinimumWidth(200);
 
-    QBoxLayout *videoLayout = new QVBoxLayout;
+  QBoxLayout* videoLayout = new QVBoxLayout;
 
-    videoLayout->setMargin(20);
-    videoLayout->setSpacing(20);
-    videoLayout->addWidget(_text);
-    videoLayout->addWidget(videoWidget);
-    videoLayout->addWidget(new QLabel("If you can't see the videos, install codecs with [sudo apt-get install libqt5multimedia5-plugins]"));
+  videoLayout->setMargin(20);
+  videoLayout->setSpacing(20);
+  videoLayout->addWidget(_text);
+  videoLayout->addWidget(videoWidget);
+  videoLayout->addWidget(new QLabel("If you can't see the videos, install codecs with [sudo apt-get install "
+                                    "libqt5multimedia5-plugins]"));
 
-    videoLayout->setStretch(0,1);
-    videoLayout->setStretch(1,0);
-    videoLayout->setStretch(2,0);
+  videoLayout->setStretch(0, 1);
+  videoLayout->setStretch(1, 0);
+  videoLayout->setStretch(2, 0);
 
-    QBoxLayout *layout = new QHBoxLayout;
-    layout->addWidget(list_widget);
-    layout->addLayout(videoLayout);
+  QBoxLayout* layout = new QHBoxLayout;
+  layout->addWidget(list_widget);
+  layout->addLayout(videoLayout);
 
-    setLayout(layout);
+  setLayout(layout);
 
-    _media_player->setVideoOutput(videoWidget);
+  _media_player->setVideoOutput(videoWidget);
 
-    connect(_media_player,
-            static_cast<void(QMediaPlayer::*)(QMediaPlayer::Error)>(&QMediaPlayer::error),
-            this, &HelpVideo::handleError);
+  connect(_media_player, static_cast<void (QMediaPlayer::*)(QMediaPlayer::Error)>(&QMediaPlayer::error), this,
+          &HelpVideo::handleError);
 
-    setupHelps();
+  setupHelps();
 
-    for(const auto& section: _help_sections)
-    {
-        list_widget->addItem( section.title );
-        _playlist->addMedia( section.video_url );
-    }
+  for (const auto& section : _help_sections)
+  {
+    list_widget->addItem(section.title);
+    _playlist->addMedia(section.video_url);
+  }
 
-    _text->setWordWrap(true);
+  _text->setWordWrap(true);
 
-    connect( list_widget, &QListWidget::currentRowChanged, this, [this](int row)
-    {
-         _playlist->setCurrentIndex(row);
-         QString label_text = QString("<h2>%1</h2>%2").arg(_help_sections[row].title, _help_sections[row].text);
-         _text->setText( label_text );
-         _media_player->play();
-    });
+  connect(list_widget, &QListWidget::currentRowChanged, this, [this](int row) {
+    _playlist->setCurrentIndex(row);
+    QString label_text = QString("<h2>%1</h2>%2").arg(_help_sections[row].title, _help_sections[row].text);
+    _text->setText(label_text);
+    _media_player->play();
+  });
 
-    list_widget->item(0)->setSelected(true);
+  list_widget->item(0)->setSelected(true);
 }
 
 HelpVideo::~HelpVideo()
 {
 }
 
-
 void HelpVideo::setupHelps()
 {
-    _help_sections.push_back( {"Add timeseries to plot",
-                               "Drag and Drop timeseries from the the list on the left side"
-                               " using the <b>Left Mouse</b> button.",
-                              QUrl("qrc:/cheatsheet/video/cheatsheet-drag-drop.mp4")});
+  _help_sections.push_back({ "Add timeseries to plot",
+                             "Drag and Drop timeseries from the the list on the left side"
+                             " using the <b>Left Mouse</b> button.",
+                             QUrl("qrc:/cheatsheet/video/cheatsheet-drag-drop.mp4") });
 
-    _help_sections.push_back( {"Create XY curves",
-                               "Select two timeseries, one for the X axis and another for the Y axis. "
-                               "They <b>must</b> share the same time axis.\n"
-                               "Drag and Drop both of them using the <b>Right Mouse</b> button instead of the Left one.\n"
-                               "Keep in mind that a Plot Widget can not display at the same time both XY curves and normal timeseries.",
-                              QUrl("qrc:/cheatsheet/video/cheatsheet-xy.mp4")});
+  _help_sections.push_back({ "Create XY curves",
+                             "Select two timeseries, one for the X axis and another for the Y axis. "
+                             "They <b>must</b> share the same time axis.\n"
+                             "Drag and Drop both of them using the <b>Right Mouse</b> button instead of the Left one.\n"
+                             "Keep in mind that a Plot Widget can not display at the same time both XY curves and "
+                             "normal timeseries.",
+                             QUrl("qrc:/cheatsheet/video/cheatsheet-xy.mp4") });
 
-    _help_sections.push_back( {"Pan view",
-                               "To pan the plot area, either use the <b>Middle Mouse</b> button or"
-                               " <b>CTRL + Left Mouse</b>.",
-                              QUrl("qrc:/cheatsheet/video/cheatsheet-pan-view.mp4")});
+  _help_sections.push_back({ "Pan view",
+                             "To pan the plot area, either use the <b>Middle Mouse</b> button or"
+                             " <b>CTRL + Left Mouse</b>.",
+                             QUrl("qrc:/cheatsheet/video/cheatsheet-pan-view.mp4") });
 
-    _help_sections.push_back( {"Remove Columns/Rows",
-                               "To remove entire columns or/and rows, you must first clear all the curves.",
-                              QUrl("qrc:/cheatsheet/video/cheatsheet-remove-column.mp4")});
+  _help_sections.push_back({ "Remove Columns/Rows",
+                             "To remove entire columns or/and rows, you must first clear all the curves.",
+                             QUrl("qrc:/cheatsheet/video/cheatsheet-remove-column.mp4") });
 
-    _help_sections.push_back( {"Resize Fonts",
-                               "To change the size of the fonts used in the legend or the list of timeseries"
-                               " on the left side, use <b>CTRL + Mouse Wheel</b>",
-                              QUrl("qrc:/cheatsheet/video/cheatsheet-resize-font.mp4")});
+  _help_sections.push_back({ "Resize Fonts",
+                             "To change the size of the fonts used in the legend or the list of timeseries"
+                             " on the left side, use <b>CTRL + Mouse Wheel</b>",
+                             QUrl("qrc:/cheatsheet/video/cheatsheet-resize-font.mp4") });
 
-    _help_sections.push_back( {"Swap Plots",
-                              "Swap two plots using <b>CTRL + Right Mouse</b>.",
-                              QUrl("qrc:/cheatsheet/video/cheatsheet-swap.mp4")});
+  _help_sections.push_back({ "Swap Plots", "Swap two plots using <b>CTRL + Right Mouse</b>.",
+                             QUrl("qrc:/cheatsheet/video/cheatsheet-swap.mp4") });
 
-    _help_sections.push_back( {"Time tracker",
-                              "The time tracker is a vertical line that is helpful to visualize the"
-                               " value of the timeseries at a given time.<br>"
-                               "Furthermore, it is connected to the Publishers plugins: every time the time"
-                               " tracker is activated, all the active publisher are called."
-                               " Move the tracker either using the <b>Slider</b> at the bottom or pressing"
-                               "<b> SHIFT + Left Mouse</b>.",
-                              QUrl("qrc:/cheatsheet/video/cheatsheet-tracker.mp4")});
+  _help_sections.push_back({ "Time tracker",
+                             "The time tracker is a vertical line that is helpful to visualize the"
+                             " value of the timeseries at a given time.<br>"
+                             "Furthermore, it is connected to the Publishers plugins: every time the time"
+                             " tracker is activated, all the active publisher are called."
+                             " Move the tracker either using the <b>Slider</b> at the bottom or pressing"
+                             "<b> SHIFT + Left Mouse</b>.",
+                             QUrl("qrc:/cheatsheet/video/cheatsheet-tracker.mp4") });
 
+  _help_sections.push_back({ "Zoom Area",
+                             "Click with the <b>Left Mouse</b> button on the plot area"
+                             " and select the rectangle to zoom in.",
+                             QUrl("qrc:/cheatsheet/video/cheatsheet-zoom-area.mp4") });
 
-    _help_sections.push_back( {"Zoom Area",
-                              "Click with the <b>Left Mouse</b> button on the plot area"
-                              " and select the rectangle to zoom in.",
-                              QUrl("qrc:/cheatsheet/video/cheatsheet-zoom-area.mp4")});
-
-    _help_sections.push_back( {"Zoom In and Out",
-                               "Use the <b>Mouse Wheel</b> to zoom in or out.<br>"
-                               "Additionally, you can zoom a single axis moving the mouse cursor"
-                               " either on the bottom X scale (<b>zoom horizontally only</b>) or on the left"
-                               " Y scale (<b>zoom vertically only</b>).",
-                              QUrl("qrc:/cheatsheet/video/cheatsheet-zoom-in-out.mp4")});
+  _help_sections.push_back({ "Zoom In and Out",
+                             "Use the <b>Mouse Wheel</b> to zoom in or out.<br>"
+                             "Additionally, you can zoom a single axis moving the mouse cursor"
+                             " either on the bottom X scale (<b>zoom horizontally only</b>) or on the left"
+                             " Y scale (<b>zoom vertically only</b>).",
+                             QUrl("qrc:/cheatsheet/video/cheatsheet-zoom-in-out.mp4") });
 }
-
-
 
 void HelpVideo::handleError(QMediaPlayer::Error)
 {
-
-    const QString errorString = _media_player->errorString();
-    QString message = "Error: ";
-    if (errorString.isEmpty())
-        message += " #" + QString::number(int(_media_player->error()));
-    else
-        message += errorString;
-    qDebug() << message;
+  const QString errorString = _media_player->errorString();
+  QString message = "Error: ";
+  if (errorString.isEmpty())
+    message += " #" + QString::number(int(_media_player->error()));
+  else
+    message += errorString;
+  qDebug() << message;
 }

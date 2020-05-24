@@ -9,51 +9,50 @@
 
 class QwtPlotCurve;
 
-
-class CurveTracker: public QObject
+class CurveTracker : public QObject
 {
-    Q_OBJECT
+  Q_OBJECT
 public:
-    explicit CurveTracker(QwtPlot * );
+  explicit CurveTracker(QwtPlot*);
 
-    QPointF actualPosition() const;
+  QPointF actualPosition() const;
 
-    typedef enum {
-        LINE_ONLY,
-        VALUE,
-        VALUE_NAME
-    }Parameter;
+  typedef enum
+  {
+    LINE_ONLY,
+    VALUE,
+    VALUE_NAME
+  } Parameter;
 
 public slots:
 
-    void setPosition(const QPointF & pos);
+  void setPosition(const QPointF& pos);
 
-    void setParameter(Parameter par);
+  void setParameter(Parameter par);
 
-    void setEnabled(bool enable);
+  void setEnabled(bool enable);
 
-    bool isEnabled() const;
+  bool isEnabled() const;
 
-    void redraw()
-    {
-        setPosition(_prev_trackerpoint);
-    }
+  void redraw()
+  {
+    setPosition(_prev_trackerpoint);
+  }
 
 private:
-    QLineF  curveLineAt( const QwtPlotCurve *, double x ) const;
+  QLineF curveLineAt(const QwtPlotCurve*, double x) const;
 
-    QPointF transform( QPoint);
+  QPointF transform(QPoint);
 
-    QPoint  invTransform( QPointF);
+  QPoint invTransform(QPointF);
 
-    QPointF _prev_trackerpoint;
-    std::vector<QwtPlotMarker*> _marker;
-    QwtPlotMarker* _line_marker;
-    QwtPlotMarker* _text_marker;
-    QwtPlot* _plot;
-    Parameter _param;
-    bool _visible;
-
+  QPointF _prev_trackerpoint;
+  std::vector<QwtPlotMarker*> _marker;
+  QwtPlotMarker* _line_marker;
+  QwtPlotMarker* _text_marker;
+  QwtPlot* _plot;
+  Parameter _param;
+  bool _visible;
 };
 
-#endif // CUSTOMTRACKER_H
+#endif  // CUSTOMTRACKER_H

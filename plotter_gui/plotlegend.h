@@ -5,35 +5,31 @@
 #include "qwt_plot_legenditem.h"
 #include "qwt_plot.h"
 
-class PlotLegend: public QObject, public QwtPlotLegendItem
+class PlotLegend : public QObject, public QwtPlotLegendItem
 {
-    Q_OBJECT
+  Q_OBJECT
 public:
-    PlotLegend(QwtPlot* parent);
+  PlotLegend(QwtPlot* parent);
 
-    QRectF hideButtonRect() const;
+  QRectF hideButtonRect() const;
 
-    bool processWheelEvent(QWheelEvent* ev);
+  bool processWheelEvent(QWheelEvent* ev);
 
-    const QwtPlotItem *processMousePressEvent(QMouseEvent* mouse_event);
+  const QwtPlotItem* processMousePressEvent(QMouseEvent* mouse_event);
 
 private:
+  virtual void draw(QPainter* p, const QwtScaleMap& xMap, const QwtScaleMap& yMap, const QRectF& rect) const override;
 
-    virtual void draw( QPainter *p,
-        const QwtScaleMap &xMap, const QwtScaleMap &yMap,
-        const QRectF &rect ) const override;
+  virtual void drawLegendData(QPainter* painter, const QwtPlotItem*, const QwtLegendData&,
+                              const QRectF&) const override;
 
-    virtual void drawLegendData( QPainter *painter,
-        const QwtPlotItem *, const QwtLegendData &,
-        const QRectF & ) const override;
+  virtual void drawBackground(QPainter* painter, const QRectF& rect) const override;
 
-    virtual void drawBackground( QPainter *painter, const QRectF &rect ) const override;
-
-    QwtPlot* _parent_plot;
-    bool _collapsed;
+  QwtPlot* _parent_plot;
+  bool _collapsed;
 
 signals:
-    void legendSizeChanged(int point_size);
+  void legendSizeChanged(int point_size);
 };
 
-#endif // PLOTLEGEND_H
+#endif  // PLOTLEGEND_H

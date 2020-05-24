@@ -5,9 +5,8 @@
 #include <QColor>
 #include <QFontMetrics>
 
-MenuBar::MenuBar(QWidget *parent): QMenuBar(parent)
+MenuBar::MenuBar(QWidget* parent) : QMenuBar(parent)
 {
-
   int font_id = QFontDatabase::addApplicationFont("://resources/DejaVuSans-ExtraLight.ttf");
   QString family = QFontDatabase::applicationFontFamilies(font_id).at(0);
 
@@ -20,11 +19,11 @@ MenuBar::MenuBar(QWidget *parent): QMenuBar(parent)
   _width_juggler = fm.width("Juggler");
 }
 
-void MenuBar::paintEvent(QPaintEvent *event)
+void MenuBar::paintEvent(QPaintEvent* event)
 {
   QMenuBar::paintEvent(event);
   QPainter painter(this);
-  painter.setFont( _font );
+  painter.setFont(_font);
 
   int text_width = _width_plot + _width_juggler;
   {
@@ -40,4 +39,3 @@ void MenuBar::paintEvent(QPaintEvent *event)
     painter.drawText(QRect(topleft, rect_size), Qt::AlignHCenter | Qt::AlignVCenter, "Juggler");
   }
 }
-
