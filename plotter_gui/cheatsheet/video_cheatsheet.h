@@ -60,29 +60,28 @@
 
 class HelpVideo : public QDialog
 {
-    Q_OBJECT
+  Q_OBJECT
 public:
-    HelpVideo(QWidget *parent = nullptr);
-    ~HelpVideo();
+  HelpVideo(QWidget* parent = nullptr);
+  ~HelpVideo();
 
 private slots:
-    void handleError(QMediaPlayer::Error);
+  void handleError(QMediaPlayer::Error);
 
 private:
+  struct HelpSection
+  {
+    QString title;
+    QString text;
+    QUrl video_url;
+  };
 
-    struct HelpSection
-    {
-        QString title;
-        QString text;
-        QUrl video_url;
-    };
+  std::vector<HelpSection> _help_sections;
 
-    std::vector<HelpSection> _help_sections;
-    
-    QMediaPlayer* _media_player;
-    QMediaPlaylist* _playlist;
-    QLabel *_text;
-    void setupHelps();
+  QMediaPlayer* _media_player;
+  QMediaPlaylist* _playlist;
+  QLabel* _text;
+  void setupHelps();
 };
 
 #endif

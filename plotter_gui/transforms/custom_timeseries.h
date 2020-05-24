@@ -5,19 +5,16 @@
 #include "custom_function.h"
 #include "PlotJuggler/plotdata.h"
 
-class CustomTimeseries: public TimeseriesQwt
+class CustomTimeseries : public TimeseriesQwt
 {
 public:
-    CustomTimeseries(const PlotData *source_data,
-                     const SnippetData &snippet,
-                     PlotDataMapRef& mapped_data);
+  CustomTimeseries(const PlotData* source_data, const SnippetData& snippet, PlotDataMapRef& mapped_data);
 
-    bool updateCache() override;
+  bool updateCache() override;
 
 private:
-    std::unique_ptr<CustomFunction> _transform;
-    const PlotDataMapRef& _mapped_data;
-
+  std::unique_ptr<CustomFunction> _transform;
+  const PlotDataMapRef& _mapped_data;
 };
 
-#endif // CUSTOM_TIMESERIES_H
+#endif  // CUSTOM_TIMESERIES_H
