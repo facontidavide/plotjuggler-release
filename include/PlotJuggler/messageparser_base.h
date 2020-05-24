@@ -8,29 +8,31 @@
 #include <functional>
 #include "PlotJuggler/plotdata.h"
 
-
 class MessageRef
 {
 public:
-    explicit
-    MessageRef(const uint8_t* first_ptr, size_t size):
-        _first_ptr(first_ptr),
-        _size(size)  {  }
+  explicit MessageRef(const uint8_t* first_ptr, size_t size) : _first_ptr(first_ptr), _size(size)
+  {
+  }
 
-    explicit
-    MessageRef(const std::vector<uint8_t>& vect):
-        _first_ptr(vect.data()),
-        _size(vect.size())  {  }
+  explicit MessageRef(const std::vector<uint8_t>& vect) : _first_ptr(vect.data()), _size(vect.size())
+  {
+  }
 
-    const uint8_t* data() const { return _first_ptr; }
+  const uint8_t* data() const
+  {
+    return _first_ptr;
+  }
 
-    size_t size() const { return _size; }
+  size_t size() const
+  {
+    return _size;
+  }
 
 private:
-   const uint8_t* _first_ptr;
-   size_t _size;
+  const uint8_t* _first_ptr;
+  size_t _size;
 };
-
 
 /**
  * @brief The MessageParser is the base class to create plugins that are able to parse one or
@@ -41,50 +43,46 @@ private:
  * You push one or more raw messages using the method pushMessageRef()
  * Once you have done, the result can be copied using plotData()
  */
-class MessageParser{
-
+class MessageParser
+{
 public:
+  virtual ~MessageParser()
+  {
+  }
 
-    virtual ~MessageParser() {}
+  virtual const std::unordered_set<std::string>& getCompatibleKeys() const = 0;
 
-    virtual const std::unordered_set<std::string>& getCompatibleKeys() const = 0;
+  virtual void pushMessageRef(const std::string& key, const MessageRef& msg, double timestamp) = 0;
 
-    virtual void pushMessageRef(const std::string& key,
-                                const MessageRef& msg,
-                                double timestamp) = 0;
-
-    virtual void extractData(PlotDataMapRef& destination,
-                             const std::string& prefix) = 0;
+  virtual void extractData(PlotDataMapRef& destination, const std::string& prefix) = 0;
 
 protected:
-
-    static void appendData(PlotDataMapRef& destination_plot_map,
-                           const std::string& field_name,
-                           PlotData& in_data)
+  static void appendData(PlotDataMapRef& destination_plot_map, const std::string& field_name, PlotData& in_data)
+  {
+    if (in_data.size() == 0)
     {
-        if( in_data.size() == 0 )
-        {
-            return;
-        }
-        auto plot_pair = destination_plot_map.numeric.find( field_name );
-        if( (plot_pair == destination_plot_map.numeric.end()) )
-        {
-            plot_pair = destination_plot_map.addNumeric( field_name );
-            plot_pair->second.swapData( in_data );
-        }
-        else{
-            PlotData& plot_data = plot_pair->second;
-            for(size_t i=0; i < in_data.size(); i++)
-            {
-                double val = in_data[i].y;
-                if( !std::isnan(val) && !std::isinf(val) )
-                {
-                    plot_data.pushBack( in_data[i] );
-                }
-            }
-        }
-        in_data.clear();
+      return;
     }
+    auto plot_pair = destination_plot_map.numeric.find(field_name);
+    if ((plot_pair == destination_plot_map.numeric.end()))
+    {
+      plot_pair = destination_plot_map.addNumeric(field_name);
+      plot_pair->second.swapData(in_data);
+    }
+    else
+    {
+      PlotData& plot_data = plot_pair->second;
+      for (size_t i = 0; i < in_data.size(); i++)
+      {
+        double val = in_data[i].y;
+        if (!std::isnan(val) && !std::isinf(val))
+        {
+          plot_data.pushBack(in_data[i]);
+        }
+      }
+    }
+    in_data.clear();
+  }
 };
 
 QT_BEGIN_NAMESPACE
@@ -94,6 +92,4 @@ Q_DECLARE_INTERFACE(MessageParser, MessageParser_iid)
 
 QT_END_NAMESPACE
 
-
 #endif
-

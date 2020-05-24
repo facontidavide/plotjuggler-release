@@ -1,9 +1,3 @@
-# First time
-
-    sudo apt-get update
-    sudo apt-get install qt512base qt512svg qt512declarative qt512translations qt512multimedia libgtk2.0-dev -y
-
-
 # Build the AppImage with catkin_make
 
 In the root folder of ws_plotjuggler:
