@@ -5,7 +5,8 @@
 #include <QString>
 #include "ulog_parser.h"
 
-namespace Ui {
+namespace Ui
+{
 class ULogParametersDialog;
 }
 
@@ -14,14 +15,14 @@ class ULogParametersDialog : public QDialog
   Q_OBJECT
 
 public:
-    explicit ULogParametersDialog(const ULogParser& parser, QWidget *parent = nullptr);
+  explicit ULogParametersDialog(const ULogParser& parser, QWidget* parent = nullptr);
 
   void restoreSettings();
 
   ~ULogParametersDialog();
 
 private:
-  Ui::ULogParametersDialog *ui;
+  Ui::ULogParametersDialog* ui;
 };
 
-#endif // ULOG_PARAMETERS_DIALOG_H
+#endif  // ULOG_PARAMETERS_DIALOG_H
