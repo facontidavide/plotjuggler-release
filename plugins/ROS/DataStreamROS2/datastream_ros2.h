@@ -47,7 +47,7 @@ private:
   std::unique_ptr<rclcpp::executors::MultiThreadedExecutor> _executor;
   std::shared_ptr<rclcpp::Node> _node;
 
-  CompositeParser _parser;
+  std::unique_ptr<CompositeParser> _parser;
 
   bool _running;
 
