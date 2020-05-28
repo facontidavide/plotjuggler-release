@@ -24,8 +24,8 @@
 #include "qnodedialog.h"
 #include "shape_shifter_factory.hpp"
 
-DataStreamROS::DataStreamROS() : DataStreamer(), _node(nullptr),
-   _parser(dataMap()), _action_saveIntoRosbag(nullptr), _prev_clock_time(0)
+DataStreamROS::DataStreamROS() : DataStreamer(), _node(nullptr)
+  , _action_saveIntoRosbag(nullptr), _prev_clock_time(0)
 {
   _running = false;
   _periodic_timer = new QTimer();
@@ -47,7 +47,7 @@ void DataStreamROS::topicCallback(const RosIntrospection::ShapeShifter::ConstPtr
   const auto& definition = msg->getMessageDefinition();
 
   // register the message type
-  _parser.registerMessageType(topic_name, datatype, definition);
+  _parser->registerMessageType(topic_name, datatype, definition);
 
   RosIntrospectionFactory::registerMessage(topic_name, md5sum, datatype, definition);
 
@@ -61,14 +61,14 @@ void DataStreamROS::topicCallback(const RosIntrospection::ShapeShifter::ConstPtr
   ros::serialization::OStream stream(buffer.data(), buffer.size());
   msg->write(stream);
 
-  _parser.setUseHeaderStamp(_config.use_header_stamp);
+  _parser->setUseHeaderStamp(_config.use_header_stamp);
 
   double msg_time = ros::Time::now().toSec();
   if (msg_time == 0)
   {
     // corner case: use_sim_time == true but topic /clock is not published
     msg_time = ros::WallTime::now().toSec();
-    _parser.setUseHeaderStamp(false);
+    _parser->setUseHeaderStamp(false);
   }
 
   // time wrapping may happen using use_sim_time = true and
@@ -89,7 +89,7 @@ void DataStreamROS::topicCallback(const RosIntrospection::ShapeShifter::ConstPtr
   _prev_clock_time = msg_time;
 
   SerializedMessage buffer_view(buffer);
-  _parser.parseMessage(topic_name, buffer_view, msg_time);
+  _parser->parseMessage(topic_name, buffer_view, msg_time);
 
   std::lock_guard<std::mutex> lock(mutex());
   const std::string prefixed_topic_name = _prefix + topic_name;
@@ -290,6 +290,7 @@ bool DataStreamROS::start(QStringList* selected_datasources)
     std::lock_guard<std::mutex> lock(mutex());
     dataMap().numeric.clear();
     dataMap().user_defined.clear();
+    _parser.reset( new CompositeParser(dataMap()) );
   }
 
   using namespace RosIntrospection;
@@ -333,16 +334,16 @@ bool DataStreamROS::start(QStringList* selected_datasources)
 
 //  if (_config.use_renaming_rules)
 //  {
-//    _parser.addRules(RuleEditing::getRenamingRules());
+//    _parser->addRules(RuleEditing::getRenamingRules());
 //  }
 
   if (_config.discard_large_arrays)
   {
-    _parser.setMaxArrayPolicy(DISCARD_LARGE_ARRAYS, _config.max_array_size);
+    _parser->setMaxArrayPolicy(DISCARD_LARGE_ARRAYS, _config.max_array_size);
   }
   else
   {
-    _parser.setMaxArrayPolicy(KEEP_LARGE_ARRAYS, _config.max_array_size);
+    _parser->setMaxArrayPolicy(KEEP_LARGE_ARRAYS, _config.max_array_size);
   }
 
   //-------------------------
@@ -369,18 +370,21 @@ bool DataStreamROS::isRunning() const
 void DataStreamROS::shutdown()
 {
   _periodic_timer->stop();
+
   if (_spinner)
   {
     _spinner->stop();
   }
-  for (auto& it : _subscribers)
-  {
-    it.second.shutdown();
+  _spinner.reset();
+
+  if(_node ){
+    _node->shutdown();
   }
+  _node.reset();
+
   _subscribers.clear();
   _running = false;
-  _node.reset();
-  _spinner.reset();
+  _parser.reset();
 }
 
 DataStreamROS::~DataStreamROS()
