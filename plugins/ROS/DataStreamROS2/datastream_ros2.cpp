@@ -7,7 +7,7 @@
 #include <QProgressDialog>
 #include "ros2_parsers/generic_subscription.hpp"
 
-DataStreamROS2::DataStreamROS2() : DataStreamer(), _node(nullptr), _parser(dataMap()), _running(false), _config()
+DataStreamROS2::DataStreamROS2() : DataStreamer(), _node(nullptr), _running(false), _config()
 {
   loadDefaultSettings();
 
@@ -64,6 +64,7 @@ bool DataStreamROS2::start(QStringList* selected_datasources)
     std::lock_guard<std::mutex> lock(mutex());
     dataMap().numeric.clear();
     dataMap().user_defined.clear();
+    _parser->reset( new CompositeParser(dataMap()) );
   }
 
   // Display the dialog which allows users to select ros topics to subscribe to,
@@ -107,13 +108,13 @@ bool DataStreamROS2::start(QStringList* selected_datasources)
   saveDefaultSettings();
   if (_config.discard_large_arrays)
   {
-    _parser.setMaxArrayPolicy(DISCARD_LARGE_ARRAYS, _config.max_array_size);
+    _parser->setMaxArrayPolicy(DISCARD_LARGE_ARRAYS, _config.max_array_size);
   }
   else
   {
-    _parser.setMaxArrayPolicy(KEEP_LARGE_ARRAYS, _config.max_array_size);
+    _parser->setMaxArrayPolicy(KEEP_LARGE_ARRAYS, _config.max_array_size);
   }
-  _parser.setUseHeaderStamp(_config.use_header_stamp);
+  _parser->setUseHeaderStamp(_config.use_header_stamp);
 
   //--------- subscribe ---------
   for (const auto& topic : dialog_topics)
@@ -181,7 +182,7 @@ void DataStreamROS2::subscribeToTopic(const std::string& topic_name, const std::
     return;
   }
 
-  _parser.registerMessageType(topic_name, topic_type);
+  _parser->registerMessageType(topic_name, topic_type);
 
   auto bound_callback = [=](std::shared_ptr<rmw_serialized_message_t> msg) { messageCallback(topic_name, msg); };
 
@@ -189,7 +190,7 @@ void DataStreamROS2::subscribeToTopic(const std::string& topic_name, const std::
   for (bool transient : { true, false })
   {
     auto subscription = std::make_shared<rosbag2_transport::GenericSubscription>(_node->get_node_base_interface().get(),
-                                                                                 *_parser.typeSupport(topic_name),
+                                                                                 *_parser->typeSupport(topic_name),
                                                                                  topic_name, transient, bound_callback);
     _subscriptions[topic_name + (transient ? "/transient_" : "")] = subscription;
     _node->get_node_topics_interface()->add_subscription(subscription, nullptr);
@@ -201,7 +202,7 @@ void DataStreamROS2::messageCallback(const std::string& topic_name, std::shared_
   double timestamp = _node->get_clock()->now().seconds();
 
   std::unique_lock<std::mutex> lock(mutex());
-  _parser.parseMessage(topic_name, msg.get(), timestamp);
+  _parser->parseMessage(topic_name, msg.get(), timestamp);
 }
 
 void DataStreamROS2::saveDefaultSettings()
