@@ -2,6 +2,11 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.8.1 (2020-05-28)
+------------------
+* fix critical bug in streaming ROS plugin
+* Contributors: Davide Faconti
+
 2.8.0 (2020-05-24)
 ------------------
 * Update CMakeLists.txt
