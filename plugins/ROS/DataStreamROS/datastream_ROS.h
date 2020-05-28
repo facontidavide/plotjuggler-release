@@ -9,6 +9,7 @@
 #include "PlotJuggler/datastreamer_base.h"
 #include <ros_type_introspection/ros_introspection.hpp>
 #include <rosgraph_msgs/Clock.h>
+#include "qnodedialog.h"
 #include "dialog_select_ros_topics.h"
 #include "ros1_parsers/ros1_parser.h"
 
@@ -76,7 +77,7 @@ private:
 
   DialogSelectRosTopics::Configuration _config;
 
-  CompositeParser _parser;
+  std::unique_ptr<CompositeParser> _parser;
 
   QTimer* _periodic_timer;
 

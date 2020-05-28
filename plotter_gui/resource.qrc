@@ -252,5 +252,8 @@
         <file>style_dark/copy_clipboard.png</file>
         <file>style_light/copy_clipboard.png</file>
         <file>resources/plotjuggler.svg</file>
+        <file>resources/memes/meme_52.jpg</file>
+        <file>resources/memes/meme_53.jpg</file>
+        <file>resources/memes/meme_54.jpg</file>
     </qresource>
 </RCC>
