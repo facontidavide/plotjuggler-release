@@ -125,15 +125,14 @@ PlotWidget::PlotWidget(PlotDataMapRef& datamap, QWidget* parent)
   , _panner2(nullptr)
   , _tracker(nullptr)
   , _legend(nullptr)
-  , _grid(nullptr)
+  , _use_date_time_scale(false)
+  , _color_index(0)
   , _mapped_data(datamap)
   , _dragging({ DragInfo::NONE, {}, nullptr })
   , _curve_style(QwtPlotCurve::Lines)
   , _time_offset(0.0)
   , _xy_mode(false)
   , _transform_select_dialog(nullptr)
-  , _use_date_time_scale(false)
-  , _color_index(0)
   , _zoom_enabled(true)
   , _keep_aspect_ratio(true)
 {
@@ -163,13 +162,13 @@ PlotWidget::PlotWidget(PlotDataMapRef& datamap, QWidget* parent)
   this->plotLayout()->setAlignCanvasToScales(true);
 
   //--------------------------
-  _grid = new QwtPlotGrid();
   _zoomer = (new PlotZoomer(this->canvas()));
   _magnifier = (new PlotMagnifier(this->canvas()));
   _panner1 = (new QwtPlotPanner(this->canvas()));
   _panner2 = (new QwtPlotPanner(this->canvas()));
   _tracker = (new CurveTracker(this));
 
+  _grid = new QwtPlotGrid();
   _grid->setPen(QPen(Qt::gray, 0.0, Qt::DotLine));
 
   _zoomer->setRubberBandPen(QColor(Qt::red, 1, Qt::DotLine));
@@ -1656,7 +1655,6 @@ void PlotWidget::transformCustomCurves()
 
         error_message += curve_name + (" [") + transform.toStdString() + ("]: ");
         error_message += err.what();
-        +"\n";
 
         curve->setTitle(QString::fromStdString(curve_name));
       }

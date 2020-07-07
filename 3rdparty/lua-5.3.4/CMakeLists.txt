@@ -36,7 +36,11 @@ set(LUA_LIB_SRCS
 set(LUA_LIB_INCLUDE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 add_library(lua_static STATIC ${LUA_LIB_SRCS})
 target_include_directories(lua_static PUBLIC ${LUA_LIB_INCLUDE})
-set(LUA_DEFINITIONS LUA_USE_POSIX)
+
+if ( NOT WIN32 )
+    set(LUA_DEFINITIONS LUA_USE_POSIX)
+endif()
+
 if(EMSCRIPTEN)
     unset(LUA_DEFINITIONS)
 endif()

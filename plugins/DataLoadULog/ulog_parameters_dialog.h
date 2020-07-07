@@ -1,5 +1,4 @@
-#ifndef ULOG_PARAMETERS_DIALOG_H
-#define ULOG_PARAMETERS_DIALOG_H
+#pragma once
 
 #include <QDialog>
 #include <QString>
@@ -25,4 +24,3 @@ private:
   Ui::ULogParametersDialog* ui;
 };
 
-#endif  // ULOG_PARAMETERS_DIALOG_H

@@ -28,7 +28,7 @@ public:
 
     //-----------------------------
     auto q = msg;
-    double quat_norm2 = q.w * q.w + q.x * q.x * q.y * q.y + q.z * q.z;
+    double quat_norm2 = (q.w * q.w) + (q.x * q.x) + (q.y * q.y) + (q.z * q.z);
     if (std::abs(quat_norm2 - 1.0) > std::numeric_limits<double>::epsilon())
     {
       double mult = 1.0 / std::sqrt(quat_norm2);

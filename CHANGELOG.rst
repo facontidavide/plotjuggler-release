@@ -2,6 +2,23 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.8.2 (2020-07-07)
+------------------
+* might fix issue `#301 <https://github.com/facontidavide/PlotJuggler/issues/301>`_
+* fix warnings
+* fix potential mutex problem related to `#300 <https://github.com/facontidavide/PlotJuggler/issues/300>`_
+* bug fix
+* Update package.xml
+* updated gif
+* cherry picking changes from `#290 <https://github.com/facontidavide/PlotJuggler/issues/290>`_
+* fix `#296 <https://github.com/facontidavide/PlotJuggler/issues/296>`_
+* fix issues on windows Qt 5.15
+* fix error
+* move StatePublisher to tf2
+* revert changes
+* fix warnings
+* Contributors: Davide Faconti
+
 2.8.1 (2020-05-28)
 ------------------
 * fix critical bug in streaming ROS plugin
