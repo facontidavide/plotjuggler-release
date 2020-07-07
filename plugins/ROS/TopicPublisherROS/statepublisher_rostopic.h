@@ -6,7 +6,8 @@
 #include <map>
 #include <ros/ros.h>
 #include <ros_type_introspection/ros_introspection.hpp>
-#include <tf/transform_broadcaster.h>
+#include <tf2_ros/transform_broadcaster.h>
+#include <tf2_ros/static_transform_broadcaster.h>
 #include "PlotJuggler/statepublisher_base.h"
 #include "shape_shifter_factory.hpp"
 #include <rosbag/bag.h>
@@ -50,8 +51,10 @@ private:
   bool _enabled;
   ros::NodeHandlePtr _node;
   bool _publish_clock;
-  std::unique_ptr<tf::TransformBroadcaster> _tf_publisher;
-  ros::Publisher _tf_static_pub;
+
+  std::shared_ptr<tf2_ros::TransformBroadcaster> _tf_broadcaster;
+  std::shared_ptr<tf2_ros::StaticTransformBroadcaster> _tf_static_broadcaster;
+
   ros::Publisher _clock_publisher;
 
   QAction* _enable_self_action;
