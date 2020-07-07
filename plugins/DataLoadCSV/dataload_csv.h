@@ -1,5 +1,4 @@
-#ifndef DATALOAD_CSV_H
-#define DATALOAD_CSV_H
+#pragma once
 
 #include <QObject>
 #include <QtPlugin>
@@ -38,4 +37,4 @@ private:
   std::string _default_time_axis;
 };
 
-#endif  // DATALOAD_CSV_H
+

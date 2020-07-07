@@ -151,9 +151,9 @@ bool CurveTreeView::applyVisibilityFilter(const QString& search_string)
 
     if (search_string.isEmpty() == false)
     {
-      for (const auto& item : spaced_items)
+      for (const auto& spaced_item : spaced_items)
       {
-        if (name.contains(item, Qt::CaseInsensitive) == false)
+        if (name.contains(spaced_item, Qt::CaseInsensitive) == false)
         {
           toHide = true;
           break;

@@ -148,10 +148,13 @@ ros::NodeHandlePtr RosManager::getNode()
   {
     if (!manager._node)
     {
+      ros::start();
       manager._node =
-          ros::NodeHandlePtr(new ros::NodeHandle, [](ros::NodeHandle* node) { RosManager::get().stopROS(); });
+          ros::NodeHandlePtr(new ros::NodeHandle, [](ros::NodeHandle* node) {
+            delete node;
+            RosManager::get().stopROS();
+          });
     }
-    ros::start();
   }
   return manager._node;
 }

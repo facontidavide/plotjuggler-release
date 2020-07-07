@@ -130,7 +130,7 @@ void ULogParser::parseDataMessage(const ULogParser::Subscription& sub, char* mes
 
   if (_message_name_with_multi_id.count(ts_name) > 0)
   {
-    char buff[10];
+    char buff[16];
     sprintf(buff, ".%02d", sub.multi_id);
     ts_name += std::string(buff);
   }
