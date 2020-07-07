@@ -161,5 +161,5 @@ elseif(COMPILING_WITH_AMENT)
         DataLoadROS2
         DataStreamROS2
         TopicPublisherROS2
-        DESTINATION bin  )
+        DESTINATION  lib/${PROJECT_NAME}  )
 endif()
