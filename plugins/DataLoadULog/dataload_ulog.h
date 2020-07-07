@@ -1,5 +1,4 @@
-#ifndef DATALOAD_CSV_H
-#define DATALOAD_CSV_H
+#pragma once
 
 #include <QObject>
 #include <QtPlugin>
@@ -36,4 +35,3 @@ private:
   QWidget* _main_win;
 };
 
-#endif  // DATALOAD_CSV_H

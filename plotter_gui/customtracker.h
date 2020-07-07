@@ -15,6 +15,8 @@ class CurveTracker : public QObject
 public:
   explicit CurveTracker(QwtPlot*);
 
+  ~CurveTracker();
+
   QPointF actualPosition() const;
 
   typedef enum

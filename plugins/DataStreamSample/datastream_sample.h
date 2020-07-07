@@ -1,5 +1,4 @@
-#ifndef DATASTREAM_SAMPLE_CSV_H
-#define DATASTREAM_SAMPLE_CSV_H
+#pragma once
 
 #include <QtPlugin>
 #include <thread>
@@ -54,4 +53,3 @@ private:
   void pushSingleCycle();
 };
 
-#endif  // DATALOAD_CSV_H

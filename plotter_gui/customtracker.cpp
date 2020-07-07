@@ -20,17 +20,21 @@ struct compareX
 
 CurveTracker::CurveTracker(QwtPlot* plot) : QObject(plot), _plot(plot), _param(VALUE)
 {
-  _line_marker = (new QwtPlotMarker);
+  _line_marker = new QwtPlotMarker();
 
   _line_marker->setLinePen(QPen(Qt::red));
   _line_marker->setLineStyle(QwtPlotMarker::VLine);
   _line_marker->setValue(0, 0);
   _line_marker->attach(plot);
 
-  _text_marker = (new QwtPlotMarker);
+  _text_marker = new QwtPlotMarker();
   _text_marker->attach(plot);
 
   _visible = true;
+}
+
+CurveTracker::~CurveTracker()
+{
 }
 
 QPointF CurveTracker::actualPosition() const
