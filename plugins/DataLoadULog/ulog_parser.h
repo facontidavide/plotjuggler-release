@@ -1,5 +1,4 @@
-#ifndef ULOG_PARSER_H
-#define ULOG_PARSER_H
+#pragma once
 
 #include <iostream>
 #include <vector>
@@ -148,4 +147,3 @@ private:
   char* parseSimpleDataMessage(Timeseries& timeseries, const Format* format, char* message, size_t* index);
 };
 
-#endif  // ULOG_PARSER_H

@@ -54,10 +54,16 @@ void TopicPublisherROS::setEnabled(bool to_enable)
   if (_enabled)
   {
     filterDialog(true);
-    if (!_tf_publisher)
+
+    if (!_tf_broadcaster)
     {
-      _tf_publisher = std::unique_ptr<tf::TransformBroadcaster>(new tf::TransformBroadcaster);
+      _tf_broadcaster = std::make_unique<tf2_ros::TransformBroadcaster>();
     }
+    if (!_tf_static_broadcaster)
+    {
+      _tf_static_broadcaster = std::make_unique<tf2_ros::StaticTransformBroadcaster>();
+    }
+
     _previous_play_index = std::numeric_limits<int>::max();
 
     if (_publish_clock)
@@ -68,15 +74,15 @@ void TopicPublisherROS::setEnabled(bool to_enable)
     {
       _clock_publisher.shutdown();
     }
-
-    _tf_static_pub = _node->advertise<tf::tfMessage>("/tf_static", 10, true);
   }
   else
   {
     _node.reset();
     _publishers.clear();
     _clock_publisher.shutdown();
-    _tf_static_pub.shutdown();
+
+    _tf_broadcaster.reset();
+    _tf_static_broadcaster.reset();
   }
 
   StatePublisher::setEnabled(_enabled);
@@ -91,7 +97,6 @@ void TopicPublisherROS::filterDialog(bool autoconfirm)
   }
 
   PublisherSelectDialog *dialog =  new PublisherSelectDialog();
-  dialog->setAttribute(Qt::WA_DeleteOnClose);
 
   std::map<std::string, QCheckBox*> checkbox;
 
@@ -116,7 +121,7 @@ void TopicPublisherROS::filterDialog(bool autoconfirm)
 
   if (!autoconfirm)
   {
-    auto result = dialog->exec();
+    dialog->exec();
   }
 
   if (autoconfirm || dialog->result() == QDialog::Accepted)
@@ -152,6 +157,8 @@ void TopicPublisherROS::filterDialog(bool autoconfirm)
       _clock_publisher.shutdown();
     }
 
+    dialog->deleteLater();
+
     QSettings settings;
     settings.setValue("TopicPublisherROS/publish_clock", _publish_clock);
   }
@@ -162,6 +169,7 @@ void TopicPublisherROS::broadcastTF(double current_time)
   using StringPair = std::pair<std::string, std::string>;
 
   std::map<StringPair, geometry_msgs::TransformStamped> transforms;
+  std::map<StringPair, geometry_msgs::TransformStamped> static_transforms;
 
   for (const auto& data_it : _datamap->user_defined)
   {
@@ -184,6 +192,8 @@ void TopicPublisherROS::broadcastTF(double current_time)
     {
       continue;
     }
+
+    auto transforms_ptr = (topic_name == "/tf_static") ? & static_transforms : &transforms;
 
     std::vector<uint8_t> raw_buffer;
     // 2 seconds in the past (to be configurable in the future)
@@ -211,25 +221,19 @@ void TopicPublisherROS::broadcastTF(double current_time)
       ros::serialization::OStream ostream(raw_buffer.data(), raw_buffer.size());
       msg_instance.write(ostream);
 
-      tf::tfMessage tf_msg;
+      tf2_msgs::TFMessage tf_msg;
       ros::serialization::IStream istream(raw_buffer.data(), raw_buffer.size());
       ros::serialization::deserialize(istream, tf_msg);
-
-      if (topic_name == "/tf_static")
-      {
-        _tf_static_pub.publish(tf_msg);
-        continue;
-      }
 
       for (const auto& stamped_transform : tf_msg.transforms)
       {
         const auto& parent_id = stamped_transform.header.frame_id;
         const auto& child_id = stamped_transform.child_frame_id;
         StringPair trans_id = std::make_pair(parent_id, child_id);
-        auto it = transforms.find(trans_id);
-        if (it == transforms.end())
+        auto it = transforms_ptr->find(trans_id);
+        if (it == transforms_ptr->end())
         {
-          transforms.insert({ trans_id, stamped_transform });
+          transforms_ptr->insert({ trans_id, stamped_transform });
         }
         else if (it->second.header.stamp <= stamped_transform.header.stamp)
         {
@@ -237,22 +241,29 @@ void TopicPublisherROS::broadcastTF(double current_time)
         }
       }
     }
-  }
+    // ready to broadacast
+    std::vector<geometry_msgs::TransformStamped> transforms_vector;
+    transforms_vector.reserve(transforms_ptr->size());
 
-  std::vector<geometry_msgs::TransformStamped> transforms_vector;
-  transforms_vector.reserve(transforms.size());
-
-  const auto now = ros::Time::now();
-  for (auto& trans : transforms)
-  {
-    if (!_publish_clock)
+    const auto now = ros::Time::now();
+    for (auto& trans : *transforms_ptr)
     {
-      trans.second.header.stamp = now;
+      if (!_publish_clock)
+      {
+        trans.second.header.stamp = now;
+      }
+      transforms_vector.emplace_back(std::move(trans.second));
     }
-    transforms_vector.emplace_back(std::move(trans.second));
+    if( transforms_vector.size() > 0)
+    {
+      if( transforms_ptr == &transforms ){
+        _tf_broadcaster->sendTransform(transforms_vector);
+      }
+      else{
+        _tf_static_broadcaster->sendTransform(transforms_vector);
+      }
+    }
   }
-
-  _tf_publisher->sendTransform(transforms_vector);
 }
 
 bool TopicPublisherROS::toPublish(const std::string& topic_name)

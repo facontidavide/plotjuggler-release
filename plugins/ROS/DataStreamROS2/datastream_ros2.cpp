@@ -64,7 +64,7 @@ bool DataStreamROS2::start(QStringList* selected_datasources)
     std::lock_guard<std::mutex> lock(mutex());
     dataMap().numeric.clear();
     dataMap().user_defined.clear();
-    _parser->reset( new CompositeParser(dataMap()) );
+    _parser.reset( new CompositeParser(dataMap()) );
   }
 
   // Display the dialog which allows users to select ros topics to subscribe to,
