@@ -89,9 +89,12 @@ void DataStreamROS::topicCallback(const RosIntrospection::ShapeShifter::ConstPtr
   _prev_clock_time = msg_time;
 
   SerializedMessage buffer_view(buffer);
+
+  // before pushing, lock the mutex
+  std::lock_guard<std::mutex> lock(mutex());
+
   _parser->parseMessage(topic_name, buffer_view, msg_time);
 
-  std::lock_guard<std::mutex> lock(mutex());
   const std::string prefixed_topic_name = _prefix + topic_name;
 
   // adding raw serialized msg for future uses.

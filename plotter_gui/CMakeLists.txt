@@ -71,7 +71,10 @@ SET( PLOTTER_SRC
     )
 
 add_executable(PlotJuggler ${PLOTTER_SRC} ${RES_SRC} ${UI_SRC} ${BACKWARD_ENABLE})
-add_backward(PlotJuggler)
+
+if (NOT WIN32)
+   add_backward(PlotJuggler)
+endif()
 
 target_link_libraries(PlotJuggler
     ${QT_LINK_LIBRARIES}
@@ -89,6 +92,10 @@ if(COMPILING_WITH_CATKIN)
         PROGRAMS scripts/plotjuggler
         DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
     )
+elseif(COMPILING_WITH_AMENT)
+    install(TARGETS PlotJuggler
+            DESTINATION lib/${PROJECT_NAME} )
 else()
-    install(TARGETS PlotJuggler DESTINATION bin  )
+    install(TARGETS PlotJuggler
+            DESTINATION bin  )
 endif()
