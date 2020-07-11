@@ -109,7 +109,8 @@ void CompositeParser::setMaxArrayPolicy(LargeArrayPolicy policy, size_t max_size
   }
 }
 
-void CompositeParser::registerMessageType(const std::string& topic_name, const std::string& topic_type,
+void CompositeParser::registerMessageType(const std::string& topic_name,
+                                          const std::string& topic_type,
                                           const std::string& definition)
 {
   std::shared_ptr<MessageParserBase> parser;
