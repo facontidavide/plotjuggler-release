@@ -2,6 +2,13 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.8.3 (2020-07-11)
+------------------
+* more memes
+* "New versione vailable" improved
+* fix segmentation fault when tryin reconnect to ROS master
+* Contributors: Davide Faconti
+
 2.8.2 (2020-07-07)
 ------------------
 * might fix issue `#301 <https://github.com/facontidavide/PlotJuggler/issues/301>`_
