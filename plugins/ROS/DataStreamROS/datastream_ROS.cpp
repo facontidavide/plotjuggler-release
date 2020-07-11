@@ -158,15 +158,12 @@ void DataStreamROS::extractInitialSamples()
 
 void DataStreamROS::timerCallback()
 {
-  if (_running && ros::master::check() == false && !_roscore_disconnection_already_notified)
+  if (_running && ros::master::check() == false)
   {
     auto ret = QMessageBox::warning(nullptr, tr("Disconnected!"),
-                                    tr("The roscore master cannot be detected.\n\n"
-                                       "Do you want to try reconnecting to it? \n\n"
-                                       "NOTE: if you select CONTINUE, you might need"
-                                       " to stop and restart this plugin."),
-                                    tr("Stop Plugin"), tr("Try reconnect"), tr("Continue"), 0);
-    _roscore_disconnection_already_notified = (ret == 2);
+                                    tr("The roscore master cannot is not reachable anymore.\n\n"
+                                       "Do you want to try reconnecting to it? \n"),
+                                    tr("Stop Streaming"), tr("Try reconnect"), nullptr);
     if (ret == 1)
     {
       this->shutdown();
@@ -177,6 +174,7 @@ void DataStreamROS::timerCallback()
         emit connectionClosed();
         return;
       }
+      _parser.reset( new CompositeParser(dataMap()) );
       subscribe();
 
       _running = true;
@@ -359,7 +357,6 @@ bool DataStreamROS::start(QStringList* selected_datasources)
   _spinner->start();
 
   _periodic_timer->setInterval(500);
-  _roscore_disconnection_already_notified = false;
   _periodic_timer->start();
 
   return true;
