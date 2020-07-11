@@ -81,8 +81,6 @@ private:
 
   QTimer* _periodic_timer;
 
-  bool _roscore_disconnection_already_notified;
-
   double _prev_clock_time;
 
 private:
