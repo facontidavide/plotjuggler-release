@@ -9,47 +9,48 @@
 
 #include "PlotJuggler/dataloader_base.h"
 #include "dialog_select_ros_topics.h"
-#include "ros1_parsers/ros_parser.h"
+#include "ros1_parsers/ros1_parser.h"
 
-class  DataLoadROS: public DataLoader
+class DataLoadROS : public DataLoader
 {
-    Q_OBJECT
-    Q_PLUGIN_METADATA(IID "com.icarustechnology.PlotJuggler.DataLoader" "../dataloader.json")
-    Q_INTERFACES(DataLoader)
+  Q_OBJECT
+  Q_PLUGIN_METADATA(IID "com.icarustechnology.PlotJuggler.DataLoader"
+                        "../dataloader.json")
+  Q_INTERFACES(DataLoader)
 
 public:
-    DataLoadROS();
+  DataLoadROS();
 
-    virtual ~DataLoadROS() override;
+  virtual ~DataLoadROS() override;
 
-    virtual const std::vector<const char*>& compatibleFileExtensions() const override;
+  virtual const std::vector<const char*>& compatibleFileExtensions() const override;
 
-    virtual bool readDataFromFile(FileLoadInfo* fileload_info, PlotDataMapRef& destination) override;
+  virtual bool readDataFromFile(FileLoadInfo* fileload_info, PlotDataMapRef& destination) override;
 
-    virtual const char* name() const override { return "DataLoad ROS bags"; }
+  virtual const char* name() const override
+  {
+    return "DataLoad ROS bags";
+  }
 
-    virtual bool xmlSaveState(QDomDocument &doc, QDomElement &parent_element) const override;
+  virtual bool xmlSaveState(QDomDocument& doc, QDomElement& parent_element) const override;
 
-    virtual bool xmlLoadState(const QDomElement &parent_element ) override;
+  virtual bool xmlLoadState(const QDomElement& parent_element) override;
 
 protected:
-    void loadSubstitutionRule(QStringList all_topic_names);
-    std::shared_ptr<rosbag::Bag> _bag;
+  void loadSubstitutionRule(QStringList all_topic_names);
+
+  std::shared_ptr<rosbag::Bag> _bag;
 
 private:
+  std::vector<const char*> _extensions;
 
-    std::vector<const char*> _extensions;
+  DialogSelectRosTopics::Configuration _config;
 
-    DialogSelectRosTopics::Configuration _config;
+  std::vector<std::pair<QString, QString>> getAllTopics(const rosbag::Bag* bag, CompositeParser& parser);
 
-    marl::Scheduler scheduler_;
+  void saveDefaultSettings();
 
-    std::vector<std::pair<QString, QString>> getAllTopics(const rosbag::Bag *bag,
-                                                          std::map<std::string, RosMessageParser> &parsers);
-
-    void saveDefaultSettings();
-
-    void loadDefaultSettings();
+  void loadDefaultSettings();
 };
 
-#endif // DATALOAD_CSV_H
+#endif  // DATALOAD_CSV_H

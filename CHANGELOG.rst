@@ -2,6 +2,86 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.8.4 (2020-08-14)
+------------------
+* readme updated
+* fix issue `#318 <https://github.com/facontidavide/PlotJuggler/issues/318>`_
+* fix  `#170 <https://github.com/facontidavide/PlotJuggler/issues/170>`_ : problem with ULOG parser in Windows
+* build fixes to work on ROS2 eloquent (`#314 <https://github.com/facontidavide/PlotJuggler/issues/314>`_)
+* add qtpainterpath.h (`#313 <https://github.com/facontidavide/PlotJuggler/issues/313>`_)
+* Update datastream_sample.cpp
+* Update contributors.txt
+* Fix another sprintf buffer size warning (`#303 <https://github.com/facontidavide/PlotJuggler/issues/303>`_)
+* Contributors: Akash Patel, Davide Faconti, Lucas, Mike Purvis
+
+2.8.3 (2020-07-11)
+------------------
+* more memes
+* "New versione vailable" improved
+* fix segmentation fault when tryin reconnect to ROS master
+* Contributors: Davide Faconti
+
+2.8.2 (2020-07-07)
+------------------
+* might fix issue `#301 <https://github.com/facontidavide/PlotJuggler/issues/301>`_
+* fix warnings
+* fix potential mutex problem related to `#300 <https://github.com/facontidavide/PlotJuggler/issues/300>`_
+* bug fix
+* Update package.xml
+* updated gif
+* cherry picking changes from `#290 <https://github.com/facontidavide/PlotJuggler/issues/290>`_
+* fix `#296 <https://github.com/facontidavide/PlotJuggler/issues/296>`_
+* fix issues on windows Qt 5.15
+* fix error
+* move StatePublisher to tf2
+* revert changes
+* fix warnings
+* Contributors: Davide Faconti
+
+2.8.1 (2020-05-28)
+------------------
+* fix critical bug in streaming ROS plugin
+* Contributors: Davide Faconti
+
+2.8.0 (2020-05-24)
+------------------
+* Update CMakeLists.txt
+* Added graph context menu description (`#288 <https://github.com/facontidavide/PlotJuggler/issues/288>`_)
+* Update FUNDING.yml
+* Merge branch 'master' of https://github.com/facontidavide/PlotJuggler
+* finished with refactoring
+* WIP: re publisher ROS2
+* added stuff to dataload_ros2
+* Update appimage_howto.md
+* fix package name
+* embrace pj_msgs (https://github.com/facontidavide/plotjuggler_msgs)
+* new clang format and fix in header_stamp usage
+* removed marl and rule editing
+* more parsers added
+* more or less working
+* save computation like a champ with plot_data in each parser
+* precompute strings only once
+* fix compilation on ROS1
+* Merge branch 'master' of https://github.com/facontidavide/PlotJuggler
+* builtin parsers added
+* Githug actions win (`#284 <https://github.com/facontidavide/PlotJuggler/issues/284>`_)
+  * try compiling on windows
+  * Update windows.yaml
+  * multiple workflows
+  * Update README.md
+  Co-authored-by: daf@blue-ocean-robotics.com <Davide Faconti>
+* bug fix
+* segfault fixed in TypeHasHeader
+* removed rosdep of pj_msgs
+* added pj_msgs to ROS2
+* fix errors
+* heavy refactoring of ROS2 plugins
+* critical bug fix in ROS2 parsing
+* try to fix problem with StringTreeLeaf::toStr
+* reduce a bit allocations overhead
+* reduce memory used by the job queue of marl, with periodic flushes
+* Contributors: Davide Faconti, Ilya Petrov
+
 2.7.0 (2020-05-03)
 ------------------
 * Merge branch 'ros2' of https://github.com/facontidavide/PlotJuggler into ros2

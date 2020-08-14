@@ -57,25 +57,25 @@
 
 class Client : public QObject
 {
-    Q_OBJECT
+  Q_OBJECT
 public:
-    explicit Client(const QUrl &url, bool debug = false, QObject *parent = Q_NULLPTR);
+  explicit Client(const QUrl& url, bool debug = false, QObject* parent = Q_NULLPTR);
 
 Q_SIGNALS:
-    void closed();
+  void closed();
 
 private Q_SLOTS:
-    void onConnected();
-    void sendMsg(const QString &key);
-    void onTextMessageReceived(QString message);
+  void onConnected();
+  void sendMsg(const QString& key);
+  void onTextMessageReceived(QString message);
 
 private:
-    QWebSocket m_webSocket;
-    QUrl m_url;
-    bool m_debug;
-    double i_;
-    QTimer timer_;
-    QTimer timer2_;
+  QWebSocket m_webSocket;
+  QUrl m_url;
+  bool m_debug;
+  double i_;
+  QTimer timer_;
+  QTimer timer2_;
 };
 
-#endif // ECHOCLIENT_H
+#endif  // ECHOCLIENT_H

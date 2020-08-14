@@ -10,64 +10,72 @@
 #include <rosgraph_msgs/Log.h>
 #include "logwidget.hpp"
 
-class RosoutWindow: public QMainWindow
+class RosoutWindow : public QMainWindow
 {
-    Q_OBJECT
+  Q_OBJECT
 public:
-    RosoutWindow():QMainWindow() {}
-    ~RosoutWindow(){}
+  RosoutWindow() : QMainWindow()
+  {
+  }
+  ~RosoutWindow()
+  {
+  }
 
-    void closeEvent ( QCloseEvent* ) override{
-        emit closed();
-    }
+  void closeEvent(QCloseEvent*) override
+  {
+    emit closed();
+  }
 signals:
-    void closed();
+  void closed();
 };
 
-
-class  RosoutPublisher: public StatePublisher
+class RosoutPublisher : public StatePublisher
 {
-    Q_OBJECT
-    Q_PLUGIN_METADATA(IID "com.icarustechnology.PlotJuggler.StatePublisher" "../statepublisher.json")
-    Q_INTERFACES(StatePublisher)
+  Q_OBJECT
+  Q_PLUGIN_METADATA(IID "com.icarustechnology.PlotJuggler.StatePublisher"
+                        "../statepublisher.json")
+  Q_INTERFACES(StatePublisher)
 
 public:
-    RosoutPublisher();
+  RosoutPublisher();
 
-    virtual void updateState(double current_time) override;
-    virtual const char* name() const override { return "ROS /rosout Visualization"; }
-    virtual ~RosoutPublisher();
+  virtual void updateState(double current_time) override;
+  virtual const char* name() const override
+  {
+    return "ROS /rosout Visualization";
+  }
+  virtual ~RosoutPublisher();
 
-    virtual bool enabled() const override { return _enabled; }
+  virtual bool enabled() const override
+  {
+    return _enabled;
+  }
 
-    virtual void play(double interval)  override
-    {
-        //TODO
-    }
+  virtual void play(double interval) override
+  {
+    // TODO
+  }
 
 public slots:
-    virtual void setEnabled(bool enabled) override;
+  virtual void setEnabled(bool enabled) override;
 
 private slots:
 
-    void onWindowClosed();
+  void onWindowClosed();
 
 private:
+  bool _enabled;
+  int64_t _minimum_time_usec, _maximum_time_usec;
 
-    bool _enabled;
-    int64_t _minimum_time_usec, _maximum_time_usec;
+  LogsTableModel* _tablemodel;
+  rqt_console_plus::LogWidget* _log_widget;
 
-    LogsTableModel* _tablemodel;
-    rqt_console_plus::LogWidget* _log_widget;
+  std::vector<const PlotDataAny*> findRosoutTimeseries();
+  void syncWithTableModel(const std::vector<const PlotDataAny*>& logs_timeseries);
 
-    std::vector<const PlotDataAny *> findRosoutTimeseries();
-    void syncWithTableModel(const std::vector<const PlotDataAny *> &logs_timeseries);
-
-    RosoutWindow* _log_window;
+  RosoutWindow* _log_window;
 signals:
-    void timeRangeChanged(TimePoint time_min, TimePoint time_max);
+  void timeRangeChanged(TimePoint time_min, TimePoint time_max);
 };
 
-
-
-#endif // ROSOUT_PUBLISHER_ROS_H
+#endif  // ROSOUT_PUBLISHER_ROS_H

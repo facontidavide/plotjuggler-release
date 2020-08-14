@@ -12,70 +12,60 @@
 
 class DataStreamROS2 : public DataStreamer
 {
-    Q_OBJECT
-    Q_PLUGIN_METADATA(IID "com.icarustechnology.PlotJuggler.ROS2DataStreamer" "../datastreamer.json")
-    Q_INTERFACES(DataStreamer)
+  Q_OBJECT
+  Q_PLUGIN_METADATA(IID "com.icarustechnology.PlotJuggler.ROS2DataStreamer"
+                        "../datastreamer.json")
+  Q_INTERFACES(DataStreamer)
 
 public:
+  DataStreamROS2();
 
-    DataStreamROS2();
+  virtual bool start(QStringList* selected_datasources) override;
 
-    virtual bool start(QStringList* selected_datasources) override;
+  virtual void shutdown() override;
 
-    virtual void shutdown() override;
+  virtual bool isRunning() const override;
 
-    virtual bool isRunning() const override;
+  virtual ~DataStreamROS2() override;
 
-    virtual ~DataStreamROS2() override;
+  virtual const char* name() const override
+  {
+    return "ROS2 Topic Subscriber";
+  }
 
-    virtual const char* name() const override { return "ROS2 Topic Subscriber"; }
+  virtual bool xmlSaveState(QDomDocument& doc, QDomElement& parent_element) const override;
 
-    virtual bool xmlSaveState(QDomDocument &doc, QDomElement &parent_element) const override;
+  virtual bool xmlLoadState(const QDomElement& parent_element) override;
 
-    virtual bool xmlLoadState(const QDomElement &parent_element) override;
-
-    virtual void addActionsToParentMenu(QMenu* menu) override;
-
-    virtual std::vector<QString> appendData(PlotDataMapRef& destination) override
-    {
-        _destination_data = &destination;
-        return DataStreamer::appendData(destination);
-    }
-
-  private:
-    void messageCallback(const std::string& topic_name, TopicInfo &ti,
-                         std::shared_ptr<rmw_serialized_message_t> msg);
+  virtual void addActionsToParentMenu(QMenu* menu) override;
 
 private:
+  void messageCallback(const std::string& topic_name, std::shared_ptr<rmw_serialized_message_t> msg);
 
-    PlotDataMapRef* _destination_data;
+private:
+  std::shared_ptr<rclcpp::Context> _context;
+  std::unique_ptr<rclcpp::executors::MultiThreadedExecutor> _executor;
+  std::shared_ptr<rclcpp::Node> _node;
 
-    std::shared_ptr<rclcpp::Context> _context;
-    std::unique_ptr<rclcpp::executors::MultiThreadedExecutor> _executor;
-    std::shared_ptr<rclcpp::Node> _node;
+  std::unique_ptr<CompositeParser> _parser;
 
-    Ros2Introspection::Parser _parser;
+  bool _running;
 
-    bool _running;
+  std::thread _spinner;
 
-    QTimer _spin_timer;
+  DialogSelectRosTopics::Configuration _config;
 
-    std::unordered_map<std::string,TopicInfo> _topic_info;
+  rclcpp::Clock _clock;
+  rcl_time_point_value_t _start_time;
 
-    DialogSelectRosTopics::Configuration _config;
+  void saveDefaultSettings();
 
-    rclcpp::Clock _clock;
-    rcl_time_point_value_t _start_time;
+  void loadDefaultSettings();
 
-    void saveDefaultSettings();
+  std::unordered_map<std::string, rosbag2_transport::GenericSubscription::Ptr> _subscriptions;
 
-    void loadDefaultSettings();
-
-    std::unordered_map<std::string, rosbag2_transport::GenericSubscription::Ptr> _subscriptions;
-
-    void subscribeToTopic(const std::string& topic_name, const std::string& topic_type);
-    void waitOneSecond();
+  void subscribeToTopic(const std::string& topic_name, const std::string& topic_type);
+  void waitOneSecond();
 };
 
 #endif
-
