@@ -13,65 +13,60 @@
 #include "rule_editing.h"
 #endif
 
-namespace Ui {
+namespace Ui
+{
 class dialogSelectRosTopics;
 }
 
 class DialogSelectRosTopics : public QDialog
 {
-    Q_OBJECT
+  Q_OBJECT
 
 public:
+  struct Configuration
+  {
+    QStringList selected_topics;
+    size_t max_array_size;
+    bool use_header_stamp;
+    bool use_renaming_rules;
+    bool discard_large_arrays;
+  };
 
-    struct Configuration
-    {
-        QStringList selected_topics;
-        size_t max_array_size;
-        bool use_header_stamp;
-        bool use_renaming_rules;
-        bool discard_large_arrays;
-    };
+  explicit DialogSelectRosTopics(const std::vector<std::pair<QString, QString>>& topic_list,
+                                 const Configuration& default_info, QWidget* parent = nullptr);
 
-    explicit DialogSelectRosTopics(const std::vector<std::pair<QString,QString>>& topic_list,
-                                   const Configuration& default_info,
-                                   QWidget *parent = nullptr);
+  ~DialogSelectRosTopics() override;
 
-    ~DialogSelectRosTopics() override;
-
-    Configuration getResult() const;
+  Configuration getResult() const;
 
 public slots:
 
-    void updateTopicList(std::vector<std::pair<QString,QString>> topic_list);
+  void updateTopicList(std::vector<std::pair<QString, QString>> topic_list);
 
 private slots:
 
-    void on_buttonBox_accepted();
+  void on_buttonBox_accepted();
 
-    void on_listRosTopics_itemSelectionChanged();
+  void on_listRosTopics_itemSelectionChanged();
 
-    void on_checkBoxEnableRules_toggled(bool checked);
+  void on_checkBoxEnableRules_toggled(bool checked);
 
-    void on_pushButtonEditRules_pressed();
+  void on_pushButtonEditRules_pressed();
 
-    void on_maximumSizeHelp_pressed();
+  void on_maximumSizeHelp_pressed();
 
-    void on_lineEditFilter_textChanged(const QString &search_string);
+  void on_lineEditFilter_textChanged(const QString& search_string);
 
-    void on_spinBoxArraySize_valueChanged(int value);
+  void on_spinBoxArraySize_valueChanged(int value);
 
 private:
+  QStringList _topic_list;
+  QStringList _default_selected_topics;
 
-    QStringList _topic_list;
-    QStringList _default_selected_topics;
+  QShortcut _select_all;
+  QShortcut _deselect_all;
 
-    QShortcut _select_all;
-    QShortcut _deselect_all;
-
-    Ui::dialogSelectRosTopics *ui;
-
+  Ui::dialogSelectRosTopics* ui;
 };
 
-
-
-#endif // DIALOG_SELECT_ROS_TOPICS_H
+#endif  // DIALOG_SELECT_ROS_TOPICS_H

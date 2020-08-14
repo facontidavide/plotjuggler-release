@@ -252,5 +252,15 @@
         <file>style_dark/copy_clipboard.png</file>
         <file>style_light/copy_clipboard.png</file>
         <file>resources/plotjuggler.svg</file>
+        <file>resources/memes/meme_52.jpg</file>
+        <file>resources/memes/meme_53.jpg</file>
+        <file>resources/memes/meme_54.jpg</file>
+        <file>resources/update_plotjuggler.jpg</file>
+        <file>resources/memes/meme_55.jpg</file>
+        <file>resources/memes/meme_56.jpg</file>
+        <file>resources/memes/meme_57.jpg</file>
+        <file>resources/memes/meme_58.jpg</file>
+        <file>resources/memes/meme_59.jpg</file>
+        <file>resources/memes/meme_60.jpg</file>
     </qresource>
 </RCC>

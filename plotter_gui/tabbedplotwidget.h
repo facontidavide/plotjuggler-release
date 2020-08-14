@@ -6,128 +6,133 @@
 #include <QTableWidget>
 #include "plotmatrix.h"
 
-namespace Ui {
+namespace Ui
+{
 class TabbedPlotWidget;
 }
 
-
 class TabbedPlotWidget : public QWidget
 {
-    Q_OBJECT
+  Q_OBJECT
 
 public:
-    typedef struct{} MainWindowArea;
+  typedef struct
+  {
+  } MainWindowArea;
 
-    explicit TabbedPlotWidget(QString name,
-                              QMainWindow *main_window,
-                              PlotMatrix* first_tab,
-                              PlotDataMapRef &mapped_data,
-                              QMainWindow *parent );
+  explicit TabbedPlotWidget(QString name, QMainWindow* main_window, PlotMatrix* first_tab, PlotDataMapRef& mapped_data,
+                            QMainWindow* parent);
 
-    PlotMatrix* currentTab();
+  PlotMatrix* currentTab();
 
-    QTabWidget* tabWidget();
+  QTabWidget* tabWidget();
 
-    const QTabWidget* tabWidget() const;
+  const QTabWidget* tabWidget() const;
 
-    void addTab(PlotMatrix *tab = nullptr);
+  void addTab(PlotMatrix* tab = nullptr);
 
-    QDomElement xmlSaveState(QDomDocument &doc) const;
+  QDomElement xmlSaveState(QDomDocument& doc) const;
 
-    bool xmlLoadState(QDomElement &tabbed_area);
+  bool xmlLoadState(QDomElement& tabbed_area);
 
-    ~TabbedPlotWidget() override;
+  ~TabbedPlotWidget() override;
 
-    QString name() const { return _name; }
+  QString name() const
+  {
+    return _name;
+  }
 
-    static const std::map<QString,TabbedPlotWidget*>& instances();
+  static const std::map<QString, TabbedPlotWidget*>& instances();
 
-    static TabbedPlotWidget *instance(const QString& key);
+  static TabbedPlotWidget* instance(const QString& key);
 
-    void setControlsVisible(bool visible);
+  void setControlsVisible(bool visible);
 
 public slots:
 
-    void setStreamingMode(bool streaming_mode);
+  void setStreamingMode(bool streaming_mode);
 
-    static void saveTabImage(QString fileName, PlotMatrix* matrix);
+  static void saveTabImage(QString fileName, PlotMatrix* matrix);
 
-    void on_stylesheetChanged(QString style_dir);
+  void on_stylesheetChanged(QString style_dir);
 
 private slots:
 
-    void on_renameCurrentTab();
+  void on_renameCurrentTab();
 
-    void on_savePlotsToFile();
+  void on_savePlotsToFile();
 
-    void on_pushAddColumn_pressed();
+  void on_pushAddColumn_pressed();
 
-    void on_pushVerticalResize_pressed();
+  void on_pushVerticalResize_pressed();
 
-    void on_pushHorizontalResize_pressed();
+  void on_pushHorizontalResize_pressed();
 
-    void on_pushAddRow_pressed();
+  void on_pushAddRow_pressed();
 
-    void on_addTabButton_pressed();
+  void on_addTabButton_pressed();
 
-    void on_pushRemoveEmpty_pressed();
+  void on_pushRemoveEmpty_pressed();
 
-    void on_tabWidget_currentChanged(int index);
+  void on_tabWidget_currentChanged(int index);
 
-    void on_tabWidget_tabCloseRequested(int index);
+  void on_tabWidget_tabCloseRequested(int index);
 
-    void on_buttonLinkHorizontalScale_toggled(bool checked);
+  void on_buttonLinkHorizontalScale_toggled(bool checked);
 
-    void on_requestTabMovement(const QString &destination_name);
+  void on_requestTabMovement(const QString& destination_name);
 
-    void on_moveTabIntoNewWindow();
+  void on_moveTabIntoNewWindow();
 
-    void on_pushButtonShowLabel_pressed();
+  void on_pushButtonShowLabel_pressed();
 
-    void onLabelStatusChanged();
+  void onLabelStatusChanged();
 
-    void on_pushButtonZoomMax_pressed();
+  void on_pushButtonZoomMax_pressed();
 
-    void onMoveWidgetIntoNewTab(QString plot_name);
+  void onMoveWidgetIntoNewTab(QString plot_name);
 
 private:
+  enum LabelStatus
+  {
+    LEFT,
+    RIGHT,
+    HIDDEN
+  };
 
-    enum LabelStatus{ LEFT, RIGHT, HIDDEN };
+  Ui::TabbedPlotWidget* ui;
 
-    Ui::TabbedPlotWidget *ui;
+  QAction* _action_renameTab;
+  QAction* _action_savePlots;
 
-    QAction* _action_renameTab;
-    QAction* _action_savePlots;
+  QMenu* _tab_menu;
 
-    QMenu* _tab_menu;
+  const QString _name;
 
-    const QString _name;
+  QMainWindow* _main_window;
 
-    QMainWindow *_main_window;
+  PlotDataMapRef& _mapped_data;
 
-    PlotDataMapRef& _mapped_data;
+  bool _horizontal_link;
 
-    bool _horizontal_link;
+  QString _parent_type;
 
-    QString _parent_type;
+  LabelStatus _labels_status;
 
-    LabelStatus _labels_status;
+  virtual void closeEvent(QCloseEvent* event) override;
 
-    virtual void closeEvent(QCloseEvent *event) override;
-
-    void printPlotsNames();
+  void printPlotsNames();
 
 protected:
+  virtual bool eventFilter(QObject* obj, QEvent* event) override;
 
-    virtual bool eventFilter(QObject *obj, QEvent *event) override;
-
-    static std::map<QString,TabbedPlotWidget*> _instances;
+  static std::map<QString, TabbedPlotWidget*> _instances;
 
 signals:
-    void created();
-    void undoableChangeHappened();
-    void matrixAdded( PlotMatrix * );
-    void sendTabToNewWindow(PlotMatrix *);
+  void created();
+  void undoableChangeHappened();
+  void matrixAdded(PlotMatrix*);
+  void sendTabToNewWindow(PlotMatrix*);
 };
 
-#endif // TABBEDPLOTWIDGET_H
+#endif  // TABBEDPLOTWIDGET_H

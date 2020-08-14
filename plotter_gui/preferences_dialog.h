@@ -3,23 +3,24 @@
 
 #include <QDialog>
 
-namespace Ui {
+namespace Ui
+{
 class PreferencesDialog;
 }
 
 class PreferencesDialog : public QDialog
 {
-    Q_OBJECT
+  Q_OBJECT
 
 public:
-    explicit PreferencesDialog(QWidget *parent = nullptr);
-    ~PreferencesDialog();
+  explicit PreferencesDialog(QWidget* parent = nullptr);
+  ~PreferencesDialog();
 
 private slots:
-    void on_buttonBox_accepted();
+  void on_buttonBox_accepted();
 
 private:
-    Ui::PreferencesDialog *ui;
+  Ui::PreferencesDialog* ui;
 };
 
-#endif // PREFERENCES_DIALOG_H
+#endif  // PREFERENCES_DIALOG_H
