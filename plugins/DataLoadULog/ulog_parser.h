@@ -1,136 +1,166 @@
-#ifndef ULOG_PARSER_H
-#define ULOG_PARSER_H
+#pragma once
 
 #include <iostream>
 #include <vector>
 #include <map>
 #include <set>
+#include <string.h>
 
 #include "string_view.hpp"
 
-typedef  nonstd::string_view StringView;
+typedef nonstd::string_view StringView;
 
 class ULogParser
 {
+public:
+  enum FormatType
+  {
+    UINT8,
+    UINT16,
+    UINT32,
+    UINT64,
+    INT8,
+    INT16,
+    INT32,
+    INT64,
+    FLOAT,
+    DOUBLE,
+    BOOL,
+    CHAR,
+    OTHER
+  };
 
+  struct Field
+  {
+    Field() : array_size(1)
+    {
+    }
+    FormatType type;
+    std::string field_name;
+    std::string other_type_ID;
+    int array_size;
+  };
+
+  struct Parameter
+  {
+    std::string name;
+    union
+    {
+      int32_t val_int;
+      float val_real;
+    } value;
+    FormatType val_type;
+  };
+
+  struct Format
+  {
+    Format() : padding(0)
+    {
+    }
+    std::string name;
+    std::vector<Field> fields;
+    int padding;
+  };
+
+  struct MessageLog
+  {
+    char level;
+    uint64_t timestamp;
+    std::string msg;
+  };
+
+  struct Subscription
+  {
+    Subscription() : msg_id(0), multi_id(0), format(nullptr)
+    {
+    }
+
+    uint16_t msg_id;
+    uint8_t multi_id;
+    std::string message_name;
+    const Format* format;
+  };
+
+  struct Timeseries
+  {
+    std::vector<uint64_t> timestamps;
+    std::vector<std::pair<std::string, std::vector<double>>> data;
+  };
 
 public:
+  ULogParser(const std::string& filename);
 
-    enum FormatType{
-        UINT8, UINT16, UINT32, UINT64,
-        INT8, INT16, INT32, INT64,
-        FLOAT, DOUBLE,
-        BOOL, CHAR, OTHER
-    };
+  const std::map<std::string, Timeseries>& getTimeseriesMap() const;
 
-    struct Field{
-        Field(): array_size(1) {}
-        FormatType type;
-        std::string field_name;
-        std::string other_type_ID;
-        int array_size;
-    };
+  const std::vector<Parameter>& getParameters() const;
 
-    struct Parameter{
-        std::string name;
-        union{
-            int32_t val_int;
-            float   val_real;
-        }value;
-        FormatType val_type;
-    };
+  const std::map<std::string, std::string>& getInfo() const;
 
-    struct Format
-    {
-        Format(): padding(0) {}
-        std::string name;
-        std::vector<Field> fields;
-        int padding;
-    };
-
-    struct MessageLog
-    {
-        char level;
-        uint64_t timestamp;
-        std::string msg;
-    };
-
-    struct Subscription
-    {
-        Subscription(): msg_id(0), multi_id(0), format(nullptr) {}
-
-        uint16_t msg_id;
-        uint8_t multi_id;
-        std::string message_name;
-        const Format* format;
-    };
-
-    struct Timeseries
-    {
-        std::vector<uint64_t> timestamps;
-        std::vector<std::pair<std::string,std::vector<double>>> data;
-    };
-
-public:
-
-    ULogParser(const std::string& filename);
-
-    const std::map<std::string, Timeseries> &getTimeseriesMap() const;
-
-    const std::vector<Parameter> &getParameters() const;
-
-    const std::map<std::string, std::string> &getInfo() const;
-
-    const std::vector<MessageLog> &getLogs() const;
+  const std::vector<MessageLog>& getLogs() const;
 
 private:
-    bool readFileHeader(std::ifstream &file);
+  struct DataStream
+  {
+    DataStream(): offset(0) {}
 
-    bool readFileDefinitions(std::ifstream &file);
+    std::vector<char> data;
+    size_t offset;
 
-    bool readFormat(std::ifstream &file, uint16_t msg_size);
+    void read(char* dst, int len)
+    {
+      memcpy(dst, &data[offset], len);
+      offset += len;
+    }
 
-    bool readFlagBits(std::ifstream &file, uint16_t msg_size);
+    operator bool() { return offset < data.size(); }
+  };
 
-    bool readInfo(std::ifstream &file, uint16_t msg_size);
+  bool readFileHeader(DataStream& datastream);
 
-    bool readParameter(std::ifstream &file, uint16_t msg_size);
+  bool readFileDefinitions(DataStream& datastream);
 
-    bool readSubscription(std::ifstream &file, uint16_t msg_size);
+  bool readFormat(DataStream& datastream, uint16_t msg_size);
 
-    size_t fieldsCount(const Format& format) const;
+  bool readFlagBits(DataStream& datastream, uint16_t msg_size);
 
-    Timeseries createTimeseries(const Format* format);
+  bool readInfo(DataStream& datastream, uint16_t msg_size);
 
-    uint64_t _file_start_time;
+  bool readParameter(DataStream& datastream, uint16_t msg_size);
 
-    std::vector<Parameter> _parameters;
+  bool readSubscription(DataStream& datastream, uint16_t msg_size);
 
-    std::vector<uint8_t> _read_buffer;
+  size_t fieldsCount(const Format& format) const;
 
-    std::streampos _data_section_start; ///< first ADD_LOGGED_MSG message
+  Timeseries createTimeseries(const Format* format);
 
-    int64_t _read_until_file_position = 1ULL << 60; ///< read limit if log contains appended data
+  uint64_t _file_start_time;
 
-    std::set<std::string> _overridden_params;  
+  std::vector<Parameter> _parameters;
 
-    std::map<std::string, Format> _formats;
+  std::vector<uint8_t> _read_buffer;
 
-    std::map<std::string, std::string> _info;
+  std::streampos _data_section_start;  ///< first ADD_LOGGED_MSG message
 
-    std::map<uint16_t,Subscription> _subscriptions;
+  int64_t _read_until_file_position = 1ULL << 60;  ///< read limit if log contains appended data
 
-    std::map<std::string, Timeseries> _timeseries;
+  std::set<std::string> _overridden_params;
 
-    std::vector<StringView> splitString(const StringView& strToSplit, char delimeter);
+  std::map<std::string, Format> _formats;
 
-    std::set<std::string> _message_name_with_multi_id;
+  std::map<std::string, std::string> _info;
 
-    std::vector<MessageLog> _message_logs;
+  std::map<uint16_t, Subscription> _subscriptions;
 
-    void parseDataMessage(const Subscription& sub, char *message);
+  std::map<std::string, Timeseries> _timeseries;
 
-    char * parseSimpleDataMessage(Timeseries &timeseries, const Format* format, char *message, size_t* index);
+  std::vector<StringView> splitString(const StringView& strToSplit, char delimeter);
+
+  std::set<std::string> _message_name_with_multi_id;
+
+  std::vector<MessageLog> _message_logs;
+
+  void parseDataMessage(const Subscription& sub, char* message);
+
+  char* parseSimpleDataMessage(Timeseries& timeseries, const Format* format, char* message, size_t* index);
 };
 
-#endif // ULOG_PARSER_H

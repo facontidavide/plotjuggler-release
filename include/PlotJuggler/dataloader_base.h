@@ -1,7 +1,6 @@
 #ifndef DATALOAD_TEMPLATE_H
 #define DATALOAD_TEMPLATE_H
 
-
 #include <QFile>
 
 #include <functional>
@@ -9,31 +8,30 @@
 #include "PlotJuggler/pj_plugin.h"
 #include "PlotJuggler/messageparser_base.h"
 
-
 struct FileLoadInfo
 {
-    QString filename;
-    QString prefix;
-    QStringList selected_datasources;
-    QDomDocument plugin_config;
+  QString filename;
+  QString prefix;
+  QStringList selected_datasources;
+  QDomDocument plugin_config;
 };
 
-
-class DataLoader: public PlotJugglerPlugin
+class DataLoader : public PlotJugglerPlugin
 {
-
 public:
-    DataLoader(){}
+  DataLoader()
+  {
+  }
 
-    virtual const std::vector<const char*>& compatibleFileExtensions() const = 0;
+  virtual const std::vector<const char*>& compatibleFileExtensions() const = 0;
 
-    virtual bool readDataFromFile(FileLoadInfo* fileload_info, PlotDataMapRef& destination) = 0;
+  virtual bool readDataFromFile(FileLoadInfo* fileload_info, PlotDataMapRef& destination) = 0;
 
-    virtual ~DataLoader() {}
+  virtual ~DataLoader()
+  {
+  }
 
 protected:
-
-
 };
 
 QT_BEGIN_NAMESPACE
@@ -44,6 +42,4 @@ Q_DECLARE_INTERFACE(DataLoader, DataRead_iid)
 
 QT_END_NAMESPACE
 
-
 #endif
-

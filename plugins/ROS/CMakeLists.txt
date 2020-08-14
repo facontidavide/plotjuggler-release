@@ -12,12 +12,14 @@ QT5_WRAP_UI ( COMMON_UI_SRC
     rule_editing.ui
     dialog_select_ros_topics.ui
     dialog_with_itemlist.ui
+    publisher_select_dialog.ui
     )
 
 SET( COMMON_SRC
     dialog_select_ros_topics.h
     dialog_select_ros_topics.cpp
     dialog_with_itemlist.h
+    publisher_select_dialog.h
    )
 
 set(PLUGIN_BASE_DIR ${PROJECT_SOURCE_DIR}/include/PlotJuggler)
@@ -37,17 +39,17 @@ if(COMPILING_WITH_CATKIN)
     list( APPEND COMMON_SRC
         qnodedialog.cpp
         rule_editing.cpp
-        ros1_parsers/ros_parser.cpp
+        ros1_parsers/ros1_parser.cpp
         )
 
     add_library( commonROS STATIC ${COMMON_SRC} ${COMMON_UI_SRC} )
+    target_compile_definitions(commonROS PUBLIC DISABLE_RULE_EDITING)
     target_link_libraries( commonROS PRIVATE
         ${Qt5Widgets_LIBRARIES}
         ${Qt5Xml_LIBRARIES}
         ${catkin_LIBRARIES}
         ros_type_introspection_static
-        fmt::fmt-header-only
-        marl )
+        fmt::fmt-header-only )
 
     #########
     add_library( DataLoadROS SHARED
@@ -82,11 +84,17 @@ elseif(COMPILING_WITH_AMENT)
     find_package(rcpputils REQUIRED)
     find_package(rosbag2 REQUIRED)
     find_package(rosbag2_transport REQUIRED)
+    find_package(sensor_msgs REQUIRED)
+    find_package(geometry_msgs REQUIRED)
+    find_package(nav_msgs REQUIRED)
     find_package(fastcdr REQUIRED)
     find_package(Boost REQUIRED)
+    find_package(plotjuggler_msgs REQUIRED)
+    find_package(tf2_msgs REQUIRED)
+    find_package(tf2_ros REQUIRED)
 
     include_directories(
-        ./
+        ./ ../ ../
         ${Boost_INCLUDE_DIRS}
         ros2_introspection/include
         ros2_parsers)
@@ -96,37 +104,51 @@ elseif(COMPILING_WITH_AMENT)
         ros2_introspection/src/stringtree.cpp
         ros2_parsers/ros2_parser.cpp )
 
-    set(AMENT_DEPENDECIES
+    set(AMENT_DEPENDENCIES
         rclcpp
         rosbag2
         rcpputils
         fastcdr
-        rosbag2_transport )
+        rosbag2_transport
+        sensor_msgs
+        geometry_msgs
+        nav_msgs
+        plotjuggler_msgs
+        tf2_msgs
+        tf2_ros
+        )
 
     add_library( commonROS STATIC ${COMMON_SRC} ${COMMON_UI_SRC})
+
     target_compile_definitions(commonROS PUBLIC DISABLE_RULE_EDITING)
     target_link_libraries( commonROS
         ${Qt5Widgets_LIBRARIES}
         ${Qt5Xml_LIBRARIES}
-        fastcdr)
-    ament_target_dependencies( commonROS ${AMENT_DEPENDECIES})
+        fastcdr
+        fmt::fmt-header-only )
+    ament_target_dependencies( commonROS ${AMENT_DEPENDENCIES})
 
     #############
     add_library( DataLoadROS2 SHARED
         DataLoadROS2/dataload_ros2.cpp
         ${PLUGIN_BASE_DIR}/dataloader_base.h )
     target_link_libraries( DataLoadROS2 commonROS)
-    ament_target_dependencies( DataLoadROS2 ${AMENT_DEPENDECIES})
+    ament_target_dependencies( DataLoadROS2 ${AMENT_DEPENDENCIES})
     #############
     add_library( DataStreamROS2 SHARED
         DataStreamROS2/datastream_ros2.cpp
         ${PLUGIN_BASE_DIR}/datastreamer_base.h )
-    target_link_libraries( DataStreamROS2  commonROS fastcdr)
-    ament_target_dependencies( DataStreamROS2 ${AMENT_DEPENDECIES})
+    target_link_libraries( DataStreamROS2  commonROS)
+    ament_target_dependencies( DataStreamROS2 ${AMENT_DEPENDENCIES})
+    #############
+    add_library( TopicPublisherROS2 SHARED
+        TopicPublisherROS2/publisher_ros2.cpp
+        ${PLUGIN_BASE_DIR}/statepublisher_base.h)
+    target_link_libraries( TopicPublisherROS2 commonROS)
+    ament_target_dependencies( TopicPublisherROS2 ${AMENT_DEPENDENCIES})
 endif()
 
 #######################################################################
-
 
 if(COMPILING_WITH_CATKIN)
     install(TARGETS
@@ -140,5 +162,6 @@ elseif(COMPILING_WITH_AMENT)
     install(TARGETS
         DataLoadROS2
         DataStreamROS2
-        DESTINATION bin  )
+        TopicPublisherROS2
+        DESTINATION  lib/${PROJECT_NAME}  )
 endif()

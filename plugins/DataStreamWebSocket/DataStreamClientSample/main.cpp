@@ -52,22 +52,23 @@
 #include <QtCore/QCommandLineOption>
 #include "client.h"
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
-    QCoreApplication a(argc, argv);
+  QCoreApplication a(argc, argv);
 
-    QCommandLineParser parser;
-    parser.setApplicationDescription("PlotJuggler WebSockets client");
-    parser.addHelpOption();
+  QCommandLineParser parser;
+  parser.setApplicationDescription("PlotJuggler WebSockets client");
+  parser.addHelpOption();
 
-    QCommandLineOption dbgOption(QStringList() << "d" << "debug",
-            QCoreApplication::translate("main", "Debug output [default: off]."));
-    parser.addOption(dbgOption);
-    parser.process(a);
-    bool debug = parser.isSet(dbgOption);
+  QCommandLineOption dbgOption(QStringList() << "d"
+                                             << "debug",
+                               QCoreApplication::translate("main", "Debug output [default: off]."));
+  parser.addOption(dbgOption);
+  parser.process(a);
+  bool debug = parser.isSet(dbgOption);
 
-    Client client(QUrl(QStringLiteral("ws://localhost:6666")), debug);
-    QObject::connect(&client, &Client::closed, &a, &QCoreApplication::quit);
+  Client client(QUrl(QStringLiteral("ws://localhost:6666")), debug);
+  QObject::connect(&client, &Client::closed, &a, &QCoreApplication::quit);
 
-    return a.exec();
+  return a.exec();
 }

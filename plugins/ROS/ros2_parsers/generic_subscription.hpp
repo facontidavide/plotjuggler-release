@@ -48,12 +48,14 @@ class GenericSubscription : public rclcpp::SubscriptionBase
    * \param node_base NodeBaseInterface pointer used in parts of the setup.
    * \param ts Type support handle
    * \param topic_name Topic name
+   * \param transient  if true, subscribe with transient_local
    * \param callback Callback for new messages of serialized form
    */
     GenericSubscription(
       rclcpp::node_interfaces::NodeBaseInterface * node_base,
       const rosidl_message_type_support_t & ts,
       const std::string & topic_name,
+      bool transient,
       std::function<void(std::shared_ptr<rmw_serialized_message_t>)> callback);
 
     // Same as create_serialized_message() as the subscription is to serialized_messages only
@@ -80,17 +82,27 @@ class GenericSubscription : public rclcpp::SubscriptionBase
 };
 
 //---------- implementation -----------
+
+inline rcl_subscription_options_t LatchingOptions()
+{
+  rcl_subscription_options_t options = rcl_subscription_get_default_options();
+  options.qos.reliability = RMW_QOS_POLICY_RELIABILITY_RELIABLE;
+  options.qos.durability = RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL;
+  return options;
+}
+
 inline
 GenericSubscription::GenericSubscription(
   rclcpp::node_interfaces::NodeBaseInterface * node_base,
   const rosidl_message_type_support_t & ts,
   const std::string & topic_name,
+  bool transient,
   std::function<void(std::shared_ptr<rmw_serialized_message_t>)> callback)
 : SubscriptionBase(
     node_base,
     ts,
     topic_name,
-    rcl_subscription_get_default_options(),
+    transient ? LatchingOptions() : rcl_subscription_get_default_options(),
     true),
   default_allocator_(rcutils_get_default_allocator()),
   callback_(callback)
