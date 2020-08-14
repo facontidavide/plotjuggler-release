@@ -18,7 +18,7 @@ DataStreamSample::DataStreamSample()
   param.D = 20 * ((double)qrand() / (double)RAND_MAX);
   _parameters.insert(std::make_pair("data", param));
 
-  for (int i = 0; i < 20000; i++)
+  for (int i = 0; i < 100; i++)
   {
     auto str = QString("data_vect/%1").arg(i).toStdString();
     dataMap().addNumeric(str);
