@@ -7,8 +7,8 @@ Contributors:
    Dorian Scholz 
    Eddy Scott
    Hilario Tome'
-   Jorge Rodriguez
-   Marcel Soler (@veimox )
+   Jorge Rodriguez (@veimox)
+   Marcel Soler 
    Mikael Arguedas
    Kartik Mohta
    Robin Vanhove (@1r0b1n0)
