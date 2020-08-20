@@ -48,13 +48,14 @@ Watch this video to learn how to use it.
 
 For those of you that can't wait and want to get their hands dirty, you can download these binaries:
 
-**Linux with ROS plugins**: [PlotJuggler-Linux-ROS-2.8.4.AppImage](https://github.com/facontidavide/PlotJuggler/releases/download/2.8.4/PlotJuggler-Linux-ROS-2.8.3.AppImage).
+**Linux with ROS plugins**: [PlotJuggler-Linux-ROS-2.8.4.AppImage](https://github.com/facontidavide/PlotJuggler/releases/download/2.8.4/PlotJuggler-Linux-ROS-2.8.4.AppImage).
    
 Do not forget to make it executable with the command 
 
     chmod +x ./PlotJuggler-*-x86_64.AppImage
+	
     
-**Windows Installer**: [PlotJuggler_WIN_Installer-2.8.4.exe](https://github.com/facontidavide/PlotJuggler/releases/download/2.8.4/PlotJuggler_WIN_Installer-2.8.3.exe).
+**Windows Installer**: [PlotJuggler_WIN_Installer-2.8.4.exe](https://github.com/facontidavide/PlotJuggler/releases/download/2.8.4/PlotJuggler_WIN_Installer-2.8.4.exe).
 
 ## How to build (without ROS plugins)
 
