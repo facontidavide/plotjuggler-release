@@ -1,0 +1,12 @@
+Source: ros-foxy-plotjuggler
+Section: misc
+Priority: optional
+Maintainer: Davide Faconti <davide.faconti@gmail.com>
+Build-Depends: debhelper (>= 9.0.0), binutils-dev, libboost-all-dev, libqt5multimedia5-plugins, libqt5svg5-dev, qtbase5-dev, qtdeclarative5-dev, qtmultimedia5-dev, ros-foxy-ament-cmake, ros-foxy-fastcdr, ros-foxy-geometry-msgs, ros-foxy-nav-msgs, ros-foxy-plotjuggler-msgs, ros-foxy-rclcpp, ros-foxy-rcpputils, ros-foxy-rosbag2, ros-foxy-rosbag2-transport, ros-foxy-sensor-msgs, ros-foxy-tf2-msgs, ros-foxy-tf2-ros, ros-foxy-ros-workspace
+Homepage: https://github.com/facontidavide/PlotJuggler
+Standards-Version: 3.9.2
+
+Package: ros-foxy-plotjuggler
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, binutils-dev, libboost-all-dev, libqt5multimedia5-plugins, libqt5svg5-dev, qtbase5-dev, qtdeclarative5-dev, qtmultimedia5-dev, ros-foxy-fastcdr, ros-foxy-geometry-msgs, ros-foxy-nav-msgs, ros-foxy-plotjuggler-msgs, ros-foxy-rclcpp, ros-foxy-rcpputils, ros-foxy-rosbag2, ros-foxy-rosbag2-transport, ros-foxy-sensor-msgs, ros-foxy-tf2-msgs, ros-foxy-tf2-ros, ros-foxy-ros-workspace
+Description: PlotJuggler: juggle with data
