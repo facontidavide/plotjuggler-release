@@ -1,3 +1,26 @@
+## plotjuggler (foxy) - 2.8.4-1
+
+The packages in the `plotjuggler` repository were released into the `foxy` distro by running `/usr/bin/bloom-release --ros-distro foxy plotjuggler` on `Fri, 04 Sep 2020 16:07:11 -0000`
+
+The `plotjuggler` package was released.
+
+Version of package(s) in repository `plotjuggler`:
+
+- upstream repository: https://github.com/facontidavide/PlotJuggler.git
+- release repository: unknown
+- rosdistro version: `null`
+- old version: `null`
+- new version: `2.8.4-1`
+
+Versions of tools used:
+
+- bloom version: `0.9.8`
+- catkin_pkg version: `0.4.22`
+- rosdep version: `0.19.0`
+- rosdistro version: `0.8.2`
+- vcstools version: `0.1.42`
+
+
 ## plotjuggler (melodic) - 2.8.4-2
 
 The packages in the `plotjuggler` repository were released into the `melodic` distro by running `/usr/bin/bloom-release --ros-distro melodic -y plotjuggler` on `Thu, 20 Aug 2020 11:14:51 -0000`
