@@ -440,9 +440,7 @@ static QList<double> qwtDstTicks( const QDateTime &dateTime,
     }
 
     QList<double> ticks;
-#if QT_VERSION >= 0x040700
     ticks.reserve( 3600 / secondsMinor);
-#endif
 
     for ( int i = 0; i < 3600; i += secondsMinor )
         ticks += dstMin + i * 1000.0;

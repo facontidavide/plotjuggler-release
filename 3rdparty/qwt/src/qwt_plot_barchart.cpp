@@ -420,25 +420,19 @@ QList<QwtLegendData> QwtPlotBarChart::legendData() const
     if ( d_data->legendMode == LegendBarTitles )
     {
         const size_t numSamples = dataSize();
-#if QT_VERSION >= 0x040700
         list.reserve( numSamples );
-#endif
 
         for ( size_t i = 0; i < numSamples; i++ )
         {
             QwtLegendData data;
 
-            QVariant titleValue;
-            qVariantSetValue( titleValue, barTitle( i ) );
-            data.setValue( QwtLegendData::TitleRole, titleValue );
+            data.setValue( QwtLegendData::TitleRole,
+                QVariant::fromValue( barTitle( i ) ) );
 
             if ( !legendIconSize().isEmpty() )
             {
-                QVariant iconValue;
-                qVariantSetValue( iconValue,
-                    legendIcon( i, legendIconSize() ) );
-
-                data.setValue( QwtLegendData::IconRole, iconValue );
+                data.setValue( QwtLegendData::IconRole,
+                    QVariant::fromValue( legendIcon( i, legendIconSize() ) ) );
             }
 
             list += data;

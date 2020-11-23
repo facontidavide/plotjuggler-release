@@ -43,7 +43,6 @@ class QwtPlotDirectPainter::PrivateData
 {
 public:
     PrivateData():
-        attributes( 0 ),
         hasClipping(false),
         seriesItem( NULL ),
         from( 0 ),

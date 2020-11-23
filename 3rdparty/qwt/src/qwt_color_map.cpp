@@ -12,21 +12,6 @@
 
 #include <qvector.h>
 
-#if (__GNUC__ * 100 + __GNUC_MINOR__) >= 408
-
-/*
-  "-ftree-partial-pre" ( introduced with gcc 4.8 ) does miracles in
-  QwtColorMap::colorIndex(). When being used very often - like in
-  QwtPlotSpectrogram::renderTile() - time goes down by ~50%.
-
-  clang 3.3 is out of the box ( -O2 ) fast for QwtColorMap::colorIndex(),
-  but also ~33% faster when rendering the image through QwtLinearColorMap::rgb()
-*/
-
-#define QWT_GCC_OPTIMIZE 1
-
-#endif
-
 static inline QRgb qwtHsvToRgb( int h, int s, int v, int a )
 {
 #if 0
@@ -281,11 +266,6 @@ void QwtColorMap::setFormat( Format format )
     d_format = format;
 }
 
-#ifdef QWT_GCC_OPTIMIZE
-#pragma GCC push_options
-#pragma GCC optimize("tree-partial-pre")
-#endif
-
 /*!
   \brief Map a value of a given interval into a color index
 
@@ -298,13 +278,6 @@ void QwtColorMap::setFormat( Format format )
 uint QwtColorMap::colorIndex( int numColors,
     const QwtInterval &interval, double value ) const
 {
-#ifdef QWT_GCC_OPTIMIZE
-    // accessing value here somehow makes gcc 4.8.1 to create
-    // significantly faster assembler code
-    if ( ((uchar *)&value)[0] ) asm("");
-        asm("");
-#endif
-
     const double width = interval.width();
     if ( width <= 0.0 )
         return 0;
@@ -319,10 +292,6 @@ uint QwtColorMap::colorIndex( int numColors,
     const double v = maxIndex * ( ( value - interval.minValue() ) / width );
     return static_cast<unsigned int>( v + 0.5 );
 }
-
-#ifdef QWT_GCC_OPTIMIZE
-#pragma GCC pop_options
-#endif
 
 /*!
    Build and return a color map of 256 colors
@@ -512,11 +481,6 @@ QRgb QwtLinearColorMap::rgb(
     return d_data->colorStops.rgb( d_data->mode, ratio );
 }
 
-#ifdef QWT_GCC_OPTIMIZE
-#pragma GCC push_options
-#pragma GCC optimize("tree-partial-pre")
-#endif
-
 /*!
   \brief Map a value of a given interval into a color index
 
@@ -530,12 +494,6 @@ QRgb QwtLinearColorMap::rgb(
 uint QwtLinearColorMap::colorIndex( int numColors,
     const QwtInterval &interval, double value ) const
 {
-#ifdef QWT_GCC_OPTIMIZE
-    // accessing value here somehow makes gcc 4.8.1 to create
-    // significantly faster assembler code
-    if ( ((uchar *)&value)[0] ) asm("");
-#endif
-
     const double width = interval.width();
     if ( width <= 0.0 )
         return 0;
@@ -549,10 +507,6 @@ uint QwtLinearColorMap::colorIndex( int numColors,
     const double v = ( numColors - 1 ) * ( value - interval.minValue() ) / width;
     return static_cast<unsigned int>( ( d_data->mode == FixedColors ) ? v : v + 0.5 );
 }
-
-#ifdef QWT_GCC_OPTIMIZE
-#pragma GCC pop_options
-#endif
 
 class QwtAlphaColorMap::PrivateData
 {
