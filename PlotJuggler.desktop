@@ -1,7 +1,7 @@
 [Desktop Entry]
 Type=Application
 Name=PlotJuggler
-Exec=PlotJuggler
+Exec=plotjuggler
 Icon=plotjuggler
 Comment=Visualize timeseries like a pro
 Terminal=false

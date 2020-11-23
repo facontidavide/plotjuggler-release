@@ -16,6 +16,7 @@
 #include <qstyleoption.h>
 #include <qpainter.h>
 #include <qevent.h>
+#include <qmargins.h>
 
 class QwtTextLabel::PrivateData
 {
@@ -178,11 +179,10 @@ QSize QwtTextLabel::minimumSizeHint() const
 {
     QSizeF sz = d_data->text.textSize( font() );
 
-    int left, right, top, bottom;
-    getContentsMargins( &left, &top, &right, &bottom );
+    const QMargins m = contentsMargins();
 
-    int mw = left + right + 2 * d_data->margin;
-    int mh = top + bottom + 2 * d_data->margin;
+    int mw = m.left() + m.right() + 2 * d_data->margin;
+    int mh = m.top() + m.bottom() + 2 * d_data->margin;
 
     int indent = d_data->indent;
     if ( indent <= 0 )
@@ -214,10 +214,9 @@ int QwtTextLabel::heightForWidth( int width ) const
     if ( indent <= 0 )
         indent = defaultIndent();
 
-    int left, right, top, bottom;
-    getContentsMargins( &left, &top, &right, &bottom );
+    const QMargins m = contentsMargins();
 
-    width -= left + right - 2 * d_data->margin;
+    width -= m.left() + m.right() - 2 * d_data->margin;
     if ( renderFlags & Qt::AlignLeft || renderFlags & Qt::AlignRight )
         width -= indent;
 
@@ -225,7 +224,7 @@ int QwtTextLabel::heightForWidth( int width ) const
     if ( ( renderFlags & Qt::AlignTop ) || ( renderFlags & Qt::AlignBottom ) )
         height += indent;
 
-    height += top + bottom + 2 * d_data->margin;
+    height += m.top() + m.bottom() + 2 * d_data->margin;
 
     return height;
 }
@@ -240,7 +239,7 @@ void QwtTextLabel::paintEvent( QPaintEvent *event )
     painter.setClipRegion( event->region() );
 
     QStyleOption opt;
-    opt.init(this);
+    opt.initFrom(this);
     style()->drawPrimitive(QStyle::PE_Widget, &opt, &painter, this);
 
     if ( !contentsRect().contains( event->rect() ) )
@@ -339,7 +338,7 @@ int QwtTextLabel::defaultIndent() const
     else
         fnt = font();
 
-    return QFontMetrics( fnt ).width( 'x' ) / 2;
+    return QwtPainter::horizontalAdvance( QFontMetrics( fnt ), 'x' ) / 2;
 }
 
 #if QWT_MOC_INCLUDE

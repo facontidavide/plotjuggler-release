@@ -687,25 +687,19 @@ void QwtPlotMultiBarChart::drawBar( QPainter *painter,
 QList<QwtLegendData> QwtPlotMultiBarChart::legendData() const
 {
     QList<QwtLegendData> list;
-#if QT_VERSION >= 0x040700
     list.reserve( d_data->barTitles.size() );
-#endif
 
     for ( int i = 0; i < d_data->barTitles.size(); i++ )
     {
         QwtLegendData data;
 
-        QVariant titleValue;
-        qVariantSetValue( titleValue, d_data->barTitles[i] );
-        data.setValue( QwtLegendData::TitleRole, titleValue );
+        data.setValue( QwtLegendData::TitleRole,
+            QVariant::fromValue( d_data->barTitles[i] ) );
 
         if ( !legendIconSize().isEmpty() )
         {
-            QVariant iconValue;
-            qVariantSetValue( iconValue,
-                legendIcon( i, legendIconSize() ) );
-
-            data.setValue( QwtLegendData::IconRole, iconValue );
+            data.setValue( QwtLegendData::IconRole,
+                QVariant::fromValue( legendIcon( i, legendIconSize() ) ) );
         }
 
         list += data;

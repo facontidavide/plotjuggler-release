@@ -725,9 +725,8 @@ void QwtPlotLegendItem::updateLegend( const QwtPlotItem *plotItem,
 
         if ( !data.isEmpty() )
         {
-#if QT_VERSION >= 0x040700
             layoutItems.reserve( data.size() );
-#endif
+
             for ( int i = 0; i < data.size(); i++ )
             {
                 QwtLegendLayoutItem *layoutItem =
@@ -904,9 +903,7 @@ QList< QRect > QwtPlotLegendItem::legendGeometries(
         layoutItems = it.value();
 
     QList<QRect> geometries;
-#if QT_VERSION >= 0x040700
     geometries.reserve(layoutItems.size());
-#endif
 
     for ( int i = 0; i < layoutItems.size(); i++ )
         geometries += layoutItems[i]->geometry();

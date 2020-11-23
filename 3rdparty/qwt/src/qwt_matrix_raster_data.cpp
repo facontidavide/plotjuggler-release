@@ -14,6 +14,35 @@
 #include <qnumeric.h>
 #include <qrect.h>
 
+static inline double qwtHermiteInterpolate(
+    double A, double B, double C, double D, double t )
+{
+    const double t2 = t * t;
+    const double t3 = t2 * t;
+
+    const double a = -A / 2.0 + ( 3.0 * B ) / 2.0 - ( 3.0 * C ) / 2.0 + D / 2.0;
+    const double b = A - ( 5.0 * B ) / 2.0 + 2.0 * C - D / 2.0;
+    const double c = -A / 2.0 + C / 2.0;
+    const double d = B;
+
+    return a * t3 + b * t2 + c * t + d;
+}
+
+static inline double qwtBicubicInterpolate(
+    double v00, double v10, double v20, double v30,
+    double v01, double v11, double v21, double v31, 
+    double v02, double v12, double v22, double v32,
+    double v03, double v13, double v23, double v33,
+    double dx, double dy )
+{
+    const double v0 = qwtHermiteInterpolate( v00, v10, v20, v30, dx );
+    const double v1 = qwtHermiteInterpolate( v01, v11, v21, v31, dx );
+    const double v2 = qwtHermiteInterpolate( v02, v12, v22, v32, dx );
+    const double v3 = qwtHermiteInterpolate( v03, v13, v23, v33, dx );
+
+    return qwtHermiteInterpolate( v0, v1, v2, v3, dy );
+}
+
 class QwtMatrixRasterData::PrivateData
 {
 public:
@@ -236,10 +265,83 @@ double QwtMatrixRasterData::value( double x, double y ) const
 
     switch( d_data->resampleMode )
     {
+        case BicubicInterpolation:
+        {
+            const double colF = ( x - xInterval.minValue() ) / d_data->dx;
+            const double rowF = ( y - yInterval.minValue() ) / d_data->dy;
+
+            const int col = qRound( colF );
+            const int row = qRound( rowF );
+
+            int col0 = col - 2;
+            int col1 = col - 1;
+            int col2 = col;
+            int col3 = col + 1;
+
+            if ( col1 < 0 )
+                col1 = col2;
+
+            if ( col0 < 0 )
+                col0 = col1;
+
+            if ( col2 >= d_data->numColumns )
+                col2 = col1;
+
+            if ( col3 >= d_data->numColumns )
+                col3 = col2;
+
+            int row0 = row - 2;
+            int row1 = row - 1;
+            int row2 = row;
+            int row3 = row + 1;
+
+            if ( row1 < 0 )
+                row1 = row2;
+
+            if ( row0 < 0 )
+                row0 = row1;
+            
+            if ( row2 >= d_data->numRows )
+                row2 = row1;
+            
+            if ( row3 >= d_data->numRows )
+                row3 = row2;
+
+            // First row
+            const double v00 = d_data->value( row0, col0 );
+            const double v10 = d_data->value( row0, col1 );
+            const double v20 = d_data->value( row0, col2 );
+            const double v30 = d_data->value( row0, col3 );
+
+            // Second row
+            const double v01 = d_data->value( row1, col0 );
+            const double v11 = d_data->value( row1, col1 );
+            const double v21 = d_data->value( row1, col2 );
+            const double v31 = d_data->value( row1, col3 );
+
+            // Third row
+            const double v02 = d_data->value( row2, col0 );
+            const double v12 = d_data->value( row2, col1 );
+            const double v22 = d_data->value( row2, col2 );
+            const double v32 = d_data->value( row2, col3 );
+
+            // Fourth row
+            const double v03 = d_data->value( row3, col0 );
+            const double v13 = d_data->value( row3, col1 );
+            const double v23 = d_data->value( row3, col2 );
+            const double v33 = d_data->value( row3, col3 );
+
+            value = qwtBicubicInterpolate(
+                v00, v10, v20, v30, v01, v11, v21, v31,
+                v02, v12, v22, v32, v03, v13, v23, v33,
+                colF - col + 0.5, rowF - row + 0.5 );
+
+            break;
+        }
         case BilinearInterpolation:
         {
-            int col1 = qRound( (x - xInterval.minValue() ) / d_data->dx ) - 1;
-            int row1 = qRound( (y - yInterval.minValue() ) / d_data->dy ) - 1;
+            int col1 = qRound( ( x - xInterval.minValue() ) / d_data->dx ) - 1;
+            int row1 = qRound( ( y - yInterval.minValue() ) / d_data->dy ) - 1;
             int col2 = col1 + 1;
             int row2 = row1 + 1;
 
@@ -258,10 +360,8 @@ double QwtMatrixRasterData::value( double x, double y ) const
             const double v12 = d_data->value( row2, col1 );
             const double v22 = d_data->value( row2, col2 );
 
-            const double x2 = xInterval.minValue() +
-                ( col2 + 0.5 ) * d_data->dx;
-            const double y2 = yInterval.minValue() +
-                ( row2 + 0.5 ) * d_data->dy;
+            const double x2 = xInterval.minValue() + ( col2 + 0.5 ) * d_data->dx;
+            const double y2 = yInterval.minValue() + ( row2 + 0.5 ) * d_data->dy;
 
             const double rx = ( x2 - x ) / d_data->dx;
             const double ry = ( y2 - y ) / d_data->dy;
@@ -276,8 +376,8 @@ double QwtMatrixRasterData::value( double x, double y ) const
         case NearestNeighbour:
         default:
         {
-            int row = int( (y - yInterval.minValue() ) / d_data->dy );
-            int col = int( (x - xInterval.minValue() ) / d_data->dx );
+            int row = int( ( y - yInterval.minValue() ) / d_data->dy );
+            int col = int( ( x - xInterval.minValue() ) / d_data->dx );
 
             // In case of intervals, where the maximum is included
             // we get out of bound for row/col, when the value for the

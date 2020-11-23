@@ -4,18 +4,20 @@
 #include <QtPlugin>
 #include "PlotJuggler/dataloader_base.h"
 
+using namespace PJ;
+
 class DataLoadCSV : public DataLoader
 {
   Q_OBJECT
-  Q_PLUGIN_METADATA(IID "com.icarustechnology.PlotJuggler.DataLoader"
-                        "../dataloader.json")
-  Q_INTERFACES(DataLoader)
+  Q_PLUGIN_METADATA(IID "facontidavide.PlotJuggler3.DataLoader")
+  Q_INTERFACES(PJ::DataLoader)
 
 public:
   DataLoadCSV();
   virtual const std::vector<const char*>& compatibleFileExtensions() const override;
 
-  virtual bool readDataFromFile(FileLoadInfo* fileload_info, PlotDataMapRef& destination) override;
+  virtual bool readDataFromFile(PJ::FileLoadInfo* fileload_info,
+                                PlotDataMapRef& destination) override;
 
   virtual ~DataLoadCSV();
 

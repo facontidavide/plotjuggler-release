@@ -9,7 +9,11 @@
 
 #include "qwt_plot_opengl_canvas.h"
 #include "qwt_plot.h"
-#include <qevent.h>
+#include "qwt_painter.h"
+
+#include <qpainter.h>
+#include <qpainterpath.h>
+#include <qcoreevent.h>
 #include <qopenglframebufferobject.h>
 #include <qopenglpaintdevice.h>
 
@@ -36,7 +40,7 @@ public:
 };
 
 
-/*! 
+/*!
   \brief Constructor
 
   \param plot Parent plot widget
@@ -147,7 +151,7 @@ void QwtPlotOpenGLCanvas::initializeGL()
 
 void QwtPlotOpenGLCanvas::paintGL()
 {
-    const bool hasFocusIndicator = 
+    const bool hasFocusIndicator =
         hasFocus() && focusIndicator() == CanvasFocusIndicator;
 
     QPainter painter;
@@ -155,6 +159,9 @@ void QwtPlotOpenGLCanvas::paintGL()
     if ( testPaintAttribute( QwtPlotOpenGLCanvas::BackingStore ) &&
         QOpenGLFramebufferObject::hasOpenGLFramebufferBlit() )
     {
+        const qreal pixelRatio = QwtPainter::devicePixelRatio( NULL );
+        const QSize fboSize = size() * pixelRatio;
+
         if ( hasFocusIndicator )
             painter.begin( this );
 
@@ -162,16 +169,19 @@ void QwtPlotOpenGLCanvas::paintGL()
            QOpenGLWidget has its own internal FBO, that is used to restore
            its content without having to repaint. This works fine when f.e
            a rubberband is moving on top, but there are still situations,
-           where we can repaint without an potentially expensive replot: 
+           where we can repaint without an potentially expensive replot:
 
                - when having the focus the top level window gets activated/deactivated
                - ???
          */
 
-        if ( d_data->fbo && d_data->fbo->size() != size() )
+        if ( d_data->fbo )
         {
-            delete d_data->fbo;
-            d_data->fbo = NULL;
+            if ( d_data->fbo->size() != fboSize )
+            {
+                delete d_data->fbo;
+                d_data->fbo = NULL;
+            }
         }
 
         if ( d_data->fbo == NULL )
@@ -180,7 +190,7 @@ void QwtPlotOpenGLCanvas::paintGL()
             fboFormat.setSamples( d_data->numSamples );
             fboFormat.setAttachment( QOpenGLFramebufferObject::CombinedDepthStencil );
 
-            d_data->fbo = new QOpenGLFramebufferObject( size(), fboFormat );
+            d_data->fbo = new QOpenGLFramebufferObject( fboSize, fboFormat );
             d_data->fboDirty = true;
         }
 
@@ -188,12 +198,13 @@ void QwtPlotOpenGLCanvas::paintGL()
         {
             d_data->fbo->bind();
 
-            QOpenGLPaintDevice pd( size() );
+            QOpenGLPaintDevice pd( fboSize );
 
             QPainter fboPainter( &pd );
+            fboPainter.scale( pixelRatio, pixelRatio );
             draw( &fboPainter);
             fboPainter.end();
-        
+
             d_data->fboDirty = false;
         }
 
@@ -213,3 +224,7 @@ void QwtPlotOpenGLCanvas::resizeGL( int, int )
 {
     // nothing to do
 }
+
+#if QWT_MOC_INCLUDE
+#include "moc_qwt_plot_opengl_canvas.cpp"
+#endif
