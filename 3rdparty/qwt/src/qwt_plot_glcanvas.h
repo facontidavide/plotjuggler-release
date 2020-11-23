@@ -11,7 +11,8 @@
 #define QWT_PLOT_GLCANVAS_H
 
 #include "qwt_global.h"
-#include <qframe.h>
+#include "qwt_plot_abstract_canvas.h"
+
 #include <qgl.h>
 
 class QwtPlot;
@@ -27,87 +28,37 @@ class QwtPlot;
   its API. When using style sheets it supports the box model - beside
   backgrounds with rounded borders.
 
-  \sa QwtPlot::setCanvas(), QwtPlotCanvas
+  \sa QwtPlot::setCanvas(), QwtPlotCanvas, QwtPlotCanvas::OpenGLBuffer
 
   \note With Qt4 you might want to use the QPaintEngine::OpenGL paint engine
         ( see QGL::setPreferredPaintEngine() ). On a Linux test system
         QPaintEngine::OpenGL2 shows very basic problems like translated
         geometries.
+
+  \note Another way for getting hardware accelerated graphics is using
+        an OpenGL offscreen buffer ( QwtPlotCanvas::OpenGLBuffer ) with QwtPlotCanvas.
+        Performance is worse, than rendering straight to a QGLWidget, but is usually
+        better integrated into a desktop application.
 */
-class QWT_EXPORT QwtPlotGLCanvas: public QGLWidget
+class QWT_EXPORT QwtPlotGLCanvas: public QGLWidget, public QwtPlotAbstractGLCanvas
 {
     Q_OBJECT
 
-    Q_ENUMS( Shape Shadow )
-
-    Q_PROPERTY( Shadow frameShadow READ frameShadow WRITE setFrameShadow )
-    Q_PROPERTY( Shape frameShape READ frameShape WRITE setFrameShape )
+    Q_PROPERTY( QFrame::Shadow frameShadow READ frameShadow WRITE setFrameShadow )
+    Q_PROPERTY( QFrame::Shape frameShape READ frameShape WRITE setFrameShape )
     Q_PROPERTY( int lineWidth READ lineWidth WRITE setLineWidth )
     Q_PROPERTY( int midLineWidth READ midLineWidth WRITE setMidLineWidth )
     Q_PROPERTY( int frameWidth READ frameWidth )
     Q_PROPERTY( QRect frameRect READ frameRect DESIGNABLE false )
 
+    Q_PROPERTY( double borderRadius READ borderRadius WRITE setBorderRadius )
+
 public:
-    /*!
-        \brief Frame shadow
-
-         Unfortunately it is not possible to use QFrame::Shadow
-         as a property of a widget that is not derived from QFrame.
-         The following enum is made for the designer only. It is safe
-         to use QFrame::Shadow instead.
-     */
-    enum Shadow
-    {
-        //! QFrame::Plain
-        Plain = QFrame::Plain,
-
-        //! QFrame::Raised
-        Raised = QFrame::Raised,
-
-        //! QFrame::Sunken
-        Sunken = QFrame::Sunken
-    };
-
-    /*!
-        \brief Frame shape
-
-        Unfortunately it is not possible to use QFrame::Shape
-        as a property of a widget that is not derived from QFrame.
-        The following enum is made for the designer only. It is safe
-        to use QFrame::Shadow instead.
-
-        \note QFrame::StyledPanel and QFrame::WinPanel are unsupported
-              and will be displayed as QFrame::Panel.
-     */
-    enum Shape
-    {
-        NoFrame = QFrame::NoFrame,
-
-        Box = QFrame::Box,
-        Panel = QFrame::Panel
-    };
-
     explicit QwtPlotGLCanvas( QwtPlot * = NULL );
+    explicit QwtPlotGLCanvas( const QGLFormat &, QwtPlot * = NULL );
     virtual ~QwtPlotGLCanvas();
 
-    void setFrameStyle( int style );
-    int frameStyle() const;
-
-    void setFrameShadow( Shadow );
-    Shadow frameShadow() const;
-
-    void setFrameShape( Shape );
-    Shape frameShape() const;
-
-    void setLineWidth( int );
-    int lineWidth() const;
-
-    void setMidLineWidth( int );
-    int midLineWidth() const;
-
-    int frameWidth() const;
-    QRect frameRect() const;
-
+    Q_INVOKABLE virtual void invalidateBackingStore() QWT_OVERRIDE;
     Q_INVOKABLE QPainterPath borderPath( const QRect & ) const;
 
     virtual bool event( QEvent * ) QWT_OVERRIDE;
@@ -118,11 +69,13 @@ public Q_SLOTS:
 protected:
     virtual void paintEvent( QPaintEvent * ) QWT_OVERRIDE;
 
-    virtual void drawBackground( QPainter * );
-    virtual void drawBorder( QPainter * );
-    virtual void drawItems( QPainter * );
+    virtual void initializeGL() QWT_OVERRIDE;
+    virtual void paintGL() QWT_OVERRIDE;
+    virtual void resizeGL( int width, int height ) QWT_OVERRIDE;
 
 private:
+	virtual void clearBackingStore() QWT_OVERRIDE;
+
     class PrivateData;
     PrivateData *d_data;
 };

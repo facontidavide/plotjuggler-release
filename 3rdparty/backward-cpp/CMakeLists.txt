@@ -78,54 +78,8 @@ set(BACKWARD_ENABLE $<TARGET_OBJECTS:backward_object> CACHE STRING
 ###############################################################################
 # BACKWARD LIBRARY (Includes backward.cpp)
 ###############################################################################
-option(BACKWARD_SHARED "Build dynamic backward-cpp shared lib" OFF)
 
-if(BACKWARD_SHARED)
-    set(libtype SHARED)
-endif()
-add_library(backward ${libtype} backward.cpp)
+add_library(backward STATIC backward.cpp)
 target_compile_definitions(backward PUBLIC ${BACKWARD_DEFINITIONS})
 target_include_directories(backward PUBLIC ${BACKWARD_INCLUDE_DIRS})
-
-###############################################################################
-# TESTS
-###############################################################################
-
-if(BACKWARD_TESTS)
-	enable_testing()
-
-	add_library(test_main OBJECT test/_test_main.cpp)
-
-	macro(backward_add_test src)
-		get_filename_component(name ${src} NAME_WE)
-		set(test_name "test_${name}")
-
-		add_executable(${test_name} ${src} ${ARGN} $<TARGET_OBJECTS:test_main>)
-
-		target_link_libraries(${test_name} PRIVATE Backward::Backward)
-
-		add_test(NAME ${name} COMMAND ${test_name})
-	endmacro()
-
-	# Tests without backward.cpp
-	set(TESTS
-		test
-		stacktrace
-		rectrace
-		select_signals
-		)
-
-	foreach(test ${TESTS})
-		backward_add_test(test/${test}.cpp)
-	endforeach()
-
-	# Tests with backward.cpp
-	set(TESTS
-		suicide
-		)
-
-	foreach(test ${TESTS})
-		backward_add_test(test/${test}.cpp ${BACKWARD_ENABLE})
-	endforeach()
-endif()
 
