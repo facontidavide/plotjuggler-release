@@ -1,36 +1,54 @@
-#ifndef MESSAGEPARSER_TEMPLATE_H
-#define MESSAGEPARSER_TEMPLATE_H
+#pragma once
 
 #include <QtPlugin>
+#include <QApplication>
 #include <array>
 #include <unordered_map>
 #include <unordered_set>
 #include <functional>
+#include <map>
+#include <set>
 #include "PlotJuggler/plotdata.h"
+#include "PlotJuggler/pj_plugin.h"
+
+namespace PJ {
+
+/*
+ * A messgaeParser is a clas that is able to convert a message received by
+ * a DataStreamer plugin into data in PlotDataMapRef.
+ *
+ * - Each data Source has its own instance of MessageParser
+ * - MessageParser objects are created by MessageParserCreator.
+ * - The actual plugin created here is the MessageParserCreator.
+ * - Each DataStreamer plugin has its own set of MessageParserCreator
+ *
+ * */
 
 class MessageRef
 {
 public:
-  explicit MessageRef(const uint8_t* first_ptr, size_t size) : _first_ptr(first_ptr), _size(size)
-  {
-  }
+  explicit MessageRef(uint8_t* first_ptr, size_t size) :
+    _first_ptr(first_ptr), _size(size)
+  { }
 
-  explicit MessageRef(const std::vector<uint8_t>& vect) : _first_ptr(vect.data()), _size(vect.size())
-  {
-  }
+  explicit MessageRef(std::vector<uint8_t>& vect) :
+    _first_ptr(vect.data()), _size(vect.size())
+  { }
 
-  const uint8_t* data() const
-  {
+  const uint8_t* data() const {
     return _first_ptr;
   }
 
-  size_t size() const
-  {
+  uint8_t* data() {
+    return _first_ptr;
+  }
+
+  size_t size() const {
     return _size;
   }
 
 private:
-  const uint8_t* _first_ptr;
+  uint8_t* _first_ptr;
   size_t _size;
 };
 
@@ -46,50 +64,46 @@ private:
 class MessageParser
 {
 public:
-  virtual ~MessageParser()
-  {
-  }
+  MessageParser(const std::string& topic_name,
+                PlotDataMapRef& plot_data): _plot_data(plot_data), _topic_name(topic_name)
+  { }
+  virtual ~MessageParser() = default;
 
-  virtual const std::unordered_set<std::string>& getCompatibleKeys() const = 0;
-
-  virtual void pushMessageRef(const std::string& key, const MessageRef& msg, double timestamp) = 0;
-
-  virtual void extractData(PlotDataMapRef& destination, const std::string& prefix) = 0;
-
+  virtual bool parseMessage(const MessageRef serialized_msg,
+                            double timestamp) = 0;
 protected:
-  static void appendData(PlotDataMapRef& destination_plot_map, const std::string& field_name, PlotData& in_data)
+
+  PlotDataMapRef& _plot_data;
+  std::string _topic_name;
+
+  PlotData& getSeries(const std::string& key)
   {
-    if (in_data.size() == 0)
+    auto plot_pair = _plot_data.numeric.find(key);
+    if (plot_pair == _plot_data.numeric.end())
     {
-      return;
+      plot_pair = _plot_data.addNumeric(key);
     }
-    auto plot_pair = destination_plot_map.numeric.find(field_name);
-    if ((plot_pair == destination_plot_map.numeric.end()))
-    {
-      plot_pair = destination_plot_map.addNumeric(field_name);
-      plot_pair->second.swapData(in_data);
-    }
-    else
-    {
-      PlotData& plot_data = plot_pair->second;
-      for (size_t i = 0; i < in_data.size(); i++)
-      {
-        double val = in_data[i].y;
-        if (!std::isnan(val) && !std::isinf(val))
-        {
-          plot_data.pushBack(in_data[i]);
-        }
-      }
-    }
-    in_data.clear();
+    return plot_pair->second;
   }
 };
 
+using MessageParserPtr = std::shared_ptr<MessageParser>;
+
+//------------- This is the actual plugin interface --------------
+class MessageParserCreator : public PlotJugglerPlugin
+{
+public:
+
+  virtual MessageParserPtr createInstance(const std::string& topic_name, PlotDataMapRef& data) = 0;
+};
+//----------------------------------------------------------------
+
+using MessageParserFactory = std::map<QString, std::shared_ptr<MessageParserCreator>>;
+
+} // end namespace
+
+
 QT_BEGIN_NAMESPACE
-
-#define MessageParser_iid "com.icarustechnology.PlotJuggler.MessageParser"
-Q_DECLARE_INTERFACE(MessageParser, MessageParser_iid)
-
+#define MessageParserCreator_iid "facontidavide.PlotJuggler3.MessageParserCreator"
+Q_DECLARE_INTERFACE(PJ::MessageParserCreator, MessageParserCreator_iid)
 QT_END_NAMESPACE
-
-#endif

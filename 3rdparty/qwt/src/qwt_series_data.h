@@ -245,6 +245,19 @@ public:
     virtual QRectF boundingRect() const QWT_OVERRIDE;
 };
 
+class QWT_EXPORT QwtVectorFieldData: public QwtArraySeriesData<QwtVectorFieldSample>
+{
+public:
+    QwtVectorFieldData(
+        const QVector<QwtVectorFieldSample> & = QVector<QwtVectorFieldSample>() );
+
+    virtual QRectF boundingRect() const QWT_OVERRIDE;
+    virtual double maxMagnitude() const;
+
+protected:
+    mutable double d_maxMagnitude;
+};
+
 /*!
     Interface for iterating over an array of OHLC samples
 */
@@ -274,6 +287,9 @@ QWT_EXPORT QRectF qwtBoundingRect(
 
 QWT_EXPORT QRectF qwtBoundingRect(
     const QwtSeriesData<QwtOHLCSample> &, int from = 0, int to = -1 );
+
+QWT_EXPORT QRectF qwtBoundingRect(
+    const QwtSeriesData<QwtVectorFieldSample> &, int from = 0, int to = -1 );
 
 /*!
     Binary search for a sorted series of samples

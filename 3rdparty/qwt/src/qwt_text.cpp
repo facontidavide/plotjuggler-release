@@ -142,8 +142,6 @@ public:
         borderRadius( 0 ),
         borderPen( Qt::NoPen ),
         backgroundBrush( Qt::NoBrush ),
-        paintAttributes( 0 ),
-        layoutAttributes( 0 ),
         textEngine( NULL )
     {
     }
@@ -687,7 +685,6 @@ const QwtTextEngine *QwtText::textEngine( const QString &text,
    \param format Text format
    \param engine Text engine
 
-   \sa QwtMathMLTextEngine
    \warning Using QwtText::AutoText does nothing.
 */
 void QwtText::setTextEngine( QwtText::TextFormat format,

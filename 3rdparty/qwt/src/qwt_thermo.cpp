@@ -18,8 +18,10 @@
 #include <qdrawutil.h>
 #include <qstyle.h>
 #include <qstyleoption.h>
+#include <qmargins.h>
 
 #include <algorithm>
+#include <functional>
 
 static inline void qwtDrawLine( QPainter *painter, int pos,
     const QColor &color, const QRect &pipeRect, const QRect &liquidRect,
@@ -236,7 +238,7 @@ void QwtThermo::paintEvent( QPaintEvent *event )
     painter.setClipRegion( event->region() );
 
     QStyleOption opt;
-    opt.init(this);
+    opt.initFrom(this);
     style()->drawPrimitive(QStyle::PE_Widget, &opt, &painter, this);
 
     const QRect tRect = pipeRect();
@@ -877,10 +879,9 @@ QSize QwtThermo::minimumSizeHint() const
     h += 2 * d_data->borderWidth;
 
     // finally add the margins
-    int left, right, top, bottom;
-    getContentsMargins( &left, &top, &right, &bottom );
-    w += left + right;
-    h += top + bottom;
+    const QMargins m = contentsMargins();
+    w += m.left() + m.right();
+    h += m.top() + m.bottom();
 
     return QSize( w, h );
 }
