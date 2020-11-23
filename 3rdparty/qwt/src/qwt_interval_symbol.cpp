@@ -14,11 +14,6 @@
 #include <qpainter.h>
 #include <qmath.h>
 
-#if QT_VERSION < 0x040601
-#define qFastSin(x) std::sin(x)
-#define qFastCos(x) std::cos(x)
-#endif
-
 class QwtIntervalSymbol::PrivateData
 {
 public:

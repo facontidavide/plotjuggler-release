@@ -16,15 +16,17 @@
 #include <qpolygon.h>
 #include <qpen.h>
 
+class QwtScaleMap;
+class QwtColorMap;
+class QwtInterval;
+
 class QPainter;
 class QBrush;
 class QWidget;
 class QImage;
 class QPixmap;
-class QwtScaleMap;
-class QwtColorMap;
-class QwtInterval;
-
+class QFontMetrics;
+class QFontMetricsF;
 class QTextDocument;
 class QPainterPath;
 
@@ -117,6 +119,12 @@ public:
 
     static qreal effectivePenWidth( const QPen & );
 
+    static int horizontalAdvance( const QFontMetrics&, const QString& );
+    static qreal horizontalAdvance( const QFontMetricsF&, const QString& );
+
+    static int horizontalAdvance( const QFontMetrics&, QChar );
+    static qreal horizontalAdvance( const QFontMetricsF&, QChar );
+
 private:
     static bool d_polylineSplitting;
     static bool d_roundingAlignment;
@@ -193,4 +201,5 @@ inline qreal QwtPainter::effectivePenWidth( const QPen &pen )
     const qreal width = pen.widthF();
     return ( width < 1.0 ) ? 1.0 : width;
 }
+
 #endif

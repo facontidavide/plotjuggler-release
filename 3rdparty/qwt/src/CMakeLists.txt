@@ -99,6 +99,7 @@ set( QWT_SRC
     qwt_point_data.h
     qwt_scale_widget.h
 
+    qwt.cpp
     qwt_curve_fitter.cpp
     qwt_bezier.cpp
     qwt_spline_curve_fitter.cpp
@@ -189,11 +190,11 @@ set( QWT_SRC
     qwt_transform.cpp
     qwt_widget_overlay.cpp
 
-    #qwt_plot_glcanvas.h
-    #qwt_plot_glcanvas.cpp
+    qwt_plot_abstract_canvas.h
+    qwt_plot_abstract_canvas.cpp
 
-    #qwt_plot_opengl_canvas.h
-    #qwt_plot_opengl_canvas.cpp
+    qwt_plot_opengl_canvas.h
+    qwt_plot_opengl_canvas.cpp
     )
 
 add_library(qwt_static STATIC ${QWT_SRC})

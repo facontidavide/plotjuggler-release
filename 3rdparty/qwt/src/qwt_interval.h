@@ -71,6 +71,7 @@ public:
     void setMaxValue( double );
 
     bool contains( double value ) const;
+    bool contains( const QwtInterval & ) const;
 
     bool intersects( const QwtInterval & ) const;
     QwtInterval intersect( const QwtInterval & ) const;
