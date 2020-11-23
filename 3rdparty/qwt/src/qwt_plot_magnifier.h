@@ -43,7 +43,7 @@ public:
     QwtPlot *plot();
     const QwtPlot *plot() const;
 
-protected:
+public Q_SLOTS:
     virtual void rescale( double factor ) QWT_OVERRIDE;
 
 private:

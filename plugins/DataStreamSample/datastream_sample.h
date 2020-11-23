@@ -4,12 +4,11 @@
 #include <thread>
 #include "PlotJuggler/datastreamer_base.h"
 
-class DataStreamSample : public DataStreamer
+class DataStreamSample : public PJ::DataStreamer
 {
   Q_OBJECT
-  Q_PLUGIN_METADATA(IID "com.icarustechnology.PlotJuggler.DataStreamer"
-                        "../datastreamer.json")
-  Q_INTERFACES(DataStreamer)
+  Q_PLUGIN_METADATA(IID "facontidavide.PlotJuggler3.DataStreamer")
+  Q_INTERFACES(PJ::DataStreamer)
 
 public:
   DataStreamSample();
@@ -20,7 +19,7 @@ public:
 
   virtual bool isRunning() const override;
 
-  virtual ~DataStreamSample();
+  virtual ~DataStreamSample() override;
 
   virtual const char* name() const override
   {

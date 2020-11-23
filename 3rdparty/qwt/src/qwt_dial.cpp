@@ -13,6 +13,7 @@
 #include "qwt_scale_map.h"
 #include "qwt_round_scale_draw.h"
 #include "qwt_painter.h"
+#include "qwt.h"
 
 #include <qpainter.h>
 #include <qpalette.h>
@@ -20,7 +21,6 @@
 #include <qevent.h>
 #include <qstyle.h>
 #include <qstyleoption.h>
-#include <qapplication.h>
 
 static inline double qwtAngleDist( double a1, double a2 )
 {
@@ -313,7 +313,7 @@ void QwtDial::paintEvent( QPaintEvent *event )
     painter.setClipRegion( event->region() );
 
     QStyleOption opt;
-    opt.init(this);
+    opt.initFrom(this);
     style()->drawPrimitive(QStyle::PE_Widget, &opt, &painter, this);
 
     if ( d_data->mode == QwtDial::RotateScale )
@@ -690,7 +690,7 @@ QSize QwtDial::sizeHint() const
 
     QSize hint( d, d );
     if ( !isReadOnly() )
-        hint = hint.expandedTo( QApplication::globalStrut() );
+        hint = qwtExpandedToGlobalStrut( hint );
 
     return hint;
 }
@@ -828,8 +828,14 @@ void QwtDial::changeEvent( QEvent *event )
 */
 void QwtDial::wheelEvent( QWheelEvent *event )
 {
+#if QT_VERSION < 0x050e00
+    const QPoint wheelPos = event->pos();
+#else
+    const QPoint wheelPos = event->position().toPoint();
+#endif
+
     const QRegion region( innerRect(), QRegion::Ellipse );
-    if ( region.contains( event->pos() ) )
+    if ( region.contains( wheelPos ) )
         QwtAbstractSlider::wheelEvent( event );
 }
 
