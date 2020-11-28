@@ -1328,17 +1328,13 @@ void QwtSymbol::drawSymbols( QPainter *painter,
             switch( painter->paintEngine()->type() )
             {
                 case QPaintEngine::OpenGL:
-#if QT_VERSION >= 0x040600
                 case QPaintEngine::OpenGL2:
-#endif
                 {
                     // using a FBO as cache ?
                     useCache = false;
                     break;
                 }
-#if QT_VERSION >= 0x040500
                 case QPaintEngine::OpenVG:
-#endif
                 case QPaintEngine::SVG:
                 case QPaintEngine::Pdf:
                 case QPaintEngine::Picture:

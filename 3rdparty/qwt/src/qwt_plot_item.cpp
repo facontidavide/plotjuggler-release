@@ -22,9 +22,6 @@ public:
     PrivateData():
         plot( NULL ),
         isVisible( true ),
-        attributes( 0 ),
-        interests( 0 ),
-        renderHints( 0 ),
         renderThreadCount( 1 ),
         z( 0.0 ),
         xAxis( QwtPlot::xBottom ),
@@ -633,16 +630,14 @@ QList<QwtLegendData> QwtPlotItem::legendData() const
     QwtText label = title();
     label.setRenderFlags( label.renderFlags() & Qt::AlignLeft );
 
-    QVariant titleValue;
-    qVariantSetValue( titleValue, label );
-    data.setValue( QwtLegendData::TitleRole, titleValue );
+    data.setValue( QwtLegendData::TitleRole,
+        QVariant::fromValue( label ));
 
     const QwtGraphic graphic = legendIcon( 0, legendIconSize() );
     if ( !graphic.isNull() )
     {
-        QVariant iconValue;
-        qVariantSetValue( iconValue, graphic );
-        data.setValue( QwtLegendData::IconRole, iconValue );
+        data.setValue( QwtLegendData::IconRole,
+            QVariant::fromValue( graphic ) );
     }
 
     QList<QwtLegendData> list;

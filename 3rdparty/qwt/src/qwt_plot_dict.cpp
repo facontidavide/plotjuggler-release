@@ -8,6 +8,7 @@
  *****************************************************************************/
 
 #include "qwt_plot_dict.h"
+#include <algorithm>
 
 class QwtPlotDict::PrivateData
 {
@@ -22,7 +23,7 @@ public:
                 return;
 
             QList<QwtPlotItem *>::iterator it =
-                qUpperBound( begin(), end(), item, LessZThan() );
+                std::upper_bound( begin(), end(), item, LessZThan() );
             insert( it, item );
         }
 
@@ -32,7 +33,7 @@ public:
                 return;
 
             QList<QwtPlotItem *>::iterator it =
-                qLowerBound( begin(), end(), item, LessZThan() );
+                std::lower_bound( begin(), end(), item, LessZThan() );
 
             for ( ; it != end(); ++it )
             {
