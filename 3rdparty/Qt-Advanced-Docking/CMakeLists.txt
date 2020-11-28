@@ -5,6 +5,9 @@ project(QtADS LANGUAGES CXX)
 include_directories(include/Qads)
 
 find_package(Qt5 5.5 COMPONENTS Core Gui Widgets REQUIRED)
+if (UNIX AND NOT APPLE)
+        find_package(Qt5 5.5 COMPONENTS X11Extras REQUIRED)
+endif()
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
@@ -50,8 +53,10 @@ set(ads_SRCS
 )
 
 if (UNIX)
-    set(ads_SRCS src/linux/FloatingWidgetTitleBar.cpp ${ads_SRCS})
-    set(ads_SRCS src/linux/FloatingWidgetTitleBar.h ${ads_SRCS})
+    set(ads_SRCS
+        src/linux/FloatingWidgetTitleBar.cpp
+        ${ads_SRCS}
+    )
 endif()
 
 
@@ -59,6 +64,12 @@ add_library(qt_advanced_docking STATIC ${ads_SRCS} )
 target_compile_definitions(qt_advanced_docking PUBLIC ADS_STATIC)
 
 target_link_libraries(qt_advanced_docking PUBLIC Qt5::Core Qt5::Gui Qt5::Widgets)
+
+if(UNIX AND NOT APPLE)
+    target_link_libraries(qt_advanced_docking PUBLIC Qt5::X11Extras)
+        target_link_libraries(qt_advanced_docking PRIVATE xcb)
+endif()
+
 set_target_properties(qt_advanced_docking PROPERTIES
     AUTOMOC ON
     AUTORCC ON

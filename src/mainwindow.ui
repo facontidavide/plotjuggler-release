@@ -535,8 +535,8 @@
                 </property>
                 <property name="font">
                  <font>
-                  <family>Roboto</family>
-                  <pointsize>10</pointsize>
+                  <family>Ubuntu</family>
+                  <pointsize>11</pointsize>
                  </font>
                 </property>
                 <property name="toolTip">
@@ -736,7 +736,7 @@
                </property>
                <property name="font">
                 <font>
-                 <family>Roboto</family>
+                 <family>Ubuntu</family>
                 </font>
                </property>
                <property name="text">

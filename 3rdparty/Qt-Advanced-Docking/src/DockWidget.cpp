@@ -214,8 +214,8 @@ void DockWidgetPrivate::setupScrollArea()
 	ScrollArea = new QScrollArea(_this);
 	ScrollArea->setObjectName("dockWidgetScrollArea");
 	ScrollArea->setWidgetResizable(true);
-  ScrollArea->setFrameShape(QFrame::NoFrame);
 	Layout->addWidget(ScrollArea);
+  ScrollArea->setFrameShape(QFrame::NoFrame);
 }
 
 
