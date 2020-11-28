@@ -53,21 +53,59 @@ QwtInterval QwtInterval::inverted() const
   Test if a value is inside an interval
 
   \param value Value
-  \return true, if value >= minValue() && value <= maxValue()
+  \return true, if value lies inside the boundaries
 */
 bool QwtInterval::contains( double value ) const
 {
     if ( !isValid() )
         return false;
 
-    if ( value < d_minValue || value > d_maxValue )
+    if ( ( value < d_minValue ) || ( value > d_maxValue ) )
         return false;
 
-    if ( value == d_minValue && d_borderFlags & ExcludeMinimum )
+    if ( ( value == d_minValue ) && ( d_borderFlags & ExcludeMinimum ) )
         return false;
 
-    if ( value == d_maxValue && d_borderFlags & ExcludeMaximum )
+    if ( ( value == d_maxValue ) && ( d_borderFlags & ExcludeMaximum ) )
         return false;
+
+    return true;
+}
+
+/*! 
+  Test if an interval is inside an interval
+
+  \param interval Interval
+  \return true, if interval lies inside the boundaries
+*/
+bool QwtInterval::contains( const QwtInterval& interval ) const
+{
+    if ( !isValid() || !interval.isValid() )
+        return false;
+
+    if ( ( interval.d_minValue < d_minValue ) || ( interval.d_maxValue > d_maxValue ) )
+        return false;
+
+    if ( d_borderFlags )
+    {
+        if ( interval.d_minValue == d_minValue )
+        {
+            if ( ( d_borderFlags & ExcludeMinimum )
+                && !( interval.d_borderFlags & ExcludeMinimum ) )
+            {
+                return false;
+            }
+        }
+
+        if ( interval.d_maxValue == d_maxValue )
+        {
+            if ( ( d_borderFlags & ExcludeMaximum )
+                && !( interval.d_borderFlags & ExcludeMaximum ) )
+            {
+                return false;
+            }
+        }
+    }
 
     return true;
 }

@@ -11,6 +11,7 @@
 #include "qwt_point_polar.h"
 
 #include <qpainter.h>
+#include <qpainterpath.h>
 
 static QPointF qwtIntersection(
     QPointF p11, QPointF p12, QPointF p21, QPointF p22 )
@@ -19,7 +20,11 @@ static QPointF qwtIntersection(
     const QLineF line2( p21, p22 );
 
     QPointF pos;
+#if QT_VERSION >= 0x050e00
+    if ( line1.intersects( line2, &pos ) == QLineF::NoIntersection )
+#else
     if ( line1.intersect( line2, &pos ) == QLineF::NoIntersection )
+#endif
         return QPointF();
 
     return pos;

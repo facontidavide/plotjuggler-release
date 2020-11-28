@@ -2,7 +2,23 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-2.8.4 (2020-08-14)
+3.0.2 (2020-11-28)
+------------------
+* fix icon color in dark mode
+* updated to latest Qads
+* temporary fix for `#349 <https://github.com/PlotJuggler/PlotJuggler/issues/349>`_
+* link updated
+* use correct dependency
+* fix issue `#348 <https://github.com/PlotJuggler/PlotJuggler/issues/348>`_
+* Contributors: Davide Faconti
+
+3.0.0 (2020-11-23)
+------------------
+* Trying to fix issue `#346 <https://github.com/facontidavide/PlotJuggler/issues/346>`_
+* Massive refactoring
+* Contributors: Davide Faconti
+
+2.8.4 (2020-08-15)
 ------------------
 * readme updated
 * fix issue `#318 <https://github.com/facontidavide/PlotJuggler/issues/318>`_
