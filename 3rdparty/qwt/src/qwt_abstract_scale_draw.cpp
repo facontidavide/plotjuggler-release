@@ -375,7 +375,10 @@ double QwtAbstractScaleDraw::maxTickLength() const
 */
 QwtText QwtAbstractScaleDraw::label( double value ) const
 {
-    return QLocale().toString( value );
+    auto str = QLocale().toString( value, 'f', 3 );
+    str.remove( QRegExp("0+$") ); // Remove any number of trailing 0's
+    str.remove( QRegExp("\\.$") ); // If the last character is just a '.' then remove it
+    return str;
 }
 
 /*!

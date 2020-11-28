@@ -11,8 +11,8 @@
 #include "qwt_painter.h"
 
 #include <qpainter.h>
-#include <qpainterpath.h>
 #include <qpaintengine.h>
+#include <qpainterpath.h>
 #include <qimage.h>
 #include <qevent.h>
 
@@ -280,11 +280,8 @@ void QwtWidgetOverlay::paintEvent( QPaintEvent* event )
         const QImage image( d_data->rgbaBuffer,
             width(), height(), qwtMaskImageFormat() );
 
-#if QT_VERSION >= 0x040600
         const int rectCount = clipRegion.rectCount();
-#else
-        const int rectCount = clipRegion.numRects();
-#endif
+
         if ( rectCount > 2000 )
         {
             // the region is to complex

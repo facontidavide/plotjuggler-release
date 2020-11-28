@@ -101,14 +101,15 @@ static QString qwtExpandedFormat( const QString & format,
         if ( doReplaceYear )
         {
             const QDate dt( dateTime.date().year() + 1, 1, 1 );
+            const QString dtString = QLocale().toString( dt, s_yyyy );
 
             if ( fmt.contains( s_yyyy ) )
             {
-                fmt.replace( s_yyyy, dt.toString( s_yyyy ) );
+                fmt.replace( s_yyyy, dtString );
             }
             else
             {
-                fmt.replace( s_yy, dt.toString( s_yyyy ) );
+                fmt.replace( s_yy, dtString );
             }
         }
     }
@@ -118,82 +119,7 @@ static QString qwtExpandedFormat( const QString & format,
 
 static inline Qt::DayOfWeek qwtFirstDayOfWeek()
 {
-#if QT_VERSION >= 0x040800
     return QLocale().firstDayOfWeek();
-#else
-
-    switch( QLocale().country() )
-    {
-        case QLocale::Maldives:
-            return Qt::Friday;
-
-        case QLocale::Afghanistan:
-        case QLocale::Algeria:
-        case QLocale::Bahrain:
-        case QLocale::Djibouti:
-        case QLocale::Egypt:
-        case QLocale::Eritrea:
-        case QLocale::Ethiopia:
-        case QLocale::Iran:
-        case QLocale::Iraq:
-        case QLocale::Jordan:
-        case QLocale::Kenya:
-        case QLocale::Kuwait:
-        case QLocale::LibyanArabJamahiriya:
-        case QLocale::Morocco:
-        case QLocale::Oman:
-        case QLocale::Qatar:
-        case QLocale::SaudiArabia:
-        case QLocale::Somalia:
-        case QLocale::Sudan:
-        case QLocale::Tunisia:
-        case QLocale::Yemen:
-            return Qt::Saturday;
-
-        case QLocale::AmericanSamoa:
-        case QLocale::Argentina:
-        case QLocale::Azerbaijan:
-        case QLocale::Botswana:
-        case QLocale::Canada:
-        case QLocale::China:
-        case QLocale::FaroeIslands:
-        case QLocale::Georgia:
-        case QLocale::Greenland:
-        case QLocale::Guam:
-        case QLocale::HongKong:
-        case QLocale::Iceland:
-        case QLocale::India:
-        case QLocale::Ireland:
-        case QLocale::Israel:
-        case QLocale::Jamaica:
-        case QLocale::Japan:
-        case QLocale::Kyrgyzstan:
-        case QLocale::Lao:
-        case QLocale::Malta:
-        case QLocale::MarshallIslands:
-        case QLocale::Macau:
-        case QLocale::Mongolia:
-        case QLocale::NewZealand:
-        case QLocale::NorthernMarianaIslands:
-        case QLocale::Pakistan:
-        case QLocale::Philippines:
-        case QLocale::RepublicOfKorea:
-        case QLocale::Singapore:
-        case QLocale::SyrianArabRepublic:
-        case QLocale::Taiwan:
-        case QLocale::Thailand:
-        case QLocale::TrinidadAndTobago:
-        case QLocale::UnitedStates:
-        case QLocale::UnitedStatesMinorOutlyingIslands:
-        case QLocale::USVirginIslands:
-        case QLocale::Uzbekistan:
-        case QLocale::Zimbabwe:
-            return Qt::Sunday;
-
-        default:
-            return Qt::Monday;
-    }
-#endif
 }
 
 static inline void qwtFloorTime(
@@ -766,5 +692,5 @@ QString QwtDate::toString( const QDateTime &dateTime,
         fmt = qwtExpandedFormat( fmt, dateTime, week0Type );
     }
 
-    return dateTime.toString( fmt );
+    return QLocale().toString( dateTime, fmt );
 }

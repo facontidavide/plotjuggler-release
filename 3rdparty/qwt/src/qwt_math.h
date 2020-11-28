@@ -84,6 +84,12 @@
 #define M_SQRT1_2 (0.70710678118654752440)
 #endif
 
+#if defined( QT_WARNING_PUSH )
+// on earlier Qt versions you will be flooded with warnings anyway
+QT_WARNING_DISABLE_CLANG("-Wdouble-promotion")
+QT_WARNING_DISABLE_GCC("-Wdouble-promotion")
+#endif
+
 /*
     On systems, where qreal is a float you often run into
     compiler issues with qMin/qMax.
@@ -137,23 +143,13 @@ QWT_CONSTEXPR inline qreal qwtMaxF( double a, float b )
     return ( a < b ) ? b : a;
 }
 
-QWT_CONSTEXPR inline float qwtBoundF( double min, float value, double max)
-{
-    return qwtMaxF( min, qwtMinF( max, value ) );
-}
-
-QWT_CONSTEXPR inline double qwtBoundF( float min, double value, float max)
-{
-    return qwtMaxF( min, qwtMinF( max, value ) );
-}
-
-QWT_CONSTEXPR inline double qwtBoundF( double min, double value, double max)
-{
-    return qwtMaxF( min, qwtMinF( max, value ) );
-}
+#if defined( QT_WARNING_PUSH )
+QT_WARNING_POP
+#endif
 
 QWT_EXPORT double qwtNormalizeRadians( double radians );
 QWT_EXPORT double qwtNormalizeDegrees( double degrees );
+QWT_EXPORT quint32 qwtRand();
 
 /*!
   \brief Compare 2 values, relative to an interval
