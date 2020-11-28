@@ -42,7 +42,13 @@ public:
           Interpolate the value from the distances and values of the
           4 surrounding values in the matrix,
          */
-        BilinearInterpolation
+        BilinearInterpolation,
+
+        /*!
+          Interpolate the value from the 16 sorrounding values in the
+          matrix using hermite bicubic interpolation
+        */
+        BicubicInterpolation
     };
 
     QwtMatrixRasterData();

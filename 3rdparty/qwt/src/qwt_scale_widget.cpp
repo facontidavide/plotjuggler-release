@@ -22,6 +22,7 @@
 #include <qstyle.h>
 #include <qstyleoption.h>
 #include <qapplication.h>
+#include <qmargins.h>
 
 class QwtScaleWidget::PrivateData
 {
@@ -93,7 +94,6 @@ void QwtScaleWidget::initScale( QwtScaleDraw::Alignment align )
 {
     d_data = new PrivateData;
 
-    d_data->layoutFlags = 0;
     if ( align == QwtScaleDraw::RightScale )
         d_data->layoutFlags |= TitleInverted;
 
@@ -419,7 +419,7 @@ void QwtScaleWidget::paintEvent( QPaintEvent *event )
     painter.setClipRegion( event->region() );
 
     QStyleOption opt;
-    opt.init(this);
+    opt.initFrom(this);
     style()->drawPrimitive(QStyle::PE_Widget, &opt, &painter, this);
 
     draw( &painter );
@@ -755,9 +755,8 @@ QSize QwtScaleWidget::minimumSizeHint() const
     if ( o == Qt::Vertical )
         size.transpose();
 
-    int left, right, top, bottom;
-    getContentsMargins( &left, &top, &right, &bottom );
-    return size + QSize( left + right, top + bottom );
+    const QMargins m = contentsMargins();
+    return size + QSize( m.left() + m.right(), m.top() + m.bottom() );
 }
 
 /*!

@@ -268,9 +268,7 @@ QVector<QwtInterval> QwtCircleClipper::clipCircle(
     else
     {
         QVector<double> angles;
-#if QT_VERSION >= 0x040700
         angles.reserve( points.size() );
-#endif
 
         for ( int i = 0; i < points.size(); i++ )
             angles += toAngle( pos, points[i] );

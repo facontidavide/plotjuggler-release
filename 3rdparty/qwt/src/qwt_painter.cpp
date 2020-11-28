@@ -17,9 +17,9 @@
 #include <qframe.h>
 #include <qrect.h>
 #include <qpainter.h>
-#include <qpainterpath.h>
 #include <qpalette.h>
 #include <qpaintdevice.h>
+#include <qpainterpath.h>
 #include <qpixmap.h>
 #include <qstyle.h>
 #include <qtextdocument.h>
@@ -70,9 +70,7 @@ static inline bool qwtIsRasterPaintEngineBuggy()
     return isBuggy == 1;
 #endif
 
-#if QT_VERSION < 0x040800
-    return false;
-#elif QT_VERSION < 0x050000
+#if QT_VERSION < 0x050000
     return true;
 #elif QT_VERSION < 0x050100
     return false;
@@ -114,17 +112,6 @@ static inline void qwtDrawPolyline( QPainter *painter,
         {
             if ( painter->pen().width() <= 1 )
             {
-#if QT_VERSION < 0x040800
-                if ( painter->renderHints() & QPainter::Antialiasing )
-                {
-                    /*
-                        all versions <= 4.7 have issues with
-                        antialiased lines
-                     */
-
-                    doSplit = true;
-                }
-#endif
                 // work around a bug with short lines below 2 pixels difference
                 // in height and width
 
@@ -818,7 +805,7 @@ void QwtPainter::drawFocusRect( QPainter *painter, const QWidget *widget,
     const QRect &rect )
 {
     QStyleOptionFocusRect opt;
-    opt.init( widget );
+    opt.initFrom( widget );
     opt.rect = rect;
     opt.state |= QStyle::State_HasFocus;
     opt.backgroundColor = widget->palette().color( widget->backgroundRole() );
@@ -1000,21 +987,6 @@ void QwtPainter::drawFrame( QPainter *painter, const QRectF &rect,
             painter->setBrush( palette.mid() );
             painter->drawPath( path5 );
         }
-#if 0
-        // qDrawWinPanel doesn't result in something nice
-        // on a scalable document like PDF. Better draw a
-        // Panel.
-
-        else if ( shape == QFrame::WinPanel )
-        {
-            painter->setRenderHint( QPainter::NonCosmeticDefaultPen, true );
-            qDrawWinPanel ( painter, rect.toRect(), palette,
-                frameStyle & QFrame::Sunken );
-        }
-        else if ( shape == QFrame::StyledPanel )
-        {
-        }
-#endif
         else
         {
             const QRectF outerRect = rect.adjusted( 0.0, 0.0, -1.0, -1.0 );
@@ -1378,6 +1350,75 @@ void QwtPainter::drawBackgound( QPainter *painter,
 
         painter->fillRect( rect, brush );
     }
+}
+
+/*!
+  Distance appropriate for drawing a subsequent character after text.
+
+  \return horizontal advance in pixels
+  \param fontMetrics Font metrics
+  \param text Text
+ */
+int QwtPainter::horizontalAdvance(
+    const QFontMetrics& fontMetrics, const QString& text )
+{
+#if QT_VERSION >= 0x050b00
+    return fontMetrics.horizontalAdvance( text );
+#else
+    return fontMetrics.width( text );
+#endif
+
+}
+
+/*!
+  Distance appropriate for drawing a subsequent character after text.
+
+  \return horizontal advance in pixels
+  \param fontMetrics Font metrics
+  \param text Text
+ */
+qreal QwtPainter::horizontalAdvance(
+    const QFontMetricsF& fontMetrics, const QString& text )
+{
+#if QT_VERSION >= 0x050b00
+    return fontMetrics.horizontalAdvance( text );
+#else
+    return fontMetrics.width( text );
+#endif
+}
+
+/*!
+  Distance appropriate for drawing a subsequent character after ch.
+
+  \return horizontal advance in pixels
+  \param fontMetrics Font metrics
+  \param ch Character
+ */
+int QwtPainter::horizontalAdvance(
+    const QFontMetrics& fontMetrics, QChar ch )
+{
+#if QT_VERSION >= 0x050b00
+    return fontMetrics.horizontalAdvance( ch );
+#else
+    return fontMetrics.width( ch );
+#endif
+}
+
+/*!
+  Distance appropriate for drawing a subsequent character after ch.
+
+  \return horizontal advance in pixels
+  \param fontMetrics Font metrics
+  \param ch Character
+ */
+qreal QwtPainter::horizontalAdvance(
+    const QFontMetricsF& fontMetrics, QChar ch )
+{
+#if QT_VERSION >= 0x050b00
+    return fontMetrics.horizontalAdvance( ch );
+#else
+    return fontMetrics.width( ch );
+#endif
 }
 
 /*!
