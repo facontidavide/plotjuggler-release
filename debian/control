@@ -1,0 +1,12 @@
+Source: ros-melodic-plotjuggler
+Section: misc
+Priority: optional
+Maintainer: Davide Faconti <davide.faconti@gmail.com>
+Build-Depends: debhelper (>= 9.0.0), binutils-dev, libboost-all-dev, libqt5opengl5-dev, libqt5svg5-dev, libqt5websockets5-dev, libqt5x11extras5-dev, libzmq3-dev, qtbase5-dev, ros-melodic-catkin, ros-melodic-roslib
+Homepage: https://github.com/PlotJuggler/PlotJuggler
+Standards-Version: 3.9.2
+
+Package: ros-melodic-plotjuggler
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, binutils-dev, libboost-all-dev, libqt5opengl5-dev, libqt5svg5-dev, libqt5websockets5-dev, libqt5x11extras5-dev, libzmq3-dev, qtbase5-dev, ros-melodic-roslib
+Description: PlotJuggler: juggle with data
