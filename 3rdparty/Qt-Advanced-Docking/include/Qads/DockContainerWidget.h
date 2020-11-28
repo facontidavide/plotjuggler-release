@@ -74,11 +74,18 @@ private:
 	friend class CFloatingDragPreview;
 	friend struct FloatingDragPreviewPrivate;
 
+public:
+  /**
+   * Access function for the internal root splitter
+   */
+  QSplitter* rootSplitter() const;
+
 protected:
 	/**
 	 * Handles activation events to update zOrderIndex
 	 */
 	virtual bool event(QEvent *e) override;
+
 
 	/**
 	 * Helper function for creation of the root splitter
@@ -160,17 +167,12 @@ public:
 	/**
 	 * Default Constructor
 	 */
-  CDockContainerWidget(CDockManager* DockManager, QWidget* parent = nullptr);
+	CDockContainerWidget(CDockManager* DockManager, QWidget* parent = 0);
 
 	/**
 	 * Virtual Destructor
 	 */
 	virtual ~CDockContainerWidget();
-
-  /**
-   * Access function for the internal root splitter
-   */
-  QSplitter* rootSplitter() const;
 
 	/**
 	 * Adds dockwidget into the given area.
