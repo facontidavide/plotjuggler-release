@@ -83,6 +83,10 @@ static void updateDockAreaFocusStyle(CDockAreaWidget* DockArea, bool Focused)
 #ifdef Q_OS_LINUX
 static void updateFloatingWidgetFocusStyle(CFloatingDockContainer* FloatingWidget, bool Focused)
 {
+	if (FloatingWidget->hasNativeTitleBar())
+	{
+		return;
+	}
     auto TitleBar = qobject_cast<CFloatingWidgetTitleBar*>(FloatingWidget->titleBarWidget());
     if (!TitleBar)
     {
@@ -236,7 +240,11 @@ void CDockFocusController::onApplicationFocusChanged(QWidget* focusedOld, QWidge
 		auto OtherDockWidgetTab = internal::findParent<CDockWidgetTab*>(focusedNow);
 		if (OtherDockWidgetTab && focusedOld)
 		{
-			focusedOld->setFocus();
+			auto OldFocusedDockWidget = internal::findParent<CDockWidget*>(focusedOld);
+			if (OldFocusedDockWidget)
+			{
+				focusedOld->setFocus();
+			}
 			return;
 		}
 	}
@@ -375,6 +383,13 @@ void CDockFocusController::onStateRestored()
 	{
 		updateDockWidgetFocusStyle(d->FocusedDockWidget, false);
 	}
+}
+
+
+//==========================================================================
+CDockWidget* CDockFocusController::focusedDockWidget() const
+{
+	return d->FocusedDockWidget.data();
 }
 
 } // namespace ads

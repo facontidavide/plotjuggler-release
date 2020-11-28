@@ -10,6 +10,7 @@
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QJsonDocument>
+#include <QDir>
 
 #include "PlotJuggler/transform_function.h"
 #include "transforms/first_derivative.h"
@@ -22,7 +23,7 @@
 #include "new_release_dialog.h"
 
 #ifdef COMPILED_WITH_CATKIN
-#include <ros/package.h>
+
 #endif
 #ifdef COMPILED_WITH_AMENT
 #include <ament_index_cpp/get_package_prefix.hpp>
@@ -117,8 +118,13 @@ int main(int argc, char* argv[])
 
   try {
 #ifdef COMPILED_WITH_CATKIN
-    extra_path = QString::fromStdString(ros::package::getPath("plotjuggler_ros"));
-    extra_path.replace("/share/", "/lib/");
+    //TODO: use pluginlib instead
+    QDir ros_plugins_dir( QCoreApplication::applicationDirPath() + "_ros" );
+    if( !ros_plugins_dir.exists() || ros_plugins_dir.isEmpty() )
+    {
+      throw std::runtime_error("Missing ros plugins directory");
+    }
+    extra_path = ros_plugins_dir.path();
 #endif
 #ifdef COMPILED_WITH_AMENT
     extra_path = QString::fromStdString(ament_index_cpp::get_package_prefix("plotjuggler_ros"));

@@ -2336,7 +2336,7 @@ void MainWindow::onCustomPlotCreated(CustomPlotPtr custom_plot)
 
 void MainWindow::on_actionReportBug_triggered()
 {
-  QDesktopServices::openUrl(QUrl("https://github.com/facontidavide/PlotJuggler/issues"));
+  QDesktopServices::openUrl(QUrl("https://github.com/PlotJuggler/PlotJuggler/issues"));
 }
 
 void MainWindow::on_actionShare_the_love_triggered()
