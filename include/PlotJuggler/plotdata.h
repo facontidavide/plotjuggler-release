@@ -490,7 +490,7 @@ inline void TimeseriesBase<nonstd::any>::pushBack(Point&& p)
 using PlotData = TimeseriesBase<double>;
 using PlotDataAny = TimeseriesBase<nonstd::any>;
 
-typedef struct
+struct PlotDataMapRef
 {
   std::unordered_map<std::string, PlotData> numeric;
   std::unordered_map<std::string, PlotDataAny> user_defined;
@@ -506,7 +506,7 @@ typedef struct
         .first;
   }
 
-} PlotDataMapRef;
+};
 
 //-----------------------------------
 template <typename Value>
