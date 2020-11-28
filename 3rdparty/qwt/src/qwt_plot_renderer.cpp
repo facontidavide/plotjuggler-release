@@ -27,12 +27,11 @@
 #include <qfileinfo.h>
 #include <qimagewriter.h>
 #include <qvariant.h>
+#include <qmargins.h>
 
 #ifndef QWT_NO_SVG
 #ifdef QT_SVG_LIB
-#if QT_VERSION >= 0x040500
 #define QWT_FORMAT_SVG 1
-#endif
 #endif
 #endif
 
@@ -310,7 +309,7 @@ void QwtPlotRenderer::renderDocument( QwtPlot *plot,
 
 #if QWT_PDF_WRITER
         QPdfWriter pdfWriter( fileName );
-        pdfWriter.setPageSizeMM( sizeMM );
+        pdfWriter.setPageSize( QPageSize( sizeMM, QPageSize::Millimeter ) );
         pdfWriter.setTitle( title );
         pdfWriter.setPageMargins( QMarginsF() );
         pdfWriter.setResolution( resolution );
@@ -504,9 +503,8 @@ void QwtPlotRenderer::render( QwtPlot *plot,
     {
         // subtract the contents margins
 
-        int left, top, right, bottom;
-        plot->getContentsMargins( &left, &top, &right, &bottom );
-        layoutRect.adjust( left, top, -right, -bottom );
+        const QMargins m = plot->contentsMargins();
+        layoutRect.adjust( m.left(), m.top(), -m.right(), -m.bottom() );
     }
 
     QwtPlotLayout *layout = plot->plotLayout();
@@ -716,8 +714,7 @@ void QwtPlotRenderer::renderLegend( const QwtPlot *plot,
   \param baseDist Base distance
   \param scaleRect Bounding rectangle for the scale
 */
-void QwtPlotRenderer::renderScale( const QwtPlot *plot,
-    QPainter *painter,
+void QwtPlotRenderer::renderScale( const QwtPlot *plot, QPainter *painter,
     int axisId, int startDist, int endDist, int baseDist,
     const QRectF &scaleRect ) const
 {
@@ -746,7 +743,6 @@ void QwtPlotRenderer::renderScale( const QwtPlot *plot,
         case QwtPlot::yLeft:
         {
             x = scaleRect.right() - 1.0 - baseDist - off;
-
             y = scaleRect.y() + startDist;
             w = scaleRect.height() - startDist - endDist;
             align = QwtScaleDraw::LeftScale;
