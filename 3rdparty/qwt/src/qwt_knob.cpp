@@ -12,19 +12,15 @@
 #include "qwt_painter.h"
 #include "qwt_scale_map.h"
 #include "qwt_math.h"
+#include "qwt.h"
 
 #include <qpainter.h>
 #include <qpalette.h>
 #include <qstyle.h>
 #include <qstyleoption.h>
 #include <qevent.h>
-#include <qapplication.h>
+#include <qmargins.h>
 #include <qmath.h>
-
-#if QT_VERSION < 0x040601
-#define qFastCos(x) qCos(x)
-#define qFastSin(x) qSin(x)
-#endif
 
 static QSize qwtKnobSizeHint( const QwtKnob *knob, int min )
 {
@@ -36,10 +32,8 @@ static QSize qwtKnobSizeHint( const QwtKnob *knob, int min )
     const int extent = qwtCeil( knob->scaleDraw()->extent( knob->font() ) );
     const int d = 2 * ( extent + 4 ) + knobWidth;
 
-    int left, right, top, bottom;
-    knob->getContentsMargins( &left, &top, &right, &bottom );
-
-    return QSize( d + left + right, d + top + bottom );
+    const QMargins m = knob->contentsMargins();
+    return QSize( d + m.left() + m.right(), d + m.top() + m.bottom() );
 }
 
 static inline double qwtToScaleAngle( double angle )
@@ -462,7 +456,7 @@ void QwtKnob::paintEvent( QPaintEvent *event )
     painter.setClipRegion( event->region() );
 
     QStyleOption opt;
-    opt.init(this);
+    opt.initFrom(this);
     style()->drawPrimitive(QStyle::PE_Widget, &opt, &painter, this);
 
     painter.setRenderHint( QPainter::Antialiasing, true );
@@ -839,7 +833,7 @@ int QwtKnob::markerSize() const
 QSize QwtKnob::sizeHint() const
 {
     const QSize hint = qwtKnobSizeHint( this, 50 );
-    return hint.expandedTo( QApplication::globalStrut() );
+    return qwtExpandedToGlobalStrut( hint );
 }
 
 /*!

@@ -18,12 +18,6 @@
 #include <qpaintengine.h>
 #include <qmath.h>
 
-#if QT_VERSION < 0x040601
-#define qFastSin(x) std::sin(x)
-#define qFastCos(x) std::cos(x)
-#endif
-
-
 static inline double qwtEffectivePenWidth( const QwtAbstractScaleDraw* scaleDraw )
 {
     return qwtMaxF( scaleDraw->penWidthF(), 1.0 );
@@ -275,7 +269,6 @@ public:
     PrivateData():
         len( 0 ),
         alignment( QwtScaleDraw::BottomScale ),
-        labelAlignment( 0 ),
         labelRotation( 0.0 )
     {
     }

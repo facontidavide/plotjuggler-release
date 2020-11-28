@@ -30,7 +30,10 @@ class QPolygonF;
   These algorithms need to convert the painter path into polygons that might be
   less performant for paths built from curves and ellipses.
 
-  \sa QwtPlotZone
+  More complex shapes, that can't be expressed by a QPainterPath can be displayed
+  using QwtPlotGraphicItem.
+
+  \sa QwtPlotZone, QwtPlotGraphicItem
 */
 class QWT_EXPORT QwtPlotShapeItem: public QwtPlotItem
 {

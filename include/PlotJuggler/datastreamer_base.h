@@ -5,6 +5,9 @@
 #include <unordered_set>
 #include "PlotJuggler/plotdata.h"
 #include "PlotJuggler/pj_plugin.h"
+#include "PlotJuggler/messageparser_base.h"
+
+namespace PJ {
 
 /**
  * @brief The DataStreamer base class to create your own plugin.
@@ -12,12 +15,15 @@
  * Important. To avoid problems with thread safety, it is important that ANY update to
  * dataMap(), which share its elements with the main application, is protected by the mutex()
  *
- * This includes in particular the periodic updates.
+ * In particular the periodic updates.
  */
 class DataStreamer : public PlotJugglerPlugin
 {
   Q_OBJECT
 public:
+
+  DataStreamer(): _available_parsers(nullptr) {}
+
   virtual bool start(QStringList*) = 0;
 
   virtual void shutdown() = 0;
@@ -43,27 +49,37 @@ public:
     return _data_map;
   }
 
+  void setAvailableParsers(MessageParserFactory* parsers )
+  {
+    _available_parsers = parsers;
+  }
+
+  MessageParserFactory* availableParsers()
+  {
+    if( _available_parsers && _available_parsers->empty() )
+    {
+      return nullptr;
+    }
+    return _available_parsers;
+  }
+
 signals:
 
+  // Request to clear previous data
   void clearBuffers();
 
-  void dataUpdated();
+  // signal published periodically when there is new data
+  void dataReceived();
 
-  void connectionClosed();
+  // Stopping a plugin from the "inside"
+  void closed();
 
 private:
   std::mutex _mutex;
   PlotDataMapRef _data_map;
   QAction* _start_streamer;
+  MessageParserFactory* _available_parsers;
 };
-
-QT_BEGIN_NAMESPACE
-
-#define DataStream_iid "com.icarustechnology.PlotJuggler.DataStreamer"
-
-Q_DECLARE_INTERFACE(DataStreamer, DataStream_iid)
-
-QT_END_NAMESPACE
 
 inline void DataStreamer::setMaximumRange(double range)
 {
@@ -77,5 +93,15 @@ inline void DataStreamer::setMaximumRange(double range)
     it.second.setMaximumRangeX(range);
   }
 }
+
+using DataStreamerPtr = std::shared_ptr<DataStreamer>;
+
+}
+
+
+QT_BEGIN_NAMESPACE
+#define DataStream_iid "facontidavide.PlotJuggler3.DataStreamer"
+Q_DECLARE_INTERFACE(PJ::DataStreamer, DataStream_iid)
+QT_END_NAMESPACE
 
 #endif

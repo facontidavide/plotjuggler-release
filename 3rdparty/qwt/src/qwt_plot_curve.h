@@ -101,6 +101,7 @@ public:
            classes of QwtPlotCurve that overload drawCurve() with
            additional application specific curve types.
         */
+
         LinesAndDots,
 
         UserCurve = 100
