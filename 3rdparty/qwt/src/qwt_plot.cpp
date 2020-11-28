@@ -762,8 +762,10 @@ void QwtPlot::drawItems( QPainter *painter, const QRectF &canvasRect,
             painter->setRenderHint( QPainter::Antialiasing,
                 item->testRenderHint( QwtPlotItem::RenderAntialiased ) );
 
+#if QT_VERSION < 0x050100
             painter->setRenderHint( QPainter::HighQualityAntialiasing,
                 item->testRenderHint( QwtPlotItem::RenderAntialiased ) );
+#endif
 
             item->draw( painter,
                 maps[item->xAxis()], maps[item->yAxis()],
@@ -1121,21 +1123,13 @@ void QwtPlot::attachItem( QwtPlotItem *plotItem, bool on )
   into a QVariant object. When overloading itemToInfo()
   usually infoToItem() needs to reimplemeted too.
 
-\code
-    QVariant itemInfo;
-    qVariantSetValue( itemInfo, plotItem );
-\endcode
-
   \param plotItem Plot item
   \return Plot item embedded in a QVariant
   \sa infoToItem()
  */
 QVariant QwtPlot::itemToInfo( QwtPlotItem *plotItem ) const
 {
-    QVariant itemInfo;
-    qVariantSetValue( itemInfo, plotItem );
-
-    return itemInfo;
+    return QVariant::fromValue( plotItem );
 }
 
 /*!
@@ -1164,4 +1158,3 @@ QwtPlotItem *QwtPlot::infoToItem( const QVariant &itemInfo ) const
 #if QWT_MOC_INCLUDE
 #include "moc_qwt_plot.cpp"
 #endif
-

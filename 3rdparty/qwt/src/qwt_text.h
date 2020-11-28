@@ -79,8 +79,10 @@ public:
 
         /*!
           Use a MathML (http://en.wikipedia.org/wiki/MathML) render engine
-          to display the text. The Qwt MathML extension offers such an engine
-          based on the MathML renderer of the former Qt solutions package.
+          to display the text. In earlier versions of Qwt such an engine
+          was included - since Qwt 6.2 it can be found here:
+          https://github.com/uwerat/qwt-mml-dev
+
           To enable MathML support the following code needs to be added to the
           application:
 

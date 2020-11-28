@@ -800,7 +800,7 @@ QRectF QwtPlotRasterItem::boundingRect() const
     }
     else
     {
-        const float max = std::numeric_limits<float>::max();
+        const qreal max = std::numeric_limits<float>::max();
 
         r.setLeft( -0.5 * max );
         r.setWidth( max );
@@ -813,7 +813,7 @@ QRectF QwtPlotRasterItem::boundingRect() const
     }
     else
     {
-        const float max = std::numeric_limits<float>::max();
+        const qreal max = std::numeric_limits<float>::max();
 
         r.setTop( -0.5 * max );
         r.setHeight( max );
