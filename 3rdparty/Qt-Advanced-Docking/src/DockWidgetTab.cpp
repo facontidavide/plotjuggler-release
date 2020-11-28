@@ -51,7 +51,6 @@
 #include "DockManager.h"
 #include "IconProvider.h"
 
-#include <iostream>
 
 namespace ads
 {
@@ -77,6 +76,7 @@ struct DockWidgetTabPrivate
 	QAbstractButton* CloseButton = nullptr;
 	QSpacerItem* IconTextSpacer;
 	QPoint TabDragStartPosition;
+	QSize IconSize;
 
 	/**
 	 * Private data constructor
@@ -146,6 +146,19 @@ struct DockWidgetTabPrivate
 		CloseButton->setVisible(DockWidgetClosable && TabHasCloseButton);
 	}
 
+	/**
+	 * Update the size policy of the close button depending on the
+	 * RetainTabSizeWhenCloseButtonHidden feature
+	 */
+	void updateCloseButtonSizePolicy()
+	{
+		auto Features = DockWidget->features();
+		auto SizePolicy = CloseButton->sizePolicy();
+		SizePolicy.setRetainSizeWhenHidden(Features.testFlag(CDockWidget::DockWidgetClosable)
+			&& testConfigFlag(CDockManager::RetainTabSizeWhenCloseButtonHidden));
+		CloseButton->setSizePolicy(SizePolicy);
+	}
+
 	template <typename T>
 	IFloatingWidget* createFloatingWidget(T* Widget, bool OpaqueUndocking)
 	{
@@ -171,6 +184,27 @@ struct DockWidgetTabPrivate
 	{
 		GlobalDragStartMousePosition = GlobalPos;
 		DragStartMousePosition = _this->mapFromGlobal(GlobalPos);
+	}
+
+	/**
+	 * Update the icon in case the icon size changed
+	 */
+	void updateIcon()
+	{
+		if (!IconLabel || Icon.isNull())
+		{
+			return;
+		}
+
+		if (IconSize.isValid())
+		{
+			IconLabel->setPixmap(Icon.pixmap(IconSize));
+		}
+		else
+		{
+			IconLabel->setPixmap(Icon.pixmap(_this->style()->pixelMetric(QStyle::PM_SmallIconSize, nullptr, _this)));
+		}
+		IconLabel->setVisible(true);
 	}
 
 };
@@ -200,7 +234,7 @@ void DockWidgetTabPrivate::createLayout()
 	CloseButton->setObjectName("tabCloseButton");
 	internal::setButtonIcon(CloseButton, QStyle::SP_TitleBarCloseButton, TabCloseIcon);
     CloseButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-    _this->onDockWidgetFeaturesChanged();
+    updateCloseButtonSizePolicy();
 	internal::setToolTip(CloseButton, QObject::tr("Close Tab"));
 	_this->connect(CloseButton, SIGNAL(clicked()), SIGNAL(closeRequested()));
 
@@ -473,7 +507,7 @@ bool CDockWidgetTab::isActiveTab() const
 //============================================================================
 void CDockWidgetTab::setActiveTab(bool active)
 {
-	d->updateCloseButtonVisibility(active);
+    d->updateCloseButtonVisibility(active);
 
 	// Focus related stuff
 	if (CDockManager::testConfigFlag(CDockManager::FocusHighlighting) && !d->DockWidget->dockManager()->isRestoringState())
@@ -557,11 +591,7 @@ void CDockWidgetTab::setIcon(const QIcon& Icon)
 	}
 
 	d->Icon = Icon;
-	if (d->IconLabel)
-	{
-		d->IconLabel->setPixmap(Icon.pixmap(style()->pixelMetric(QStyle::PM_SmallIconSize, nullptr, this)));
-		d->IconLabel->setVisible(true);
-	}
+	d->updateIcon();
 }
 
 
@@ -656,12 +686,8 @@ bool CDockWidgetTab::event(QEvent *e)
 //============================================================================
 void CDockWidgetTab::onDockWidgetFeaturesChanged()
 {
-	auto Features = d->DockWidget->features();
-	auto SizePolicy = d->CloseButton->sizePolicy();
-	SizePolicy.setRetainSizeWhenHidden(Features.testFlag(CDockWidget::DockWidgetClosable)
-		&& d->testConfigFlag(CDockManager::RetainTabSizeWhenCloseButtonHidden));
-	d->CloseButton->setSizePolicy(SizePolicy);
-	d->updateCloseButtonVisibility(isActiveTab());
+    d->updateCloseButtonSizePolicy();
+    d->updateCloseButtonVisibility(isActiveTab());
 }
 
 
@@ -676,6 +702,21 @@ void CDockWidgetTab::setElideMode(Qt::TextElideMode mode)
 void CDockWidgetTab::updateStyle()
 {
 	internal::repolishStyle(this, internal::RepolishDirectChildren);
+}
+
+
+//============================================================================
+QSize CDockWidgetTab::iconSize() const
+{
+	return d->IconSize;
+}
+
+
+//============================================================================
+void CDockWidgetTab::setIconSize(const QSize& Size)
+{
+	d->IconSize = Size;
+	d->updateIcon();
 }
 
 
