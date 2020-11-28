@@ -55,6 +55,7 @@
 #include "DockingStateReader.h"
 #include "DockAreaTitleBar.h"
 #include "DockFocusController.h"
+#include "DockSplitter.h"
 
 #ifdef Q_OS_LINUX
 #include "linux/FloatingWidgetTitleBar.h"
@@ -279,6 +280,27 @@ bool DockManagerPrivate::restoreStateFromXml(const QByteArray &state,  int versi
     int  DockContainers = s.attributes().value("Containers").toInt();
 #endif
     ADS_PRINT(DockContainers);
+
+    if (CentralWidget)
+    {
+		const auto CentralWidgetAttribute = s.attributes().value("CentralWidget");
+		// If we have a central widget but a state without central widget, then
+		// something is wrong.
+		if (CentralWidgetAttribute.isEmpty())
+		{
+			qWarning() << "Dock manager has central widget but saved state does not have central widget.";
+			return false;
+		}
+
+		// If the object name of the central widget does not match the name of the
+		// saved central widget, the something is wrong
+		if (CentralWidget->objectName() != CentralWidgetAttribute.toString())
+		{
+			qWarning() << "Object name of central widget does not match name of central widget in saved state.";
+			return false;
+		}
+    }
+
     int DockContainerCount = 0;
     while (s.readNextStartElement())
     {
@@ -368,8 +390,6 @@ void DockManagerPrivate::restoreDockAreasIndices()
     }
 }
 
-
-
 //============================================================================
 void DockManagerPrivate::emitTopLevelEvents()
 {
@@ -407,7 +427,6 @@ bool DockManagerPrivate::restoreState(const QByteArray& State, int version)
     	return false;
     }
 
-    CentralWidget = nullptr;
     // Hide updates of floating widgets from use
     hideFloatingWidgets();
     markDockWidgetsDirty();
@@ -421,6 +440,7 @@ bool DockManagerPrivate::restoreState(const QByteArray& State, int version)
     restoreDockWidgetsOpenState();
     restoreDockAreasIndices();
     emitTopLevelEvents();
+    _this->dumpLayout();
 
     return true;
 }
@@ -476,6 +496,10 @@ CDockManager::CDockManager(QWidget *parent) :
 	{
 		d->FocusController = new CDockFocusController(this);
 	}
+
+#ifdef Q_OS_LINUX
+	window()->installEventFilter(this);
+#endif
 }
 
 //============================================================================
@@ -489,6 +513,70 @@ CDockManager::~CDockManager()
 	delete d;
 }
 
+//============================================================================
+#ifdef Q_OS_LINUX
+bool CDockManager::eventFilter(QObject *obj, QEvent *e)
+{
+	// Emulate Qt:Tool behaviour.
+	// Required because on some WMs Tool windows can't be maximized.
+
+	// Window always on top of the MainWindow.
+	if (e->type() == QEvent::WindowActivate)
+	{
+		for (auto _window : floatingWidgets())
+		{
+			if (!_window->isVisible() || window()->isMinimized())
+			{
+				continue;
+			}
+			// setWindowFlags(Qt::WindowStaysOnTopHint) will hide the window and thus requires a show call.
+			// This then leads to flickering and a nasty endless loop (also buggy behaviour on Ubuntu).
+			// So we just do it ourself.
+			internal::xcb_update_prop(true, _window->window()->winId(),
+				"_NET_WM_STATE", "_NET_WM_STATE_ABOVE", "_NET_WM_STATE_STAYS_ON_TOP");
+		}
+	}
+	else if (e->type() == QEvent::WindowDeactivate)
+	{
+		for (auto _window : floatingWidgets())
+		{
+			if (!_window->isVisible() || window()->isMinimized())
+			{
+				continue;
+			}
+			internal::xcb_update_prop(false, _window->window()->winId(),
+				"_NET_WM_STATE", "_NET_WM_STATE_ABOVE", "_NET_WM_STATE_STAYS_ON_TOP");
+			_window->raise();
+		}
+	}
+
+	// Sync minimize with MainWindow
+	if (e->type() == QEvent::WindowStateChange)
+	{
+		for (auto _window : floatingWidgets())
+		{
+			if (! _window->isVisible())
+			{
+				continue;
+			}
+
+			if (window()->isMinimized())
+			{
+				_window->showMinimized();
+			}
+			else
+			{
+				_window->setWindowState(_window->windowState() & (~Qt::WindowMinimized));
+			}
+		}
+		if (!window()->isMinimized())
+		{
+			QApplication::setActiveWindow(window());
+		}
+	}
+	return Super::eventFilter(obj, e);
+}
+#endif
 
 //============================================================================
 void CDockManager::registerFloatingWidget(CFloatingDockContainer* FloatingWidget)
@@ -570,6 +658,10 @@ QByteArray CDockManager::saveState(int version) const
 		s.writeAttribute("Version", QString::number(CurrentVersion));
 		s.writeAttribute("UserVersion", QString::number(version));
 		s.writeAttribute("Containers", QString::number(d->Containers.count()));
+		if (d->CentralWidget)
+		{
+			s.writeAttribute("CentralWidget", d->CentralWidget->objectName());
+		}
 		for (auto Container : d->Containers)
 		{
 			Container->saveState(s);
@@ -640,6 +732,7 @@ CFloatingDockContainer* CDockManager::addDockWidgetFloating(CDockWidget* Dockwid
 	{
 		d->UninitializedFloatingWidgets.append(FloatingWidget);
 	}
+	emit dockWidgetAdded(Dockwidget);
 	return FloatingWidget;
 }
 
@@ -666,7 +759,10 @@ CDockAreaWidget* CDockManager::addDockWidget(DockWidgetArea area,
 	CDockWidget* Dockwidget, CDockAreaWidget* DockAreaWidget)
 {
 	d->DockWidgetsMap.insert(Dockwidget->objectName(), Dockwidget);
-	return CDockContainerWidget::addDockWidget(area, Dockwidget, DockAreaWidget);
+	auto Container = DockAreaWidget ? DockAreaWidget->dockContainer(): this;
+	auto AreaOfAddedDockWidget = Container->addDockWidget(area, Dockwidget, DockAreaWidget);
+	emit dockWidgetAdded(Dockwidget);
+	return AreaOfAddedDockWidget;
 }
 
 
@@ -835,10 +931,20 @@ CDockAreaWidget* CDockManager::setCentralWidget(CDockWidget* widget)
 		return nullptr;
 	}
 
-	// Setting a new central widget is now allowed if there is alread a central
-	// widget
+	// Setting a new central widget is now allowed if there is already a central
+	// widget or if there are already other dock widgets
 	if (d->CentralWidget)
 	{
+		qWarning("Setting a central widget not possible because there is already a central widget.");
+		return nullptr;
+	}
+
+	// Setting a central widget is now allowed if there are already other
+	// dock widgets.
+	if (!d->DockWidgetsMap.isEmpty())
+	{
+		qWarning("Setting a central widget not possible - the central widget need to be the first "
+			"dock widget that is added to the dock manager.");
 		return nullptr;
 	}
 
@@ -975,6 +1081,48 @@ void CDockManager::setDockWidgetFocused(CDockWidget* DockWidget)
 	}
 }
 
+
+//===========================================================================
+CDockWidget* CDockManager::focusedDockWidget() const
+{
+	if (!d->FocusController)
+	{
+		return nullptr;
+	}
+	else
+	{
+		return d->FocusController->focusedDockWidget();
+	}
+}
+
+//===========================================================================
+QList<int> CDockManager::splitterSizes(CDockAreaWidget *ContainedArea) const
+{
+    if (ContainedArea)
+    {
+        auto Splitter = internal::findParent<CDockSplitter*>(ContainedArea);
+        if (Splitter)
+        {
+            return Splitter->sizes();
+        }
+    }
+    return QList<int>();
+}
+
+//===========================================================================
+void CDockManager::setSplitterSizes(CDockAreaWidget *ContainedArea, const QList<int>& sizes)
+{
+    if (!ContainedArea)
+    {
+        return;
+    }
+
+    auto Splitter = internal::findParent<CDockSplitter*>(ContainedArea);
+    if (Splitter && Splitter->count() == sizes.count())
+    {
+        Splitter->setSizes(sizes);
+    }
+}
 
 } // namespace ads
 

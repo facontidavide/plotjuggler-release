@@ -1,13 +1,13 @@
 <?xml version="1.0"?>
 <package format="3">
     <name>plotjuggler</name>
-    <version>3.0.1</version>
+    <version>3.0.2</version>
     <description>PlotJuggler: juggle with data</description>
 
     <maintainer email="davide.faconti@gmail.com">Davide Faconti</maintainer>
     <license>LGPLv3</license>
 
-    <url type="website">https://github.com/facontidavide/PlotJuggler</url>
+    <url type="website">https://github.com/PlotJuggler/PlotJuggler</url>
 
     <author email="davide.faconti@gmail.com">Davide Faconti</author>
 
@@ -22,9 +22,10 @@
     <depend>libqt5-svg-dev</depend>
     <depend>libqt5-websockets-dev</depend>
     <depend>libqt5-opengl-dev</depend>
+    <depend>libqt5x11extras5-dev</depend>
     <depend>binutils</depend>
     <depend>boost</depend>
-    <depend>libzmqpp-dev</depend>
+    <depend>libzmq3-dev</depend>
 
 
     <!-- The export tag contains other, unspecified, tags -->
