@@ -1,10 +1,10 @@
 ![PlotJuggler](docs/plotjuggler3_banner.svg)
 
 
-[![CI](https://github.com/PlotJuggler/PlotJuggler/workflows/ros1/badge.svg)](https://github.com/PlotJuggler/PlotJuggler/actions?query=workflow%3Aros1)
-[![CI](https://github.com/PlotJuggler/PlotJuggler/workflows/ros2/badge.svg)](https://github.com/PlotJuggler/PlotJuggler/actions?query=workflow%3Aros2)
+[![CI](https://github.com/facontidavide/PlotJuggler/workflows/ros1/badge.svg)](https://github.com/facontidavide/PlotJuggler/actions?query=workflow%3Aros1)
+[![CI](https://github.com/facontidavide/PlotJuggler/workflows/ros2/badge.svg)](https://github.com/facontidavide/PlotJuggler/actions?query=workflow%3Aros2)
 [![Join the chat at https://gitter.im/PlotJuggler/Lobby](https://badges.gitter.im/PlotJuggler/Lobby.svg)](https://gitter.im/PlotJuggler/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) 
-[![Tweet](https://img.shields.io/twitter/url/http/shields.io.svg?style=social)](https://twitter.com/intent/tweet?text=I%20use%20PlotJuggler%20and%20it%20is%20amazing%0D%0A&url=https://github.com/PlotJuggler/PlotJuggler&via=facontidavide&hashtags=dataviz,plotjuggler,GoROS,PX4)
+[![Tweet](https://img.shields.io/twitter/url/http/shields.io.svg?style=social)](https://twitter.com/intent/tweet?text=I%20use%20PlotJuggler%20and%20it%20is%20amazing%0D%0A&url=https://github.com/facontidavide/PlotJuggler&via=facontidavide&hashtags=dataviz,plotjuggler,GoROS,PX4)
 
 # PlotJuggler 3.0
 
@@ -56,13 +56,13 @@ On Linux, the simplest way to install PlotJuggler is through **snaps**:
 [![Get it from the Snap Store](https://snapcraft.io/static/images/badges/en/snap-store-white.svg)](https://snapcraft.io/plotjuggler)
     
 **Windows Installer**: 
-[PlotJuggler_WIN_Installer-2.8.4.exe](https://github.com/PlotJuggler/PlotJuggler/releases/download/2.8.4/PlotJuggler_WIN_Installer-2.8.4.exe)
+[PlotJuggler_WIN_Installer-2.8.4.exe](https://github.com/facontidavide/PlotJuggler/releases/download/2.8.4/PlotJuggler_WIN_Installer-2.8.4.exe)
 
 ## How to build
 
 Clone the repository as usual:
 
-    git clone --recurse-submodules https://github.com/PlotJuggler/PlotJuggler.git
+    git clone --recurse-submodules https://github.com/facontidavide/PlotJuggler.git
 
 The only binary dependency that you need installed in your system is Qt5. 
 On Ubuntu, the debians can be installed with the the command:
@@ -114,4 +114,4 @@ If you use PlotJuggler at work, your company can support the development of thos
 
 # Stargazers
 
-[![Stargazers over time](https://starchart.cc/PlotJuggler/PlotJuggler.svg)](https://starchart.cc/PlotJuggler/PlotJuggler)
+[![Stargazers over time](https://starchart.cc/facontidavide/PlotJuggler.svg)](https://starchart.cc/facontidavide/PlotJuggler)
