@@ -205,7 +205,7 @@ int main(int argc, char* argv[])
   QObject::connect(&manager, &QNetworkAccessManager::finished, OpenNewReleaseDialog);
 
   QNetworkRequest request;
-  request.setUrl(QUrl("https://api.github.com/repos/PlotJuggler/PlotJuggler/releases/latest"));
+  request.setUrl(QUrl("https://api.github.com/repos/facontidavide/PlotJuggler/releases/latest"));
   manager.get(request);
 
   /*
