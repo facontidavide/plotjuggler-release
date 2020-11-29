@@ -195,5 +195,5 @@ tracks:
     release_tag: :{version}
     ros_distro: noetic
     vcs_type: git
-    vcs_uri: https://github.com/PlotJuggler/PlotJuggler.git
+    vcs_uri: https://github.com/facontidavide/PlotJuggler.git
     version: :{auto}
