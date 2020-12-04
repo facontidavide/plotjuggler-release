@@ -8,7 +8,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}  "${CMAKE_CURRENT_LIST_DIR}/cmake")
 add_definitions(
     -DPJ_MAJOR_VERSION="3"
     -DPJ_MINOR_VERSION="0"
-    -DPJ_PATCH_VERSION="2" )
+    -DPJ_PATCH_VERSION="4" )
 
 # http://answers.ros.org/question/230877/optionally-build-a-package-with-catkin/
 if( CATKIN_DEVEL_PREFIX OR catkin_FOUND OR CATKIN_BUILD_BINARY_PACKAGE)
@@ -55,12 +55,8 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
 SET(CMAKE_AUTOUIC ON)
 
-if(NOT CMAKE_VERSION VERSION_LESS 3.1)
-    set(CMAKE_CXX_STANDARD 14)
-    set(CMAKE_CXX_STANDARD_REQUIRED ON)
-else()
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
-endif()
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 if (NOT WIN32)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -fno-omit-frame-pointer")
@@ -124,7 +120,7 @@ include_directories(
     ./3rdparty/paho.mqtt.c/src
     ./3rdparty/qwt/src
     ./3rdparty/sol
-    ./3rdparty/lua-5.3.4/src
+    ./3rdparty/lua-5.4.1/src
 )
 
 #########################  LIBRARY  ####################################
@@ -196,7 +192,7 @@ add_subdirectory( 3rdparty/color_widgets )
 add_subdirectory( 3rdparty/Qt-Advanced-Docking )
 add_subdirectory( 3rdparty/qwt/src )
 
-add_subdirectory( 3rdparty/lua-5.3.4 )
+add_subdirectory( 3rdparty/lua-5.4.1 )
 
 find_package(Git QUIET)
 if(GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
