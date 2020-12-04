@@ -2,6 +2,12 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+3.0.4 (2020-12-04)
+------------------
+* Lua ans Sol updated (c++17
+* bug fix `#350 <https://github.com/PlotJuggler/PlotJuggler/issues/350>`_ (crash in lua)
+* Contributors: Davide Faconti
+
 3.0.2 (2020-11-28)
 ------------------
 * fix icon color in dark mode
