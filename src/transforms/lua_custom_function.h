@@ -22,7 +22,7 @@ public:
 
 private:
   std::unique_ptr<sol::state> _lua_engine;
-  sol::function _lua_function;
+  sol::protected_function _lua_function;
   std::vector<double> _chan_values;
 };
 
