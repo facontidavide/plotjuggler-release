@@ -73,17 +73,7 @@
 #define nssv_CPP17_OR_GREATER  ( nssv_CPLUSPLUS >= 201703L )
 #define nssv_CPP20_OR_GREATER  ( nssv_CPLUSPLUS >= 202000L )
 
-// use C++17 std::string_view if available and requested:
-
-#if nssv_CPP17_OR_GREATER && defined(__has_include )
-# if __has_include( <string_view> )
-#  define nssv_HAVE_STD_STRING_VIEW  1
-# else
-#  define nssv_HAVE_STD_STRING_VIEW  0
-# endif
-#else
 # define  nssv_HAVE_STD_STRING_VIEW  0
-#endif
 
 #define  nssv_USES_STD_STRING_VIEW  ( (nssv_CONFIG_SELECT_STRING_VIEW == nssv_STRING_VIEW_STD) || ((nssv_CONFIG_SELECT_STRING_VIEW == nssv_STRING_VIEW_DEFAULT) && nssv_HAVE_STD_STRING_VIEW) )
 
