@@ -145,7 +145,6 @@ if(COMPILING_WITH_CATKIN)
     set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_LIB_DESTINATION})
     set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_BIN_DESTINATION})
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_BIN_DESTINATION})
-    install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/ DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION} )
 
 elseif(COMPILING_WITH_AMENT)
     find_package(ament_cmake REQUIRED)
@@ -172,9 +171,7 @@ install(
     INCLUDES DESTINATION include
     )
 
-install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/
-    DESTINATION  include)
-
+install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/ DESTINATION include )
 
 set(DESKTOP_ICON_DIR "${CMAKE_INSTALL_PREFIX}/share/icons")
 
@@ -216,7 +213,15 @@ if(EXISTS "${PROJECT_SOURCE_DIR}/3rdparty/paho.mqtt.c/CMakeLists.txt")
     SET(PAHO_ENABLE_CPACK FALSE CACHE BOOL "Enable CPack" FORCE)
     SET(PAHO_BUILD_STATIC TRUE CACHE BOOL "Build static library" FORCE)
     SET(PAHO_BUILD_SHARED FALSE CACHE BOOL "Build shared library" FORCE)
-    add_subdirectory( 3rdparty/paho.mqtt.c )
+    SET(CMAKE_INSTALL_INCLUDEDIR )
+
+    macro(install)
+    endmacro()
+         add_subdirectory( 3rdparty/paho.mqtt.c )
+    macro(install)
+        _install(${ARGN})
+    endmacro()
+
     add_subdirectory( plugins/DataStreamMQTT )
 endif()
 
