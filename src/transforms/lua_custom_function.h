@@ -24,6 +24,7 @@ private:
   std::unique_ptr<sol::state> _lua_engine;
   sol::protected_function _lua_function;
   std::vector<double> _chan_values;
+  std::mutex mutex_;
 };
 
 #endif  // LUA_CUSTOM_FUNCTION_H
