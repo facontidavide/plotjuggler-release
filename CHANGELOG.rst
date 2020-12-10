@@ -2,6 +2,17 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+3.0.5 (2020-12-10)
+------------------
+* fix a crash when data is cleared during streaming (LuaCustomFunction)
+* should fix issue `#360 <https://github.com/PlotJuggler/PlotJuggler/issues/360>`_ with stylesheet
+* fix bug `#359 <https://github.com/PlotJuggler/PlotJuggler/issues/359>`_
+* fix compilation error
+* Some template types have an enum ItemType. MSVC fails with compilation (`#358 <https://github.com/PlotJuggler/PlotJuggler/issues/358>`_)
+  error.
+* Add required Qt5::Network for DataStreamUDP (`#356 <https://github.com/PlotJuggler/PlotJuggler/issues/356>`_)
+* Contributors: Davide Faconti, Tobias Fischer, gabm
+
 3.0.4 (2020-12-04)
 ------------------
 * Lua ans Sol updated (c++17
