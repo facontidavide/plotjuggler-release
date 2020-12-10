@@ -18,7 +18,8 @@ CustomFunction::CustomFunction(const SnippetData& snippet):
 
 void CustomFunction::clear()
 {
-  initEngine();
+  // This cause a crash during streaming for reasons that are not 100% clear.
+  // initEngine();
 }
 
 void CustomFunction::calculateAndAdd(PlotDataMapRef& plotData)
