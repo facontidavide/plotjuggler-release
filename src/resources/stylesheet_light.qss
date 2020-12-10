@@ -563,6 +563,7 @@ QPushButton:checked:hover{
 QComboBox {
     color: ${default_text};
     background-color: ${widget_background};
+    selection-color: ${default_text};
     selection-background-color: ${border_hover};
     border-radius: 2px;
     border: 1px solid ${border_default};
@@ -633,6 +634,7 @@ QListView {
    border-radius: 2px;
    border: 1px solid ${border_default};
 
+   selection-color: ${default_text};
    selection-background-color: transparent;
    show-decoration-selected: 1;
 }
