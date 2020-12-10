@@ -1149,15 +1149,11 @@ void PlotWidget::reloadPlotData()
     auto data_it = _mapped_data.numeric.find(curve_name);
     if (data_it != _mapped_data.numeric.end())
     {
-      const auto& data = data_it->second;
-      QString transform_name;
-      if( !isXYPlot() )
+      auto ts = dynamic_cast<TransformedTimeseries*>(it.curve->data());
+      if( ts )
       {
-        auto ts = dynamic_cast<TransformedTimeseries*>(it.curve->data());
-        transform_name = ts->transformName();
+        ts->updateCache(true);
       }
-      auto data_series = createTimeSeries(transform_name, &data);
-      it.curve->setData(data_series);
     }
   }
 
