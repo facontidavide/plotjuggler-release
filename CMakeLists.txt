@@ -8,7 +8,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}  "${CMAKE_CURRENT_LIST_DIR}/cmake")
 add_definitions(
     -DPJ_MAJOR_VERSION="3"
     -DPJ_MINOR_VERSION="0"
-    -DPJ_PATCH_VERSION="5" )
+    -DPJ_PATCH_VERSION="6" )
 
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/include )
 
@@ -123,6 +123,8 @@ include_directories(
     ./3rdparty/qwt/src
     ./3rdparty/sol
     ./3rdparty/lua-5.4.1/src
+    ./3rdparty/liblsl/src
+    ./3rdparty/liblsl/include
 )
 
 #########################  LIBRARY  ####################################
@@ -215,14 +217,18 @@ if(EXISTS "${PROJECT_SOURCE_DIR}/3rdparty/paho.mqtt.c/CMakeLists.txt")
     SET(PAHO_BUILD_SHARED FALSE CACHE BOOL "Build shared library" FORCE)
     SET(CMAKE_INSTALL_INCLUDEDIR )
 
-    macro(install)
-    endmacro()
-         add_subdirectory( 3rdparty/paho.mqtt.c )
-    macro(install)
-        _install(${ARGN})
-    endmacro()
+    add_subdirectory( 3rdparty/paho.mqtt.c EXCLUDE_FROM_ALL)
 
     add_subdirectory( plugins/DataStreamMQTT )
+endif()
+
+if(EXISTS "${PROJECT_SOURCE_DIR}/3rdparty/liblsl/CMakeLists.txt")
+    SET(LSL_ENABLE_TESTING FALSE CACHE BOOL "Build tests and run" FORCE)
+    SET(LSL_ENABLE_CPACK FALSE CACHE BOOL "Enable CPack" FORCE)
+    SET(LSL_BUILD_STATIC TRUE CACHE BOOL "Build static library" FORCE)
+    SET(LSL_BUILD_SHARED FALSE CACHE BOOL "Build shared library" FORCE)
+    add_subdirectory( 3rdparty/liblsl )
+    add_subdirectory( plugins/DataStreamLSL )
 endif()
 
 add_subdirectory( src )
@@ -233,9 +239,8 @@ add_subdirectory( plugins/DataStreamSample )
 add_subdirectory( plugins/DataStreamWebsocket )
 add_subdirectory( plugins/DataStreamUDP )
 
+
 if( ZMQ_FOUND )
   add_subdirectory( plugins/DataStreamZMQ )
 endif()
-
-
 

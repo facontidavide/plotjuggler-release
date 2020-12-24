@@ -2,6 +2,14 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+3.0.6 (2020-12-24)
+------------------
+* fix issue  `#372 <https://github.com/PlotJuggler/PlotJuggler/issues/372>`_ (install didn't work)
+* Update rangeX during streaming
+* LabStreamlayer (LSL) plugin is developed. (`#355 <https://github.com/PlotJuggler/PlotJuggler/issues/355>`_)
+* Update CMakeLists.txt (`#363 <https://github.com/PlotJuggler/PlotJuggler/issues/363>`_)
+* Contributors: Celal Savur, Davide Faconti, Tobias Fischer
+
 3.0.5 (2020-12-10)
 ------------------
 * fix a crash when data is cleared during streaming (LuaCustomFunction)
