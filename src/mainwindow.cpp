@@ -1962,6 +1962,11 @@ void MainWindow::updateDataAndReplot(bool replot_hidden_tabs)
     {
       _curvelist_widget->refreshColumns();
     }
+
+    for (auto& it : _mapped_plot_data.numeric)
+    {
+      it.second.setMaximumRangeX( ui->streamingSpinBox->value() );
+    }
   }
 
   const bool is_streaming_active = isStreamingActive();
