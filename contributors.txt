@@ -4,13 +4,18 @@ Main developer:
 Contributors:
    Alexandre Audes (@aeudes)
    Arturo Martín-de-Nicolás
+   Celal Savur (@csavur)
    Dorian Scholz 
    Eddy Scott
    Hilario Tome'
    Jorge Rodriguez (@veimox)
    Marcel Soler 
+   Mazin Ali (@mazinms)
    Mikael Arguedas
    Kartik Mohta
    Robin Vanhove (@1r0b1n0)
+   Shitij Kumar (@spk4422)
+   Tobias Fischer (@TobiasRobotics)
    Victor Lopez
    
+
