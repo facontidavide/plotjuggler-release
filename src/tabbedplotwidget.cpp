@@ -15,7 +15,7 @@
 #include "mainwindow.h"
 #include "tabbedplotwidget.h"
 #include "tab_widget.h"
-#include "svg_util.h"
+#include "PlotJuggler/svg_util.h"
 
 std::map<QString, TabbedPlotWidget*> TabbedPlotWidget::_instances;
 
