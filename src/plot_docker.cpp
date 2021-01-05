@@ -8,7 +8,7 @@
 #include <QDebug>
 #include <QInputDialog>
 #include <QLineEdit>
-#include "svg_util.h"
+#include "PlotJuggler/svg_util.h"
 
 class SplittableComponentsFactory : public ads::CDockComponentsFactory
 {
