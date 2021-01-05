@@ -9,7 +9,7 @@ dark_background: #dddddd
 default_text:  #111111
 disabled_text: #666666
 
-widget_background_disabled: #dddddd;
+widget_background_disabled: #eeeeee;
 
 border_default: grey
 border_hover:   #62c5ff
@@ -29,6 +29,7 @@ QWidget {
 
 QWidget:disabled{
   color: ${disabled_text};
+  background: ${widget_background_disabled};
 }
 
 PlotWidget {
@@ -58,7 +59,6 @@ QLineEdit {
 
 QLineEdit:disabled {
     color: ${disabled_text};
-    background: ${widget_background_disabled};
 }
 
 QTabWidget{
@@ -124,9 +124,7 @@ QToolTip {
 /* QScrollArea ------------------------------------------------------------
 
 --------------------------------------------------------------------------- */
-QScrollArea QWidget QWidget:disabled {
-  background-color: ${widget_background_disabled};
-}
+
 
 /* QScrollBar -------------------------------------------------------------
 
@@ -520,11 +518,6 @@ QPushButton[flat="false"]
     border: 1px solid ${border_default};
 }
 
-QPushButton:disabled {
-    color: ${disabled_text};
-    background: ${widget_background_disabled};
-}
-
 
 QPushButton:checked {
   border: 2px solid ${border_checked};
@@ -573,10 +566,6 @@ QComboBox {
     padding-right: 4px;
 }
 
-QComboBox:disabled {
-    color: ${disabled_text};
-    background: ${widget_background_disabled};
-}
 
 
 /* QSlider ---------------------------------------------------------------- */

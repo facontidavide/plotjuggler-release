@@ -24,7 +24,6 @@ QSize DataLoadCSV::parseHeader(QFile* file, std::vector<std::string>& ordered_na
   QTextStream inA(file);
 
   QString first_line = inA.readLine();
-  QString second_line = inA.readLine();
 
   QStringList firstline_items = first_line.split(csv_separator);
 
@@ -159,7 +158,15 @@ bool DataLoadCSV::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_data
     QStringList string_items = line.split(csv_separator);
     if (string_items.size() != columncount)
     {
-      continue;
+      auto err_msg = QString("The number of values at line %1 is %2,\n"
+                             "but the expected number of columns is %3.\n"
+                             "Aborting...")
+          .arg(linecount+1)
+          .arg(string_items.size())
+          .arg(columncount);
+
+      QMessageBox::warning(nullptr, "Error reading file", err_msg );
+      return false;
     }
     double t = linecount;
 
