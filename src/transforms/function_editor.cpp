@@ -26,7 +26,7 @@
 #include <QSyntaxHighlighter>
 
 #include "lua_custom_function.h"
-#include "svg_util.h"
+#include "PlotJuggler/svg_util.h"
 
 //class Highlighter : public QSyntaxHighlighter
 //{
@@ -468,6 +468,9 @@ void FunctionEditorWidget::on_buttonSaveFunctions_clicked()
 
   file.write(data);
   file.close();
+
+  directory_path = QFileInfo(fileName).absolutePath();
+  settings.setValue("AddCustomPlotDialog.loadDirectory", directory_path);
 }
 
 void FunctionEditorWidget::on_buttonSaveCurrent_clicked()
