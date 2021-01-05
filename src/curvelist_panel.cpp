@@ -19,7 +19,7 @@
 #include <QScrollBar>
 #include <QTreeWidget>
 
-#include "svg_util.h"
+#include "PlotJuggler/svg_util.h"
 
 //-------------------------------------------------
 
