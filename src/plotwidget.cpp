@@ -37,7 +37,7 @@
 #include "suggest_dialog.h"
 #include "transforms/custom_function.h"
 #include "transforms/custom_timeseries.h"
-#include "svg_util.h"
+#include "PlotJuggler/svg_util.h"
 #include "plotwidget_editor.h"
 #include "plotwidget_transforms.h"
 
@@ -150,7 +150,11 @@ PlotWidget::PlotWidget(PlotDataMapRef& datamap, QWidget* parent)
   this->sizePolicy().setHorizontalPolicy(QSizePolicy::Expanding);
   this->sizePolicy().setVerticalPolicy(QSizePolicy::Expanding);
 
+#ifdef Q_OS_WIN
+  auto canvas = new QwtPlotCanvas();
+#else
   auto canvas = new QwtPlotOpenGLCanvas();
+#endif
 
   canvas->setFrameStyle(QFrame::NoFrame);
 
