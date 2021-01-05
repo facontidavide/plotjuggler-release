@@ -2,6 +2,20 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+3.0.7 (2021-01-05)
+------------------
+* Add plugin folders in the preference dialog
+* fix issue `#370 <https://github.com/PlotJuggler/PlotJuggler/issues/370>`_: libDataStreamMQTT compilation with Clang
+* fix command line options
+* change the way ROS path are added t othe list of plugins
+* fixing windows builds, for real this time. (`#379 <https://github.com/PlotJuggler/PlotJuggler/issues/379>`_)
+* fix bug when datapoints are cleared
+* remember the directory in the FunctionEditor
+* moved file svg_util
+* Add warning when a CSV file is malformed, and suggested in `#378 <https://github.com/PlotJuggler/PlotJuggler/issues/378>`_
+* Fixed message_parser plugin loading segfault (`#376 <https://github.com/PlotJuggler/PlotJuggler/issues/376>`_)
+* Contributors: Davide Faconti, Jordan McMichael, davide
+
 3.0.6 (2020-12-24)
 ------------------
 * fix issue  `#372 <https://github.com/PlotJuggler/PlotJuggler/issues/372>`_ (install didn't work)
