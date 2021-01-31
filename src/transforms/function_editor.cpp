@@ -27,6 +27,7 @@
 
 #include "lua_custom_function.h"
 #include "PlotJuggler/svg_util.h"
+#include "ui_function_editor_help.h"
 
 //class Highlighter : public QSyntaxHighlighter
 //{
@@ -757,4 +758,14 @@ void FunctionEditorWidget::on_updatePreview()
 void FunctionEditorWidget::on_globalVarsTextField_textChanged()
 {
   updatePreview();
+}
+
+void FunctionEditorWidget::on_pushButtonHelp_clicked()
+{
+  QDialog* dialog = new QDialog(this);
+  auto ui = new Ui_FunctionEditorHelp();
+  ui->setupUi(dialog);
+
+  dialog->setAttribute(Qt::WA_DeleteOnClose);
+  dialog->exec();
 }
