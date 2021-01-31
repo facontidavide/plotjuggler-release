@@ -20,10 +20,11 @@ item_selection_background: #148CD2
 //------- PALETTE END --------
 
 QWidget {
-  background-color: transparent;
+  background: transparent;
   border: 0px solid ${border_default};
   padding: 0px;
   color: ${default_text};
+  font-size: 10pt;
 }
 
 
@@ -33,7 +34,7 @@ QWidget:disabled{
 }
 
 PlotWidget {
-    background: ${main_background};
+    background: ${widget_background};
     border: 0px solid white;
 }
 
@@ -266,11 +267,11 @@ QMenu::icon {
 }
 
 QMenu::item {
-    background-color: transparent;
+    background: ${widget_background};
     padding: 2px 25px 2px 25px;
     color: ${default_text};
     border: 1px solid transparent;
-    margin: 2px;
+    margin: 0px;
     margin-left: 0px;
     margin-right: 0px;
 }

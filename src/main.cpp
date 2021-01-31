@@ -65,11 +65,11 @@ void OpenNewReleaseDialog(QNetworkReply* reply)
 QPixmap getFunnySplashscreen()
 {
   QSettings settings;
-  qsrand(time(nullptr));
+  srand (time(nullptr));
 
   auto getNum = []() {
     const int last_image_num = 60;
-    int n = qrand() % (last_image_num + 2);
+    int n = rand() % (last_image_num + 2);
     if (n > last_image_num)
     {
       n = 0;
