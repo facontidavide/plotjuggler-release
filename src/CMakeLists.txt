@@ -18,6 +18,7 @@ QT5_WRAP_UI ( UI_SRC
     plotwidget_editor.ui
 
     transforms/function_editor.ui
+    transforms/function_editor_help.ui
     transforms/transform_selector.ui
 
     transforms/first_derivative.ui
