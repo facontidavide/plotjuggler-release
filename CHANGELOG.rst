@@ -2,6 +2,23 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+3.1.0 (2021-01-31)
+------------------
+* fix issue `#394 <https://github.com/facontidavide/PlotJuggler/issues/394>`_
+* Update udp_server.cpp (`#393 <https://github.com/facontidavide/PlotJuggler/issues/393>`_)
+  Fixes random corruptions of UDP Json messages (garbage collector related?)
+* Fix style in Windows (`#390 <https://github.com/facontidavide/PlotJuggler/issues/390>`_)
+* Fix compilation in C++17
+* fix issue `#389 <https://github.com/facontidavide/PlotJuggler/issues/389>`_
+* remove qrand
+* Add better help dialog to custom functions
+* Allow custom function return multiple points (`#386 <https://github.com/facontidavide/PlotJuggler/issues/386>`_)
+* Apple Mac M1 build fix. (`#392 <https://github.com/facontidavide/PlotJuggler/issues/392>`_)
+  backward-cpp dependency fix for ARM 64 backport, wrong access to PC register.
+* fix issue `#384 <https://github.com/facontidavide/PlotJuggler/issues/384>`_
+* temporary remove LSL
+* Contributors: David CARLIER, Davide Faconti, Hugal31, alkaes
+
 3.0.7 (2021-01-05)
 ------------------
 * Add plugin folders in the preference dialog
