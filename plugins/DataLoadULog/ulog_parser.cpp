@@ -18,7 +18,7 @@ ULogParser::ULogParser(const std::string& filename) : _file_start_time(0)
   DataStream datastream;
 
   {
-    std::ifstream file(filename, std::ifstream::in);
+    std::ifstream file(filename, std::ios::binary);
     if (!file.is_open())
     {
       throw std::runtime_error("ULog: Failed to open replay file");
@@ -30,6 +30,11 @@ ULogParser::ULogParser(const std::string& filename) : _file_start_time(0)
 
     datastream.data.resize(length);
     file.read( &datastream.data[0], length);
+
+    if (!file) {
+         throw std::runtime_error("ULog: error reading file");
+    }
+    file.close();
   }
 
   bool ret = readFileHeader(datastream);
@@ -121,6 +126,8 @@ ULogParser::ULogParser(const std::string& filename) : _file_start_time(0)
       case (int)ULogMessageType::INFO:  // printf("INFO\n" );
         break;
       case (int)ULogMessageType::INFO_MULTIPLE:  // printf("INFO_MULTIPLE\n" );
+        break;
+      case (int)ULogMessageType::PARAMETER_DEFAULT:  // printf("PARAMETER_DEFAULT\n" );
         break;
       case (int)ULogMessageType::PARAMETER:
         printf("PARAMETER changed at run-time. Ignored\n");
@@ -365,10 +372,11 @@ bool ULogParser::readFileDefinitions(DataStream& datastream)
 
   while (true)
   {
-    qDebug() <<"\n" << datastream.offset;
+//    qDebug() <<"\noffset before" << datastream.offset;
     datastream.read((char*)&message_header, ULOG_MSG_HEADER_LEN);
-    qDebug() << message_header.msg_size;
-    qDebug() << datastream.offset;
+//    qDebug() <<"msg_size" << message_header.msg_size;
+//    qDebug() <<"type" << char(message_header.msg_type);
+//    qDebug() <<"offset after" << datastream.offset;
 
     if (!datastream)
     {
@@ -413,11 +421,12 @@ bool ULogParser::readFileDefinitions(DataStream& datastream)
       }
       break;
       case (int)ULogMessageType::INFO_MULTIPLE:  // skip
+      case (int)ULogMessageType::PARAMETER_DEFAULT:  // skip
         datastream.offset += message_header.msg_size;
         break;
 
       default:
-        printf("unknown log definition type %i, size %i (offset %i)",
+        printf("unknown log definition type %i, size %i (offset %i)\n",
                (int)message_header.msg_type,
                (int)message_header.msg_size,
                (int)datastream.offset);
