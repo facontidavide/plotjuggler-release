@@ -5,8 +5,9 @@
 [![CI](https://github.com/facontidavide/PlotJuggler/workflows/ros2/badge.svg)](https://github.com/facontidavide/PlotJuggler/actions?query=workflow%3Aros2)
 [![Join the chat at https://gitter.im/PlotJuggler/Lobby](https://badges.gitter.im/PlotJuggler/Lobby.svg)](https://gitter.im/PlotJuggler/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) 
 [![Tweet](https://img.shields.io/twitter/url/http/shields.io.svg?style=social)](https://twitter.com/intent/tweet?text=I%20use%20PlotJuggler%20and%20it%20is%20amazing%0D%0A&url=https://github.com/facontidavide/PlotJuggler&via=facontidavide&hashtags=dataviz,plotjuggler,GoROS,PX4)
+**Gold Sponsor**: [Greenzie](https://www.greenzie.com/)
 
-# PlotJuggler 3.0
+# PlotJuggler 3.1
 
 PlotJuggler is a tool to visualize time series that is **fast**, **powerful** and  **intuitive**.
 
@@ -57,7 +58,7 @@ On Linux, the simplest way to install PlotJuggler is through **snaps**:
 [![Get it from the Snap Store](https://snapcraft.io/static/images/badges/en/snap-store-white.svg)](https://snapcraft.io/plotjuggler)
     
 **Windows Installer**: 
-[PlotJuggler_WIN_Installer-2.8.4.exe](https://github.com/facontidavide/PlotJuggler/releases/download/2.8.4/PlotJuggler_WIN_Installer-2.8.4.exe)
+[PlotJuggler-3.1-WinInstaller.exe](https://github.com/facontidavide/PlotJuggler/releases/download/3.1.0/PlotJuggler-3.1-WinInstaller.exe)
 
 ## How to build
 
@@ -68,11 +69,11 @@ Clone the repository as usual:
 The only binary dependency that you need installed in your system is Qt5. 
 On Ubuntu, the debians can be installed with the the command:
 
-    sudo apt -y install qtbase5-dev libqt5svg5-dev libqt5websockets5-dev libqt5opengl5-dev
+    sudo apt -y install qtbase5-dev libqt5svg5-dev libqt5websockets5-dev libqt5opengl5-dev libqt5x11extras5-dev
     
 On Fedora:
 
-    sudo dnf install qt5-qtbase-devel qt5-qtsvg-devel qt5-websockets-devel qt5-qtopendl-devel
+    sudo dnf install qt5-qtbase-devel qt5-qtsvg-devel qt5-websockets-devel qt5-qtopendl-devel qt5-qtx11extras-devel
     
 Then compile using cmake (qmake is NOT supported):
 
@@ -89,16 +90,21 @@ To install PlotJuggler, just type:
 
     sudo apt install ros-${ROS_DISTRO}-plotjuggler-ros
        
-And run it with:
+I added a fix that will be available in the next release.
 
-    roslaunch plotjuggler_ros plotjuggler.launch
+To launch PlotJuggler on ROS, use the command:
+
+      rosrun plotjuggler plotjuggler
+
+or, if are using ROS2:
+
+       ros2 run plotjuggler plotjuggler
 
 Since version 3.x, ROS plugins have been moved to a separate repository:
 
 https://github.com/PlotJuggler/plotjuggler-ros-plugins
 
 Refer to the instructions in the this repository if you want to compile PJ and its ROS plugins from source.
-
 
 # If you like PlotJuggler, support it.
 
@@ -111,7 +117,6 @@ If you find PlotJuggler useful, consider making a donation on [PayPal](https://w
 If you use PlotJuggler at work, your company can support the development of those specific features they need.
 
 [Contact me](https://www.plotjuggler.io/support) for more details.
-
 
 # Stargazers
 

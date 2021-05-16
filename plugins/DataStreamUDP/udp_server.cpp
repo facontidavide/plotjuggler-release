@@ -104,8 +104,8 @@ bool UDP_Server::start(QStringList*)
 
   std::shared_ptr<MessageParserCreator> parser_creator;
 
-  connect(dialog.ui->comboBoxProtocol, qOverload<const QString &>( &QComboBox::currentIndexChanged), this,
-          [&](QString protocol)
+  connect(dialog.ui->comboBoxProtocol, qOverload<int>( &QComboBox::currentIndexChanged), this,
+          [&](int)
   {
     if( parser_creator ){
       QWidget*  prev_widget = parser_creator->optionsWidget();

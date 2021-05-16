@@ -192,7 +192,7 @@ int main(int argc, char* argv[])
     QPixmap main_pixmap = getFunnySplashscreen();
     QSplashScreen splash(main_pixmap, Qt::WindowStaysOnTopHint);
     QDesktopWidget* desktop = QApplication::desktop();
-    const int scrn = desktop->screenNumber(QCursor::pos());
+    const int scrn = desktop->screenNumber();
     const QPoint currentDesktopsCenter = desktop->availableGeometry(scrn).center();
     splash.move(currentDesktopsCenter - splash.rect().center());
 
