@@ -30,6 +30,13 @@ PreferencesDialog::PreferencesDialog(QWidget* parent) : QDialog(parent), ui(new 
   ui->pushButtonRemove->setIcon( LoadSvgIcon(":/resources/svg/remove_red.svg", theme));
 
   auto plugin_folders = settings.value("Preferences::plugin_folders", true).toStringList();
+
+  bool use_separator = settings.value("Preferences::use_separator", true).toBool();
+  ui->checkBoxSeparator->setChecked(use_separator);
+
+  bool use_opengl = settings.value("Preferences::use_opengl", true).toBool();
+  ui->checkBoxOpenGL->setChecked(use_opengl);
+
   for (const auto& folder: plugin_folders)
   {
     QDir dir(folder);
@@ -55,6 +62,8 @@ void PreferencesDialog::on_buttonBox_accepted()
   settings.setValue("Preferences::theme", ui->comboBoxTheme->currentIndex() == 1 ? "dark" : "light");
   settings.setValue("Preferences::remember_color", ui->checkBoxRememberColor->isChecked());
   settings.setValue("Preferences::use_plot_color_index", ui->radioLocalColorIndex->isChecked());
+  settings.setValue("Preferences::use_separator", ui->checkBoxSeparator->isChecked());
+  settings.setValue("Preferences::use_opengl", ui->checkBoxOpenGL->isChecked());
 
   QStringList plugin_folders;
   for(int row=0; row< ui->listWidget->count(); row++)

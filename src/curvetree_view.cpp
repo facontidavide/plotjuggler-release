@@ -58,7 +58,18 @@ CurveTreeView::CurveTreeView(CurveListPanel* parent) : QTreeWidget(parent), Curv
 
 void CurveTreeView::addItem(const QString& item_name)
 {
-  auto parts = item_name.split('/', QString::SplitBehavior::SkipEmptyParts);
+  QSettings settings;
+  bool use_separator = settings.value("Preferences::use_separator", true).toBool();
+
+  QStringList parts;
+  if( use_separator )
+  {
+    parts = item_name.split('/', QString::SplitBehavior::SkipEmptyParts);
+  }
+  else{
+    parts.push_back(item_name);
+  }
+
   if (parts.size() == 0)
   {
     return;
