@@ -105,7 +105,7 @@
         </size>
        </property>
        <property name="currentIndex">
-        <number>7</number>
+        <number>0</number>
        </property>
        <widget class="QWidget" name="page_1">
         <layout class="QVBoxLayout" name="verticalLayout" stretch="0,1">
@@ -327,10 +327,11 @@ p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Ubuntu'; font-size:11pt; font-weight:400; font-style:normal;&quot;&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:12pt; font-weight:600;&quot;&gt;The time tracker&lt;/span&gt;&lt;/p&gt;
 &lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;The time tracker is a vertical line that is used to see the value of the curves across Plotting Areas (&lt;span style=&quot; font-weight:600;&quot;&gt;A&lt;/span&gt;). Use button &lt;span style=&quot; font-weight:600;&quot;&gt;B&lt;/span&gt; to customize the amount of information shown.&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;The time tracker is a vertical line that is used to see the value of the curves across Plotting Areas (&lt;span style=&quot; font-weight:600;&quot;&gt;A&lt;/span&gt;). Use button &lt;span style=&quot; font-weight:600;&quot;&gt;B&lt;/span&gt; to customize the amount of information shown. &lt;/p&gt;
 &lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Its functionality is not limited to visualization: in fact, the position of the time tracker triggers the so called &amp;quot;Statepublishers&amp;quot; (&lt;span style=&quot; font-weight:600;&quot;&gt;C&lt;/span&gt;), which will react to the motion of the tracker.&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;You can move the time tracker using the time slider at the bottom or pressing &lt;span style=&quot; font-weight:600;&quot;&gt;[SHIFT + Left Mouse]&lt;/span&gt; on any plot.&lt;/p&gt;
 &lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;The purpose of the time tracker is not limited to visualization: in fact, its position triggers the so called &amp;quot;Statepublishers&amp;quot; (&lt;span style=&quot; font-weight:600;&quot;&gt;C&lt;/span&gt;), which will react to the motion of the tracker.&lt;/p&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Use the play button (&lt;span style=&quot; font-weight:600;&quot;&gt;D&lt;/span&gt;) to animate the tracker.&lt;/p&gt;
 &lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;br /&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
