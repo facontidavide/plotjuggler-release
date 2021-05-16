@@ -1,6 +1,8 @@
 
 include_directories( ./ ../  ../include )
 
+set (CMAKE_CXX_STANDARD 17)
+
 QT5_ADD_RESOURCES (RES_SRC  resource.qrc )
 
 
