@@ -2,6 +2,22 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+3.1.1 (2021-05-16)
+------------------
+* ulog: ignore parameter default message (`#413 <https://github.com/facontidavide/PlotJuggler/issues/413>`_)
+* Fix typo in "load transformations" prompt (`#416 <https://github.com/facontidavide/PlotJuggler/issues/416>`_)
+* added CSV export plugin
+* fix opengl preference
+* added options to enable OpenGL and TreeView
+* Add libqt5x11extras5-dev into installation guide for fedora/ubuntu users. (`#418 <https://github.com/facontidavide/PlotJuggler/issues/418>`_)
+* Fix issue `#405 <https://github.com/facontidavide/PlotJuggler/issues/405>`_ with ULOG in windows
+* Use format string when time index is not a number (`#406 <https://github.com/facontidavide/PlotJuggler/issues/406>`_)
+* XY curve markers: fixed colors and removed ghosts symbols (`#407 <https://github.com/facontidavide/PlotJuggler/issues/407>`_)
+* Updated support for windows build + installer (`#396 <https://github.com/facontidavide/PlotJuggler/issues/396>`_)
+* fix warnings and move to C++17
+* fix warnings in MSVS
+* Contributors: Beat Küng, Davide Faconti, Faisal Shah, Gabriel, Shawn, alessandro, alkaes
+
 3.1.0 (2021-01-31)
 ------------------
 * fix issue `#394 <https://github.com/facontidavide/PlotJuggler/issues/394>`_
