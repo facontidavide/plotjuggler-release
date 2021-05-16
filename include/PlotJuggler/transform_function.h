@@ -2,6 +2,7 @@
 
 #include <QApplication>
 #include <set>
+#include <functional>
 #include "PlotJuggler/plotdata.h"
 #include "PlotJuggler/pj_plugin.h"
 
