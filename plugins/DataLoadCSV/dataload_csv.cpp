@@ -14,7 +14,7 @@ DataLoadCSV::DataLoadCSV()
   _extensions.push_back("csv");
 }
 
-const QRegExp csv_separator("(\\,|\\;|\\|)");
+const QRegExp csv_separator("(\\,)");
 
 const std::vector<const char*>& DataLoadCSV::compatibleFileExtensions() const
 {
@@ -207,7 +207,7 @@ bool DataLoadCSV::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_data
           if (!is_number)
           {
               QMessageBox::StandardButton reply;
-              reply = QMessageBox::warning(0, tr("Error reading file"),
+              reply = QMessageBox::warning(nullptr, tr("Error reading file"),
                       tr("Couldn't parse timestamp. Aborting.\n"));
 
               return false;
@@ -219,7 +219,7 @@ bool DataLoadCSV::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_data
       if (t < prev_time)
       {
         QMessageBox::StandardButton reply;
-        reply = QMessageBox::warning(0, tr("Error reading file"),
+        reply = QMessageBox::warning(nullptr, tr("Error reading file"),
                                      tr("Selected time in not strictly monotonic. Loading will be aborted\n"));
 
         return false;
@@ -270,7 +270,7 @@ bool DataLoadCSV::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_data
                       "Since PlotJuggler makes the assumption that timeseries are strictly monotonic, you "
                       "might experience undefined behaviours.\n\n"
                       "You have been warned...";
-    QMessageBox::warning(0, tr("Warning"), message);
+    QMessageBox::warning(nullptr, tr("Warning"), message);
   }
 
   return true;

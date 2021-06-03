@@ -3,11 +3,11 @@
 #define FMT_HEADER_ONLY
 #include "fmt/format.h"
 
-bool NlohmannParser::parseMessageImpl(double timestamp)
+bool NlohmannParser::parseMessageImpl(double &timestamp)
 {
     if (_use_message_stamp){
 
-        auto ts = _json.find("/timestamp");
+        auto ts = _json.find("timestamp");
         if( ts != _json.end() && ts.value().is_number())
         {
            timestamp = ts.value().get<double>();
@@ -66,7 +66,7 @@ bool NlohmannParser::parseMessageImpl(double timestamp)
 }
 
 bool MessagePack_Parser::parseMessage(const MessageRef msg,
-                                      double timestamp)
+                                      double& timestamp)
 {
     _json = nlohmann::json::from_msgpack( msg.data(),
                                           msg.data() + msg.size() );
@@ -74,7 +74,7 @@ bool MessagePack_Parser::parseMessage(const MessageRef msg,
 }
 
 bool JSON_Parser::parseMessage(const MessageRef msg,
-                               double timestamp)
+                               double& timestamp)
 {
     _json = nlohmann::json::parse( msg.data(),
                                    msg.data()+ msg.size());
@@ -82,7 +82,7 @@ bool JSON_Parser::parseMessage(const MessageRef msg,
 }
 
 bool CBOR_Parser::parseMessage(const MessageRef msg,
-                               double timestamp)
+                               double& timestamp)
 {
     _json = nlohmann::json::from_cbor( msg.data(),
                                        msg.data()+ msg.size() );
@@ -90,7 +90,7 @@ bool CBOR_Parser::parseMessage(const MessageRef msg,
 }
 
 bool BSON_Parser::parseMessage(const MessageRef msg,
-                               double timestamp)
+                               double& timestamp)
 {
     _json = nlohmann::json::from_bson( msg.data(),
                                        msg.data()+ msg.size() );

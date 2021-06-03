@@ -18,7 +18,7 @@ public:
 
 protected:
 
-  bool parseMessageImpl(double timestamp);
+  bool parseMessageImpl(double& timestamp);
 
   nlohmann::json _json;
   bool _use_message_stamp;
@@ -32,7 +32,7 @@ public:
     NlohmannParser(topic_name, data,use_msg_stamp)
   {}
 
-  bool parseMessage(const MessageRef msg, double timestamp) override;
+  bool parseMessage(const MessageRef msg, double &timestamp) override;
 };
 
 class CBOR_Parser: public NlohmannParser
@@ -42,7 +42,7 @@ public:
     NlohmannParser(topic_name, data,use_msg_stamp)
   {}
 
-  bool parseMessage(const MessageRef msg, double timestamp) override;
+  bool parseMessage(const MessageRef msg, double &timestamp) override;
 };
 
 class BSON_Parser: public NlohmannParser
@@ -52,7 +52,7 @@ public:
     NlohmannParser(topic_name, data,use_msg_stamp)
   {}
 
-  bool parseMessage(const MessageRef msg, double timestamp) override;
+  bool parseMessage(const MessageRef msg, double &timestamp) override;
 };
 
 class MessagePack_Parser: public NlohmannParser
@@ -62,7 +62,7 @@ public:
     NlohmannParser(topic_name, data,use_msg_stamp)
   {}
 
-  bool parseMessage(const MessageRef msg, double timestamp) override;
+  bool parseMessage(const MessageRef msg, double &timestamp) override;
 };
 
 //------------------------------------------
