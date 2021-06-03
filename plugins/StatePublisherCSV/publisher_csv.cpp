@@ -242,7 +242,7 @@ void StatePublisherCSV::saveFile(QString text)
   QString fileName =
       QFileDialog::getSaveFileName(nullptr, tr("Save as CSV file"),
                                    directory_path,
-                                   tr("CSV files (*.pj.csv)"));
+                                   tr("CSV files (*.csv)"));
 
   if (fileName.isEmpty())
   {
@@ -250,7 +250,7 @@ void StatePublisherCSV::saveFile(QString text)
   }
   if (!fileName.endsWith(".csv"))
   {
-    fileName.append(".pj.csv");
+    fileName.append(".csv");
   }
 
   QFile file(fileName);
@@ -357,7 +357,7 @@ QString StatePublisherCSV::generateRangeCSV(double time_start, double time_end)
     }
 
     // the row to append to the CSV file
-    QString row_str = QString::number(min_time, 'f', 3) + ",";
+    QString row_str = QString::number(min_time, 'f', 6) + ",";
 
     for( size_t i=0; i < plot_count; i++)
     {
