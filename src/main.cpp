@@ -155,12 +155,23 @@ int main(int argc, char* argv[])
                                        QCoreApplication::translate("main", "seconds"));
   parser.addOption(buffersize_option);
 
+  QCommandLineOption nogl_option(QStringList() << "disable_opengl",
+                                 "Disable OpenGL display before starting the application. "
+                                 "You can enable it again in the 'Preferences' menu.");
+
+  parser.addOption(nogl_option);
+
   parser.process(*qApp);
 
   if (parser.isSet(publish_option) && !parser.isSet(layout_option))
   {
     std::cerr << "Option [ -p / --publish ] is invalid unless [ -l / --layout ] is used too." << std::endl;
     return -1;
+  }
+
+  if (parser.isSet(nogl_option))
+  {
+    settings.setValue("Preferences::use_opengl", false);
   }
 
   QIcon app_icon("://resources/plotjuggler.svg");
