@@ -2,6 +2,18 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+3.1.2 (2021-06-03)
+------------------
+* add disable_opnegl option in command line
+* new API for MessagePublishers
+* bug fix that affects statepublishers
+  crash when application is closed
+* bug fix in Plotwidget transform
+* AppImage instructions added
+* fix `#445 <https://github.com/facontidavide/PlotJuggler/issues/445>`_
+* change to QHostAddress::Any in UDP plugin (issue `#410 <https://github.com/facontidavide/PlotJuggler/issues/410>`_)
+* Contributors: Davide Faconti
+
 3.1.1 (2021-05-16)
 ------------------
 * ulog: ignore parameter default message (`#413 <https://github.com/facontidavide/PlotJuggler/issues/413>`_)
