@@ -600,48 +600,35 @@ std::list<PlotWidget::CurveInfo>& PlotWidget::curveList()
 
 PlotWidget::CurveInfo *PlotWidget::curveFromTitle(const QString &title)
 {
-  auto it = std::find_if(_curve_list.begin(), _curve_list.end(),
-                         [&title](const PlotWidget::CurveInfo& info)
+  for(auto& info: _curve_list )
   {
-    return info.curve->title() == title;
-  });
-
-  if( it == _curve_list.end()){
-    it = std::find_if(_curve_list.begin(), _curve_list.end(),
-                      [&title](const PlotWidget::CurveInfo& info)
+    if( info.curve->title() == title )
     {
-      return info.src_name == title.toStdString();
-    });
+      return &info;
+    }
+    if( info.src_name == title.toStdString() )
+    {
+      return &info;
+    }
   }
-
-  if( it == _curve_list.end()){
-    return nullptr;
-  }
-  else{
-    return &(*it);
-  }
+  return nullptr;
 }
 
 const PlotWidget::CurveInfo *PlotWidget::curveFromTitle(const QString &title) const
 {
-  auto it = std::find_if(_curve_list.begin(), _curve_list.end(),
-                         [&title](const PlotWidget::CurveInfo& info)
+  for(const auto& info: _curve_list )
   {
-    return info.curve->title() == title;
-  });
-
-  if( it == _curve_list.end()){
-    it = std::find_if(_curve_list.begin(), _curve_list.end(),
-                      [&title](const PlotWidget::CurveInfo& info)
+    if( info.curve->title() == title )
     {
-      return info.src_name == title.toStdString();
-    });
+      return &info;
+    }
+    if( info.src_name == title.toStdString() )
+    {
+      return &info;
+    }
   }
 
-  if( it == _curve_list.end()){
-    return nullptr;
-  }
-  return &(*it);
+  return nullptr;
 }
 
 void PlotWidget::dragEnterEvent(QDragEnterEvent* event)

@@ -58,7 +58,8 @@ void DialogTransformEditor::setupTable()
   int row = 0;
   for (auto& it : colors)
   {
-    auto name = it.first;
+    auto curve_it = _plotwidget->curveFromTitle(it.first);
+    auto name = QString::fromStdString(curve_it->src_name);
     auto color = it.second;
     auto item = new QListWidgetItem();
     //  item->setForeground(color);
@@ -158,9 +159,9 @@ void DialogTransformEditor::on_listTransforms_itemSelectionChanged()
   }
   QString transform_ID = selected_transforms.front()->text();
 
-  auto curve_it = _plotwidget->curveFromTitle(curve_name);
-  auto qwt_curve = curve_it->curve;
-  auto ts = dynamic_cast<TransformedTimeseries*>( curve_it->curve->data() );
+  auto curve_info = _plotwidget->curveFromTitle(curve_name);
+  auto qwt_curve = curve_info->curve;
+  auto ts = dynamic_cast<TransformedTimeseries*>( curve_info->curve->data() );
 
   QSignalBlocker block(ui->lineEditAlias);
 
@@ -182,7 +183,8 @@ void DialogTransformEditor::on_listTransforms_itemSelectionChanged()
     QString curve_title = qwt_curve->title().text();
     if( ts->transform()->alias().isEmpty())
     {
-      auto new_title = QString("%1[%2]").arg(curve_name).arg(transform_ID);
+      auto src_name = QString::fromStdString(curve_info->src_name);
+      auto new_title = QString("%1[%2]").arg(src_name).arg(transform_ID);
       ts->transform()->setAlias(new_title);
     }
 
@@ -219,6 +221,8 @@ void DialogTransformEditor::on_pushButtonCancel_clicked()
 
 void DialogTransformEditor::on_pushButtonSave_clicked()
 {
+  on_lineEditAlias_editingFinished();
+
   QDomDocument doc;
   auto elem = _plotwidget->xmlSaveState(doc);
   _plotwidget_origin->xmlLoadState( elem );
