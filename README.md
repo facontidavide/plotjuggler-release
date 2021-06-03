@@ -50,15 +50,31 @@ If you are not familiar with Lua, don't be afraid, you won't need more than 5 mi
 
 ![](docs/custom_editor.png)
 
+## Tutorials
 
-## Just "Download and Run" 
+To learns how to use PlotJuggler, check the tutorials here:
 
-On Linux, the simplest way to install PlotJuggler is through **snaps**:
+https://slides.com/davidefaconti/decks/plotjuggler
+
+## Installation
+
+### Binary installers (with basic plugins)
+
+**Linux AppImage** (compatible with Ubuntu 18.04 or later: 
+[PlotJuggler-3.1.2-x86_64.AppImage](https://github.com/facontidavide/PlotJuggler/releases/download/3.1.2/PlotJuggler-3.1.2-x86_64.AppImage)
+
+**Windows Installer**: 
+[PlotJuggler-Windows-3.1.2-installer](https://github.com/facontidavide/PlotJuggler/releases/download/3.1.2/PlotJuggler-Windows-3.1.2-installer.exe)
+
+### For ROS User
+
+Install the debian packages using: 
+
+     sudo apt install ros-<distro>-plotjuggler-ros
+
+Alternatively, you may download the Snaps version that include the ROS1 plugins:
 
 [![Get it from the Snap Store](https://snapcraft.io/static/images/badges/en/snap-store-white.svg)](https://snapcraft.io/plotjuggler)
-    
-**Windows Installer**: 
-[PlotJuggler-3.1-WinInstaller.exe](https://github.com/facontidavide/PlotJuggler/releases/download/3.1.0/PlotJuggler-3.1-WinInstaller.exe)
 
 ## How to build
 
