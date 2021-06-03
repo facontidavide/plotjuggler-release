@@ -329,6 +329,9 @@ MainWindow::MainWindow(const QCommandLineParser& commandline_parser, QWidget* pa
 
 MainWindow::~MainWindow()
 {
+  // important: avoid problems with plugins
+  _mapped_plot_data.user_defined.clear();
+
   delete ui;
 }
 
