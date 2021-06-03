@@ -70,7 +70,7 @@ public:
   virtual ~MessageParser() = default;
 
   virtual bool parseMessage(const MessageRef serialized_msg,
-                            double timestamp) = 0;
+                            double& timestamp) = 0;
 protected:
 
   PlotDataMapRef& _plot_data;
