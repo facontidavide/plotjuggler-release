@@ -137,7 +137,7 @@ bool UDP_Server::start(QStringList*)
   settings.setValue("UDP_Server::port", port);
 
   _udp_socket = new QUdpSocket();
-  _udp_socket->bind(QHostAddress::LocalHost, port);
+  _udp_socket->bind(QHostAddress::Any, port);
 
   connect(_udp_socket, &QUdpSocket::readyRead,
           this, &UDP_Server::processMessage);
