@@ -20,4 +20,4 @@ while True:
             "sin": math.sin(time)
         }
     }
-    sock.sendto( json.dumps(data), ("127.0.0.1", 9870) )
+    sock.sendto( json.dumps(data).encode(), ("127.0.0.1", 9870) )
