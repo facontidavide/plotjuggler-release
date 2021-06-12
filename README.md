@@ -7,7 +7,7 @@
 [![Tweet](https://img.shields.io/twitter/url/http/shields.io.svg?style=social)](https://twitter.com/intent/tweet?text=I%20use%20PlotJuggler%20and%20it%20is%20amazing%0D%0A&url=https://github.com/facontidavide/PlotJuggler&via=facontidavide&hashtags=dataviz,plotjuggler,GoROS,PX4)
 **Gold Sponsor**: [Greenzie](https://www.greenzie.com/)
 
-# PlotJuggler 3.1
+# PlotJuggler 3.2
 
 PlotJuggler is a tool to visualize time series that is **fast**, **powerful** and  **intuitive**.
 
@@ -64,7 +64,7 @@ https://slides.com/davidefaconti/decks/plotjuggler
 [PlotJuggler-3.1.2-x86_64.AppImage](https://github.com/facontidavide/PlotJuggler/releases/download/3.1.2/PlotJuggler-3.1.2-x86_64.AppImage)
 
 **Windows Installer**: 
-[PlotJuggler-Windows-3.1.2-installer](https://github.com/facontidavide/PlotJuggler/releases/download/3.1.2/PlotJuggler-Windows-3.1.2-installer.exe)
+[PlotJuggler-Windows-3.1.1-installer](https://github.com/facontidavide/PlotJuggler/releases/download/3.1.1/PlotJuggler-Windows-3.1.1-installer.exe)
 
 ### For ROS User
 
