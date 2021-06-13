@@ -1,4 +1,4 @@
-t,Velocity,Motor Speed,I_req,I,Vbat,Torque,Force to Carpet,Accel,Down Force Req (lbf),Vacuum Req
+t,velocity,motor_speed,I_req,I,V_bat,torque,force,accel,down_force_req,vacuum_req
 0,0.000,0.0,1685.2,330.0,8.9,0.7,434.9,54.1,108.6,50.6
 0.001,0.054,18.6,1680.4,330.0,8.9,0.7,434.9,54.1,108.6,50.6
 0.002,0.108,37.2,1675.5,330.0,8.9,0.7,434.9,54.1,108.6,50.6
