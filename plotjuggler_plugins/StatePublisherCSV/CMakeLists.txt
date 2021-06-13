@@ -13,17 +13,5 @@ target_link_libraries(PublisherCSV
     plotjuggler_plugin_base
     )
 
-
-if(COMPILING_WITH_CATKIN)
-    install(TARGETS PublisherCSV
-        ARCHIVE DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-        LIBRARY DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION} )
-elseif(COMPILING_WITH_AMENT)
-    install(TARGETS PublisherCSV
-            DESTINATION  lib/${PROJECT_NAME} )
-else()
-    install(TARGETS PublisherCSV DESTINATION bin  )
-endif()
-
+install(TARGETS PublisherCSV DESTINATION ${PJ_PLUGIN_INSTALL_DIRECTORY}  )
 
