@@ -251,6 +251,7 @@ private slots:
 
 private:
   QStringList readAllCurvesFromXML(QDomElement root_node);
+  void loadAllPlugins(QStringList command_line_plugin_folders);
 };
 
 class PopupMenu : public QMenu

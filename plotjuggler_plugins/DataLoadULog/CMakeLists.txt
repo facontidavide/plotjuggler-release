@@ -22,14 +22,5 @@ target_link_libraries(DataLoadULog
     ${Qt5Xml_LIBRARIES}
     plotjuggler_plugin_base)
 
-if(COMPILING_WITH_CATKIN)
-    install(TARGETS DataLoadULog
-        ARCHIVE DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-        LIBRARY DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION} )
-elseif(COMPILING_WITH_AMENT)
-    install(TARGETS DataLoadULog
-            DESTINATION  lib/${PROJECT_NAME} )
-else()
-    install(TARGETS DataLoadULog DESTINATION bin  )
-endif()
+install(TARGETS DataLoadULog DESTINATION ${PJ_PLUGIN_INSTALL_DIRECTORY}  )
+
