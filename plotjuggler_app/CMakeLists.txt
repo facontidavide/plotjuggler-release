@@ -100,7 +100,7 @@ target_link_libraries(plotjuggler
     qwt_static
     lua_static
     qt_advanced_docking
-    plotjuggler_base
+    plotjuggler_plugin_base
     )
 
 if(COMPILING_WITH_CATKIN)
