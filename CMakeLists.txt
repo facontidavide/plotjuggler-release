@@ -26,7 +26,7 @@ if( CATKIN_DEVEL_PREFIX OR catkin_FOUND OR CATKIN_BUILD_BINARY_PACKAGE)
 
     catkin_package(
         INCLUDE_DIRS  plotjuggler_base/include
-        LIBRARIES  plotjuggler_base
+        LIBRARIES  plotjuggler_plugin_base
         CATKIN_DEPENDS roslib
     )
 
@@ -123,34 +123,48 @@ include_directories(
     ./3rdparty/
     ./3rdparty/color_widgets/include
     ./3rdparty/Qt-Advanced-Docking/include
-    ./3rdparty/paho.mqtt.c/src
     ./3rdparty/qwt/src
     ./3rdparty/sol
     ./3rdparty/lua-5.4.1/src
-    ./3rdparty/liblsl/src
-    ./3rdparty/liblsl/include
 )
 
+#########################  BASE library  ####################################
+
+qt5_wrap_cpp(PLOTJUGGLER_BASE_MOCS
+  plotjuggler_base/include/PlotJuggler/dataloader_base.h
+  plotjuggler_base/include/PlotJuggler/datastreamer_base.h
+  plotjuggler_base/include/PlotJuggler/statepublisher_base.h
+  plotjuggler_base/include/PlotJuggler/transform_function.h
+)
+
+add_library( plotjuggler_plugin_base STATIC ${PLOTJUGGLER_BASE_MOCS} )
 
 #########################  INSTALL  ####################################
 
 if(COMPILING_WITH_CATKIN)
+
     set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_LIB_DESTINATION})
     set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_BIN_DESTINATION})
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_BIN_DESTINATION})
+    set(PJ_PLUGIN_INSTALL_DIRECTORY ${CATKIN_PACKAGE_BIN_DESTINATION} )
 
 elseif(COMPILING_WITH_AMENT)
+
     find_package(ament_cmake REQUIRED)
     set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+    set(PJ_PLUGIN_INSTALL_DIRECTORY lib/${PROJECT_NAME} )
 
+    ament_export_targets(export_plotjuggler_plugin_base HAS_LIBRARY_TARGET)
     ament_package()
 
 else()
-    set(CMAKE_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
+
     set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
     set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+    set(PJ_PLUGIN_INSTALL_DIRECTORY bin)
+
 endif()
 
 set(DESKTOP_ICON_DIR "${CMAKE_INSTALL_PREFIX}/share/icons")
@@ -161,6 +175,16 @@ install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/PlotJuggler.desktop
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/plotjuggler.svg
         DESTINATION ${DESKTOP_ICON_DIR}  )
 
+install(
+     TARGETS plotjuggler_plugin_base
+     EXPORT export_plotjuggler_plugin_base
+     LIBRARY DESTINATION lib
+     ARCHIVE DESTINATION lib
+     RUNTIME DESTINATION bin
+     INCLUDES DESTINATION include )
+
+install(DIRECTORY plotjuggler_base/include/ DESTINATION include )
+
 ######################## Main App, Libraries amd Plugins ###################################
 
 if (NOT WIN32)
@@ -170,52 +194,8 @@ endif()
 add_subdirectory( 3rdparty/color_widgets )
 add_subdirectory( 3rdparty/Qt-Advanced-Docking )
 add_subdirectory( 3rdparty/qwt/src )
-
 add_subdirectory( 3rdparty/lua-5.4.1 )
 
-find_package(Git QUIET)
-if(GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
-# Update submodules as needed
-    option(GIT_SUBMODULE "Check submodules during build" ON)
-    if(GIT_SUBMODULE)
-        message(STATUS "Submodule update")
-        execute_process(COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive
-                        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-                        RESULT_VARIABLE GIT_SUBMOD_RESULT)
-        if(NOT GIT_SUBMOD_RESULT EQUAL "0")
-            message("git submodule update --init failed with ${GIT_SUBMOD_RESULT}, please checkout submodules")
-        endif()
-    endif()
-endif()
-
-if(EXISTS "${PROJECT_SOURCE_DIR}/3rdparty/paho.mqtt.c/CMakeLists.txt")
-    SET(PAHO_ENABLE_TESTING FALSE CACHE BOOL "Build tests and run" FORCE)
-    SET(PAHO_ENABLE_CPACK FALSE CACHE BOOL "Enable CPack" FORCE)
-
-    if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-        SET(PAHO_BUILD_STATIC FALSE CACHE BOOL "Build static library" FORCE)
-        SET(PAHO_BUILD_SHARED TRUE CACHE BOOL "Build shared library" FORCE)
-    else()
-        SET(PAHO_BUILD_STATIC TRUE CACHE BOOL "Build static library" FORCE)
-        SET(PAHO_BUILD_SHARED FALSE CACHE BOOL "Build shared library" FORCE)
-    endif()
-
-    SET(CMAKE_INSTALL_INCLUDEDIR )
-
-    add_subdirectory( 3rdparty/paho.mqtt.c EXCLUDE_FROM_ALL)
-    add_subdirectory( plotjuggler_plugins/DataStreamMQTT )
-endif()
-
-if(EXISTS "${PROJECT_SOURCE_DIR}/3rdparty/liblsl/CMakeLists.txt" AND NOT WIN32)
-    SET(LSL_ENABLE_TESTING FALSE CACHE BOOL "Build tests and run" FORCE)
-    SET(LSL_ENABLE_CPACK FALSE CACHE BOOL "Enable CPack" FORCE)
-    SET(LSL_BUILD_STATIC TRUE CACHE BOOL "Build static library" FORCE)
-    SET(LSL_BUILD_SHARED FALSE CACHE BOOL "Build shared library" FORCE)
-    add_subdirectory( 3rdparty/liblsl )
-    add_subdirectory( plotjuggler_plugins/DataStreamLSL )
-endif()
-
-add_subdirectory( plotjuggler_base )
 add_subdirectory( plotjuggler_app )
 
 add_subdirectory( plotjuggler_plugins/DataLoadCSV )
@@ -224,7 +204,6 @@ add_subdirectory( plotjuggler_plugins/DataStreamSample )
 add_subdirectory( plotjuggler_plugins/DataStreamWebsocket )
 add_subdirectory( plotjuggler_plugins/DataStreamUDP )
 add_subdirectory( plotjuggler_plugins/StatePublisherCSV )
-
 
 if( ZMQ_FOUND )
   add_subdirectory( plotjuggler_plugins/DataStreamZMQ )

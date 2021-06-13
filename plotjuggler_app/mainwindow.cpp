@@ -57,6 +57,8 @@
 #include <ament_index_cpp/get_package_share_directory.hpp>
 #endif
 
+
+
 MainWindow::MainWindow(const QCommandLineParser& commandline_parser, QWidget* parent)
   : QMainWindow(parent)
   , ui(new Ui::MainWindow)
@@ -192,48 +194,9 @@ MainWindow::MainWindow(const QCommandLineParser& commandline_parser, QWidget* pa
   initializeActions();
 
   //------------ Load plugins -------------
-  QStringList loaded;
-  QStringList plugin_folders;
+  auto plugin_extra_folders = commandline_parser.value("plugin_folders").split(";", QString::SkipEmptyParts);
 
-  plugin_folders += commandline_parser.value("plugin_folders").split(";", QString::SkipEmptyParts);
-  plugin_folders += QCoreApplication::applicationDirPath();
-  plugin_folders += settings.value("Preferences::plugin_folders", QStringList()).toStringList();
-
-  try {
-#ifdef COMPILED_WITH_CATKIN
-    const char * env = std::getenv("CMAKE_PREFIX_PATH");
-    if (env) {
-      QString env_catkin_paths = QString::fromStdString( env );
-      env_catkin_paths.replace(";",":"); // for windows
-      auto catkin_paths = env_catkin_paths.split(":");
-
-      for(const auto& path: catkin_paths)
-      {
-        plugin_folders += path + "/lib/plotjuggler_ros";
-      }
-    }
-    plugin_folders += QCoreApplication::applicationDirPath() + "_ros";
-#endif
-#ifdef COMPILED_WITH_AMENT
-    auto ros2_path = QString::fromStdString(ament_index_cpp::get_package_prefix("plotjuggler_ros"));
-    ros2_path += "/lib/plotjuggler_ros";
-    loaded += initializePlugins(ros2_path);
-#endif
-  } catch (...) {
-
-    QMessageBox::warning(nullptr, "Missing package [plotjuggler-ros]",
-                         "If you just upgraded from PlotJuggler 2.x to 3.x , try installing this package:\n\n"
-                         "sudo apt install ros-${ROS_DISTRO}-plotjuggler-ros",
-                         QMessageBox::Cancel, QMessageBox::Cancel);
-  }
-
-  plugin_folders += QStandardPaths::writableLocation( QStandardPaths::GenericDataLocation) + "/PlotJuggler";
-  plugin_folders.removeDuplicates();
-
-  for(const auto& folder: plugin_folders)
-  {
-    loaded += initializePlugins(folder);
-  }
+  loadAllPlugins(plugin_extra_folders);
 
   //------------------------------------
 
@@ -492,6 +455,61 @@ void MainWindow::initializeActions()
   QSettings settings;
   updateRecentDataMenu(settings.value("MainWindow.recentlyLoadedDatafile").toStringList());
   updateRecentLayoutMenu(settings.value("MainWindow.recentlyLoadedLayout").toStringList());
+}
+
+void MainWindow::loadAllPlugins(QStringList command_line_plugin_folders)
+{
+  QSettings settings;
+  QStringList loaded;
+  QStringList plugin_folders;
+  QStringList builtin_folders;
+
+  plugin_folders += command_line_plugin_folders;
+  plugin_folders += settings.value("Preferences::plugin_folders", QStringList()).toStringList();
+
+  builtin_folders += QCoreApplication::applicationDirPath();
+
+  try {
+#ifdef COMPILED_WITH_CATKIN
+    builtin_folders += QCoreApplication::applicationDirPath() + "_ros";
+
+    const char * env = std::getenv("CMAKE_PREFIX_PATH");
+    if (env) {
+      QString env_catkin_paths = QString::fromStdString( env );
+      env_catkin_paths.replace(";",":"); // for windows
+      auto catkin_paths = env_catkin_paths.split(":");
+
+      for(const auto& path: catkin_paths)
+      {
+        builtin_folders += path + "/lib/plotjuggler_ros";
+      }
+    }
+#endif
+#ifdef COMPILED_WITH_AMENT
+    auto ros2_path = QString::fromStdString(ament_index_cpp::get_package_prefix("plotjuggler_ros"));
+    ros2_path += "/lib/plotjuggler_ros";
+    loaded += initializePlugins(ros2_path);
+#endif
+  } catch (...) {
+
+    QMessageBox::warning(nullptr, "Missing package [plotjuggler-ros]",
+                         "If you just upgraded from PlotJuggler 2.x to 3.x , try installing this package:\n\n"
+                         "sudo apt install ros-${ROS_DISTRO}-plotjuggler-ros",
+                         QMessageBox::Cancel, QMessageBox::Cancel);
+  }
+
+  builtin_folders += QStandardPaths::writableLocation( QStandardPaths::GenericDataLocation) + "/PlotJuggler";
+  builtin_folders.removeDuplicates();
+
+  plugin_folders += builtin_folders;
+  plugin_folders.removeDuplicates();
+
+  for(const auto& folder: plugin_folders)
+  {
+    loaded += initializePlugins(folder);
+  }
+
+  settings.setValue("Preferences::builtin_plugin_folders", builtin_folders);
 }
 
 QStringList MainWindow::initializePlugins(QString directory_name)

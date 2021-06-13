@@ -29,7 +29,6 @@ PreferencesDialog::PreferencesDialog(QWidget* parent) : QDialog(parent), ui(new 
   ui->pushButtonAdd->setIcon( LoadSvgIcon(":/resources/svg/add_tab.svg", theme));
   ui->pushButtonRemove->setIcon( LoadSvgIcon(":/resources/svg/remove_red.svg", theme));
 
-  auto plugin_folders = settings.value("Preferences::plugin_folders", true).toStringList();
 
   bool use_separator = settings.value("Preferences::use_separator", true).toBool();
   ui->checkBoxSeparator->setChecked(use_separator);
@@ -37,7 +36,9 @@ PreferencesDialog::PreferencesDialog(QWidget* parent) : QDialog(parent), ui(new 
   bool use_opengl = settings.value("Preferences::use_opengl", true).toBool();
   ui->checkBoxOpenGL->setChecked(use_opengl);
 
-  for (const auto& folder: plugin_folders)
+  //---------------
+  auto custom_plugin_folders = settings.value("Preferences::plugin_folders", true).toStringList();
+  for (const auto& folder: custom_plugin_folders)
   {
     QDir dir(folder);
     auto item = new QListWidgetItem(folder);
@@ -45,10 +46,15 @@ PreferencesDialog::PreferencesDialog(QWidget* parent) : QDialog(parent), ui(new 
     {
       item->setForeground(Qt::red);
     }
-    ui->listWidget->addItem(item);
+    ui->listWidgetCustom->addItem(item);
   };
-
-  ui->pushButtonRemove->setEnabled( !ui->listWidget->selectedItems().isEmpty() );
+  ui->pushButtonRemove->setEnabled( !ui->listWidgetCustom->selectedItems().isEmpty() );
+  //---------------
+  auto builtin_plugin_folders = settings.value("Preferences::builtin_plugin_folders", true).toStringList();
+  for (const auto& folder: builtin_plugin_folders)
+  {
+    ui->listWidgetBuiltin->addItem(new QListWidgetItem(folder));
+  };
 }
 
 PreferencesDialog::~PreferencesDialog()
@@ -66,9 +72,9 @@ void PreferencesDialog::on_buttonBox_accepted()
   settings.setValue("Preferences::use_opengl", ui->checkBoxOpenGL->isChecked());
 
   QStringList plugin_folders;
-  for(int row=0; row< ui->listWidget->count(); row++)
+  for(int row=0; row< ui->listWidgetCustom->count(); row++)
   {
-    plugin_folders.push_back( ui->listWidget->item(row)->text());
+    plugin_folders.push_back( ui->listWidgetCustom->item(row)->text());
   }
   settings.setValue("Preferences::plugin_folders", plugin_folders);
 
@@ -81,20 +87,20 @@ void PreferencesDialog::on_pushButtonAdd_clicked()
                                                QDir::homePath(),
                                                QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
   auto item = new QListWidgetItem(dir);
-  ui->listWidget->addItem(item);
+  ui->listWidgetCustom->addItem(item);
 }
 
 void PreferencesDialog::on_pushButtonRemove_clicked()
 {
-  auto selected = ui->listWidget->selectedItems();
+  auto selected = ui->listWidgetCustom->selectedItems();
 
   for(QListWidgetItem* item: selected){
-      ui->listWidget->removeItemWidget(item);
+      ui->listWidgetCustom->removeItemWidget(item);
       delete item;
   }
 }
 
 void PreferencesDialog::on_listWidget_itemSelectionChanged()
 {
-   ui->pushButtonRemove->setEnabled( !ui->listWidget->selectedItems().isEmpty() );
+   ui->pushButtonRemove->setEnabled( !ui->listWidgetCustom->selectedItems().isEmpty() );
 }
