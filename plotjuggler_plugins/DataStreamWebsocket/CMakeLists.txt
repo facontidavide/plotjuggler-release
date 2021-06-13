@@ -22,17 +22,7 @@ else()
         Qt5::WebSockets
         plotjuggler_plugin_base )
 
-    if(COMPILING_WITH_CATKIN)
-        install(TARGETS DataStreamWebSocket
-            ARCHIVE DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-            LIBRARY DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-            RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION} )
-    elseif(COMPILING_WITH_AMENT)
-        install(TARGETS DataStreamWebSocket
-                DESTINATION  lib/${PROJECT_NAME} )
-    else()
-        install(TARGETS DataStreamWebSocket DESTINATION bin  )
-    endif()
+    install(TARGETS DataStreamWebSocket DESTINATION ${PJ_PLUGIN_INSTALL_DIRECTORY}  )
 
 endif()
 
