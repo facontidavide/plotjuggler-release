@@ -2,6 +2,17 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+3.2.1 (2021-06-20)
+------------------
+* adding string reference
+* qwt updated and fix for `#463 <https://github.com/facontidavide/PlotJuggler/issues/463>`_
+* fix `#461 <https://github.com/facontidavide/PlotJuggler/issues/461>`_
+* add quaternion to Euler conversion snippets (`#459 <https://github.com/facontidavide/PlotJuggler/issues/459>`_)
+  Add 3 functions to convert a Hamiltonian attitude quaternion to its Euler (Trait-Bryan 321) representation
+* fix typo when building without ROS support (`#460 <https://github.com/facontidavide/PlotJuggler/issues/460>`_)
+* Update README.md
+* Contributors: Davide Faconti, Mathieu Bresciani, Nuno Marques
+
 3.2.0 (2021-06-13)
 ------------------
 * file removed
