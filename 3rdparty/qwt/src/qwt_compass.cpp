@@ -1,4 +1,4 @@
-/* -*- mode: C++ ; c-file-style: "stroustrup" -*- *****************************
+/******************************************************************************
  * Qwt Widget Library
  * Copyright (C) 1997   Josef Wilgen
  * Copyright (C) 2002   Uwe Rathmann
@@ -16,23 +16,23 @@
 
 class QwtCompassScaleDraw::PrivateData
 {
-public:
-    QMap<double, QString> labelMap;
+  public:
+    QMap< double, QString > labelMap;
 };
 
 /*!
-  \brief Constructor
+   \brief Constructor
 
-  Initializes a label map for multiples of 45 degrees
+   Initializes a label map for multiples of 45 degrees
  */
 QwtCompassScaleDraw::QwtCompassScaleDraw()
 {
-    d_data = new PrivateData;
+    m_data = new PrivateData;
 
     enableComponent( QwtAbstractScaleDraw::Backbone, false );
     enableComponent( QwtAbstractScaleDraw::Ticks, false );
 
-    QMap<double, QString> &map = d_data->labelMap;
+    QMap< double, QString >& map = m_data->labelMap;
 
     map.insert( 0.0, QString::fromLatin1( "N" ) );
     map.insert( 45.0, QString::fromLatin1( "NE" ) );
@@ -56,14 +56,14 @@ QwtCompassScaleDraw::QwtCompassScaleDraw()
 }
 
 /*!
-  \brief Constructor
+   \brief Constructor
 
-  \param map Value to label map
+   \param map Value to label map
  */
-QwtCompassScaleDraw::QwtCompassScaleDraw( const QMap<double, QString> &map )
+QwtCompassScaleDraw::QwtCompassScaleDraw( const QMap< double, QString >& map )
 {
-    d_data = new PrivateData;
-    d_data->labelMap = map;
+    m_data = new PrivateData;
+    m_data->labelMap = map;
 
     enableComponent( QwtAbstractScaleDraw::Backbone, false );
     enableComponent( QwtAbstractScaleDraw::Ticks, false );
@@ -72,46 +72,46 @@ QwtCompassScaleDraw::QwtCompassScaleDraw( const QMap<double, QString> &map )
 //!  Destructor
 QwtCompassScaleDraw::~QwtCompassScaleDraw()
 {
-    delete d_data;
+    delete m_data;
 }
 
 /*!
-  \brief Set a map, mapping values to labels
-  \param map Value to label map
+   \brief Set a map, mapping values to labels
+   \param map Value to label map
 
-  The values of the major ticks are found by looking into this
-  map. The default map consists of the labels N, NE, E, SE, S, SW, W, NW.
+   The values of the major ticks are found by looking into this
+   map. The default map consists of the labels N, NE, E, SE, S, SW, W, NW.
 
-  \warning The map will have no effect for values that are no major
+   \warning The map will have no effect for values that are no major
            tick values. Major ticks can be changed by QwtScaleDraw::setScale
 
-  \sa labelMap(), scaleDraw(), setScale()
-*/
-void QwtCompassScaleDraw::setLabelMap( const QMap<double, QString> &map )
+   \sa labelMap(), scaleDraw(), setScale()
+ */
+void QwtCompassScaleDraw::setLabelMap( const QMap< double, QString >& map )
 {
-    d_data->labelMap = map;
+    m_data->labelMap = map;
 }
 
 /*!
-  \return map, mapping values to labels
-  \sa setLabelMap()
-*/
-QMap<double, QString> QwtCompassScaleDraw::labelMap() const
+   \return map, mapping values to labels
+   \sa setLabelMap()
+ */
+QMap< double, QString > QwtCompassScaleDraw::labelMap() const
 {
-    return d_data->labelMap;
+    return m_data->labelMap;
 }
 
 /*!
-  Map a value to a corresponding label
+   Map a value to a corresponding label
 
-  \param value Value that will be mapped
+   \param value Value that will be mapped
 
-  label() looks in the labelMap() for a corresponding label for value
-  or returns an null text.
+   label() looks in the labelMap() for a corresponding label for value
+   or returns an null text.
 
-  \return Label
-  \sa labelMap(), setLabelMap()
-*/
+   \return Label
+   \sa labelMap(), setLabelMap()
+ */
 
 QwtText QwtCompassScaleDraw::label( double value ) const
 {
@@ -121,10 +121,10 @@ QwtText QwtCompassScaleDraw::label( double value ) const
     if ( value < 0.0 )
         value += 360.0;
 
-    QMap<double, QString>::const_iterator it =
-        d_data->labelMap.constFind( value );
+    QMap< double, QString >::const_iterator it =
+        m_data->labelMap.constFind( value );
 
-    if ( it != d_data->labelMap.constEnd() )
+    if ( it != m_data->labelMap.constEnd() )
         return *it;
 
     return QwtText();
@@ -132,7 +132,7 @@ QwtText QwtCompassScaleDraw::label( double value ) const
 
 class QwtCompass::PrivateData
 {
-public:
+  public:
     PrivateData():
         rose( NULL )
     {
@@ -143,22 +143,22 @@ public:
         delete rose;
     }
 
-    QwtCompassRose *rose;
+    QwtCompassRose* rose;
 };
 
 /*!
-  \brief Constructor
-  \param parent Parent widget
+   \brief Constructor
+   \param parent Parent widget
 
-  Create a compass widget with a scale, no needle and no rose.
-  The default origin is 270.0 with no valid value. It accepts
-  mouse and keyboard inputs and has no step size. The default mode
-  is QwtDial::RotateNeedle.
-*/
-QwtCompass::QwtCompass( QWidget* parent ):
-    QwtDial( parent )
+   Create a compass widget with a scale, no needle and no rose.
+   The default origin is 270.0 with no valid value. It accepts
+   mouse and keyboard inputs and has no step size. The default mode
+   is QwtDial::RotateNeedle.
+ */
+QwtCompass::QwtCompass( QWidget* parent )
+    : QwtDial( parent )
 {
-    d_data = new PrivateData;
+    m_data = new PrivateData;
 
     setScaleDraw( new QwtCompassScaleDraw() );
 
@@ -175,7 +175,7 @@ QwtCompass::QwtCompass( QWidget* parent ):
 //!  Destructor
 QwtCompass::~QwtCompass()
 {
-    delete d_data;
+    delete m_data;
 }
 
 
@@ -185,9 +185,9 @@ QwtCompass::~QwtCompass()
    \param painter Painter
    \param center Center of the content circle
    \param radius Radius of the content circle
-*/
-void QwtCompass::drawScaleContents( QPainter *painter,
-    const QPointF &center, double radius ) const
+ */
+void QwtCompass::drawScaleContents( QPainter* painter,
+    const QPointF& center, double radius ) const
 {
     QPalette::ColorGroup cg;
     if ( isEnabled() )
@@ -207,68 +207,68 @@ void QwtCompass::drawScaleContents( QPainter *painter,
 }
 
 /*!
-  Draw the compass rose
+   Draw the compass rose
 
-  \param painter Painter
-  \param center Center of the compass
-  \param radius of the circle, where to paint the rose
-  \param north Direction pointing north, in degrees counter clockwise
-  \param cg Color group
-*/
-void QwtCompass::drawRose( QPainter *painter, const QPointF &center,
+   \param painter Painter
+   \param center Center of the compass
+   \param radius of the circle, where to paint the rose
+   \param north Direction pointing north, in degrees counter clockwise
+   \param cg Color group
+ */
+void QwtCompass::drawRose( QPainter* painter, const QPointF& center,
     double radius, double north, QPalette::ColorGroup cg ) const
 {
-    if ( d_data->rose )
-        d_data->rose->draw( painter, center, radius, north,  cg );
+    if ( m_data->rose )
+        m_data->rose->draw( painter, center, radius, north,  cg );
 }
 
 /*!
-  Set a rose for the compass
-  \param rose Compass rose
-  \warning The rose will be deleted, when a different rose is
+   Set a rose for the compass
+   \param rose Compass rose
+   \warning The rose will be deleted, when a different rose is
     set or in ~QwtCompass
-  \sa rose()
-*/
-void QwtCompass::setRose( QwtCompassRose *rose )
+   \sa rose()
+ */
+void QwtCompass::setRose( QwtCompassRose* rose )
 {
-    if ( rose != d_data->rose )
+    if ( rose != m_data->rose )
     {
-        if ( d_data->rose )
-            delete d_data->rose;
+        if ( m_data->rose )
+            delete m_data->rose;
 
-        d_data->rose = rose;
+        m_data->rose = rose;
         update();
     }
 }
 
 /*!
-  \return rose
-  \sa setRose()
-*/
-const QwtCompassRose *QwtCompass::rose() const
+   \return rose
+   \sa setRose()
+ */
+const QwtCompassRose* QwtCompass::rose() const
 {
-    return d_data->rose;
+    return m_data->rose;
 }
 
 /*!
-  \return rose
-  \sa setRose()
-*/
-QwtCompassRose *QwtCompass::rose()
+   \return rose
+   \sa setRose()
+ */
+QwtCompassRose* QwtCompass::rose()
 {
-    return d_data->rose;
+    return m_data->rose;
 }
 
 /*!
-  Handles key events
+   Handles key events
 
-  Beside the keys described in QwtDial::keyPressEvent numbers
-  from 1-9 (without 5) set the direction according to their
-  position on the num pad.
+   Beside the keys described in QwtDial::keyPressEvent numbers
+   from 1-9 (without 5) set the direction according to their
+   position on the num pad.
 
-  \sa isReadOnly()
-*/
-void QwtCompass::keyPressEvent( QKeyEvent *kev )
+   \sa isReadOnly()
+ */
+void QwtCompass::keyPressEvent( QKeyEvent* kev )
 {
     if ( isReadOnly() )
         return;
