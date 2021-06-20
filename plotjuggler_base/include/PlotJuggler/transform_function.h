@@ -54,7 +54,7 @@ public:
       {
         auto out_point = calculateNextPoint(index);
         if (out_point){
-          dst_data->pushBack( out_point.value() );
+          dst_data->pushBack( std::move(out_point.value()) );
         }
         _last_timestamp = in_point.x;
       }
