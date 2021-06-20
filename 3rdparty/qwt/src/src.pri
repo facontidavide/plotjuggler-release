@@ -11,6 +11,7 @@
 HEADERS += \
     qwt.h \
     qwt_abstract_scale_draw.h \
+    qwt_axis.h \
     qwt_bezier.h \
     qwt_clipper.h \
     qwt_color_map.h \
@@ -91,6 +92,7 @@ SOURCES += \
     qwt_spline_local.cpp \
     qwt_spline_cubic.cpp \
     qwt_spline_pleasing.cpp \
+    qwt_spline_polynomial.cpp \
     qwt_symbol.cpp \
     qwt_system_clock.cpp \
     qwt_text_engine.cpp \
@@ -165,7 +167,6 @@ contains(QWT_CONFIG, QwtPlot) {
         qwt_legend_label.cpp \
         qwt_plot.cpp \
         qwt_plot_renderer.cpp \
-        qwt_plot_xml.cpp \
         qwt_plot_axis.cpp \
         qwt_plot_curve.cpp \
         qwt_plot_dict.cpp \
@@ -209,19 +210,32 @@ contains(QWT_CONFIG, QwtPlot) {
 
     contains(QWT_CONFIG, QwtOpenGL) {
 
-        HEADERS += \
-            qwt_plot_glcanvas.h
+        lessThan(QT_MAJOR_VERSION, 6) {
 
-        SOURCES += \
-            qwt_plot_glcanvas.cpp
+            HEADERS += \
+                qwt_plot_glcanvas.h
+
+            SOURCES += \
+                qwt_plot_glcanvas.cpp
+        }
 
         greaterThan(QT_MAJOR_VERSION, 4) {
 
-            greaterThan(QT_MINOR_VERSION, 3) {
+            lessThan( QT_MAJOR_VERSION, 6) {
+
+                greaterThan(QT_MINOR_VERSION, 3) {
+
+                    HEADERS += qwt_plot_opengl_canvas.h
+                    SOURCES += qwt_plot_opengl_canvas.cpp
+                }
+            }
+            else {
+                QT += openglwidgets
 
                 HEADERS += qwt_plot_opengl_canvas.h
                 SOURCES += qwt_plot_opengl_canvas.cpp
             }
+            
         }
 
     }

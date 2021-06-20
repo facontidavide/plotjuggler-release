@@ -78,7 +78,12 @@ protected:
 
   PlotData& getSeries(const std::string& key)
   {
-    return _plot_data.getOrCreateNumberic( key );
+    return _plot_data.getOrCreateNumeric( key );
+  }
+
+  StringSeries& getStringSeries(const std::string& key)
+  {
+    return _plot_data.getOrCreateStringSeries( key );
   }
 };
 
