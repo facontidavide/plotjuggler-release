@@ -1,4 +1,4 @@
-/* -*- mode: C++ ; c-file-style: "stroustrup" -*- *****************************
+/******************************************************************************
  * Qwt Widget Library
  * Copyright (C) 1997   Josef Wilgen
  * Copyright (C) 2002   Uwe Rathmann
@@ -18,35 +18,37 @@ class QRect;
 class QRectF;
 class QPolygon;
 class QPolygonF;
-template <typename T> class QVector;
+
+#if QT_VERSION < 0x060000
+template< typename T > class QVector;
+#endif
 
 /*!
-  \brief Some clipping algorithms
-*/
+   \brief Some clipping algorithms
+ */
 
-class QWT_EXPORT QwtClipper
+namespace QwtClipper
 {
-public:
-    static void clipPolygon( const QRect &,
-        QPolygon &, bool closePolygon = false );
+    QWT_EXPORT void clipPolygon( const QRect&,
+        QPolygon&, bool closePolygon = false );
 
-    static void clipPolygon( const QRectF &,
-        QPolygon &, bool closePolygon = false );
+    QWT_EXPORT void clipPolygon( const QRectF&,
+        QPolygon&, bool closePolygon = false );
 
-    static void clipPolygonF( const QRectF &,
-        QPolygonF &, bool closePolygon = false );
+    QWT_EXPORT void clipPolygonF( const QRectF&,
+        QPolygonF&, bool closePolygon = false );
 
-    static QPolygon clippedPolygon( const QRect &,
-        const QPolygon &, bool closePolygon = false );
+    QWT_EXPORT QPolygon clippedPolygon( const QRect&,
+        const QPolygon&, bool closePolygon = false );
 
-    static QPolygon clippedPolygon( const QRectF &,
-        const QPolygon &, bool closePolygon = false );
+    QWT_EXPORT QPolygon clippedPolygon( const QRectF&,
+        const QPolygon&, bool closePolygon = false );
 
-    static QPolygonF clippedPolygonF( const QRectF &,
-        const QPolygonF &, bool closePolygon = false );
+    QWT_EXPORT QPolygonF clippedPolygonF( const QRectF&,
+        const QPolygonF&, bool closePolygon = false );
 
-    static QVector<QwtInterval> clipCircle(
-        const QRectF &, const QPointF &, double radius );
+    QWT_EXPORT QVector< QwtInterval > clipCircle(
+        const QRectF&, const QPointF&, double radius );
 };
 
 #endif

@@ -1,4 +1,4 @@
-/* -*- mode: C++ ; c-file-style: "stroustrup" -*- *****************************
+/******************************************************************************
  * Qwt Widget Library
  * Copyright (C) 1997   Josef Wilgen
  * Copyright (C) 2002   Uwe Rathmann
@@ -24,41 +24,41 @@ class QResizeEvent;
 
     QwtPlotRescaler auto adjusts the axes of a QwtPlot according
     to fixed aspect ratios.
-*/
+ */
 
-class QWT_EXPORT QwtPlotRescaler: public QObject
+class QWT_EXPORT QwtPlotRescaler : public QObject
 {
     Q_OBJECT
 
-public:
+  public:
     /*!
-      The rescale policy defines how to rescale the reference axis and
-      their depending axes.
+       The rescale policy defines how to rescale the reference axis and
+       their depending axes.
 
-      \sa ExpandingDirection, setIntervalHint()
-    */
+       \sa ExpandingDirection, setIntervalHint()
+     */
     enum RescalePolicy
     {
         /*!
-          The interval of the reference axis remains unchanged, when the
-          geometry of the canvas changes. All other axes
-          will be adjusted according to their aspect ratio.
+           The interval of the reference axis remains unchanged, when the
+           geometry of the canvas changes. All other axes
+           will be adjusted according to their aspect ratio.
          */
         Fixed,
 
         /*!
-          The interval of the reference axis will be shrunk/expanded,
-          when the geometry of the canvas changes. All other axes
-          will be adjusted according to their aspect ratio.
+           The interval of the reference axis will be shrunk/expanded,
+           when the geometry of the canvas changes. All other axes
+           will be adjusted according to their aspect ratio.
 
-          The interval, that is represented by one pixel is fixed.
+           The interval, that is represented by one pixel is fixed.
 
          */
         Expanding,
 
         /*!
-          The intervals of the axes are calculated, so that all axes include
-          their interval hint.
+           The intervals of the axes are calculated, so that all axes include
+           their interval hint.
          */
         Fitting
     };
@@ -79,8 +79,8 @@ public:
         ExpandBoth
     };
 
-    explicit QwtPlotRescaler( QWidget *canvas,
-        int referenceAxis = QwtPlot::xBottom,
+    explicit QwtPlotRescaler( QWidget* canvas,
+        QwtAxisId referenceAxis = QwtAxis::XBottom,
         RescalePolicy = Expanding );
 
     virtual ~QwtPlotRescaler();
@@ -92,54 +92,53 @@ public:
     RescalePolicy rescalePolicy() const;
 
     void setExpandingDirection( ExpandingDirection );
-    void setExpandingDirection( int axis, ExpandingDirection );
-    ExpandingDirection expandingDirection( int axis ) const;
+    void setExpandingDirection( QwtAxisId, ExpandingDirection );
+    ExpandingDirection expandingDirection( QwtAxisId ) const;
 
-    void setReferenceAxis( int axis );
-    int referenceAxis() const;
+    void setReferenceAxis( QwtAxisId );
+    QwtAxisId referenceAxis() const;
 
     void setAspectRatio( double ratio );
-    void setAspectRatio( int axis, double ratio );
-    double aspectRatio( int axis ) const;
+    void setAspectRatio( QwtAxisId, double ratio );
+    double aspectRatio( QwtAxisId ) const;
 
-    void setIntervalHint( int axis, const QwtInterval& );
-    QwtInterval intervalHint( int axis ) const;
+    void setIntervalHint( QwtAxisId, const QwtInterval& );
+    QwtInterval intervalHint( QwtAxisId ) const;
 
-    QWidget *canvas();
-    const QWidget *canvas() const;
+    QWidget* canvas();
+    const QWidget* canvas() const;
 
-    QwtPlot *plot();
-    const QwtPlot *plot() const;
+    QwtPlot* plot();
+    const QwtPlot* plot() const;
 
-    virtual bool eventFilter( QObject *, QEvent * ) QWT_OVERRIDE;
+    virtual bool eventFilter( QObject*, QEvent* ) QWT_OVERRIDE;
 
     void rescale() const;
 
-protected:
-    virtual void canvasResizeEvent( QResizeEvent * );
+  protected:
+    virtual void canvasResizeEvent( QResizeEvent* );
 
-    virtual void rescale( const QSize &oldSize, const QSize &newSize ) const;
+    virtual void rescale( const QSize& oldSize, const QSize& newSize ) const;
     virtual QwtInterval expandScale(
-        int axis, const QSize &oldSize, const QSize &newSize ) const;
+        QwtAxisId, const QSize& oldSize, const QSize& newSize ) const;
 
     virtual QwtInterval syncScale(
-        int axis, const QwtInterval& reference,
-        const QSize &size ) const;
+        QwtAxisId, const QwtInterval& reference, const QSize& size ) const;
 
     virtual void updateScales(
-        QwtInterval intervals[QwtPlot::axisCnt] ) const;
+        QwtInterval intervals[QwtAxis::AxisPositions] ) const;
 
-    Qt::Orientation orientation( int axis ) const;
-    QwtInterval interval( int axis ) const;
-    QwtInterval expandInterval( const QwtInterval &,
+    Qt::Orientation orientation( QwtAxisId ) const;
+    QwtInterval interval( QwtAxisId ) const;
+    QwtInterval expandInterval( const QwtInterval&,
         double width, ExpandingDirection ) const;
 
-private:
-    double pixelDist( int axis, const QSize & ) const;
+  private:
+    double pixelDist( QwtAxisId, const QSize& ) const;
 
     class AxisData;
     class PrivateData;
-    PrivateData *d_data;
+    PrivateData* m_data;
 };
 
 #endif
