@@ -1,4 +1,4 @@
-/* -*- mode: C++ ; c-file-style: "stroustrup" -*- *****************************
+/******************************************************************************
  * Qwt Widget Library
  * Copyright (C) 1997   Josef Wilgen
  * Copyright (C) 2002   Uwe Rathmann
@@ -13,8 +13,8 @@
    Constructor
    \param mode Preferred fitting mode
  */
-QwtCurveFitter::QwtCurveFitter( Mode mode ):
-    d_mode( mode )
+QwtCurveFitter::QwtCurveFitter( Mode mode )
+    : m_mode( mode )
 {
 }
 
@@ -26,5 +26,5 @@ QwtCurveFitter::~QwtCurveFitter()
 //! \return Preferred fitting mode
 QwtCurveFitter::Mode QwtCurveFitter::mode() const
 {
-    return d_mode;
+    return m_mode;
 }

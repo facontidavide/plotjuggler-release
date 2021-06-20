@@ -1,4 +1,4 @@
-/* -*- mode: C++ ; c-file-style: "stroustrup" -*- *****************************
+/******************************************************************************
  * QwtPolar Widget Library
  * Copyright (C) 2008   Uwe Rathmann
  *
@@ -15,8 +15,8 @@
 
 class QwtPolarLayout::LayoutData
 {
-public:
-    void init( const QwtPolarPlot *, const QRectF &rect );
+  public:
+    void init( const QwtPolarPlot*, const QRectF& rect );
 
     struct t_legendData
     {
@@ -39,12 +39,12 @@ public:
 };
 
 void QwtPolarLayout::LayoutData::init(
-    const QwtPolarPlot *plot, const QRectF &rect )
+    const QwtPolarPlot* plot, const QRectF& rect )
 {
     // legend
 
     if ( plot->plotLayout()->legendPosition() != QwtPolarPlot::ExternalLegend
-            && plot->legend() )
+        && plot->legend() )
     {
         legend.frameWidth = plot->legend()->frameWidth();
         legend.hScrollExtent =
@@ -72,7 +72,7 @@ void QwtPolarLayout::LayoutData::init(
 
     if ( plot->titleLabel() )
     {
-        const QwtTextLabel *label = plot->titleLabel();
+        const QwtTextLabel* label = plot->titleLabel();
         title.text = label->text();
         if ( !( title.text.testPaintAttribute( QwtText::PaintUsingTextFont ) ) )
             title.text.setFont( label->font() );
@@ -87,10 +87,10 @@ void QwtPolarLayout::LayoutData::init(
 
 class QwtPolarLayout::PrivateData
 {
-public:
-    PrivateData():
-        margin( 0 ),
-        spacing( 0 )
+  public:
+    PrivateData()
+        : margin( 0 )
+        , spacing( 0 )
     {
     }
 
@@ -108,12 +108,12 @@ public:
 };
 
 /*!
-  \brief Constructor
+   \brief Constructor
  */
 
 QwtPolarLayout::QwtPolarLayout()
 {
-    d_data = new PrivateData;
+    m_data = new PrivateData;
 
     setLegendPosition( QwtPolarPlot::BottomLegend );
     invalidate();
@@ -122,21 +122,21 @@ QwtPolarLayout::QwtPolarLayout()
 //! Destructor
 QwtPolarLayout::~QwtPolarLayout()
 {
-    delete d_data;
+    delete m_data;
 }
 
 /*!
-  \brief Specify the position of the legend
-  \param pos The legend's position.
-  \param ratio Ratio between legend and the bounding rect
-               of title, canvas and axes. The legend will be shrinked
+   \brief Specify the position of the legend
+   \param pos The legend's position.
+   \param ratio Ratio between legend and the bounding rect
+               of title, canvas and axes. The legend will be shrunk
                if it would need more space than the given ratio.
                The ratio is limited to ]0.0 .. 1.0]. In case of <= 0.0
                it will be reset to the default ratio.
                The default vertical/horizontal ratio is 0.33/0.5.
 
-  \sa QwtPolarPlot::setLegendPosition()
-*/
+   \sa QwtPolarPlot::setLegendPosition()
+ */
 
 void QwtPolarLayout::setLegendPosition(
     QwtPolarPlot::LegendPosition pos, double ratio )
@@ -151,8 +151,8 @@ void QwtPolarLayout::setLegendPosition(
         {
             if ( ratio <= 0.0 )
                 ratio = 0.33;
-            d_data->legendRatio = ratio;
-            d_data->legendPos = pos;
+            m_data->legendRatio = ratio;
+            m_data->legendPos = pos;
             break;
         }
         case QwtPolarPlot::LeftLegend:
@@ -160,14 +160,14 @@ void QwtPolarLayout::setLegendPosition(
         {
             if ( ratio <= 0.0 )
                 ratio = 0.5;
-            d_data->legendRatio = ratio;
-            d_data->legendPos = pos;
+            m_data->legendRatio = ratio;
+            m_data->legendPos = pos;
             break;
         }
         case QwtPolarPlot::ExternalLegend:
         {
-            d_data->legendRatio = ratio; // meaningless
-            d_data->legendPos = pos;
+            m_data->legendRatio = ratio; // meaningless
+            m_data->legendPos = pos;
             break;
         }
         default:
@@ -176,108 +176,108 @@ void QwtPolarLayout::setLegendPosition(
 }
 
 /*!
-  \brief Specify the position of the legend
-  \param pos The legend's position. Valid values are
+   \brief Specify the position of the legend
+   \param pos The legend's position. Valid values are
       \c QwtPolarPlot::LeftLegend, \c QwtPolarPlot::RightLegend,
       \c QwtPolarPlot::TopLegend, \c QwtPolarPlot::BottomLegend.
 
-  \sa QwtPolarPlot::setLegendPosition()
-*/
+   \sa QwtPolarPlot::setLegendPosition()
+ */
 void QwtPolarLayout::setLegendPosition( QwtPolarPlot::LegendPosition pos )
 {
     setLegendPosition( pos, 0.0 );
 }
 
 /*!
-  \return Position of the legend
-  \sa setLegendPosition(), QwtPolarPlot::setLegendPosition(),
+   \return Position of the legend
+   \sa setLegendPosition(), QwtPolarPlot::setLegendPosition(),
       QwtPolarPlot::legendPosition()
-*/
+ */
 QwtPolarPlot::LegendPosition QwtPolarLayout::legendPosition() const
 {
-    return d_data->legendPos;
+    return m_data->legendPos;
 }
 
 /*!
-  Specify the relative size of the legend in the plot
-  \param ratio Ratio between legend and the bounding rect
-               of title, canvas and axes. The legend will be shrinked
+   Specify the relative size of the legend in the plot
+   \param ratio Ratio between legend and the bounding rect
+               of title, canvas and axes. The legend will be shrunk
                if it would need more space than the given ratio.
                The ratio is limited to ]0.0 .. 1.0]. In case of <= 0.0
                it will be reset to the default ratio.
                The default vertical/horizontal ratio is 0.33/0.5.
-*/
+ */
 void QwtPolarLayout::setLegendRatio( double ratio )
 {
     setLegendPosition( legendPosition(), ratio );
 }
 
 /*!
-  \return The relative size of the legend in the plot.
-  \sa setLegendPosition()
-*/
+   \return The relative size of the legend in the plot.
+   \sa setLegendPosition()
+ */
 double QwtPolarLayout::legendRatio() const
 {
-    return d_data->legendRatio;
+    return m_data->legendRatio;
 }
 
 /*!
-  \return Geometry for the title
-  \sa activate(), invalidate()
-*/
+   \return Geometry for the title
+   \sa activate(), invalidate()
+ */
 
-const QRectF &QwtPolarLayout::titleRect() const
+const QRectF& QwtPolarLayout::titleRect() const
 {
-    return d_data->titleRect;
+    return m_data->titleRect;
 }
 
 /*!
-  \return Geometry for the legend
-  \sa activate(), invalidate()
-*/
+   \return Geometry for the legend
+   \sa activate(), invalidate()
+ */
 
-const QRectF &QwtPolarLayout::legendRect() const
+const QRectF& QwtPolarLayout::legendRect() const
 {
-    return d_data->legendRect;
+    return m_data->legendRect;
 }
 
 /*!
-  \return Geometry for the canvas
-  \sa activate(), invalidate()
-*/
-const QRectF &QwtPolarLayout::canvasRect() const
+   \return Geometry for the canvas
+   \sa activate(), invalidate()
+ */
+const QRectF& QwtPolarLayout::canvasRect() const
 {
-    return d_data->canvasRect;
+    return m_data->canvasRect;
 }
 
 /*!
-  Invalidate the geometry of all components.
-  \sa activate()
-*/
+   Invalidate the geometry of all components.
+   \sa activate()
+ */
 void QwtPolarLayout::invalidate()
 {
-    d_data->titleRect = d_data->legendRect = d_data->canvasRect = QRect();
+    m_data->titleRect = m_data->legendRect = m_data->canvasRect = QRect();
 }
 
 /*!
-  Find the geometry for the legend
-  \param options Options how to layout the legend
-  \param rect Rectangle where to place the legend
-  \return Geometry for the legend
-*/
+   Find the geometry for the legend
+   \param options Options how to layout the legend
+   \param rect Rectangle where to place the legend
+   \return Geometry for the legend
+ */
 
-QRectF QwtPolarLayout::layoutLegend( Options options, QRectF &rect ) const
+QRectF QwtPolarLayout::layoutLegend( Options options, QRectF& rect ) const
 {
-    const QSizeF hint( d_data->layoutData.legend.hint );
+    const QSizeF hint( m_data->layoutData.legend.hint );
 
     int dim;
-    if ( d_data->legendPos == QwtPolarPlot::LeftLegend
-        || d_data->legendPos == QwtPolarPlot::RightLegend )
+    if ( m_data->legendPos == QwtPolarPlot::LeftLegend
+        || m_data->legendPos == QwtPolarPlot::RightLegend )
     {
         // We don't allow vertical legends to take more than
         // half of the available space.
 
-        dim = qMin( double( hint.width() ), rect.width() * d_data->legendRatio );
+        dim = qMin( double( hint.width() ), rect.width() * m_data->legendRatio );
 
         if ( !( options & IgnoreScrollbars ) )
         {
@@ -286,18 +286,18 @@ QRectF QwtPolarLayout::layoutLegend( Options options, QRectF &rect ) const
                 // The legend will need additional
                 // space for the vertical scrollbar.
 
-                dim += d_data->layoutData.legend.hScrollExtent;
+                dim += m_data->layoutData.legend.hScrollExtent;
             }
         }
     }
     else
     {
-        dim = qMin( double( hint.height() ), rect.height() * d_data->legendRatio );
-        dim = qMax( dim, d_data->layoutData.legend.vScrollExtent );
+        dim = qMin( double( hint.height() ), rect.height() * m_data->legendRatio );
+        dim = qMax( dim, m_data->layoutData.legend.vScrollExtent );
     }
 
     QRectF legendRect = rect;
-    switch( d_data->legendPos )
+    switch( m_data->legendPos )
     {
         case QwtPolarPlot::LeftLegend:
         {
@@ -333,55 +333,55 @@ QRectF QwtPolarLayout::layoutLegend( Options options, QRectF &rect ) const
 }
 
 /*!
-  \brief Recalculate the geometry of all components.
+   \brief Recalculate the geometry of all components.
 
-  \param plot Plot to be layout
-  \param boundingRect Rect where to place the components
-  \param options Options
+   \param plot Plot to be layout
+   \param boundingRect Rect where to place the components
+   \param options Options
 
-  \sa invalidate(), titleRect(), legendRect(), canvasRect()
-*/
-void QwtPolarLayout::activate( const QwtPolarPlot *plot,
-    const QRectF &boundingRect, Options options )
+   \sa invalidate(), titleRect(), legendRect(), canvasRect()
+ */
+void QwtPolarLayout::activate( const QwtPolarPlot* plot,
+    const QRectF& boundingRect, Options options )
 {
     invalidate();
 
     QRectF rect( boundingRect ); // undistributed rest of the plot rect
-    rect.adjust( d_data->margin, d_data->margin,
-        -d_data->margin, -d_data->margin );
+    rect.adjust( m_data->margin, m_data->margin,
+        -m_data->margin, -m_data->margin );
 
     // We extract all layout relevant data from the widgets
-    // and save them to d_data->layoutData.
+    // and save them to m_data->layoutData.
 
-    d_data->layoutData.init( plot, rect );
+    m_data->layoutData.init( plot, rect );
     if ( !( options & IgnoreLegend )
-        && d_data->legendPos != QwtPolarPlot::ExternalLegend
+        && m_data->legendPos != QwtPolarPlot::ExternalLegend
         && plot->legend() && !plot->legend()->isEmpty() )
     {
-        d_data->legendRect = layoutLegend( options, rect );
-        if ( d_data->layoutData.legend.frameWidth &&
-                !( options & IgnoreFrames ) )
+        m_data->legendRect = layoutLegend( options, rect );
+        if ( m_data->layoutData.legend.frameWidth &&
+            !( options & IgnoreFrames ) )
         {
             // In case of a frame we have to insert a spacing.
             // Otherwise the leading of the font separates
             // legend and scale/canvas
 
-            switch( d_data->legendPos )
+            switch( m_data->legendPos )
             {
                 case QwtPolarPlot::LeftLegend:
-                    rect.setLeft( rect.left() + d_data->spacing );
+                    rect.setLeft( rect.left() + m_data->spacing );
                     break;
 
                 case QwtPolarPlot::RightLegend:
-                    rect.setRight( rect.right() - d_data->spacing );
+                    rect.setRight( rect.right() - m_data->spacing );
                     break;
 
                 case QwtPolarPlot::TopLegend:
-                    rect.setTop( rect.top() + d_data->spacing );
+                    rect.setTop( rect.top() + m_data->spacing );
                     break;
 
                 case QwtPolarPlot::BottomLegend:
-                    rect.setBottom( rect.bottom() - d_data->spacing );
+                    rect.setBottom( rect.bottom() - m_data->spacing );
                     break;
 
                 case QwtPolarPlot::ExternalLegend:
@@ -391,16 +391,16 @@ void QwtPolarLayout::activate( const QwtPolarPlot *plot,
     }
 
     if ( !( options & IgnoreTitle ) &&
-        !d_data->layoutData.title.text.isEmpty() )
+        !m_data->layoutData.title.text.isEmpty() )
     {
-        int h = d_data->layoutData.title.text.heightForWidth( rect.width() );
+        int h = m_data->layoutData.title.text.heightForWidth( rect.width() );
         if ( !( options & IgnoreFrames ) )
-            h += 2 * d_data->layoutData.title.frameWidth;
+            h += 2 * m_data->layoutData.title.frameWidth;
 
-        d_data->titleRect = QRectF( rect.x(), rect.y(), rect.width(), h );
+        m_data->titleRect = QRectF( rect.x(), rect.y(), rect.width(), h );
 
         // subtract title
-        rect.setTop( rect.top() + h + d_data->spacing );
+        rect.setTop( rect.top() + h + m_data->spacing );
     }
 
     if ( plot->zoomPos().radius() > 0.0 || plot->zoomFactor() < 1.0 )
@@ -410,7 +410,7 @@ void QwtPolarLayout::activate( const QwtPolarPlot *plot,
         // accepting, that there might a lot of space wasted
         // around the plot.
 
-        d_data->canvasRect = rect;
+        m_data->canvasRect = rect;
     }
     else
     {
@@ -419,24 +419,24 @@ void QwtPolarLayout::activate( const QwtPolarPlot *plot,
 
         const int dim = qMin( rect.width(), rect.height() );
 
-        d_data->canvasRect.setX( rect.center().x() - dim / 2 );
-        d_data->canvasRect.setY( rect.y() );
-        d_data->canvasRect.setSize( QSize( dim, dim ) );
+        m_data->canvasRect.setX( rect.center().x() - dim / 2 );
+        m_data->canvasRect.setY( rect.y() );
+        m_data->canvasRect.setSize( QSize( dim, dim ) );
     }
 
-    if ( !d_data->legendRect.isEmpty() )
+    if ( !m_data->legendRect.isEmpty() )
     {
-        if ( d_data->legendPos == QwtPolarPlot::LeftLegend
-            || d_data->legendPos == QwtPolarPlot::RightLegend )
+        if ( m_data->legendPos == QwtPolarPlot::LeftLegend
+            || m_data->legendPos == QwtPolarPlot::RightLegend )
         {
             // We prefer to align the legend to the canvas - not to
             // the complete plot - if possible.
 
-            if ( d_data->layoutData.legend.hint.height()
-                    < d_data->canvasRect.height() )
+            if ( m_data->layoutData.legend.hint.height()
+                < m_data->canvasRect.height() )
             {
-                d_data->legendRect.setY( d_data->canvasRect.y() );
-                d_data->legendRect.setHeight( d_data->canvasRect.height() );
+                m_data->legendRect.setY( m_data->canvasRect.y() );
+                m_data->legendRect.setHeight( m_data->canvasRect.height() );
             }
         }
     }
