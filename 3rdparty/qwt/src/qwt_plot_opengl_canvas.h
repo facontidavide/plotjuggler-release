@@ -1,4 +1,4 @@
-/* -*- mode: C++ ; c-file-style: "stroustrup" -*- *****************************
+/******************************************************************************
  * Qwt Widget Library
  * Copyright (C) 1997   Josef Wilgen
  * Copyright (C) 2002   Uwe Rathmann
@@ -17,7 +17,21 @@
 
 class QwtPlot;
 
-class QWT_EXPORT QwtPlotOpenGLCanvas: public QOpenGLWidget, public QwtPlotAbstractGLCanvas
+/*!
+   \brief An alternative canvas for a QwtPlot derived from QOpenGLWidget
+
+   Even if QwtPlotOpenGLCanvas is not derived from QFrame it imitates
+   its API. When using style sheets it supports the box model - beside
+   backgrounds with rounded borders.
+
+   \sa QwtPlot::setCanvas(), QwtPlotCanvas, QwtPlotCanvas::OpenGLBuffer
+
+   \note Another way for getting hardware accelerated graphics is using
+        an OpenGL offscreen buffer ( QwtPlotCanvas::OpenGLBuffer ) with QwtPlotCanvas.
+        Performance is worse, than rendering straight to a QOpenGLWidget, but is usually
+        better integrated into a desktop application.
+ */
+class QWT_EXPORT QwtPlotOpenGLCanvas : public QOpenGLWidget, public QwtPlotAbstractGLCanvas
 {
     Q_OBJECT
 
@@ -30,32 +44,32 @@ class QWT_EXPORT QwtPlotOpenGLCanvas: public QOpenGLWidget, public QwtPlotAbstra
 
     Q_PROPERTY( double borderRadius READ borderRadius WRITE setBorderRadius )
 
-public:
-    explicit QwtPlotOpenGLCanvas( QwtPlot * = NULL );
-    explicit QwtPlotOpenGLCanvas( const QSurfaceFormat &, QwtPlot * = NULL);
+  public:
+    explicit QwtPlotOpenGLCanvas( QwtPlot* = NULL );
+    explicit QwtPlotOpenGLCanvas( const QSurfaceFormat&, QwtPlot* = NULL);
     virtual ~QwtPlotOpenGLCanvas();
 
     Q_INVOKABLE virtual void invalidateBackingStore() QWT_OVERRIDE;
-    Q_INVOKABLE QPainterPath borderPath( const QRect & ) const;
+    Q_INVOKABLE QPainterPath borderPath( const QRect& ) const;
 
-    virtual bool event( QEvent * ) QWT_OVERRIDE;
+    virtual bool event( QEvent* ) QWT_OVERRIDE;
 
-public Q_SLOTS:
+  public Q_SLOTS:
     void replot();
 
-protected:
-    virtual void paintEvent( QPaintEvent * ) QWT_OVERRIDE;
+  protected:
+    virtual void paintEvent( QPaintEvent* ) QWT_OVERRIDE;
 
     virtual void initializeGL() QWT_OVERRIDE;
     virtual void paintGL() QWT_OVERRIDE;
     virtual void resizeGL( int width, int height ) QWT_OVERRIDE;
 
-private:
-    void init( const QSurfaceFormat & );
+  private:
+    void init( const QSurfaceFormat& );
     virtual void clearBackingStore() QWT_OVERRIDE;
 
     class PrivateData;
-    PrivateData *d_data;
+    PrivateData* m_data;
 };
 
 #endif

@@ -64,7 +64,7 @@ struct PlotDataMapRef
     return addImpl(strings, name, group);
   }
 
-  PlotData& getOrCreateNumberic(const std::string& name, PlotGroup::Ptr group = {})
+  PlotData& getOrCreateNumeric(const std::string& name, PlotGroup::Ptr group = {})
   {
     return getOrCreateImpl( numeric, name, group );
   }

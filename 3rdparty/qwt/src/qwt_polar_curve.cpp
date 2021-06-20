@@ -1,4 +1,4 @@
-/* -*- mode: C++ ; c-file-style: "stroustrup" -*- *****************************
+/******************************************************************************
  * QwtPolar Widget Library
  * Copyright (C) 2008   Uwe Rathmann
  *
@@ -18,12 +18,12 @@
 
 #include <qpainter.h>
 
-static inline bool qwtInsidePole( const QwtScaleMap &map, double radius )
+static inline bool qwtInsidePole( const QwtScaleMap& map, double radius )
 {
     return map.isInverting() ? ( radius > map.s1() ) : ( radius < map.s1() );
 }
 
-static int qwtVerifyRange( int size, int &i1, int &i2 )
+static int qwtVerifyRange( int size, int& i1, int& i2 )
 {
     if ( size < 1 )
         return 0;
@@ -39,10 +39,10 @@ static int qwtVerifyRange( int size, int &i1, int &i2 )
 
 class QwtPolarCurve::PrivateData
 {
-public:
-    PrivateData():
-        style( QwtPolarCurve::Lines ),
-        curveFitter( NULL )
+  public:
+    PrivateData()
+        : style( QwtPolarCurve::Lines )
+        , curveFitter( NULL )
     {
         symbol = new QwtSymbol();
         pen = QPen( Qt::black );
@@ -55,36 +55,36 @@ public:
     }
 
     QwtPolarCurve::CurveStyle style;
-    const QwtSymbol *symbol;
+    const QwtSymbol* symbol;
     QPen pen;
-    QwtCurveFitter *curveFitter;
+    QwtCurveFitter* curveFitter;
 
     QwtPolarCurve::LegendAttributes legendAttributes;
 };
 
 //! Constructor
-QwtPolarCurve::QwtPolarCurve():
-    QwtPolarItem( QwtText() )
+QwtPolarCurve::QwtPolarCurve()
+    : QwtPolarItem( QwtText() )
 {
     init();
 }
 
 /*!
-  Constructor
-  \param title title of the curve
-*/
-QwtPolarCurve::QwtPolarCurve( const QwtText &title ):
-    QwtPolarItem( title )
+   Constructor
+   \param title title of the curve
+ */
+QwtPolarCurve::QwtPolarCurve( const QwtText& title )
+    : QwtPolarItem( title )
 {
     init();
 }
 
 /*!
-  Constructor
-  \param title title of the curve
-*/
-QwtPolarCurve::QwtPolarCurve( const QString &title ):
-    QwtPolarItem( QwtText( title ) )
+   Constructor
+   \param title title of the curve
+ */
+QwtPolarCurve::QwtPolarCurve( const QString& title )
+    : QwtPolarItem( QwtText( title ) )
 {
     init();
 }
@@ -92,15 +92,15 @@ QwtPolarCurve::QwtPolarCurve( const QString &title ):
 //! Destructor
 QwtPolarCurve::~QwtPolarCurve()
 {
-    delete d_series;
-    delete d_data;
+    delete m_series;
+    delete m_data;
 }
 
 //! Initialize data members
 void QwtPolarCurve::init()
 {
-    d_data = new PrivateData;
-    d_series = NULL;
+    m_data = new PrivateData;
+    m_series = NULL;
 
     setItemAttribute( QwtPolarItem::AutoScale );
     setItemAttribute( QwtPolarItem::Legend );
@@ -116,44 +116,44 @@ int QwtPolarCurve::rtti() const
 }
 
 /*!
-  Specify an attribute how to draw the legend identifier
+   Specify an attribute how to draw the legend identifier
 
-  \param attribute Attribute
-  \param on On/Off
-  /sa LegendAttribute, testLegendAttribute()
-*/
+   \param attribute Attribute
+   \param on On/Off
+   /sa LegendAttribute, testLegendAttribute()
+ */
 void QwtPolarCurve::setLegendAttribute( LegendAttribute attribute, bool on )
 {
     if ( on )
-        d_data->legendAttributes |= attribute;
+        m_data->legendAttributes |= attribute;
     else
-        d_data->legendAttributes &= ~attribute;
+        m_data->legendAttributes &= ~attribute;
 }
 
 /*!
-    \brief Test if a lefend attribute is enables
+    \brief Test if a legend attribute is enabled
 
     \param attribute Legend attribute
 
     \return True if attribute is enabled
     \sa LegendAttribute, setLegendAttribute()
-*/
+ */
 bool QwtPolarCurve::testLegendAttribute( LegendAttribute attribute ) const
 {
-    return ( d_data->legendAttributes & attribute );
+    return ( m_data->legendAttributes & attribute );
 }
 
 /*!
-  Set the curve's drawing style
+   Set the curve's drawing style
 
-  \param style Curve style
-  \sa CurveStyle, style()
-*/
+   \param style Curve style
+   \sa CurveStyle, style()
+ */
 void QwtPolarCurve::setStyle( CurveStyle style )
 {
-    if ( style != d_data->style )
+    if ( style != m_data->style )
     {
-        d_data->style = style;
+        m_data->style = style;
         itemChanged();
     }
 }
@@ -161,23 +161,23 @@ void QwtPolarCurve::setStyle( CurveStyle style )
 /*!
     \return Current style
     \sa CurveStyle, setStyle()
-*/
+ */
 QwtPolarCurve::CurveStyle QwtPolarCurve::style() const
 {
-    return d_data->style;
+    return m_data->style;
 }
 
 /*!
-  \brief Assign a symbol
-  \param symbol Symbol
-  \sa symbol()
-*/
-void QwtPolarCurve::setSymbol( QwtSymbol *symbol )
+   \brief Assign a symbol
+   \param symbol Symbol
+   \sa symbol()
+ */
+void QwtPolarCurve::setSymbol( QwtSymbol* symbol )
 {
-    if ( symbol != d_data->symbol )
+    if ( symbol != m_data->symbol )
     {
-        delete d_data->symbol;
-        d_data->symbol = symbol;
+        delete m_data->symbol;
+        m_data->symbol = symbol;
         itemChanged();
     }
 }
@@ -185,22 +185,22 @@ void QwtPolarCurve::setSymbol( QwtSymbol *symbol )
 /*!
     \return The current symbol
     \sa setSymbol()
-*/
-const QwtSymbol *QwtPolarCurve::symbol() const
+ */
+const QwtSymbol* QwtPolarCurve::symbol() const
 {
-    return d_data->symbol;
+    return m_data->symbol;
 }
 
 /*!
-  \brief Assign a pen
-  \param pen New pen
-  \sa pen()
-*/
-void QwtPolarCurve::setPen( const QPen &pen )
+   \brief Assign a pen
+   \param pen New pen
+   \sa pen()
+ */
+void QwtPolarCurve::setPen( const QPen& pen )
 {
-    if ( pen != d_data->pen )
+    if ( pen != m_data->pen )
     {
-        d_data->pen = pen;
+        m_data->pen = pen;
         itemChanged();
     }
 }
@@ -208,75 +208,75 @@ void QwtPolarCurve::setPen( const QPen &pen )
 /*!
     \return Pen used to draw the lines
     \sa setPen()
-*/
+ */
 const QPen& QwtPolarCurve::pen() const
 {
-    return d_data->pen;
+    return m_data->pen;
 }
 
 /*!
-  Initialize data with a pointer to QwtSeriesData<QwtPointPolar>.
+   Initialize data with a pointer to QwtSeriesData<QwtPointPolar>.
 
-  The x-values of the data object represent the azimuth,
-  the y-value respresent the radius.
+   The x-values of the data object represent the azimuth,
+   the y-value represents the radius.
 
-  \param data Data
-*/
-void QwtPolarCurve::setData( QwtSeriesData<QwtPointPolar> *data )
+   \param data Data
+ */
+void QwtPolarCurve::setData( QwtSeriesData< QwtPointPolar >* data )
 {
-    if ( d_series != data )
+    if ( m_series != data )
     {
-        delete d_series;
-        d_series = data;
+        delete m_series;
+        m_series = data;
         itemChanged();
     }
 }
 
 /*!
-  \brief Insert a curve fitter
+   \brief Insert a curve fitter
 
-  \param curveFitter Curve fitter
+   \param curveFitter Curve fitter
 
-  A curve fitter interpolates the curve points. F.e QwtPolarFitter
-  adds equidistant points so that the connection gets rounded instead
-  of having straight lines. If curveFitter is NULL fitting is disabled.
+   A curve fitter interpolates the curve points. F.e QwtPolarFitter
+   adds equidistant points so that the connection gets rounded instead
+   of having straight lines. If curveFitter is NULL fitting is disabled.
 
-  \sa curveFitter()
-*/
-void QwtPolarCurve::setCurveFitter( QwtCurveFitter *curveFitter )
+   \sa curveFitter()
+ */
+void QwtPolarCurve::setCurveFitter( QwtCurveFitter* curveFitter )
 {
-    if ( curveFitter != d_data->curveFitter )
+    if ( curveFitter != m_data->curveFitter )
     {
-        delete d_data->curveFitter;
-        d_data->curveFitter = curveFitter;
+        delete m_data->curveFitter;
+        m_data->curveFitter = curveFitter;
 
         itemChanged();
     }
 }
 
 /*!
-  \return The curve fitter
-  \sa setCurveFitter()
-*/
-QwtCurveFitter *QwtPolarCurve::curveFitter() const
+   \return The curve fitter
+   \sa setCurveFitter()
+ */
+QwtCurveFitter* QwtPolarCurve::curveFitter() const
 {
-    return d_data->curveFitter;
+    return m_data->curveFitter;
 }
 
 /*!
-  Draw the curve
+   Draw the curve
 
-  \param painter Painter
-  \param azimuthMap Maps azimuth values to values related to 0.0, M_2PI
-  \param radialMap Maps radius values into painter coordinates.
-  \param pole Position of the pole in painter coordinates
-  \param radius Radius of the complete plot area in painter coordinates
-  \param canvasRect Contents rect of the canvas in painter coordinates
-*/
-void QwtPolarCurve::draw( QPainter *painter,
-    const QwtScaleMap &azimuthMap, const QwtScaleMap &radialMap,
-    const QPointF &pole, double radius,
-    const QRectF &canvasRect ) const
+   \param painter Painter
+   \param azimuthMap Maps azimuth values to values related to 0.0, M_2PI
+   \param radialMap Maps radius values into painter coordinates.
+   \param pole Position of the pole in painter coordinates
+   \param radius Radius of the complete plot area in painter coordinates
+   \param canvasRect Contents rect of the canvas in painter coordinates
+ */
+void QwtPolarCurve::draw( QPainter* painter,
+    const QwtScaleMap& azimuthMap, const QwtScaleMap& radialMap,
+    const QPointF& pole, double radius,
+    const QRectF& canvasRect ) const
 {
     Q_UNUSED( radius );
     Q_UNUSED( canvasRect );
@@ -285,20 +285,20 @@ void QwtPolarCurve::draw( QPainter *painter,
 }
 
 /*!
-  \brief Draw an interval of the curve
-  \param painter Painter
-  \param azimuthMap Maps azimuth values to values related to 0.0, M_2PI
-  \param radialMap Maps radius values into painter coordinates.
-  \param pole Position of the pole in painter coordinates
-  \param from index of the first point to be painted
-  \param to index of the last point to be painted. If to < 0 the
+   \brief Draw an interval of the curve
+   \param painter Painter
+   \param azimuthMap Maps azimuth values to values related to 0.0, M_2PI
+   \param radialMap Maps radius values into painter coordinates.
+   \param pole Position of the pole in painter coordinates
+   \param from index of the first point to be painted
+   \param to index of the last point to be painted. If to < 0 the
          curve will be painted to its last point.
 
-  \sa drawCurve(), drawSymbols(),
-*/
-void QwtPolarCurve::draw( QPainter *painter,
-    const QwtScaleMap &azimuthMap, const QwtScaleMap &radialMap,
-    const QPointF &pole, int from, int to ) const
+   \sa drawCurve(), drawSymbols(),
+ */
+void QwtPolarCurve::draw( QPainter* painter,
+    const QwtScaleMap& azimuthMap, const QwtScaleMap& radialMap,
+    const QPointF& pole, int from, int to ) const
 {
     if ( !painter || dataSize() <= 0 )
         return;
@@ -309,17 +309,17 @@ void QwtPolarCurve::draw( QPainter *painter,
     if ( qwtVerifyRange( dataSize(), from, to ) > 0 )
     {
         painter->save();
-        painter->setPen( d_data->pen );
+        painter->setPen( m_data->pen );
 
-        drawCurve( painter, d_data->style,
+        drawCurve( painter, m_data->style,
             azimuthMap, radialMap, pole, from, to );
 
         painter->restore();
 
-        if ( d_data->symbol->style() != QwtSymbol::NoSymbol )
+        if ( m_data->symbol->style() != QwtSymbol::NoSymbol )
         {
             painter->save();
-            drawSymbols( painter, *d_data->symbol,
+            drawSymbols( painter, *m_data->symbol,
                 azimuthMap, radialMap, pole, from, to );
             painter->restore();
         }
@@ -327,20 +327,20 @@ void QwtPolarCurve::draw( QPainter *painter,
 }
 
 /*!
-  Draw the line part (without symbols) of a curve interval.
+   Draw the line part (without symbols) of a curve interval.
 
-  \param painter Painter
-  \param style Curve style, see QwtPolarCurve::CurveStyle
-  \param azimuthMap Maps azimuth values to values related to 0.0, M_2PI
-  \param radialMap Maps radius values into painter coordinates.
-  \param pole Position of the pole in painter coordinates
-  \param from index of the first point to be painted
-  \param to index of the last point to be painted.
-  \sa draw(), drawLines()
-*/
-void QwtPolarCurve::drawCurve( QPainter *painter, int style,
-    const QwtScaleMap &azimuthMap, const QwtScaleMap &radialMap,
-    const QPointF &pole, int from, int to ) const
+   \param painter Painter
+   \param style Curve style, see QwtPolarCurve::CurveStyle
+   \param azimuthMap Maps azimuth values to values related to 0.0, M_2PI
+   \param radialMap Maps radius values into painter coordinates.
+   \param pole Position of the pole in painter coordinates
+   \param from index of the first point to be painted
+   \param to index of the last point to be painted.
+   \sa draw(), drawLines()
+ */
+void QwtPolarCurve::drawCurve( QPainter* painter, int style,
+    const QwtScaleMap& azimuthMap, const QwtScaleMap& radialMap,
+    const QPointF& pole, int from, int to ) const
 {
     switch ( style )
     {
@@ -354,19 +354,19 @@ void QwtPolarCurve::drawCurve( QPainter *painter, int style,
 }
 
 /*!
-  Draw lines
+   Draw lines
 
-  \param painter Painter
-  \param azimuthMap Maps azimuth values to values related to 0.0, M_2PI
-  \param radialMap Maps radius values into painter coordinates.
-  \param pole Position of the pole in painter coordinates
-  \param from index of the first point to be painted
-  \param to index of the last point to be painted.
-  \sa draw(), drawLines(), setCurveFitter()
-*/
-void QwtPolarCurve::drawLines( QPainter *painter,
-    const QwtScaleMap &azimuthMap, const QwtScaleMap &radialMap,
-    const QPointF &pole, int from, int to ) const
+   \param painter Painter
+   \param azimuthMap Maps azimuth values to values related to 0.0, M_2PI
+   \param radialMap Maps radius values into painter coordinates.
+   \param pole Position of the pole in painter coordinates
+   \param from index of the first point to be painted
+   \param to index of the last point to be painted.
+   \sa draw(), drawLines(), setCurveFitter()
+ */
+void QwtPolarCurve::drawLines( QPainter* painter,
+    const QwtScaleMap& azimuthMap, const QwtScaleMap& radialMap,
+    const QPointF& pole, int from, int to ) const
 {
     int size = to - from + 1;
     if ( size <= 0 )
@@ -374,7 +374,7 @@ void QwtPolarCurve::drawLines( QPainter *painter,
 
     QPolygonF polyline;
 
-    if ( d_data->curveFitter )
+    if ( m_data->curveFitter )
     {
         QPolygonF points( size );
         for ( int j = from; j <= to; j++ )
@@ -383,12 +383,12 @@ void QwtPolarCurve::drawLines( QPainter *painter,
             points[j - from] = QPointF( point.azimuth(), point.radius() );
         }
 
-        points = d_data->curveFitter->fitCurve( points );
+        points = m_data->curveFitter->fitCurve( points );
 
         polyline.resize( points.size() );
 
-        QPointF *polylineData = polyline.data();
-        QPointF *pointsData = points.data();
+        QPointF* polylineData = polyline.data();
+        QPointF* pointsData = points.data();
 
         for ( int i = 0; i < points.size(); i++ )
         {
@@ -403,7 +403,7 @@ void QwtPolarCurve::drawLines( QPainter *painter,
     else
     {
         polyline.resize( size );
-        QPointF *polylineData = polyline.data();
+        QPointF* polylineData = polyline.data();
 
         for ( int i = from; i <= to; i++ )
         {
@@ -444,21 +444,21 @@ void QwtPolarCurve::drawLines( QPainter *painter,
 }
 
 /*!
-  Draw symbols
+   Draw symbols
 
-  \param painter Painter
-  \param symbol Curve symbol
-  \param azimuthMap Maps azimuth values to values related to 0.0, M_2PI
-  \param radialMap Maps radius values into painter coordinates.
-  \param pole Position of the pole in painter coordinates
-  \param from index of the first point to be painted
-  \param to index of the last point to be painted.
+   \param painter Painter
+   \param symbol Curve symbol
+   \param azimuthMap Maps azimuth values to values related to 0.0, M_2PI
+   \param radialMap Maps radius values into painter coordinates.
+   \param pole Position of the pole in painter coordinates
+   \param from index of the first point to be painted
+   \param to index of the last point to be painted.
 
-  \sa setSymbol(), draw(), drawCurve()
-*/
-void QwtPolarCurve::drawSymbols( QPainter *painter, const QwtSymbol &symbol,
-    const QwtScaleMap &azimuthMap, const QwtScaleMap &radialMap,
-    const QPointF &pole, int from, int to ) const
+   \sa setSymbol(), draw(), drawCurve()
+ */
+void QwtPolarCurve::drawSymbols( QPainter* painter, const QwtSymbol& symbol,
+    const QwtScaleMap& azimuthMap, const QwtScaleMap& radialMap,
+    const QPointF& pole, int from, int to ) const
 {
     painter->setBrush( symbol.brush() );
     painter->setPen( symbol.pen() );
@@ -493,25 +493,25 @@ void QwtPolarCurve::drawSymbols( QPainter *painter, const QwtSymbol &symbol,
 }
 
 /*!
-  \return Number of points
-  \sa setData()
-*/
+   \return Number of points
+   \sa setData()
+ */
 size_t QwtPolarCurve::dataSize() const
 {
-    return d_series->size();
+    return m_series->size();
 }
 
 /*!
    \return Icon representing the curve on the legend
 
-   \param index Index of the legend entry 
+   \param index Index of the legend entry
                 ( ignored as there is only one )
    \param size Icon size
 
    \sa QwtPolarItem::setLegendIconSize(), QwtPolarItem::legendData()
  */
 QwtGraphic QwtPolarCurve::legendIcon( int index,
-    const QSizeF &size ) const
+    const QSizeF& size ) const
 {
     Q_UNUSED( index );
 
@@ -526,7 +526,7 @@ QwtGraphic QwtPolarCurve::legendIcon( int index,
     painter.setRenderHint( QPainter::Antialiasing,
         testRenderHint( QwtPolarItem::RenderAntialiased ) );
 
-    if ( d_data->legendAttributes == 0 )
+    if ( m_data->legendAttributes == 0 )
     {
         QBrush brush;
 
@@ -534,10 +534,10 @@ QwtGraphic QwtPolarCurve::legendIcon( int index,
         {
             brush = QBrush( pen().color() );
         }
-        else if ( d_data->symbol &&
-            ( d_data->symbol->style() != QwtSymbol::NoSymbol ) )
+        else if ( m_data->symbol &&
+            ( m_data->symbol->style() != QwtSymbol::NoSymbol ) )
         {
-            brush = QBrush( d_data->symbol->pen().color() );
+            brush = QBrush( m_data->symbol->pen().color() );
         }
 
         if ( brush.style() != Qt::NoBrush )
@@ -547,7 +547,7 @@ QwtGraphic QwtPolarCurve::legendIcon( int index,
         }
     }
 
-    if ( d_data->legendAttributes & QwtPolarCurve::LegendShowLine )
+    if ( m_data->legendAttributes & QwtPolarCurve::LegendShowLine )
     {
         if ( pen() != Qt::NoPen )
         {
@@ -561,12 +561,12 @@ QwtGraphic QwtPolarCurve::legendIcon( int index,
         }
     }
 
-    if ( d_data->legendAttributes & QwtPolarCurve::LegendShowSymbol )
+    if ( m_data->legendAttributes & QwtPolarCurve::LegendShowSymbol )
     {
-        if ( d_data->symbol )
+        if ( m_data->symbol )
         {
             QRectF r( 0, 0, size.width(), size.height() );
-            d_data->symbol->drawSymbol( &painter, r );
+            m_data->symbol->drawSymbol( &painter, r );
         }
     }
 
@@ -581,10 +581,10 @@ QwtGraphic QwtPolarCurve::legendIcon( int index,
    \return bounding interval
 
    \sa QwtData::boundingRect()
-*/
+ */
 QwtInterval QwtPolarCurve::boundingInterval( int scaleId ) const
 {
-    const QRectF boundingRect = d_series->boundingRect();
+    const QRectF boundingRect = m_series->boundingRect();
 
     if ( scaleId == QwtPolar::ScaleAzimuth )
         return QwtInterval( boundingRect.left(), boundingRect.right() );

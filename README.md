@@ -54,19 +54,9 @@ If you are not familiar with Lua, don't be afraid, you won't need more than 5 mi
 
 To learns how to use PlotJuggler, check the tutorials here:
 
-<table>
-  <tr>
-    <a href="https://slides.com/davidefaconti/introduction-to-plotjuggler">
-        <td><img src="docs/tutorial_1.png"></td>
-    </a>
-    <a href="https://slides.com/davidefaconti/plotjuggler-data">
-        <td><img src="docs/tutorial_2.png"></td>
-    </a>
-    <a href="https://slides.com/davidefaconti/plotjuggler-transforms">
-        <td><img src="docs/tutorial_3.png"></td>
-    </a>
-   </tr>
-</table>
+| Tutorial 1   |  Tutorial 2 | Tutorial 3 |
+:-------------------------:|:-------------------------:|:-------------------------:
+| [![](docs/tutorial_1.png)](https://slides.com/davidefaconti/introduction-to-plotjuggler) | [![](docs/tutorial_2.png)](https://slides.com/davidefaconti/plotjuggler-data) | [![](docs/tutorial_3.png)](https://slides.com/davidefaconti/plotjuggler-transforms) |
 
 ## Supported plugins
 
@@ -88,7 +78,7 @@ If you want a simple example to learn how to write your own plugins, have a look
 ### Binary installers (with basic plugins)
 
 **Linux AppImage** (compatible with Ubuntu 18.04 or later: 
-[PlotJuggler-3.1.2-x86_64.AppImage](https://github.com/facontidavide/PlotJuggler/releases/download/3.1.2/PlotJuggler-3.1.2-x86_64.AppImage)
+[PlotJuggler-3.2.0-x86_64.AppImage](https://github.com/facontidavide/PlotJuggler/releases/download/3.2.0/PlotJuggler-3.2.0-x86_64.AppImage)
 
 **Windows Installer**: 
 [PlotJuggler-Windows-3.1.1-installer](https://github.com/facontidavide/PlotJuggler/releases/download/3.1.1/PlotJuggler-Windows-3.1.1-installer.exe)
