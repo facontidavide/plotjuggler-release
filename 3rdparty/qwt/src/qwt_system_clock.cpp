@@ -1,4 +1,4 @@
-/* -*- mode: C++ ; c-file-style: "stroustrup" -*- *****************************
+/******************************************************************************
  * Qwt Widget Library
  * Copyright (C) 1997   Josef Wilgen
  * Copyright (C) 2002   Uwe Rathmann
@@ -10,40 +10,31 @@
 #include "qwt_system_clock.h"
 #include <qelapsedtimer.h>
 
-class QwtSystemClock::PrivateData
-{
-public:
-    QElapsedTimer timer;
-};
-
-QwtSystemClock::QwtSystemClock()
-{
-    d_data = new PrivateData();
-}
-
-QwtSystemClock::~QwtSystemClock()
-{
-    delete d_data;
-}
-
+//! \return true, if the elapsed timer is valid
 bool QwtSystemClock::isNull() const
 {
-    return d_data->timer.isValid();
+    return m_timer.isValid();
 }
 
+//! Start the elapsed timer
 void QwtSystemClock::start()
 {
-    d_data->timer.start();
+    m_timer.start();
 }
 
+/*!
+    Restart the elapsed timer
+    \return elapsed time in multiples of milliseconds
+ */
 double QwtSystemClock::restart()
 {
-    const qint64 nsecs = d_data->timer.restart();
+    const qint64 nsecs = m_timer.restart();
     return nsecs / 1e6;
 }
 
+//! \return elapsed time in multiples of milliseconds
 double QwtSystemClock::elapsed() const
 {
-    const qint64 nsecs = d_data->timer.nsecsElapsed();
+    const qint64 nsecs = m_timer.nsecsElapsed();
     return nsecs / 1e6;
 }

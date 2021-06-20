@@ -1,4 +1,4 @@
-/* -*- mode: C++ ; c-file-style: "stroustrup" -*- *****************************
+/******************************************************************************
  * Qwt Widget Library
  * Copyright (C) 1997   Josef Wilgen
  * Copyright (C) 2002   Uwe Rathmann
@@ -12,26 +12,28 @@
 #include <qpainter.h>
 #include <qpainterpath.h>
 
+//! Constructor
 QwtVectorFieldSymbol::QwtVectorFieldSymbol()
 {
 }
 
+//! Destructor
 QwtVectorFieldSymbol::~QwtVectorFieldSymbol()
 {
 }
 
 class QwtVectorFieldArrow::PrivateData
 {
-public:
-    PrivateData( qreal headW, qreal tailW ):
-        headWidth( headW ),
-        tailWidth( tailW ),
-        length( headW + 4.0 )
+  public:
+    PrivateData( qreal headW, qreal tailW )
+        : headWidth( headW )
+        , tailWidth( tailW )
+        , length( headW + 4.0 )
     {
         /*
             Arrow is drawn horizontally, pointing into positive x direction
             with tip at 0,0.
-        */
+         */
 
         path.lineTo( -headWidth, headWidth );
         path.lineTo( -headWidth, tailWidth );
@@ -42,7 +44,7 @@ public:
 
         path.closeSubpath();
     }
-        
+
     void setLength( qreal l )
     {
         length = qMax( l, headWidth );
@@ -59,37 +61,48 @@ public:
 
 };
 
+/*!
+    \brief Constructor
+
+    The length is initialized by headWidth + 4
+
+    \param headWidth Width of the triangular head
+    \param tailWidth Width of the arrow tail
+
+    \sa setLength()
+ */
 QwtVectorFieldArrow::QwtVectorFieldArrow( qreal headWidth, qreal tailWidth )
 {
-    d_data = new PrivateData( headWidth, tailWidth );
+    m_data = new PrivateData( headWidth, tailWidth );
 }
 
+//! Destructor
 QwtVectorFieldArrow::~QwtVectorFieldArrow()
 {
-    delete d_data;
+    delete m_data;
 }
 
 void QwtVectorFieldArrow::setLength( qreal length )
 {
-    d_data->setLength( length );
+    m_data->setLength( length );
 }
 
 qreal QwtVectorFieldArrow::length() const
 {
-    return d_data->length;
+    return m_data->length;
 }
 
-void QwtVectorFieldArrow::paint( QPainter *painter ) const
+void QwtVectorFieldArrow::paint( QPainter* painter ) const
 {
-    painter->drawPath( d_data->path );
+    painter->drawPath( m_data->path );
 }
 
 class QwtVectorFieldThinArrow::PrivateData
 {
-public:
-    PrivateData( qreal headW ):
-        headWidth( headW ),
-        length( headW + 4.0 )
+  public:
+    PrivateData( qreal headW )
+        : headWidth( headW )
+        , length( headW + 4.0 )
     {
         path.lineTo( -headWidth, headWidth * 0.6 );
         path.moveTo( 0, 0 );
@@ -104,23 +117,32 @@ public:
     QPainterPath path;
 };
 
+/*!
+    \brief Constructor
+
+    The length is initialized by headWidth + 4
+
+    \param headWidth Width of the triangular head
+    \sa setLength()
+ */
 QwtVectorFieldThinArrow::QwtVectorFieldThinArrow( qreal headWidth )
 {
-    d_data = new PrivateData( headWidth );
+    m_data = new PrivateData( headWidth );
 }
 
+//! \brief Destructor
 QwtVectorFieldThinArrow::~QwtVectorFieldThinArrow()
 {
-    delete d_data;
+    delete m_data;
 }
 
 void QwtVectorFieldThinArrow::setLength( qreal length )
 {
-    d_data->length = length;
+    m_data->length = length;
 
-    const qreal headWidth = qMin( d_data->headWidth, length / 3.0 );
+    const qreal headWidth = qMin( m_data->headWidth, length / 3.0 );
 
-    QPainterPath& path = d_data->path;
+    QPainterPath& path = m_data->path;
 
     path.setElementPositionAt( 1, -headWidth, headWidth * 0.6 );
     path.setElementPositionAt( 3, -headWidth, -headWidth * 0.6 );
@@ -129,10 +151,10 @@ void QwtVectorFieldThinArrow::setLength( qreal length )
 
 qreal QwtVectorFieldThinArrow::length() const
 {
-    return d_data->length;
+    return m_data->length;
 }
 
-void QwtVectorFieldThinArrow::paint(QPainter * p) const
+void QwtVectorFieldThinArrow::paint(QPainter* p) const
 {
-    p->drawPath( d_data->path );
+    p->drawPath( m_data->path );
 }

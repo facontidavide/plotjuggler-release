@@ -1,4 +1,4 @@
-/* -*- mode: C++ ; c-file-style: "stroustrup" -*- *****************************
+/******************************************************************************
  * QwtPolar Widget Library
  * Copyright (C) 2008   Uwe Rathmann
  *
@@ -40,8 +40,8 @@ namespace QwtPolar
     };
 
     /*!
-      Indices used to identify an axis.
-      \sa Scale
+       Indices used to identify an axis.
+       \sa Scale
      */
     enum Axis
     {
@@ -65,8 +65,8 @@ namespace QwtPolar
     };
 
     /*!
-      Indices used to identify a scale.
-      \sa Axis
+       Indices used to identify a scale.
+       \sa Axis
      */
     enum Scale
     {
