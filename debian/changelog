@@ -1,0 +1,1333 @@
+ros-foxy-plotjuggler (3.2.1-1focal) focal; urgency=high
+
+  * adding string reference
+  * qwt updated and fix for #463 <https://github.com/facontidavide/PlotJuggler/issues/463>
+  * fix #461 <https://github.com/facontidavide/PlotJuggler/issues/461>
+  * add quaternion to Euler conversion snippets (#459 <https://github.com/facontidavide/PlotJuggler/issues/459>)
+    Add 3 functions to convert a Hamiltonian attitude quaternion to its Euler (Trait-Bryan 321) representation
+  * fix typo when building without ROS support (#460 <https://github.com/facontidavide/PlotJuggler/issues/460>)
+  * Update README.md
+  * Contributors: Davide Faconti, Mathieu Bresciani, Nuno Marques
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Sat, 19 Jun 2021 22:00:00 -0000
+
+ros-foxy-plotjuggler (3.2.0-1focal) focal; urgency=high
+
+  * file removed
+  * fix potential bug in StringSeries
+  * fix rebase
+  * apply color and style recursively in a group
+  * delete button added. CPU optimized
+  * apply the array visualization in the curvelist_panel itself
+  * bug fix
+  * add deleteSerieFromGroup
+  * Fix "TextColor" in dark mode
+  * fix PlotGroup and new attributes
+  * multiple changes
+    - remove redundant importPlotDataMapHelper
+    - add "text_color" attribute
+    - change the way _replot_timer works (one shot triggered by
+    DataStreamer::dataReceived() )
+  * adding PlotGroups and alternative "tree_name"
+  * bug fix
+  * fix issue when starting streaming plugins (add placeholders)
+  * string series seems to work
+  * WIP
+  * embracing C++17 and new data strucutre to accomodate more types
+  * Updated support for windows build + installer (#396 <https://github.com/facontidavide/PlotJuggler/issues/396>)
+    Added win32build.bat batch file for easy windows builds (need to update QT path variables inside to correct ones in case it does not work)
+  * Fix issue #453 <https://github.com/facontidavide/PlotJuggler/issues/453>, #419 <https://github.com/facontidavide/PlotJuggler/issues/419> and #405 <https://github.com/facontidavide/PlotJuggler/issues/405> . Ulog path in Windows
+  * Lag and crash fixed (#455 <https://github.com/facontidavide/PlotJuggler/issues/455>)
+    * reduce lag when looking for streams
+    * crash fixed when lsl stream start and stop
+    * select all button added for LSL plugin
+  * Update README.md
+  * Update appimage.md
+  * Contributors: Celal Savur, Davide Faconti, alkaes
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Sat, 12 Jun 2021 22:00:00 -0000
+
+ros-foxy-plotjuggler (3.1.2-1focal) focal; urgency=high
+
+  * add disable_opnegl option in command line
+  * new API for MessagePublishers
+  * bug fix that affects statepublishers
+    crash when application is closed
+  * bug fix in Plotwidget transform
+  * AppImage instructions added
+  * fix #445 <https://github.com/facontidavide/PlotJuggler/issues/445>
+  * change to QHostAddress::Any in UDP plugin (issue #410 <https://github.com/facontidavide/PlotJuggler/issues/410>)
+  * Contributors: Davide Faconti
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Wed, 02 Jun 2021 22:00:00 -0000
+
+ros-foxy-plotjuggler (3.1.1-1focal) focal; urgency=high
+
+  * ulog: ignore parameter default message (#413 <https://github.com/facontidavide/PlotJuggler/issues/413>)
+  * Fix typo in "load transformations" prompt (#416 <https://github.com/facontidavide/PlotJuggler/issues/416>)
+  * added CSV export plugin
+  * fix opengl preference
+  * added options to enable OpenGL and TreeView
+  * Add libqt5x11extras5-dev into installation guide for fedora/ubuntu users. (#418 <https://github.com/facontidavide/PlotJuggler/issues/418>)
+  * Fix issue #405 <https://github.com/facontidavide/PlotJuggler/issues/405> with ULOG in windows
+  * Use format string when time index is not a number (#406 <https://github.com/facontidavide/PlotJuggler/issues/406>)
+  * XY curve markers: fixed colors and removed ghosts symbols (#407 <https://github.com/facontidavide/PlotJuggler/issues/407>)
+  * Updated support for windows build + installer (#396 <https://github.com/facontidavide/PlotJuggler/issues/396>)
+  * fix warnings and move to C++17
+  * fix warnings in MSVS
+  * Contributors: Beat Küng, Davide Faconti, Faisal Shah, Gabriel, Shawn, alessandro, alkaes
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Sat, 15 May 2021 22:00:00 -0000
+
+ros-foxy-plotjuggler (3.1.0-1focal) focal; urgency=high
+
+  * fix issue #394 <https://github.com/facontidavide/PlotJuggler/issues/394>
+  * Update udp_server.cpp (#393 <https://github.com/facontidavide/PlotJuggler/issues/393>)
+    Fixes random corruptions of UDP Json messages (garbage collector related?)
+  * Fix style in Windows (#390 <https://github.com/facontidavide/PlotJuggler/issues/390>)
+  * Fix compilation in C++17
+  * fix issue #389 <https://github.com/facontidavide/PlotJuggler/issues/389>
+  * remove qrand
+  * Add better help dialog to custom functions
+  * Allow custom function return multiple points (#386 <https://github.com/facontidavide/PlotJuggler/issues/386>)
+  * Apple Mac M1 build fix. (#392 <https://github.com/facontidavide/PlotJuggler/issues/392>)
+    backward-cpp dependency fix for ARM 64 backport, wrong access to PC register.
+  * fix issue #384 <https://github.com/facontidavide/PlotJuggler/issues/384>
+  * temporary remove LSL
+  * Contributors: David CARLIER, Davide Faconti, Hugal31, alkaes
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Sat, 30 Jan 2021 23:00:00 -0000
+
+ros-foxy-plotjuggler (3.0.7-1focal) focal; urgency=high
+
+  * Add plugin folders in the preference dialog
+  * fix issue #370 <https://github.com/PlotJuggler/PlotJuggler/issues/370>: libDataStreamMQTT compilation with Clang
+  * fix command line options
+  * change the way ROS path are added t othe list of plugins
+  * fixing windows builds, for real this time. (#379 <https://github.com/PlotJuggler/PlotJuggler/issues/379>)
+  * fix bug when datapoints are cleared
+  * remember the directory in the FunctionEditor
+  * moved file svg_util
+  * Add warning when a CSV file is malformed, and suggested in #378 <https://github.com/PlotJuggler/PlotJuggler/issues/378>
+  * Fixed message_parser plugin loading segfault (#376 <https://github.com/PlotJuggler/PlotJuggler/issues/376>)
+  * Contributors: Davide Faconti, Jordan McMichael, davide
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Mon, 04 Jan 2021 23:00:00 -0000
+
+ros-foxy-plotjuggler (3.0.6-1focal) focal; urgency=high
+
+  * fix issue  #372 <https://github.com/PlotJuggler/PlotJuggler/issues/372> (install didn't work)
+  * Update rangeX during streaming
+  * LabStreamlayer (LSL) plugin is developed. (#355 <https://github.com/PlotJuggler/PlotJuggler/issues/355>)
+  * Update CMakeLists.txt (#363 <https://github.com/PlotJuggler/PlotJuggler/issues/363>)
+  * Contributors: Celal Savur, Davide Faconti, Tobias Fischer
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Wed, 23 Dec 2020 23:00:00 -0000
+
+ros-foxy-plotjuggler (3.0.5-1focal) focal; urgency=high
+
+  * fix a crash when data is cleared during streaming (LuaCustomFunction)
+  * should fix issue #360 <https://github.com/PlotJuggler/PlotJuggler/issues/360> with stylesheet
+  * fix bug #359 <https://github.com/PlotJuggler/PlotJuggler/issues/359>
+  * fix compilation error
+  * Some template types have an enum ItemType. MSVC fails with compilation (#358 <https://github.com/PlotJuggler/PlotJuggler/issues/358>)
+    error.
+  * Add required Qt5::Network for DataStreamUDP (#356 <https://github.com/PlotJuggler/PlotJuggler/issues/356>)
+  * Contributors: Davide Faconti, Tobias Fischer, gabm
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Wed, 09 Dec 2020 23:00:00 -0000
+
+ros-foxy-plotjuggler (3.0.4-1focal) focal; urgency=high
+
+  * Lua ans Sol updated (c++17
+  * bug fix #350 <https://github.com/PlotJuggler/PlotJuggler/issues/350> (crash in lua)
+  * Contributors: Davide Faconti
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Thu, 03 Dec 2020 23:00:00 -0000
+
+ros-foxy-plotjuggler (3.0.2-1focal) focal; urgency=high
+
+  * fix icon color in dark mode
+  * updated to latest Qads
+  * temporary fix for #349 <https://github.com/PlotJuggler/PlotJuggler/issues/349>
+  * link updated
+  * use correct dependency
+  * fix issue #348 <https://github.com/PlotJuggler/PlotJuggler/issues/348>
+  * Contributors: Davide Faconti
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Fri, 27 Nov 2020 23:00:00 -0000
+
+ros-foxy-plotjuggler (3.0.0-1focal) focal; urgency=high
+
+  * Trying to fix issue #346 <https://github.com/facontidavide/PlotJuggler/issues/346>
+  * Massive refactoring
+  * Contributors: Davide Faconti
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Sun, 22 Nov 2020 23:00:00 -0000
+
+ros-foxy-plotjuggler (2.8.4-1focal) focal; urgency=high
+
+  * readme updated
+  * fix issue #318 <https://github.com/facontidavide/PlotJuggler/issues/318>
+  * fix  #170 <https://github.com/facontidavide/PlotJuggler/issues/170> : problem with ULOG parser in Windows
+  * build fixes to work on ROS2 eloquent (#314 <https://github.com/facontidavide/PlotJuggler/issues/314>)
+  * add qtpainterpath.h (#313 <https://github.com/facontidavide/PlotJuggler/issues/313>)
+  * Update datastream_sample.cpp
+  * Update contributors.txt
+  * Fix another sprintf buffer size warning (#303 <https://github.com/facontidavide/PlotJuggler/issues/303>)
+  * Contributors: Akash Patel, Davide Faconti, Lucas, Mike Purvis
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Fri, 14 Aug 2020 22:00:00 -0000
+
+ros-foxy-plotjuggler (2.8.3-1focal) focal; urgency=high
+
+  * more memes
+  * "New versione vailable" improved
+  * fix segmentation fault when tryin reconnect to ROS master
+  * Contributors: Davide Faconti
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Fri, 10 Jul 2020 22:00:00 -0000
+
+ros-foxy-plotjuggler (2.8.2-1focal) focal; urgency=high
+
+  * might fix issue #301 <https://github.com/facontidavide/PlotJuggler/issues/301>
+  * fix warnings
+  * fix potential mutex problem related to #300 <https://github.com/facontidavide/PlotJuggler/issues/300>
+  * bug fix
+  * Update package.xml
+  * updated gif
+  * cherry picking changes from #290 <https://github.com/facontidavide/PlotJuggler/issues/290>
+  * fix #296 <https://github.com/facontidavide/PlotJuggler/issues/296>
+  * fix issues on windows Qt 5.15
+  * fix error
+  * move StatePublisher to tf2
+  * revert changes
+  * fix warnings
+  * Contributors: Davide Faconti
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Mon, 06 Jul 2020 22:00:00 -0000
+
+ros-foxy-plotjuggler (2.8.1-1focal) focal; urgency=high
+
+  * fix critical bug in streaming ROS plugin
+  * Contributors: Davide Faconti
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Wed, 27 May 2020 22:00:00 -0000
+
+ros-foxy-plotjuggler (2.8.0-1focal) focal; urgency=high
+
+  * Update CMakeLists.txt
+  * Added graph context menu description (#288 <https://github.com/facontidavide/PlotJuggler/issues/288>)
+  * Update FUNDING.yml
+  * Merge branch 'master' of https://github.com/facontidavide/PlotJuggler
+  * finished with refactoring
+  * WIP: re publisher ROS2
+  * added stuff to dataload_ros2
+  * Update appimage_howto.md
+  * fix package name
+  * embrace pj_msgs (https://github.com/facontidavide/plotjuggler_msgs)
+  * new clang format and fix in header_stamp usage
+  * removed marl and rule editing
+  * more parsers added
+  * more or less working
+  * save computation like a champ with plot_data in each parser
+  * precompute strings only once
+  * fix compilation on ROS1
+  * Merge branch 'master' of https://github.com/facontidavide/PlotJuggler
+  * builtin parsers added
+  * Githug actions win (#284 <https://github.com/facontidavide/PlotJuggler/issues/284>)
+    * try compiling on windows
+    * Update windows.yaml
+    * multiple workflows
+    * Update README.md
+    Co-authored-by: mailto:daf@blue-ocean-robotics.com <Davide Faconti>
+  * bug fix
+  * segfault fixed in TypeHasHeader
+  * removed rosdep of pj_msgs
+  * added pj_msgs to ROS2
+  * fix errors
+  * heavy refactoring of ROS2 plugins
+  * critical bug fix in ROS2 parsing
+  * try to fix problem with StringTreeLeaf::toStr
+  * reduce a bit allocations overhead
+  * reduce memory used by the job queue of marl, with periodic flushes
+  * Contributors: Davide Faconti, Ilya Petrov
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Sat, 23 May 2020 22:00:00 -0000
+
+ros-foxy-plotjuggler (2.7.0-1focal) focal; urgency=high
+
+  * Merge branch 'ros2' of https://github.com/facontidavide/PlotJuggler into ros2
+  * added github actions for ros2
+  * last fixes to DataStreamROS2
+  * implemented DataLoadRosBag2
+  * compile with ament/colcon
+  * Contributors: Davide Faconti
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Sat, 02 May 2020 22:00:00 -0000
+
+ros-foxy-plotjuggler (2.6.4-1focal) focal; urgency=high
+
+  * Fix the damn icons
+  * marl updated
+  * fix issue #281 <https://github.com/facontidavide/PlotJuggler/issues/281>
+  * catch exception in marl
+  * fix backward-cpp
+  * Implement feature #274 <https://github.com/facontidavide/PlotJuggler/issues/274>
+  * Implement feature #269 <https://github.com/facontidavide/PlotJuggler/issues/269>
+  * Contributors: Davide Faconti
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Wed, 29 Apr 2020 22:00:00 -0000
+
+ros-foxy-plotjuggler (2.6.3-1focal) focal; urgency=high
+
+  * Fix issue #271 <https://github.com/facontidavide/PlotJuggler/issues/271>
+  * @veimox added
+  * Bugfix/executable (#264 <https://github.com/facontidavide/PlotJuggler/issues/264>)
+    * created launching script , installing and making use of it in the icon
+    * ignoring temporary folders when creating binary locally
+    * corrected intsallation of script
+    * using PROGRAM to install it with executable permissions
+    Co-authored-by: Jorge Rodriguez <mailto:jr@blue-ocean-robotics.com>
+  * Feature/scalable icon (#265 <https://github.com/facontidavide/PlotJuggler/issues/265>)
+    * installing icons in /usr/share and do it at any build type
+    * added scalable icon
+    * removed old icon
+    Co-authored-by: Jorge Rodriguez <mailto:jr@blue-ocean-robotics.com>
+  * fix default suffix
+  * Fix bug #258 <https://github.com/facontidavide/PlotJuggler/issues/258>
+  * Contributors: Davide Faconti, Jorge Rodriguez
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Mon, 06 Apr 2020 22:00:00 -0000
+
+ros-foxy-plotjuggler (2.6.2-1focal) focal; urgency=high
+
+  * bug fix in IMU parser
+  * added step size for the time tracker
+  * fis issue #256 <https://github.com/facontidavide/PlotJuggler/issues/256> (new release dialog)
+  * Update README.md
+  * Contributors: Davide Faconti
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Mon, 24 Feb 2020 23:00:00 -0000
+
+ros-foxy-plotjuggler (2.6.1-1focal) focal; urgency=high
+
+  * fix issue #253 <https://github.com/facontidavide/PlotJuggler/issues/253> and some cleanup
+  * fix issue #254 <https://github.com/facontidavide/PlotJuggler/issues/254>
+  * Fix #251 <https://github.com/facontidavide/PlotJuggler/issues/251>
+  * Contributors: Davide Faconti
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Thu, 20 Feb 2020 23:00:00 -0000
+
+ros-foxy-plotjuggler (2.6.0-1focal) focal; urgency=high
+
+  * bug fix
+  * fix splashscreen delay
+  * GUI refinement
+  * regex filter removed. bug fix in column resize
+  * new icons in CurveList panel
+  * add text placeholder
+  * smaller buttons
+  * moved buttons to top right corner to gain more space
+  * changed style (sharper corners)
+  * bug fix: potential crash trying to save data into rosbag
+  * more ememes #248 <https://github.com/facontidavide/PlotJuggler/issues/248>
+  * bug fix in Lua functions
+  * cleanups
+  * Merge branch 'lua_scripting'
+  * Adding custom parser for Imu message (issue #238 <https://github.com/facontidavide/PlotJuggler/issues/238>)
+  * remember the last value in the function editor
+  * minor update
+  * Both javascript and Lua langiages can be selected in preferences
+  * WIP to support both QML and Lua
+  * fix menu bar size of PlotJuggler
+  * scripting moved to Lua
+  * adding lua stuff to 3rd party libraries
+  * preliminary change to support #244 <https://github.com/facontidavide/PlotJuggler/issues/244> (#247 <https://github.com/facontidavide/PlotJuggler/issues/247>)
+  * preliminary change to support #244 <https://github.com/facontidavide/PlotJuggler/issues/244>
+  * Update .appveyor.yml
+  * Update README.md
+  * Update .appveyor.yml
+  * Update .appveyor.yml
+  * further cleanup
+  * moved files and cleanup
+  * Contributors: Davide Faconti
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Tue, 18 Feb 2020 23:00:00 -0000
+
+ros-foxy-plotjuggler (2.5.1-1focal) focal; urgency=high
+
+  * Fixed slow Menu Bar
+  * Use ordered map, appendData needs to insert data in order (#245 <https://github.com/facontidavide/PlotJuggler/issues/245>)
+    Otherwise the time order may not be respected and the data is loaded
+    incorrectly
+  * prevent call of dropEvent() when not needed
+  * fix issue #239 <https://github.com/facontidavide/PlotJuggler/issues/239>
+  * add include array header file to fix build error (#234 <https://github.com/facontidavide/PlotJuggler/issues/234>)
+  * Contributors: Davide Faconti, Victor Lopez, xiaowei zhao
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Thu, 06 Feb 2020 23:00:00 -0000
+
+ros-foxy-plotjuggler (2.5.0-1focal) focal; urgency=high
+
+  * Fix issues #196 <https://github.com/facontidavide/PlotJuggler/issues/196> and #236 <https://github.com/facontidavide/PlotJuggler/issues/236>: allow user to use deterministic color sequence
+  * fix the edit button
+  * fix issue #235 <https://github.com/facontidavide/PlotJuggler/issues/235>
+  * Update appimage_howto.md
+  * fix timestamp problem in streaming
+  * Contributors: Davide Faconti
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Wed, 18 Dec 2019 23:00:00 -0000
+
+ros-foxy-plotjuggler (2.4.3-1focal) focal; urgency=high
+
+  * less dark theme
+  * bug fix
+  * Contributors: Davide Faconti
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Wed, 20 Nov 2019 23:00:00 -0000
+
+ros-foxy-plotjuggler (2.4.2-1focal) focal; urgency=high
+
+  * multithread ROS DataLoader
+  * directories moved
+  * manually resizable columns of table view
+  * Contributors: Davide Faconti
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Sun, 17 Nov 2019 23:00:00 -0000
+
+ros-foxy-plotjuggler (2.4.1-1focal) focal; urgency=high
+
+  * considerable speed improvement when MANY timeseries are loaded
+  * bug fix: slow update of left curve table
+  * AppImage update
+  * meme update
+  * Contributors: Davide Faconti
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Sun, 10 Nov 2019 23:00:00 -0000
+
+ros-foxy-plotjuggler (2.4.0-1focal) focal; urgency=high
+
+  * Tree view  (#226 <https://github.com/facontidavide/PlotJuggler/issues/226>)
+  * fix issue #225 <https://github.com/facontidavide/PlotJuggler/issues/225>
+  * add version number of the layout syntax
+  * fix issue #222 <https://github.com/facontidavide/PlotJuggler/issues/222>
+  * more readable plugin names
+  * fix issue #221 <https://github.com/facontidavide/PlotJuggler/issues/221>
+  * Merge branch 'master' of github.com:facontidavide/PlotJuggler
+  * minor bug fix
+  * Contributors: Davide Faconti
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Sat, 09 Nov 2019 23:00:00 -0000
+
+ros-foxy-plotjuggler (2.3.7-1focal) focal; urgency=high
+
+  * Dont take invisible curve into account for axis limit computation (#185 <https://github.com/facontidavide/PlotJuggler/issues/185>)
+  * consistent line width
+  * do not close() a rosbag unless you accepted the dialog
+  * important bug fix: stop playback when loading new data
+  * fix bug in TopicPublisher
+  * do complete reset of globals in custom functions
+  * apply changes discussed in #220 <https://github.com/facontidavide/PlotJuggler/issues/220>
+  * Merge branch 'master' of github.com:facontidavide/PlotJuggler
+  * cherry picking bug fix from #220 <https://github.com/facontidavide/PlotJuggler/issues/220> : update custom functions
+    Thanks @aeudes
+  * Fix F10 is ambiguous (#219 <https://github.com/facontidavide/PlotJuggler/issues/219>)
+  * fix compilation and add feature #218 <https://github.com/facontidavide/PlotJuggler/issues/218>
+  * qwt updated
+  * appImage instructions updated
+  * Contributors: Davide Faconti, alexandre eudes
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Tue, 29 Oct 2019 23:00:00 -0000
+
+ros-foxy-plotjuggler (2.3.6-1focal) focal; urgency=high
+
+  * fix issue #215 <https://github.com/facontidavide/PlotJuggler/issues/215>
+  * Contributors: Davide Faconti
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Tue, 15 Oct 2019 22:00:00 -0000
+
+ros-foxy-plotjuggler (2.3.5-1focal) focal; urgency=high
+
+  * remember the size of the splitter
+  * fix inveted XY
+  * Contributors: Davide Faconti
+  * remember last splashscreen
+  * Update README.md
+  * Update appimage_howto.md
+  * fix warning
+  * meme fixed
+  * Contributors: Davide Faconti
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Thu, 10 Oct 2019 22:00:00 -0000
+
+ros-foxy-plotjuggler (2.3.4-1focal) focal; urgency=high
+
+  * prepare "meme edition"
+  * Merge branch 'master' of https://github.com/facontidavide/PlotJuggler
+  * RosMsgParsers: add cast to be clang compatible (#208)
+  * Update README.md
+  * Update FUNDING.yml
+  * Correct "Github" to "GitHub" (#206)
+  * 2.3.3
+  * fix issue with FMT
+  * Contributors: Dan Katzuv, Davide Faconti, Timon Engelke
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Wed, 02 Oct 2019 22:00:00 -0000
+
+ros-foxy-plotjuggler (2.3.3-1focal) focal; urgency=high
+
+  * removed explicit reference to Span
+  * remove abseil dependency (to be tested)
+  * Contributors: Davide Faconti
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Mon, 30 Sep 2019 22:00:00 -0000
+
+ros-foxy-plotjuggler (2.3.2-1focal) focal; urgency=high
+
+  * always use random color in addCurveXY
+  * Fix issue #204
+  * Fix issue #203
+  * Add missed absl Span<T> header include
+  * Add missed abseil_cpp depend
+  * Contributors: Davide Faconti, Enrique Fernandez
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Sun, 29 Sep 2019 22:00:00 -0000
+
+ros-foxy-plotjuggler (2.3.1-1focal) focal; urgency=high
+
+  * Fix #202 <https://github.com/facontidavide/PlotJuggler/issues/202> use_header_stamp not initialized for built-in types
+  * Merge pull request #200 <https://github.com/facontidavide/PlotJuggler/issues/200> from aeudes/multiple_streamer
+    data stream topic plugin
+  * new color palette
+  * Allow to have working datastreamtopic plugin in more than one plotjuggler
+    instance
+  * adding covariance to Odometry msg again
+  * fix issue #187 <https://github.com/facontidavide/PlotJuggler/issues/187>
+  * Fix segfault when swap plotwidget on archlinux (qt5.12.3).
+    This bug is introduced in: 7959e54 Spurious DragLeave fixed?
+    And produce a segfault(nullptr) in QCursor::shape() call by
+    QBasicDrag::updateCursor(Qt::DropAction) [trigger by plotwidget.cpp:1352
+    drag->exec();].
+    It seems to me that the change of global application cursor on leave event during drag drop
+    operation cause the problem [is it the drop widget duty to reset cursor?].
+  * minor fixes related to dark theme
+  * Contributors: Alexandre Eudes, Davide Faconti
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Mon, 23 Sep 2019 22:00:00 -0000
+
+ros-foxy-plotjuggler (2.3.0-1focal) focal; urgency=high
+
+  * Countless changes and merges of PR.
+  * Contributors: Alexandre Eudes, Davide Faconti, Juan Francisco Rascón Crespo, alexandre eudes
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Wed, 10 Jul 2019 22:00:00 -0000
+
+ros-foxy-plotjuggler (2.1.10-1focal) focal; urgency=high
+
+  * critical bug fixed in CustomFunctions
+  * Contributors: Davide Faconti
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Thu, 28 Mar 2019 23:00:00 -0000
+
+ros-foxy-plotjuggler (2.1.9-1focal) focal; urgency=high
+
+  * QwtRescaler replaced
+  * fix issues related to #118 (PlotZoom)
+  * Contributors: Davide Faconti
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Sun, 24 Mar 2019 23:00:00 -0000
+
+ros-foxy-plotjuggler (2.1.8-1focal) focal; urgency=high
+
+  * bug fixes
+  * xy equal scaling seems to work
+  * Super fancy Video cheatsheet (#164)
+  * better date display
+  * Fix issue #161 and remember last directory used
+  * mainwindow - use yyyy-MM-dd_HH-mm-ss name when saving a plot as png. This allows to save several times without having to rename the previous image (#162)
+  * Contributors: Davide Faconti, bresch
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Sat, 23 Mar 2019 23:00:00 -0000
+
+ros-foxy-plotjuggler (2.1.7-1focal) focal; urgency=high
+
+  * Date time visualization on X axis
+  * fix slow PLAY when rendering takes more than 20 msec
+  * new way to zoom a single axis (issues #153 and #135)
+  * Inverted mouse wheel zoom #153
+  * On MacOS there are several mime formats generated in addition to "curveslist", this fix will keep curves array with names collected instead of resetting it for each new mime format. (#159)
+  * ulog_parser: fixed parsing of array topics (#157)
+    Signed-off-by: Roman <mailto:bapstroman@gmail.com>
+  * fis issue  #156 : catch expections
+  * remember if the state of _action_clearBuffer
+  * QSettings cleanups
+  * Contributors: Alexey Zaparovanny, Davide Faconti, Roman Bapst
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Tue, 19 Mar 2019 23:00:00 -0000
+
+ros-foxy-plotjuggler (2.1.6-1focal) focal; urgency=high
+
+  * removed obsolate question
+  * remember RemoveTimeOffset state
+  * add clear buffer from data stream
+  * reject non valid data
+  * fix sorting in ULog messages
+  * Fix Ulog window
+  * ulog plugin improved
+  * Update .appveyor.yml
+  * yes, I am sure I want to Quit
+  * simplifications in RosoutPublisher
+  * better double click behavior in FunctionEditor
+  * adding Info and parameters
+  * big refactoring of ulog parser. Fix issue #151
+  * download links updated
+  * Contributors: Davide Faconti
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Wed, 06 Mar 2019 23:00:00 -0000
+
+ros-foxy-plotjuggler (2.1.5-1focal) focal; urgency=high
+
+  * reintroducing timestamp from header
+  * added way to create installer
+  * disable zooming during streaming and reset tracker when new file loaded
+  * Contributors: Davide Faconti
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Sun, 24 Feb 2019 23:00:00 -0000
+
+ros-foxy-plotjuggler (2.1.4-1focal) focal; urgency=high
+
+  * Fix issues #146: ULog and multiple instances of a message
+  * close issue #138
+  * remove svg dependency
+  * Appveyor fixed (#144)
+  * fancy menubar
+  * Contributors: Davide Faconti
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Wed, 20 Feb 2019 23:00:00 -0000
+
+ros-foxy-plotjuggler (2.1.3-1focal) focal; urgency=high
+
+  * BUG: fixed issue with Customtracker when the plot is zoomed
+  * new icons
+  * ULog plugin added
+  * Allow to build the DataStreamClientSample on Linux (#143)
+  * Update README.md
+  * Contributors: Davide Faconti, Romain Reignier
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Sun, 17 Feb 2019 23:00:00 -0000
+
+ros-foxy-plotjuggler (2.1.2-1focal) focal; urgency=high
+
+  * legend button now has three states: left/right/hide
+  * replace tracker text when position is on the right side
+  * allow again to use the header.stamp
+  * fix problem with legend visibility
+  * Save all tab plots as images in a folder. (#137)
+  * Make default filename for tab image the tab name (#136)
+  * Update README.md
+  * adding instructions to build AppImage
+  * Contributors: Davide Faconti, d-walsh
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Tue, 12 Feb 2019 23:00:00 -0000
+
+ros-foxy-plotjuggler (2.1.1-1focal) focal; urgency=high
+
+  * Added filter to function editor
+  * ask for support
+  * cleanup
+  * fix issue with Datetime and cheatsheet dialog
+  * further stylesheet refinements
+  * fixing visualization of fucntion editor dialog
+  * fixing html of cheatsheet
+  * Contributors: Davide Faconti
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Wed, 06 Feb 2019 23:00:00 -0000
+
+ros-foxy-plotjuggler (2.1.0-1focal) focal; urgency=high
+
+  * minor change
+  * stylesheet fix
+  * Cheatsheet added
+  * fixing style
+  * improved magnifier ( issue #135)
+  * added zoom max
+  * Contributors: Davide Facont, Davide Faconti
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Wed, 06 Feb 2019 23:00:00 -0000
+
+ros-foxy-plotjuggler (2.0.7-1focal) focal; urgency=high
+
+  * fix for dark layout
+  * fix issue with edited function transforms
+  * about dialog updated
+  * added more key shortcuts
+  * reverted behaviour of Dialog "delete previous curves"?
+  * fix glitches related to drag and drop
+  * update timeSlider more often
+  * play seems to work properly for both sim_time and rewritten timestamps
+  * play button added
+  * clock published
+  * remove timestamp modifier
+  * Contributors: Davide Faconti
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Tue, 05 Feb 2019 23:00:00 -0000
+
+ros-foxy-plotjuggler (2.0.5-1focal) focal; urgency=high
+
+  * fix problem in build farm
+  * bug fix plot XY
+  * Contributors: Davide Faconti
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Mon, 04 Feb 2019 23:00:00 -0000
+
+ros-foxy-plotjuggler (2.0.4-1focal) focal; urgency=high
+
+  * add parent to message boxes
+  * ask confirmation at closeEvent()
+  * fix problem with selection of second column
+  * fix issue 132
+  * simplification
+  * minor bug fixed in filter of StatePublisher
+  * Contributors: Davide Facont, Davide Faconti
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Mon, 28 Jan 2019 23:00:00 -0000
+
+ros-foxy-plotjuggler (2.0.3-1focal) focal; urgency=high
+
+  * adding descard/clamp policy to large arrays
+  * fix problem with table view resizing
+  * make size of fonts modifiable with CTRL + Wheel (issue #106)
+  * Update .travis.yml
+  * Contributors: Davide Faconti
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Thu, 24 Jan 2019 23:00:00 -0000
+
+ros-foxy-plotjuggler (2.0.2-1focal) focal; urgency=high
+
+  * should solve issue #127 : stop publishers when data reloaded or deleted
+  * fixing issues whe disabling an already disabled publisher
+  * solved problem with time slider (issue #125)
+  * fix issue #126
+  * StatePublisher improved
+  * Contributors:  Davide Faconti
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Tue, 22 Jan 2019 23:00:00 -0000
+
+ros-foxy-plotjuggler (2.0.1-1focal) focal; urgency=high
+
+  * important bug fix. Removed offset in X axis of PlotXY
+  * fix minor visualization issue.
+  * Contributors: Davide Faconti
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Sun, 20 Jan 2019 23:00:00 -0000
+
+ros-foxy-plotjuggler (1.9.0-1focal) focal; urgency=high
+
+  * version bump
+  * Spurious DragLeave fixed? (The worst and most annoying bug of PlotJuggler)
+  * adjust font size in left panel
+  * CMAKE_INSTALL_PREFIX flag fix for non-ROS user (#114)
+  * adding improvements from @aeudes , issue #119
+    1) Improved RemoveCurve dialog (colors and immediate replot)
+    2) Fixed QMenu actions zoom horizontally and vertically
+    3) Fix issue with panner and added Mouse Middle Button
+  * minor changes
+  * Merge branch 'master' of https://github.com/facontidavide/PlotJuggler
+  * speed up loading rosbags (5%-10%)
+  * custom qFileDialog to save the Layout
+  * minor changes
+  * Contributors: Davide Faconti, Mat&I
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Sun, 11 Nov 2018 23:00:00 -0000
+
+ros-foxy-plotjuggler (1.8.4-1focal) focal; urgency=high
+
+  * add tooltip
+  * fix issue #109
+  * CMakeLists.txt add mac homebrew qt5 install directory (#111)
+  * Merge pull request #107 from v-lopez/master
+  * Fix dragging/deletion of hidden items
+  * Contributors: Andrew Hundt, Davide Faconti, Victor Lopez
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Sun, 16 Sep 2018 22:00:00 -0000
+
+ros-foxy-plotjuggler (1.8.3-1focal) focal; urgency=high
+
+  * bug fix (crash when detaching a _point_marker)
+  * more informative error messages
+  * cleanups
+  * more compact view and larger dummyData
+  * Contributors: Davide Faconti
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Thu, 23 Aug 2018 22:00:00 -0000
+
+ros-foxy-plotjuggler (1.8.2-1focal) focal; urgency=high
+
+  * bug fix (crash from zombie PlotMatrix)
+  * Contributors: Davide Faconti
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Sat, 18 Aug 2018 22:00:00 -0000
+
+ros-foxy-plotjuggler (1.8.1-1focal) focal; urgency=high
+
+  * message moved back to the ROS plugin
+  * More informative dialog (issue #100)
+  * many improvements related to  FilteredTableListWidget, issue #103
+  * Contributors: Davide Faconti
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Fri, 17 Aug 2018 22:00:00 -0000
+
+ros-foxy-plotjuggler (1.8.0-1focal) focal; urgency=high
+
+  * fixing splash time
+  * minor update
+  * fix issue #49
+  * README and splashscreen updates
+  * Update ISSUE_TEMPLATE.md
+  * F10 enhancement
+  * preparing release 1.8.0
+  * (speedup) skip _completer->addToCompletionTree altogether unless Prefix mode is active
+  * avoid data copying when loading a datafile
+  * fix issue #103
+  * workaround for issue #100
+  * trying to fix problem with time offset durinh streaming
+  * removed enableStreaming from StreamingPlugins
+  * several useless replot() calls removed
+  * more conservative implementation of setTimeOffset
+  * optimization
+  * reduced a lot the amount of computation related to addCurve()
+  * bug fix
+  * Update .appveyor.yml
+  * bug fix (_main_tabbed_widget is already included in TabbedPlotWidget::instances())
+  * remove bug (crash at deleteDataOfSingleCurve)
+  * make PlotData non-copyable
+  * change in sthe state publisher API
+  * shared_ptr removed. To be tested
+  * WIP: changed the way data is shared
+  * added suggestion from issue #105
+  * skip empty dataMaps in importPlotDataMap() . Issue #105
+  * fix issue #102 (grey background)
+  * Contributors: Davide Faconti
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Thu, 16 Aug 2018 22:00:00 -0000
+
+ros-foxy-plotjuggler (1.7.3-1focal) focal; urgency=high
+
+  * enhancement discussed in #104 Can clear buffer while streaming is active
+  * adding enhancements 4 and 5 from issue #105
+  * fixed bug reported in  #105
+  * fix critical error
+  * fix issue #101
+  * Contributors: Davide Faconti
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Sat, 11 Aug 2018 22:00:00 -0000
+
+ros-foxy-plotjuggler (1.7.2-1focal) focal; urgency=high
+
+  * Update .travis.yml
+  * fixed potential thread safety problem
+  * trying to apply changes discussed in issue #96
+  * add transport hint
+  * make hyperlinks clickable by allowing to open external links (#95)
+  * Contributors: Davide Faconti, Romain Reignier
+  * Update .travis.yml
+  * fixed potential thread safety problem
+  * trying to apply changes discussed in issue #96
+  * add transport hint
+  * make hyperlinks clickable by allowing to open external links (#95)
+  * Contributors: Davide Faconti, Romain Reignier
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Thu, 09 Aug 2018 22:00:00 -0000
+
+ros-foxy-plotjuggler (1.7.1-1focal) focal; urgency=high
+
+  * catch exceptions
+  * fix resize of PlotData size. Reported in issue #94
+  * Contributors: Davide Faconti
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Sat, 21 Jul 2018 22:00:00 -0000
+
+ros-foxy-plotjuggler (1.7.0-1focal) focal; urgency=high
+
+  * fixing issue #93 (thread safety in XYPlot and streaming)
+  * fix issue #92
+  * bug fix
+  * Issue #88 (#90)
+  * Reorder header files to fix conflicts with boost and QT (#86)
+  * Contributors: Davide Faconti, Enrique Fernández Perdomo
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Wed, 18 Jul 2018 22:00:00 -0000
+
+ros-foxy-plotjuggler (1.6.2-1focal) focal; urgency=high
+
+  * fixing issue introduced in bec2c74195d74969f9c017b9b718faf9be6c1687
+  * Contributors: Davide Faconti
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Fri, 18 May 2018 22:00:00 -0000
+
+ros-foxy-plotjuggler (1.6.1-1focal) focal; urgency=high
+
+  * allow the buffer size to be edited
+  * qDebug removed
+  * fixing right mouse drag&drop
+  * Contributors: Davide Faconti
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Mon, 14 May 2018 22:00:00 -0000
+
+ros-foxy-plotjuggler (1.6.0-1focal) focal; urgency=high
+
+  * fixed the most annoying bug ever (erroneus DragLeave). issue #80
+  * fine tuning the widget spacing
+  * added feature #83
+  * fix issue #82
+  * remove redundant code in CMakeLists.txt
+  * Qwt updated and background color change during drag&drop
+  * Contributors: Davide Faconti
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Mon, 30 Apr 2018 22:00:00 -0000
+
+ros-foxy-plotjuggler (1.5.2-1focal) focal; urgency=high
+
+  * bug fix #78
+  * Fix typo (#76)
+  * Fix QmessageBox
+  * fixed issue reported in #68
+  * Contributors: Davide Faconti, Victor Lopez
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Mon, 23 Apr 2018 22:00:00 -0000
+
+ros-foxy-plotjuggler (1.5.1-1focal) focal; urgency=high
+
+  * Ignore not initialized timestamps (#75)
+  * added a warning as suggested in issue #75
+  * Housekeeping of publishers in StatePublisher
+  * improved layout and visibility in StatePublisher selector
+  * Fix issue #73: bad_cast exception
+  * Update README.md
+  * added more control over the published topics
+  * save ALL message instances
+  * CSV  plugin: accept CSV files with empty cells
+  * fix issue #72: std::round not supported by older compilers
+  * add a prefix to the field name if required
+  * Fix issue #69
+  * bug fix in onActionSaveLayout + indentation
+  * A small plugin creating a websocket server (#64)
+  * bug fixes
+  * Contributors: Davide Faconti, Philippe Gauthier
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Tue, 13 Feb 2018 23:00:00 -0000
+
+ros-foxy-plotjuggler (1.5.0-1focal) focal; urgency=high
+
+  * using AsyncSpinner as it ought to be
+  * fixing the mutex problem in streaming
+  * Contributors: Davide Faconti
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Mon, 27 Nov 2017 23:00:00 -0000
+
+ros-foxy-plotjuggler (1.4.2-1focal) focal; urgency=high
+
+  * bug fix in getIndexFromX that affected the vertical axis range calculation
+  * fix issue #61
+  * Contributors: Davide Faconti
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Sun, 19 Nov 2017 23:00:00 -0000
+
+ros-foxy-plotjuggler (1.4.1-1focal) focal; urgency=high
+
+  * fixed some issue with reloading rosbags and addressing issue #54
+  * adding improvement #55
+  * Contributors: Davide Faconti
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Sat, 18 Nov 2017 23:00:00 -0000
+
+ros-foxy-plotjuggler (1.4.0-1focal) focal; urgency=high
+
+  * added the ability to set max_array_size in the GUI
+  * Contributors: Davide Faconti
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Mon, 13 Nov 2017 23:00:00 -0000
+
+ros-foxy-plotjuggler (1.3.1-1focal) focal; urgency=high
+
+  * warnings added
+  * License updated
+  * Fix build failures on Archlinux (#57)
+  * Update README.md
+  * Contributors: Davide Faconti, Kartik Mohta
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Mon, 13 Nov 2017 23:00:00 -0000
+
+ros-foxy-plotjuggler (1.3.0-1focal) focal; urgency=high
+
+  * added xmlLoadState and xmlSaveState to ALL plugins
+  * works with newer ros_type_introspection
+  * speed up
+  * fix potential confision with #include
+  * minor fix in timeSlider
+  * Contributors: Davide Faconti
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Wed, 11 Oct 2017 22:00:00 -0000
+
+ros-foxy-plotjuggler (1.2.1-1focal) focal; urgency=high
+
+  * better limits for timeSlider
+  * fix a potential issue with ranges
+  * set explicitly the max vector size
+  * avoid wasting time doing tableWidget->sortByColumn
+  * bug fix
+  * prevent a nasty error during construction
+  * Update README.md
+  * added ros_type_introspection to travis
+  * Contributors: Davide Faconti
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Tue, 29 Aug 2017 22:00:00 -0000
+
+ros-foxy-plotjuggler (1.2.0-1focal) focal; urgency=high
+
+  * Ros introspection updated (#52 <https://github.com/facontidavide/PlotJuggler/issues/52>)
+  * Potential fix for precision issue when adding time_offset
+  * Update snap/snapcraft.yaml
+  * Contributors: Davide Faconti, Kartik Mohta
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Mon, 28 Aug 2017 22:00:00 -0000
+
+ros-foxy-plotjuggler (1.1.3-1focal) focal; urgency=high
+
+  * fixed few issues with DataStreamROS
+  * Update README.md
+  * improvement #43 <https://github.com/facontidavide/PlotJuggler/issues/43>. Use F10 to hide/show controls
+  * Contributors: Davide Faconti
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Mon, 10 Jul 2017 22:00:00 -0000
+
+ros-foxy-plotjuggler (1.1.2-1focal) focal; urgency=high
+
+  * bug-fix in DataLoadROS (multi-selection from layout)
+  * Merge branch 'master' of github.com:facontidavide/PlotJuggler
+  * minor change
+  * Update README.md
+  * Contributors: Davide Faconti
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Tue, 27 Jun 2017 22:00:00 -0000
+
+ros-foxy-plotjuggler (1.1.1-1focal) focal; urgency=high
+
+  * store rosbag::MessageInstance to replay data with the publisher
+  * avoid allocation
+  * minor optimizations
+  * bug fix: checkbox to use renaming rules was not detected correctly
+  * fix for very large rosbags
+  * Contributors: Davide Faconti
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Sun, 25 Jun 2017 22:00:00 -0000
+
+ros-foxy-plotjuggler (1.1.0-1focal) focal; urgency=high
+
+  * fixing bug #47 <https://github.com/facontidavide/PlotJuggler/issues/47>
+  * Contributors: Davide Faconti
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Mon, 19 Jun 2017 22:00:00 -0000
+
+ros-foxy-plotjuggler (1.0.8-1focal) focal; urgency=high
+
+  * update to be compatible with ros_type_introspection 0.6
+  * setting uninitialized variable (thanks valgrind)
+  * improvement #48 <https://github.com/facontidavide/PlotJuggler/issues/48>
+  * fix for issue #46 <https://github.com/facontidavide/PlotJuggler/issues/46> (load csv files)
+  * more intuitive ordering of strings. Based on PR #45 <https://github.com/facontidavide/PlotJuggler/issues/45>. Fixes #27 <https://github.com/facontidavide/PlotJuggler/issues/27>
+  * Correct the string being searched for to find the header stamp field (#44 <https://github.com/facontidavide/PlotJuggler/issues/44>)
+  * Contributors: Davide Faconti, Kartik Mohta
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Mon, 19 Jun 2017 22:00:00 -0000
+
+ros-foxy-plotjuggler (1.0.7-1focal) focal; urgency=high
+
+  * the list of topics in the Dialog will be automatically updated
+  * bug fix
+  * fixed some issues with the installation
+  * Contributors: Davide Faconti
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Thu, 11 May 2017 22:00:00 -0000
+
+ros-foxy-plotjuggler (1.0.5-1focal) focal; urgency=high
+
+  * fixed an issue with ROS during destruction
+  * allow timestamp injection
+  * Create ISSUE_TEMPLATE.md
+  * Contributors: Davide Faconti
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Sat, 06 May 2017 22:00:00 -0000
+
+ros-foxy-plotjuggler (1.0.4-1focal) focal; urgency=high
+
+  * save/restore the selected topics in the layout file
+  * Contributors: Davide Faconti
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Sat, 29 Apr 2017 22:00:00 -0000
+
+ros-foxy-plotjuggler (1.0.3-1focal) focal; urgency=high
+
+  * fixed window management
+  * Contributors: Davide Faconti
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Thu, 27 Apr 2017 22:00:00 -0000
+
+ros-foxy-plotjuggler (1.0.2-1focal) focal; urgency=high
+
+  * set axis Y limit is undoable now
+  * added the command line option "buffer_size"
+  * filter xml extension for save layout
+  * added axis limits (Y)
+  * Contributors: Davide Faconti
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Tue, 25 Apr 2017 22:00:00 -0000
+
+ros-foxy-plotjuggler (1.0.1-1focal) focal; urgency=high
+
+  * documentation fix
+  * color widget simplified
+  * Update README.md
+  * default extension fixed in layout.xml
+  * Contributors: Davide Faconti, Eduardo Caceres
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Sun, 23 Apr 2017 22:00:00 -0000
+
+ros-foxy-plotjuggler (1.0.0-1focal) focal; urgency=high
+
+  * Total awesomeness
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Fri, 21 Apr 2017 22:00:00 -0000
+
+ros-foxy-plotjuggler (0.18.0-1focal) focal; urgency=high
+
+  * added visualization policy to the TimeTracker
+  * bug fix in RosoutPublisher
+  * added try-catch guard to third party plugins method invokation
+  * improving documentation
+  * multiple fixes
+  * shall periodically update the list of curves from the streamer
+  * make the API of plugins more consistent and future proof
+  * removed double replot during streaming (and framerate limited to 25)
+  * Contributors: Davide Faconti
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Thu, 20 Apr 2017 22:00:00 -0000
+
+ros-foxy-plotjuggler (0.17.0-1focal) focal; urgency=high
+
+  * more renaming rules and samples
+  * feature request #31
+  * fix QFileDialog (save)
+  * fixing a nasty bug in save plot to file
+  * Add dummy returns to function that required it (#36)
+  * trying to fix some issues with the streamer time offset
+  * fixing a crash in the plugin
+  * saving more application settings with QSettings
+  * cleanups
+  * new plugin: rosout
+  * several bugs fixed
+  * removed unused plugin
+  * Update README.md
+  * cleanups
+  * added data samples
+  * move wais to filter the listWidget
+  * visualization improvements
+  * Contributors: Davide Faconti, v-lopez
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Sat, 01 Apr 2017 22:00:00 -0000
+
+ros-foxy-plotjuggler (0.16.0-1focal) focal; urgency=high
+
+  * removed the normalization of time in ROS plugins
+  * relative time seems to work properly
+  * Contributors: Davide Faconti
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Tue, 21 Mar 2017 23:00:00 -0000
+
+ros-foxy-plotjuggler (0.15.3-1focal) focal; urgency=high
+
+  * multiple fixes
+  * update related to backtrace
+  * backward-cpp added
+  * show coordinates when the left mouse is clicked (but not moved)
+  * Contributors: Davide Faconti
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Tue, 21 Mar 2017 23:00:00 -0000
+
+ros-foxy-plotjuggler (0.15.1-1focal) focal; urgency=high
+
+  * adding some deadband to the zoomer
+  * fixed a bug related to tabs and new windows
+  * Contributors: Davide Faconti
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Sun, 19 Mar 2017 23:00:00 -0000
+
+ros-foxy-plotjuggler (0.15.0-1focal) focal; urgency=high
+
+  * Multiple problems fixed with streaming interface nd XY plots
+  * Contributors: Davide Faconti
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Thu, 16 Mar 2017 23:00:00 -0000
+
+ros-foxy-plotjuggler (0.14.2-1focal) focal; urgency=high
+
+  * improve CurveColorPick
+  * bugs fixed
+  * crash fixed
+  * Prevent compiler warning if compiling under ROS (#29)
+  * Contributors: Davide Faconti, Tim Clephas
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Wed, 15 Mar 2017 23:00:00 -0000
+
+ros-foxy-plotjuggler (0.14.1-1focal) focal; urgency=high
+
+  * improved the time slider
+  * bug fixes
+  * Contributors: Davide Faconti
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Tue, 14 Mar 2017 23:00:00 -0000
+
+ros-foxy-plotjuggler (0.14.0-1focal) focal; urgency=high
+
+  * improved usability
+  * adding XY plots (#26)
+  * improving plot magnifier
+  * changed key combination
+  * file extension of saved images fixed
+  * bug fixes
+  * adding the ability to delete curves
+  * Contributors: Davide Faconti
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Tue, 14 Mar 2017 23:00:00 -0000
+
+ros-foxy-plotjuggler (0.13.1-1focal) focal; urgency=high
+
+  * bug fix
+  * Contributors: Davide Faconti
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Mon, 13 Mar 2017 23:00:00 -0000
+
+ros-foxy-plotjuggler (0.13.0-1focal) focal; urgency=high
+
+  * default range X for empty plots
+  * better formatting
+  * improving 2nd column visualization
+  * Contributors: Davide Faconti
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Sat, 11 Mar 2017 23:00:00 -0000
+
+ros-foxy-plotjuggler (0.12.2-1focal) focal; urgency=high
+
+  * Left curve list will display current value from vertical tracker
+  * new splashscreen phrases
+  * Temporarily disabling Qt5Svg
+  * Contributors: Davide Faconti
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Thu, 09 Mar 2017 23:00:00 -0000
+
+ros-foxy-plotjuggler (0.12.0-1focal) focal; urgency=high
+
+  * Create .appveyor.yml
+  * added the ability to save rosbags from streaming
+  * bug fixes
+  * might fix compilation problem in recent cmake (3.x)
+  * improvement of the horizontal slider
+  * save plots to file
+  * qwt updated to trunk
+  * catch the rosbag exception
+  * Contributors: Davide Faconti
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Sun, 05 Mar 2017 23:00:00 -0000
+
+ros-foxy-plotjuggler (0.11.0-1focal) focal; urgency=high
+
+  * should fix the reloading issue
+  * Update README.md
+  * minor fixes of the help_dialog layout
+  * Contributors: Davide Faconti, MarcelSoler
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Wed, 22 Feb 2017 23:00:00 -0000
+
+ros-foxy-plotjuggler (0.10.3-1focal) focal; urgency=high
+
+  * adding help dialog
+  * minor bug fix
+  * Contributors: Davide Faconti
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Mon, 20 Feb 2017 23:00:00 -0000
+
+ros-foxy-plotjuggler (0.10.2-1focal) focal; urgency=high
+
+  * critical bug fixed in ROS streaming
+  * Contributors: Davide Faconti
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Mon, 13 Feb 2017 23:00:00 -0000
+
+ros-foxy-plotjuggler (0.10.1-1focal) focal; urgency=high
+
+  * adding more command line functionality
+  * BUG-FIX: bad resizing when a matrix row or column is deleted
+  * simplifying how random colors are managed
+  * more streaming buffer
+  * remember selected topics
+  * improvements and bug fixes
+  * Contributors: Davide Faconti
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Mon, 13 Feb 2017 23:00:00 -0000
+
+ros-foxy-plotjuggler (0.10.0-1focal) focal; urgency=high
+
+  * auto loading of streamer based on saved layout
+  * refactoring of the ROS plugins
+  * REFACTORING to allow future improvements of drag&drop
+  * trying to fix a compilation problem
+  * Update README.md
+  * FIX: menu bar will stay where it is supposed to.
+  * Contributors: Davide Faconti
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Sat, 11 Feb 2017 23:00:00 -0000
+
+ros-foxy-plotjuggler (0.9.1-1focal) focal; urgency=high
+
+  * FIX: avoid the use of catkin when using plain cmake
+  * IMPROVEMENT: exit option in the file menu
+  * IMPROVEMENT: reduce the number of steps to launch a streamer
+  * SPEEDUP: use a cache to avoid repeated creation of std::string
+  * better way to stop streaming and reload the plugins
+  * fixed a compilation problem on windows
+  * fixed a problem with resizing
+  * help menu with About added
+  * qDebug commented
+  * default to RelWithDebInfo
+  * Contributors: Davide Faconti
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Wed, 08 Feb 2017 23:00:00 -0000
+
+ros-foxy-plotjuggler (0.9.0-1focal) focal; urgency=high
+
+  * bug fixes
+  * QWT submodule removed
+  * removed boost dependency
+  * Contributors: Davide Faconti
+  * remove submodule
+  * Contributors: Davide Faconti
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Mon, 06 Feb 2017 23:00:00 -0000
+
+ros-foxy-plotjuggler (0.8.1-1focal) focal; urgency=high
+
+  * removing the old name "SuperPlotter"
+  * bug fix that affected data streaming
+  * this explicit dependency might be needed by bloom
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Mon, 23 Jan 2017 23:00:00 -0000
+
+ros-foxy-plotjuggler (0.8.0-1focal) focal; urgency=high
+
+  * First official beta of PJ
+  * Contributors: Arturo Martin-de-Nicolas, Davide Faconti, Kartik Mohta, Mikael Arguedas
+
+ -- Davide Faconti <davide.faconti@gmail.com>  Sun, 22 Jan 2017 23:00:00 -0000
+
+
