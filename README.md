@@ -7,7 +7,7 @@
 [![Tweet](https://img.shields.io/twitter/url/http/shields.io.svg?style=social)](https://twitter.com/intent/tweet?text=I%20use%20PlotJuggler%20and%20it%20is%20amazing%0D%0A&url=https://github.com/facontidavide/PlotJuggler&via=facontidavide&hashtags=dataviz,plotjuggler,GoROS,PX4)
 **Gold Sponsor**: [Greenzie](https://www.greenzie.com/)
 
-# PlotJuggler 3.1
+# PlotJuggler 3.2
 
 PlotJuggler is a tool to visualize time series that is **fast**, **powerful** and  **intuitive**.
 
@@ -50,21 +50,54 @@ If you are not familiar with Lua, don't be afraid, you won't need more than 5 mi
 
 ![](docs/custom_editor.png)
 
+## Tutorials
 
-## Just "Download and Run" 
+To learns how to use PlotJuggler, check the tutorials here:
 
-On Linux, the simplest way to install PlotJuggler is through **snaps**:
+| Tutorial 1   |  Tutorial 2 | Tutorial 3 |
+:-------------------------:|:-------------------------:|:-------------------------:
+| [![](docs/tutorial_1.png)](https://slides.com/davidefaconti/introduction-to-plotjuggler) | [![](docs/tutorial_2.png)](https://slides.com/davidefaconti/plotjuggler-data) | [![](docs/tutorial_3.png)](https://slides.com/davidefaconti/plotjuggler-transforms) |
+
+## Supported plugins
+
+Some plugin can be found in a different repository. The individual README files
+*should* include all the information needed to compile and use the plugin.
+
+Please submit specific issues, Pull Requests and questions on the related Github repository:
+
+- [MQTT DataStreamer](https://github.com/PlotJuggler/plotjuggler-mqtt).
+- [Lab Streaming Layer DataStreamer](https://github.com/PlotJuggler/plotjuggler-lsl).
+- [ROS plugins](https://github.com/PlotJuggler/plotjuggler-ros-plugins).
+- [CAN .dbg DataLoader](https://github.com/PlotJuggler/plotjuggler-CAN-dbs).
+
+If you want a simple example to learn how to write your own plugins, have a look at
+[PlotJuggler/plotjuggler-sample-plugins](https://github.com/PlotJuggler/plotjuggler-sample-plugins)
+
+## Installation
+
+### Binary installers (with basic plugins)
+
+**Linux AppImage** (compatible with Ubuntu 18.04 or later: 
+[PlotJuggler-3.2.0-x86_64.AppImage](https://github.com/facontidavide/PlotJuggler/releases/download/3.2.0/PlotJuggler-3.2.0-x86_64.AppImage)
+
+**Windows Installer**: 
+[PlotJuggler-Windows-3.1.1-installer](https://github.com/facontidavide/PlotJuggler/releases/download/3.1.1/PlotJuggler-Windows-3.1.1-installer.exe)
+
+### For ROS User
+
+Install the debian packages using: 
+
+     sudo apt install ros-<distro>-plotjuggler-ros
+
+Alternatively, you may download the Snaps version that include the ROS1 plugins:
 
 [![Get it from the Snap Store](https://snapcraft.io/static/images/badges/en/snap-store-white.svg)](https://snapcraft.io/plotjuggler)
-    
-**Windows Installer**: 
-[PlotJuggler-3.1-WinInstaller.exe](https://github.com/facontidavide/PlotJuggler/releases/download/3.1.0/PlotJuggler-3.1-WinInstaller.exe)
 
 ## How to build
 
 Clone the repository as usual:
 
-    git clone --recurse-submodules https://github.com/facontidavide/PlotJuggler.git
+    git clone https://github.com/facontidavide/PlotJuggler.git
 
 The only binary dependency that you need installed in your system is Qt5. 
 On Ubuntu, the debians can be installed with the the command:

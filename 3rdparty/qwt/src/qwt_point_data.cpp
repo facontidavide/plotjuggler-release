@@ -1,4 +1,4 @@
-/* -*- mode: C++ ; c-file-style: "stroustrup" -*- *****************************
+/******************************************************************************
  * Qwt Widget Library
  * Copyright (C) 1997   Josef Wilgen
  * Copyright (C) 2002   Uwe Rathmann
@@ -16,32 +16,32 @@
    \param interval Bounding interval for the points
 
    \sa setInterval(), setSize()
-*/
+ */
 QwtSyntheticPointData::QwtSyntheticPointData(
-        size_t size, const QwtInterval &interval ):
-    d_size( size ),
-    d_interval( interval )
+        size_t size, const QwtInterval& interval )
+    : m_size( size )
+    , m_interval( interval )
 {
 }
 
 /*!
-  Change the number of points
+   Change the number of points
 
-  \param size Number of points
-  \sa size(), setInterval()
-*/
+   \param size Number of points
+   \sa size(), setInterval()
+ */
 void QwtSyntheticPointData::setSize( size_t size )
 {
-    d_size = size;
+    m_size = size;
 }
 
 /*!
-  \return Number of points
-  \sa setSize(), interval()
-*/
+   \return Number of points
+   \sa setSize(), interval()
+ */
 size_t QwtSyntheticPointData::size() const
 {
-    return d_size;
+    return m_size;
 }
 
 /*!
@@ -49,19 +49,19 @@ size_t QwtSyntheticPointData::size() const
 
    \param interval Interval
    \sa interval(), setSize()
-*/
-void QwtSyntheticPointData::setInterval( const QwtInterval &interval )
+ */
+void QwtSyntheticPointData::setInterval( const QwtInterval& interval )
 {
-    d_interval = interval.normalized();
+    m_interval = interval.normalized();
 }
 
 /*!
    \return Bounding interval
    \sa setInterval(), size()
-*/
+ */
 QwtInterval QwtSyntheticPointData::interval() const
 {
-    return d_interval;
+    return m_interval;
 }
 
 /*!
@@ -74,38 +74,38 @@ QwtInterval QwtSyntheticPointData::interval() const
    in the interval rect.left() -> rect.right().
 
    \sa rectOfInterest()
-*/
-void QwtSyntheticPointData::setRectOfInterest( const QRectF &rect )
+ */
+void QwtSyntheticPointData::setRectOfInterest( const QRectF& rect )
 {
-    d_rectOfInterest = rect;
-    d_intervalOfInterest = QwtInterval(
+    m_rectOfInterest = rect;
+    m_intervalOfInterest = QwtInterval(
         rect.left(), rect.right() ).normalized();
 }
 
 /*!
    \return "rectangle of interest"
    \sa setRectOfInterest()
-*/
+ */
 QRectF QwtSyntheticPointData::rectOfInterest() const
 {
-    return d_rectOfInterest;
+    return m_rectOfInterest;
 }
 
 /*!
-  \brief Calculate the bounding rectangle
+   \brief Calculate the bounding rectangle
 
-  This implementation iterates over all points, what could often
-  be implemented much faster using the characteristics of the series.
-  When there are many points it is recommended to overload and
-  reimplement this method using the characteristics of the series
-  ( if possible ).
+   This implementation iterates over all points, what could often
+   be implemented much faster using the characteristics of the series.
+   When there are many points it is recommended to overload and
+   reimplement this method using the characteristics of the series
+   ( if possible ).
 
-  \return Bounding rectangle
-*/
+   \return Bounding rectangle
+ */
 QRectF QwtSyntheticPointData::boundingRect() const
 {
-    if ( d_size == 0 ||
-        !( d_interval.isValid() || d_intervalOfInterest.isValid() ) )
+    if ( m_size == 0 ||
+        !( m_interval.isValid() || m_intervalOfInterest.isValid() ) )
     {
         return QRectF( 1.0, 1.0, -2.0, -2.0 ); // something invalid
     }
@@ -121,10 +121,10 @@ QRectF QwtSyntheticPointData::boundingRect() const
 
    \warning For invalid indices ( index < 0 || index >= size() )
             (0, 0) is returned.
-*/
+ */
 QPointF QwtSyntheticPointData::sample( size_t index ) const
 {
-    if ( index >= d_size )
+    if ( index >= m_size )
         return QPointF( 0, 0 );
 
     const double xValue = x( index );
@@ -144,18 +144,18 @@ QPointF QwtSyntheticPointData::sample( size_t index ) const
    \return Calculated x coordinate
 
    \sa interval(), rectOfInterest(), y()
-*/
+ */
 double QwtSyntheticPointData::x( uint index ) const
 {
-    const QwtInterval &interval = d_interval.isValid() ?
-        d_interval : d_intervalOfInterest;
+    const QwtInterval& interval = m_interval.isValid() ?
+        m_interval : m_intervalOfInterest;
 
     if ( !interval.isValid() )
         return 0.0;
 
-    if ( d_size <= 1 )
+    if ( m_size <= 1 )
         return interval.minValue();
 
-    const double dx = interval.width() / ( d_size - 1 );
+    const double dx = interval.width() / ( m_size - 1 );
     return interval.minValue() + index * dx;
 }
