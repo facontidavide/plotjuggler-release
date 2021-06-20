@@ -302,7 +302,8 @@ void CurveListPanel::refreshValues()
         auto val = plot_data.getYfromX(_tracker_time);
         if( val ) {
           auto str_view = val.value();
-          if( str_view.back() == '\0') {
+          char last_byte = str_view.data()[ str_view.size()-1 ];
+          if( last_byte == '\0') {
             return QString::fromLocal8Bit( str_view.data(), str_view.size() - 1 );
           }
           else{

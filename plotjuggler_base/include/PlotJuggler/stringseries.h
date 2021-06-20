@@ -1,19 +1,20 @@
 #ifndef PJ_STRINGSERIES_H
 #define PJ_STRINGSERIES_H
 
-#include "timeseries.h"
+#include "PlotJuggler/timeseries.h"
+#include "PlotJuggler/string_ref_sso.h"
 #include <algorithm>
 #include <unordered_set>
 
 namespace PJ {
 
-class StringSeries: public TimeseriesBase<std::string_view>
+class StringSeries: public TimeseriesBase<StringRef>
 {
 public:
-    using TimeseriesBase<std::string_view>::_points;
+    using TimeseriesBase<StringRef>::_points;
 
     StringSeries(const std::string& name, PlotGroup::Ptr group):
-        TimeseriesBase<std::string_view>(name, group)
+        TimeseriesBase<StringRef>(name, group)
     { }
 
     StringSeries(const StringSeries& other) = delete;
@@ -25,10 +26,10 @@ public:
     virtual void clear() override
     {
         _storage.clear();
-        TimeseriesBase<std::string_view>::clear();
+        TimeseriesBase<StringRef>::clear();
     }
 
-    void pushBack(const Point &p)
+    void pushBack(const Point &p)  override
     {
         auto temp = p;
         pushBack(std::move(temp));
@@ -36,19 +37,29 @@ public:
 
     virtual void pushBack(Point&& p) override
     {
+      const auto& str = p.y;
         // do not add empty strings
-        if ( p.y.data() == nullptr || p.y.size() == 0)
+        if ( str.data() == nullptr || str.size() == 0)
         {
             return;
         }
-        _tmp_str.assign( p.y.data(), p.y.size() );
-
-        auto it = _storage.find( _tmp_str );
-        if( it == _storage.end() ) {
-            it = _storage.insert( _tmp_str ).first;
+        if( str.isSSO() )
+        {
+          // the object stroed the string already, just push it
+          TimeseriesBase<StringRef>::pushBack( std::move(p) );
         }
-        // new string_view should point at local storage
-        TimeseriesBase<std::string_view>::pushBack( { p.x, std::string_view ( *it ) } );
+        else
+        {
+          // save a copy of the string in the flywheel structure _storage
+          // create a reference to that cached value.
+          _tmp_str.assign( str.data(), str.size() );
+
+          auto it = _storage.find( _tmp_str );
+          if( it == _storage.end() ) {
+            it = _storage.insert( _tmp_str ).first;
+          }
+          TimeseriesBase<StringRef>::pushBack( { p.x, StringRef( *it ) } );
+        }
     }
 
 private:
