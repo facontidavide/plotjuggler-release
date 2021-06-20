@@ -1,4 +1,4 @@
-/* -*- mode: C++ ; c-file-style: "stroustrup" -*- *****************************
+/******************************************************************************
  * Qwt Widget Library
  * Copyright (C) 1997   Josef Wilgen
  * Copyright (C) 2002   Uwe Rathmann
@@ -15,12 +15,12 @@
 class QSize;
 
 /*!
-  Some constants for use within Qwt.
-*/
+   Some constants for use within Qwt.
+ */
 namespace Qwt
 {
 }
 
-QWT_EXPORT QSize qwtExpandedToGlobalStrut( const QSize & );
+QWT_EXPORT QSize qwtExpandedToGlobalStrut( const QSize& );
 
 #endif
