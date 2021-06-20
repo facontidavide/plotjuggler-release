@@ -1,4 +1,4 @@
-/* -*- mode: C++ ; c-file-style: "stroustrup" -*- *****************************
+/******************************************************************************
  * Qwt Widget Library
  * Copyright (C) 1997   Josef Wilgen
  * Copyright (C) 2002   Uwe Rathmann
@@ -10,12 +10,12 @@
 #include "qwt_spline_parametrization.h"
 
 /*!
-  Constructor
-  \param type Parametrization type
-  \sa type()
-*/
-QwtSplineParametrization::QwtSplineParametrization( int type ):
-    d_type( type )
+   Constructor
+   \param type Parametrization type
+   \sa type()
+ */
+QwtSplineParametrization::QwtSplineParametrization( int type )
+    : m_type( type )
 {
 }
 
@@ -25,17 +25,17 @@ QwtSplineParametrization::~QwtSplineParametrization()
 }
 
 /*!
-  \brief Calculate the parameter value increment for 2 points
+   \brief Calculate the parameter value increment for 2 points
 
-  \param point1 First point
-  \param point2 Second point
+   \param point1 First point
+   \param point2 Second point
 
-  \return Value increment
+   \return Value increment
  */
 double QwtSplineParametrization::valueIncrement(
-    const QPointF &point1, const QPointF &point2 ) const
+    const QPointF& point1, const QPointF& point2 ) const
 {
-    switch( d_type )
+    switch( m_type )
     {
         case QwtSplineParametrization::ParameterX:
         {
@@ -71,5 +71,5 @@ double QwtSplineParametrization::valueIncrement(
 //! \return Parametrization type
 int QwtSplineParametrization::type() const
 {
-    return d_type;
+    return m_type;
 }

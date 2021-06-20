@@ -270,7 +270,7 @@ public:
         return std::nullopt;
     }
 
-    void pushBack(const Point &p)
+    virtual void pushBack(const Point &p)
     {
         auto temp = p;
         pushBack(std::move(temp));
