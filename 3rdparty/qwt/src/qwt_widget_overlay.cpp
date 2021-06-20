@@ -1,4 +1,4 @@
-/* -*- mode: C++ ; c-file-style: "stroustrup" -*- *****************************
+/******************************************************************************
  * Qwt Widget Library
  * Copyright (C) 1997   Josef Wilgen
  * Copyright (C) 2002   Uwe Rathmann
@@ -26,7 +26,7 @@ static QImage::Format qwtMaskImageFormat()
     return QImage::Format_ARGB32_Premultiplied;
 }
 
-static QRegion qwtAlphaMask( const QImage& image, const QRegion &region )
+static QRegion qwtAlphaMask( const QImage& image, const QRegion& region )
 {
     const int w = image.width();
     const int h = image.height();
@@ -40,7 +40,7 @@ static QRegion qwtAlphaMask( const QImage& image, const QRegion &region )
     {
         const QRect& r = *it;
 #else
-    const QVector<QRect> rects = region.rects();
+    const QVector< QRect > rects = region.rects();
     for ( int i = 0; i < rects.size(); i++ )
     {
         const QRect& r = rects[i];
@@ -58,8 +58,8 @@ static QRegion qwtAlphaMask( const QImage& image, const QRegion &region )
             bool inRect = false;
             int rx0 = -1;
 
-            const uint *line =
-                reinterpret_cast<const uint *> ( image.scanLine( y ) ) + x1;
+            const uint* line =
+                reinterpret_cast< const uint* > ( image.scanLine( y ) ) + x1;
             for ( int x = x1; x <= x2; x++ )
             {
                 const bool on = ( ( *line++ >> 24 ) != 0 );
@@ -92,11 +92,11 @@ static QRegion qwtAlphaMask( const QImage& image, const QRegion &region )
 
 class QwtWidgetOverlay::PrivateData
 {
-public:
-    PrivateData():
-        maskMode( QwtWidgetOverlay::MaskHint ),
-        renderMode( QwtWidgetOverlay::AutoRenderMode ),
-        rgbaBuffer( NULL )
+  public:
+    PrivateData()
+        : maskMode( QwtWidgetOverlay::MaskHint )
+        , renderMode( QwtWidgetOverlay::AutoRenderMode )
+        , rgbaBuffer( NULL )
     {
     }
 
@@ -116,17 +116,17 @@ public:
 
     MaskMode maskMode;
     RenderMode renderMode;
-    uchar *rgbaBuffer;
+    uchar* rgbaBuffer;
 };
 
 /*!
    \brief Constructor
    \param widget Parent widget, where the overlay is aligned to
-*/
-QwtWidgetOverlay::QwtWidgetOverlay( QWidget* widget ):
-    QWidget( widget )
+ */
+QwtWidgetOverlay::QwtWidgetOverlay( QWidget* widget )
+    : QWidget( widget )
 {
-    d_data = new PrivateData;
+    m_data = new PrivateData;
 
     setAttribute( Qt::WA_TransparentForMouseEvents );
     setAttribute( Qt::WA_NoSystemBackground );
@@ -142,7 +142,7 @@ QwtWidgetOverlay::QwtWidgetOverlay( QWidget* widget ):
 //! Destructor
 QwtWidgetOverlay::~QwtWidgetOverlay()
 {
-    delete d_data;
+    delete m_data;
 }
 
 /*!
@@ -153,10 +153,10 @@ QwtWidgetOverlay::~QwtWidgetOverlay()
  */
 void QwtWidgetOverlay::setMaskMode( MaskMode mode )
 {
-    if ( mode != d_data->maskMode )
+    if ( mode != m_data->maskMode )
     {
-        d_data->maskMode = mode;
-        d_data->resetRgbaBuffer();
+        m_data->maskMode = mode;
+        m_data->resetRgbaBuffer();
     }
 }
 
@@ -166,7 +166,7 @@ void QwtWidgetOverlay::setMaskMode( MaskMode mode )
  */
 QwtWidgetOverlay::MaskMode QwtWidgetOverlay::maskMode() const
 {
-    return d_data->maskMode;
+    return m_data->maskMode;
 }
 
 /*!
@@ -174,10 +174,10 @@ QwtWidgetOverlay::MaskMode QwtWidgetOverlay::maskMode() const
    \param mode Render mode
 
    \sa RenderMode, renderMode()
-*/
+ */
 void QwtWidgetOverlay::setRenderMode( RenderMode mode )
 {
-    d_data->renderMode = mode;
+    m_data->renderMode = mode;
 }
 
 /*!
@@ -186,7 +186,7 @@ void QwtWidgetOverlay::setRenderMode( RenderMode mode )
  */
 QwtWidgetOverlay::RenderMode QwtWidgetOverlay::renderMode() const
 {
-    return d_data->renderMode;
+    return m_data->renderMode;
 }
 
 /*!
@@ -200,15 +200,15 @@ void QwtWidgetOverlay::updateOverlay()
 
 void QwtWidgetOverlay::updateMask()
 {
-    d_data->resetRgbaBuffer();
+    m_data->resetRgbaBuffer();
 
     QRegion mask;
 
-    if ( d_data->maskMode == QwtWidgetOverlay::MaskHint )
+    if ( m_data->maskMode == QwtWidgetOverlay::MaskHint )
     {
         mask = maskHint();
     }
-    else if ( d_data->maskMode == QwtWidgetOverlay::AlphaMask )
+    else if ( m_data->maskMode == QwtWidgetOverlay::AlphaMask )
     {
         // TODO: the image doesn't need to be larger than
         //       the bounding rectangle of the hint !!
@@ -221,9 +221,9 @@ void QwtWidgetOverlay::updateMask()
         // than reinitializing an existing one with
         // QImage::fill( 0 ) or memset()
 
-        d_data->rgbaBuffer = ( uchar* )::calloc( width() * height(), 4 );
+        m_data->rgbaBuffer = ( uchar* )::calloc( width() * height(), 4 );
 
-        QImage image( d_data->rgbaBuffer,
+        QImage image( m_data->rgbaBuffer,
             width(), height(), qwtMaskImageFormat() );
 
         QPainter painter( &image );
@@ -232,10 +232,10 @@ void QwtWidgetOverlay::updateMask()
 
         mask = qwtAlphaMask( image, hint );
 
-        if ( d_data->renderMode == QwtWidgetOverlay::DrawOverlay )
+        if ( m_data->renderMode == QwtWidgetOverlay::DrawOverlay )
         {
             // we don't need the buffer later
-            d_data->resetRgbaBuffer();
+            m_data->resetRgbaBuffer();
         }
     }
 
@@ -253,31 +253,31 @@ void QwtWidgetOverlay::updateMask()
 }
 
 /*!
-  Paint event
-  \param event Paint event
+   Paint event
+   \param event Paint event
 
-  \sa drawOverlay()
-*/
+   \sa drawOverlay()
+ */
 void QwtWidgetOverlay::paintEvent( QPaintEvent* event )
 {
-    const QRegion &clipRegion = event->region();
+    const QRegion& clipRegion = event->region();
 
     QPainter painter( this );
 
     bool useRgbaBuffer = false;
-    if ( d_data->renderMode == QwtWidgetOverlay::CopyAlphaMask )
+    if ( m_data->renderMode == QwtWidgetOverlay::CopyAlphaMask )
     {
         useRgbaBuffer = true;
     }
-    else if ( d_data->renderMode == QwtWidgetOverlay::AutoRenderMode )
+    else if ( m_data->renderMode == QwtWidgetOverlay::AutoRenderMode )
     {
         if ( painter.paintEngine()->type() == QPaintEngine::Raster )
             useRgbaBuffer = true;
     }
 
-    if ( d_data->rgbaBuffer && useRgbaBuffer )
+    if ( m_data->rgbaBuffer && useRgbaBuffer )
     {
-        const QImage image( d_data->rgbaBuffer,
+        const QImage image( m_data->rgbaBuffer,
             width(), height(), qwtMaskImageFormat() );
 
         const int rectCount = clipRegion.rectCount();
@@ -300,7 +300,7 @@ void QwtWidgetOverlay::paintEvent( QPaintEvent* event )
                 painter.drawImage( r.topLeft(), image, r );
             }
 #else
-            const QVector<QRect> rects = clipRegion.rects();
+            const QVector< QRect > rects = clipRegion.rects();
             for ( int i = 0; i < rects.size(); i++ )
             {
                 const QRect& r = rects[i];
@@ -317,19 +317,19 @@ void QwtWidgetOverlay::paintEvent( QPaintEvent* event )
 }
 
 /*!
-  Resize event
-  \param event Resize event
-*/
+   Resize event
+   \param event Resize event
+ */
 void QwtWidgetOverlay::resizeEvent( QResizeEvent* event )
 {
     Q_UNUSED( event );
 
-    d_data->resetRgbaBuffer();
+    m_data->resetRgbaBuffer();
 }
 
-void QwtWidgetOverlay::draw( QPainter *painter ) const
+void QwtWidgetOverlay::draw( QPainter* painter ) const
 {
-    if ( QWidget *widget = parentWidget() )
+    if ( QWidget* widget = parentWidget() )
     {
         painter->setClipRect( widget->contentsRect() );
 
@@ -344,7 +344,7 @@ void QwtWidgetOverlay::draw( QPainter *painter ) const
                 widget, "borderPath", Qt::DirectConnection,
                 Q_RETURN_ARG( QPainterPath, clipPath ), Q_ARG( QRect, rect() ) );
 
-            if (!clipPath.isEmpty())
+            if (!clipPath.isEmpty() )
                 painter->setClipPath( clipPath, Qt::IntersectClip );
         }
     }
@@ -376,21 +376,21 @@ QRegion QwtWidgetOverlay::maskHint() const
 }
 
 /*!
-  \brief Event filter
+   \brief Event filter
 
-  Resize the overlay according to the size of the parent widget.
+   Resize the overlay according to the size of the parent widget.
 
-  \param object Object to be filtered
-  \param event Event
+   \param object Object to be filtered
+   \param event Event
 
-  \return See QObject::eventFilter()
-*/
+   \return See QObject::eventFilter()
+ */
 
 bool QwtWidgetOverlay::eventFilter( QObject* object, QEvent* event )
 {
     if ( object == parent() && event->type() == QEvent::Resize )
     {
-        QResizeEvent *resizeEvent = static_cast<QResizeEvent *>( event );
+        QResizeEvent* resizeEvent = static_cast< QResizeEvent* >( event );
         resize( resizeEvent->size() );
     }
 

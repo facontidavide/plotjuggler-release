@@ -1,4 +1,4 @@
-/* -*- mode: C++ ; c-file-style: "stroustrup" -*- *****************************
+/******************************************************************************
  * Qwt Widget Library
  * Copyright (C) 1997   Josef Wilgen
  * Copyright (C) 2002   Uwe Rathmann
@@ -14,16 +14,16 @@
 #include "qwt_spline.h"
 
 /*!
-  \brief A spline with C1 continuity
+   \brief A spline with C1 continuity
 
-  QwtSplineLocal offers several standard algorithms for interpolating
-  a curve with polynomials having C1 continuity at the control points.
-  All algorithms are local in a sense, that changing one control point
-  only few polynomials.
+   QwtSplineLocal offers several standard algorithms for interpolating
+   a curve with polynomials having C1 continuity at the control points.
+   All algorithms are local in a sense, that changing one control point
+   only few polynomials.
  */
-class QWT_EXPORT QwtSplineLocal: public QwtSplineC1
+class QWT_EXPORT QwtSplineLocal : public QwtSplineC1
 {
-public:
+  public:
     /*!
         \brief Spline interpolation type
 
@@ -34,30 +34,30 @@ public:
     enum Type
     {
         /*!
-          A cardinal spline
+           A cardinal spline
 
-          The cardinal spline interpolation is a very cheap calculation with
-          a locality of 1.
+           The cardinal spline interpolation is a very cheap calculation with
+           a locality of 1.
          */
         Cardinal,
 
         /*!
-          Parabolic blending is a cheap calculation with a locality of 1. Sometimes
-          it is also called Cubic Bessel interpolation.
+           Parabolic blending is a cheap calculation with a locality of 1. Sometimes
+           it is also called Cubic Bessel interpolation.
          */
         ParabolicBlending,
 
         /*!
-          The algorithm of H.Akima is a calculation with a locality of 2.
+           The algorithm of H.Akima is a calculation with a locality of 2.
          */
         Akima,
 
         /*!
-          Piecewise Cubic Hermite Interpolating Polynomial (PCHIP) is an algorithm
-          that is popular because of being offered by MATLAB.
+           Piecewise Cubic Hermite Interpolating Polynomial (PCHIP) is an algorithm
+           that is popular because of being offered by MATLAB.
 
-          It preserves the shape of the data and respects monotonicity. It has a
-          locality of 1.
+           It preserves the shape of the data and respects monotonicity. It has a
+           locality of 1.
          */
         PChip
     };
@@ -69,15 +69,15 @@ public:
 
     virtual uint locality() const QWT_OVERRIDE;
 
-    virtual QPainterPath painterPath( const QPolygonF & ) const QWT_OVERRIDE;
-    virtual QVector<QLineF> bezierControlLines( const QPolygonF & ) const QWT_OVERRIDE;
+    virtual QPainterPath painterPath( const QPolygonF& ) const QWT_OVERRIDE;
+    virtual QVector< QLineF > bezierControlLines( const QPolygonF& ) const QWT_OVERRIDE;
 
     // calculating the parametric equations
-    virtual QVector<QwtSplinePolynomial> polynomials( const QPolygonF & ) const QWT_OVERRIDE;
-    virtual QVector<double> slopes( const QPolygonF & ) const QWT_OVERRIDE;
+    virtual QVector< QwtSplinePolynomial > polynomials( const QPolygonF& ) const QWT_OVERRIDE;
+    virtual QVector< double > slopes( const QPolygonF& ) const QWT_OVERRIDE;
 
-private:
-    const Type d_type;
+  private:
+    const Type m_type;
 };
 
 #endif

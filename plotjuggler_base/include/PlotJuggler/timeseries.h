@@ -46,7 +46,7 @@ public:
       return ( index < 0 ) ? std::nullopt : std::optional( _points[index].y );
     }
 
-    void pushBack(const Point &p)
+    void pushBack(const Point &p) override
     {
         auto temp = p;
         pushBack(std::move(temp));
