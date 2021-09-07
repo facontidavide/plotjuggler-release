@@ -14,14 +14,14 @@ namespace Ui {
 class MovingAverageFilter;
 }
 
-class MovingAverageFilter: public TimeSeriesTransform
+class MovingAverageFilter: public TransformFunction_SISO
 {
 public:
   explicit MovingAverageFilter();
 
   ~MovingAverageFilter() override;
 
-  void init() override;
+  void reset() override;
 
   const char* name() const override { return "Moving Average"; }
 

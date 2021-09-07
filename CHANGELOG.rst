@@ -2,6 +2,58 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+3.3.0 (2021-09-07)
+------------------
+* add "start_streamer" option
+* MacOS compilation and improvements to dark mode
+* Support MacOS and Dark Mode
+* add string visualization to CSV
+* custom SplitLine function in CSV. Fix `#509 <https://github.com/facontidavide/PlotJuggler/issues/509>`_
+* fix issue  `#507 <https://github.com/facontidavide/PlotJuggler/issues/507>`_
+* Save date format string in CSV
+* New CSV plugin
+* Back to static libraries ( `#507 <https://github.com/facontidavide/PlotJuggler/issues/507>`_)
+* Merge branch 'main' of github.com:facontidavide/PlotJuggler into main
+* Enhanced processing of default commandline arguments
+* build plugin as submodule of PlotJuggler
+* improved merging of default args and command-line args
+* Fixed wrong slot name on PreferecesDialog and moved skin-based setting of MainWindowTitle after the setupUi() call
+* fix typo in preferences dialog
+* add notifications from Streaming plugins (`#489 <https://github.com/facontidavide/PlotJuggler/issues/489>`_)
+* cherry picking features from `#489 <https://github.com/facontidavide/PlotJuggler/issues/489>`_
+  - new options [enabled_plugins] and [disabled_plugins]
+  - new option [skin_path]
+* fixes
+* FFT toolbox will support multiple curves
+* fix install paths of plotjuggler_qwt
+* crash fix
+* remove potential issue with TransformFunction::reset
+* Merge pull request `#490 <https://github.com/facontidavide/PlotJuggler/issues/490>`_ from facontidavide/3.3
+  3.3
+* remove .appveyor.yml
+* prefer the PlotAttribute enum instead of string
+* add changes similar to `#424 <https://github.com/facontidavide/PlotJuggler/issues/424>`_
+* fixes
+* FIX TTF and style
+* compilation fix
+* FFT update
+* Merge branch '3.3' of github.com:facontidavide/PlotJuggler into 3.3
+* FFT WIP
+* big work with FFT and PlotWidgetBase refactoring
+* fix export plotjuggler_qwt
+* Merge branch '3.3' of github.com:facontidavide/PlotJuggler into 3.3
+* revert change
+* fixes
+* ToolboxQuaternion works, base library refactored with PlotWidgetBase
+* WIP
+* WIP
+* toolbox WIP
+* add latest fmt
+* unified TransformFunction
+* WIP
+* change name of Transforms plugins
+* Contributors: Davide Faconti, GerardoPardo, myd7349
+
 3.2.1 (2021-06-20)
 ------------------
 * adding string reference
