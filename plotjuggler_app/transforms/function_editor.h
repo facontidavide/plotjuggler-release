@@ -2,6 +2,7 @@
 #define AddCustomPlotDialog_H
 
 #include <QDialog>
+#include <QTimer>
 #include <QListWidgetItem>
 #include <unordered_map>
 #include "PlotJuggler/plotdata.h"
@@ -16,8 +17,9 @@ class FunctionEditorWidget : public QWidget
 
 public:
   explicit FunctionEditorWidget(PlotDataMapRef& plotMapData,
-                                const CustomPlotMap& mapped_custom_plots,
+                                const TransformsMap& mapped_custom_plots,
                                 QWidget* parent);
+
   virtual ~FunctionEditorWidget() override;
 
   void setLinkedPlotName(const QString& linkedPlotName);
@@ -31,7 +33,7 @@ public:
   void clear();
 
   QString getLinkedData() const;
-  QString getGlobalVars() const;
+  QString getglobal_vars() const;
   QString getEquation() const;
   QString getName() const;
 
@@ -96,7 +98,7 @@ private:
   QTimer _update_preview_timer;
 
   PlotDataMapRef& _plot_map_data;
-  const CustomPlotMap& _custom_plots;
+  const TransformsMap& _transform_maps;
   Ui::FunctionEditor* ui;
 
   int _v_count;

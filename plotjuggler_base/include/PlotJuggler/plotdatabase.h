@@ -29,6 +29,31 @@ struct Range
 typedef std::optional<Range> RangeOpt;
 using Attributes = std::map<std::string, QVariant>;
 
+// Attributes supported by the GUI.
+enum PlotAttribute {
+  // color to be displayed on the curve list. Type: QColor
+  TEXT_COLOR,
+  // font style to be displayed on the curve list.
+  // Type: boolean. Default: false
+  ITALIC_FONTS,
+  // Tooltip to be displayed on the curve list.
+  // Type: QString
+  TOOL_TIP,
+  // Disable the "linked Zoom" property, similar to XY plots.
+  // Type: boolean. Default: false
+  DISABLE_LINKED_ZOOM
+};
+
+inline const char* ToStr(const PlotAttribute& attr){
+  switch(attr) {
+    case TEXT_COLOR: return "TextColor";
+    case ITALIC_FONTS: return "Italic";
+    case TOOL_TIP: return "ToolTip";
+    case DISABLE_LINKED_ZOOM: return "DisableLinkedZoom";
+  }
+  return "";
+}
+
 /**
  * @brief PlotData may or may not have a group. Think of PlotGroup
  * as a way to say that certain set of series are "siblings".
@@ -72,6 +97,18 @@ public:
           return it->second;
       }
   }
+
+  void setAttribute(const PlotAttribute& id, const QVariant& value)
+  {
+      _attributes[ ToStr(id) ] = value;
+  }
+
+  QVariant attribute(const PlotAttribute& id) const
+  {
+      return attribute( ToStr(id) );
+  }
+
+
 private:
   const std::string _name;
   Attributes _attributes;
@@ -188,6 +225,16 @@ public:
         else {
             return it->second;
         }
+    }
+
+    void setAttribute(const PlotAttribute& id, const QVariant& value)
+    {
+        _attributes[ ToStr(id) ] = value;
+    }
+
+    QVariant attribute(const PlotAttribute& id) const
+    {
+        return attribute( ToStr(id) );
     }
 
     const Point& front() const
