@@ -24,14 +24,14 @@
 //-------------------------------------------------
 
 CurveListPanel::CurveListPanel(PlotDataMapRef& mapped_plot_data,
-                               const CustomPlotMap& mapped_math_plots,
+                               const TransformsMap &mapped_math_plots,
                                QWidget* parent)
   : QWidget(parent)
   , ui(new Ui::CurveListPanel)
   , _plot_data( mapped_plot_data )
   , _custom_view(new CurveTableView(this))
   , _tree_view(new CurveTreeView(this))
-  , _custom_plots(mapped_math_plots)
+  , _transforms_map(mapped_math_plots)
   , _column_width_dirty (true)
 {
   ui->setupUi(this);
@@ -83,7 +83,6 @@ void CurveListPanel::clear()
 
 void CurveListPanel::addCurve(const std::string &plot_name)
 {
-
   QString group_name;
 
   auto FindInPlotData = [&](auto& plot_data, const std::string &plot_name)
@@ -154,11 +153,11 @@ void CurveListPanel::updateColors()
       auto it = _plot_data.groups.find( group_name.toStdString() );
       if ( it != _plot_data.groups.end() )
       {
-        QVariant color_var = it->second->attribute("TextColor");
+        QVariant color_var = it->second->attribute(PJ::TEXT_COLOR);
         QColor text_color = color_var.isValid() ?
               color_var.value<QColor>() : default_color;
 
-        QVariant style_var = it->second->attribute("Italic");
+        QVariant style_var = it->second->attribute(PJ::ITALIC_FONTS);
         bool italic =( style_var.isValid() && style_var.value<bool>() );
 
         ChangeColorAndStyle(cell, text_color, italic);
@@ -186,16 +185,16 @@ void CurveListPanel::updateColors()
         auto it = plot_data.find(curve_name);
         if ( it != plot_data.end() )
         {
-          QVariant color_var = it->second.attribute("TextColor");
+          QVariant color_var = it->second.attribute(PJ::TEXT_COLOR);
           if( color_var.isValid() )
           {
             cell->setForeground(0, color_var.value<QColor>() );
           }
 
-          QVariant tooltip_var = it->second.attribute("ToolTip");
+          QVariant tooltip_var = it->second.attribute(PJ::TOOL_TIP);
           cell->setData(0, CustomRoles::ToolTip, tooltip_var );
 
-          QVariant style_var = it->second.attribute("Italic");
+          QVariant style_var = it->second.attribute(PJ::ITALIC_FONTS);
           bool italic = ( style_var.isValid() && style_var.value<bool>() );
           if( italic )
           {
@@ -524,9 +523,9 @@ void CurveListPanel::clearSelections()
 void CurveListPanel::on_stylesheetChanged(QString theme)
 {
   _style_dir = theme;
-  ui->buttonAddCustom->setIcon(LoadSvgIcon(":/resources/svg/add_tab.svg", theme));
-  ui->buttonEditCustom->setIcon(LoadSvgIcon(":/resources/svg/pencil-edit.svg", theme));
-  ui->pushButtonTrash->setIcon(LoadSvgIcon(":/resources/svg/trash.svg", theme));
+  ui->buttonAddCustom->setIcon(LoadSvg(":/resources/svg/add_tab.svg", theme));
+  ui->buttonEditCustom->setIcon(LoadSvg(":/resources/svg/pencil-edit.svg", theme));
+  ui->pushButtonTrash->setIcon(LoadSvg(":/resources/svg/trash.svg", theme));
 }
 
 void CurveListPanel::on_checkBoxShowValues_toggled(bool show)

@@ -29,50 +29,20 @@
 #include "PlotJuggler/svg_util.h"
 #include "ui_function_editor_help.h"
 
-//class Highlighter : public QSyntaxHighlighter
-//{
-//    Q_OBJECT
-
-//public:
-//    Highlighter(QTextDocument *parent = nullptr);
-
-//protected:
-//    void highlightBlock(const QString &text) override;
-
-//private:
-//    struct HighlightingRule
-//    {
-//        QRegularExpression pattern;
-//        QTextCharFormat format;
-//    };
-//    QVector<HighlightingRule> highlightingRules;
-
-//    QRegularExpression commentStartExpression;
-//    QRegularExpression commentEndExpression;
-
-//    QTextCharFormat keywordFormat;
-//    QTextCharFormat classFormat;
-//    QTextCharFormat singleLineCommentFormat;
-//    QTextCharFormat multiLineCommentFormat;
-//    QTextCharFormat quotationFormat;
-//    QTextCharFormat functionFormat;
-//};
-
-
 void FunctionEditorWidget::on_stylesheetChanged(QString theme)
 {
-  ui->pushButtonDeleteCurves->setIcon(LoadSvgIcon(":/resources/svg/remove_red.svg", theme));
-  ui->buttonLoadFunctions->setIcon(LoadSvgIcon(":/resources/svg/import.svg", theme));
-  ui->buttonSaveFunctions->setIcon(LoadSvgIcon(":/resources/svg/export.svg", theme));
-  ui->buttonSaveCurrent->setIcon(LoadSvgIcon(":/resources/svg/save.svg", theme));
+  ui->pushButtonDeleteCurves->setIcon(LoadSvg(":/resources/svg/trash.svg", theme));
+  ui->buttonLoadFunctions->setIcon(LoadSvg(":/resources/svg/import.svg", theme));
+  ui->buttonSaveFunctions->setIcon(LoadSvg(":/resources/svg/export.svg", theme));
+  ui->buttonSaveCurrent->setIcon(LoadSvg(":/resources/svg/save.svg", theme));
 }
 
 FunctionEditorWidget::FunctionEditorWidget(PlotDataMapRef& plotMapData,
-                                           const CustomPlotMap& mapped_custom_plots,
+                                           const TransformsMap &mapped_custom_plots,
                                            QWidget* parent)
   : QWidget(parent)
   , _plot_map_data(plotMapData)
-  , _custom_plots(mapped_custom_plots)
+  , _transform_maps(mapped_custom_plots)
   , ui(new Ui::FunctionEditor)
   , _v_count(1)
   , _preview_widget(new PlotWidget(_local_plot_data, this))
@@ -135,7 +105,7 @@ FunctionEditorWidget::FunctionEditorWidget(PlotDataMapRef& plotMapData,
 
   auto preview_layout = new QHBoxLayout( ui->framePlotPreview);
   preview_layout->setMargin(6);
-  preview_layout->addWidget(_preview_widget);
+  preview_layout->addWidget(_preview_widget->widget());
 
   _preview_widget->setContextMenuEnabled(false);
 
@@ -149,6 +119,8 @@ FunctionEditorWidget::FunctionEditorWidget(PlotDataMapRef& plotMapData,
 
 FunctionEditorWidget::~FunctionEditorWidget()
 {
+  delete _preview_widget;
+
   QSettings settings;
   settings.setValue("AddCustomPlotDialog.recentSnippetsXML", exportSnippets());
   settings.setValue("AddCustomPlotDialog.geometry", saveGeometry());
@@ -176,7 +148,7 @@ QString FunctionEditorWidget::getLinkedData() const
   return ui->lineEditSource->text();
 }
 
-QString FunctionEditorWidget::getGlobalVars() const
+QString FunctionEditorWidget::getglobal_vars() const
 {
   return ui->globalVarsTextField->toPlainText();
 }
@@ -201,10 +173,10 @@ void FunctionEditorWidget::createNewPlot()
 
 void FunctionEditorWidget::editExistingPlot(CustomPlotPtr data)
 {
-  ui->globalVarsTextField->setPlainText(data->snippet().globalVars);
+  ui->globalVarsTextField->setPlainText(data->snippet().global_vars);
   ui->mathEquation->setPlainText(data->snippet().function);
-  setLinkedPlotName(QString::fromStdString(data->linkedPlotName()));
-  ui->nameLineEdit->setText(QString::fromStdString(data->name()));
+  setLinkedPlotName( data->snippet().linked_source );
+  ui->nameLineEdit->setText( data->aliasName() );
   ui->nameLineEdit->setEnabled(false);
 
   _editor_mode = MODIFY;
@@ -212,7 +184,7 @@ void FunctionEditorWidget::editExistingPlot(CustomPlotPtr data)
   auto list_widget = ui->listAdditionalSources;
   list_widget->setRowCount(0);
 
-  for (QString curve_name: data->snippet().additionalSources) {
+  for (QString curve_name: data->snippet().additional_sources) {
     if( list_widget->findItems(curve_name, Qt::MatchExactly).isEmpty() &&
         curve_name != ui->lineEditSource->text() )
     {
@@ -303,18 +275,21 @@ void FunctionEditorWidget::importSnippets(const QByteArray& xml_text)
     ui->snippetsListSaved->addItem(it.first);
   }
 
-  for (const auto& custom_it : _custom_plots)
+  for (const auto& custom_it : _transform_maps)
   {
-    const auto& math_plot = custom_it.second;
+    auto math_plot = dynamic_cast<LuaCustomFunction*>( custom_it.second.get() );
+    if ( !math_plot ){
+      continue;
+    }
     SnippetData snippet;
-    snippet.name = QString::fromStdString(math_plot->name());
+    snippet.alias_name = math_plot->aliasName();
 
-    if (_snipped_saved.count(snippet.name) > 0)
+    if (_snipped_saved.count(snippet.alias_name) > 0)
     {
       continue;
     }
 
-    snippet.globalVars = math_plot->snippet().globalVars;
+    snippet.global_vars = math_plot->snippet().global_vars;
     snippet.function = math_plot->snippet().function;
   }
   ui->snippetsListSaved->sortItems();
@@ -340,13 +315,13 @@ void FunctionEditorWidget::on_snippetsListSaved_currentRowChanged(int current_ro
 
   QString preview;
 
-  if( !snippet.globalVars.isEmpty() )
+  if( !snippet.global_vars.isEmpty() )
   {
-    preview +=  snippet.globalVars + "\n\n";
+    preview +=  snippet.global_vars + "\n\n";
   }
   preview += "function calc(time, value";
 
-  for (int i=1; i<= snippet.additionalSources.size(); i++)
+  for (int i=1; i<= snippet.additional_sources.size(); i++)
   {
     preview += QString(", v%1").arg(i);
   }
@@ -366,7 +341,7 @@ void FunctionEditorWidget::on_snippetsListSaved_doubleClicked(const QModelIndex&
   const auto& name = ui->snippetsListSaved->item(index.row())->text();
   const SnippetData& snippet = _snipped_saved.at(name);
 
-  ui->globalVarsTextField->setPlainText(snippet.globalVars);
+  ui->globalVarsTextField->setPlainText(snippet.global_vars);
   ui->mathEquation->setPlainText(snippet.function);
 }
 
@@ -493,8 +468,8 @@ void FunctionEditorWidget::on_buttonSaveCurrent_clicked()
   }
 
   SnippetData snippet;
-  snippet.name = name;
-  snippet.globalVars = ui->globalVarsTextField->toPlainText();
+  snippet.alias_name = name;
+  snippet.global_vars = ui->globalVarsTextField->toPlainText();
   snippet.function = ui->mathEquation->toPlainText();
 
   addToSaved(name, snippet);
@@ -546,7 +521,7 @@ void FunctionEditorWidget::onRenameSaved()
 
   SnippetData snippet = _snipped_saved[name];
   _snipped_saved.erase(name);
-  snippet.name = new_name;
+  snippet.alias_name = new_name;
 
   _snipped_saved.insert({ new_name, snippet });
   item->setText(new_name);
@@ -559,7 +534,7 @@ void FunctionEditorWidget::on_pushButtonCreate_clicked()
   {
     std::string new_plot_name = getName().toStdString();
 
-    if (_editor_mode == CREATE && _custom_plots.count(new_plot_name) != 0)
+    if (_editor_mode == CREATE && _transform_maps.count(new_plot_name) != 0)
     {
       QMessageBox msgBox(this);
       msgBox.setWindowTitle("Warning");
@@ -579,12 +554,12 @@ void FunctionEditorWidget::on_pushButtonCreate_clicked()
 
     SnippetData snippet;
     snippet.function = getEquation();
-    snippet.globalVars = getGlobalVars();
-    snippet.name = getName();
-    snippet.linkedSource = getLinkedData();
+    snippet.global_vars = getglobal_vars();
+    snippet.alias_name = getName();
+    snippet.linked_source = getLinkedData();
     for(int row = 0; row < ui->listAdditionalSources->rowCount(); row++)
     {
-      snippet.additionalSources.push_back( ui->listAdditionalSources->item(row,1)->text());
+      snippet.additional_sources.push_back( ui->listAdditionalSources->item(row,1)->text());
     }
 
     CustomPlotPtr plot = std::make_unique<LuaCustomFunction>(snippet);
@@ -665,7 +640,7 @@ void FunctionEditorWidget::on_updatePreview()
   QString errors;
   std::string new_plot_name = ui->nameLineEdit->text().toStdString();
 
-  if ( _custom_plots.count(new_plot_name) != 0 )
+  if ( _transform_maps.count(new_plot_name) != 0 )
   {
     if( ui->lineEditSource->text().toStdString() == new_plot_name ||
         ui->listAdditionalSources->findItems(getName(), Qt::MatchExactly).isEmpty() == false )
@@ -679,7 +654,7 @@ void FunctionEditorWidget::on_updatePreview()
   }
   else{
     // check if name is unique (except if is custom_plot)
-    if (_plot_map_data.numeric.count(new_plot_name) != 0 && _custom_plots.count(new_plot_name) == 0)
+    if (_plot_map_data.numeric.count(new_plot_name) != 0 && _transform_maps.count(new_plot_name) == 0)
     {
       errors+= "- Plot name already exists and can't be modified.\n";
     }
@@ -692,17 +667,17 @@ void FunctionEditorWidget::on_updatePreview()
 
   SnippetData snippet;
   snippet.function = getEquation();
-  snippet.globalVars = getGlobalVars();
-  snippet.name = getName();
-  snippet.linkedSource = getLinkedData();
+  snippet.global_vars = getglobal_vars();
+  snippet.alias_name = getName();
+  snippet.linked_source = getLinkedData();
   for(int row = 0; row < ui->listAdditionalSources->rowCount(); row++)
   {
-    snippet.additionalSources.push_back( ui->listAdditionalSources->item(row,1)->text());
+    snippet.additional_sources.push_back( ui->listAdditionalSources->item(row,1)->text());
   }
 
-  CustomPlotPtr plot;
+  CustomPlotPtr lua_function;
   try {
-    plot = std::make_unique<LuaCustomFunction>(snippet);
+    lua_function = std::make_unique<LuaCustomFunction>(snippet);
     ui->buttonSaveCurrent->setEnabled(true);
   } catch (...)
   {
@@ -710,13 +685,16 @@ void FunctionEditorWidget::on_updatePreview()
     ui->buttonSaveCurrent->setEnabled(false);
   }
 
-  if( plot )
+  if( lua_function )
   {
     try {
       std::string name = new_plot_name.empty() ? "no_name" : new_plot_name;
-      PlotData& out_data = _local_plot_data.addNumeric(name)->second;
+      PlotData& out_data = _local_plot_data.getOrCreateNumeric(name);
       out_data.clear();
-      plot->calculate(_plot_map_data, &out_data);
+
+      std::vector<PlotData*> out_vector = {&out_data};
+      lua_function->setData( &_plot_map_data, {}, out_vector );
+      lua_function->calculate();
 
       _preview_widget->removeAllCurves();
       _preview_widget->addCurve(name, Qt::blue);
