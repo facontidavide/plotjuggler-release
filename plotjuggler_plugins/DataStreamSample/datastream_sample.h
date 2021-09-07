@@ -35,7 +35,13 @@ public:
 
   virtual bool xmlLoadState(const QDomElement& parent_element) override;
 
+  std::pair<QAction*, int> notificationAction() override
+  {
+    return {_dummy_notification, _notifications_count};
+  }
+
 private:
+
   struct Parameters
   {
     double A, B, C, D;
@@ -50,5 +56,9 @@ private:
   std::map<std::string, Parameters> _parameters;
 
   void pushSingleCycle();
+
+  QAction* _dummy_notification;
+
+  int _notifications_count;
 };
 

@@ -12,7 +12,7 @@ add_library(DataStreamZMQ SHARED ${SRC} ${UI_SRC}  )
 
 target_link_libraries(DataStreamZMQ
     ${Qt5Widgets_LIBRARIES}
-    plotjuggler_plugin_base
+    plotjuggler_base
     zmq
     )
 

@@ -10,7 +10,7 @@ add_library(PublisherCSV SHARED  publisher_csv.cpp  ${UI_SRC}  )
 
 target_link_libraries(PublisherCSV
     ${Qt5Widgets_LIBRARIES}
-    plotjuggler_plugin_base
+    plotjuggler_base
     )
 
 install(TARGETS PublisherCSV DESTINATION ${PJ_PLUGIN_INSTALL_DIRECTORY}  )
