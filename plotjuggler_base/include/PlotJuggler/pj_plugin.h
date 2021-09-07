@@ -9,45 +9,49 @@
 
 namespace PJ {
 
+/**
+ * @brief The PlotJugglerPlugin is the base class of all the plugins.
+ */
 class PlotJugglerPlugin : public QObject
 {
 public:
-  PlotJugglerPlugin()
-  {
-  }
+  PlotJugglerPlugin() = default;
 
+  /// Name of the plugin type, NOT the particular instance
   virtual const char* name() const = 0;
 
-  virtual bool isDebugPlugin()
-  {
+  /// Override this to return true, if you want this plugin to be loaded only when
+  /// the command line option [-t] is used.
+  virtual bool isDebugPlugin() {
     return false;
   }
 
-  virtual QWidget* optionsWidget()
-  {
+  /**
+   * @brief optionsWidget pointer to a persistent widget used to
+   * set the plugin options .
+   */
+  virtual QWidget* optionsWidget() {
     return nullptr;
   }
 
-  virtual bool xmlSaveState(QDomDocument& doc, QDomElement& parent_element) const
-  {
+  /// Override this method to save the status of the plugin to XML
+  virtual bool xmlSaveState(QDomDocument& doc, QDomElement& parent_element) const {
     return false;
   }
 
-  virtual bool xmlLoadState(const QDomElement& parent_element)
-  {
+  /// Override this method to load the status of the plugin from XML
+  virtual bool xmlLoadState(const QDomElement& parent_element) {
     return false;
   }
 
-  QDomElement xmlSaveState(QDomDocument& doc) const
-  {
+  QDomElement xmlSaveState(QDomDocument& doc) const {
     QDomElement plugin_elem = doc.createElement("plugin");
     plugin_elem.setAttribute("ID", this->name());
     xmlSaveState(doc, plugin_elem);
     return plugin_elem;
   }
 
-  virtual const std::vector<QAction*>& availableActions()
-  {
+  virtual const std::vector<QAction*>& availableActions() {
     static std::vector<QAction*> empty;
     return empty;
   }
