@@ -13,7 +13,7 @@ add_library(DataStreamUDP SHARED ${SRC} ${UI_SRC}  )
 target_link_libraries(DataStreamUDP
     ${Qt5Widgets_LIBRARIES}
     Qt5::Network
-    plotjuggler_plugin_base
+    plotjuggler_base
     )
 
 install(TARGETS DataStreamUDP DESTINATION ${PJ_PLUGIN_INSTALL_DIRECTORY}  )

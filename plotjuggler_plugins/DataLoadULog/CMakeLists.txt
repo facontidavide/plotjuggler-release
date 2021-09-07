@@ -20,7 +20,7 @@ add_library(DataLoadULog SHARED ${SRC} ${UI_SRC}  )
 target_link_libraries(DataLoadULog
     ${Qt5Widgets_LIBRARIES}
     ${Qt5Xml_LIBRARIES}
-    plotjuggler_plugin_base)
+    plotjuggler_base)
 
 install(TARGETS DataLoadULog DESTINATION ${PJ_PLUGIN_INSTALL_DIRECTORY}  )
 
