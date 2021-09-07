@@ -3,11 +3,16 @@
 #include <QApplication>
 #include <QSettings>
 #include <QPen>
+
+#include "qwt_plot_zoomer.h"
 #include "qwt_scale_map.h"
 #include "qwt_plot.h"
 
 PlotZoomer::PlotZoomer(QWidget* canvas)
-  : QwtPlotZoomer(canvas, true), _mouse_pressed(false), _zoom_enabled(false), _keep_aspect_ratio(true)
+  : QwtPlotZoomer(canvas, false)
+  , _mouse_pressed(false)
+  , _zoom_enabled(false)
+  , _keep_aspect_ratio(false)
 {
   this->setTrackerMode(AlwaysOff);
 }

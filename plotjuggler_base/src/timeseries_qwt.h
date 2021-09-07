@@ -1,8 +1,8 @@
 #ifndef TIMESERIES_QWT_H
 #define TIMESERIES_QWT_H
 
-#include "PlotJuggler/plotdata.h"
 #include "qwt_series_data.h"
+#include "PlotJuggler/plotdata.h"
 #include "PlotJuggler/transform_function.h"
 
 using namespace PJ;
@@ -63,7 +63,7 @@ class TransformedTimeseries : public QwtTimeseries
 public:
   TransformedTimeseries(const PlotData* source_data);
 
-  TimeSeriesTransformPtr transform();
+  TransformFunction::Ptr transform();
 
   void setTransform(QString transform_ID);
 
@@ -71,10 +71,16 @@ public:
 
   QString transformName();
 
+  QString alias() const;
+
+  void setAlias(QString alias);
+
 protected:
-  const PlotData* _source_data;
+
+  QString _alias;
   PlotData _dst_data;
-  TimeSeriesTransformPtr _transform;
+  const PlotData* _src_data;
+  TransformFunction_SISO::Ptr _transform;
 };
 
 //---------------------------------------------------------
