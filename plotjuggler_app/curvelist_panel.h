@@ -25,7 +25,7 @@ class CurveListPanel : public QWidget
 
 public:
   explicit CurveListPanel(PlotDataMapRef& mapped_plot_data,
-                          const CustomPlotMap& mapped_math_plots,
+                          const TransformsMap& mapped_math_plots,
                           QWidget* parent);
 
   ~CurveListPanel() override;
@@ -94,7 +94,7 @@ private:
 
   double _tracker_time = 0;
 
-  const CustomPlotMap& _custom_plots;
+  const TransformsMap& _transforms_map;
 
   QString _style_dir;
 

@@ -13,6 +13,24 @@ using namespace PJ;
 
 DataStreamSample::DataStreamSample()
 {
+  _dummy_notification = new QAction(this);
+
+  connect( _dummy_notification, &QAction::triggered,
+          this, [this]()
+          {
+            QMessageBox::warning(
+                nullptr, "Dummy Notifications",
+                QString("%1 notifications").arg(_notifications_count),
+                QMessageBox::Ok);
+
+            if( _notifications_count > 0 )
+            {
+              _notifications_count = 0;
+              emit notificationsChanged(_notifications_count);
+            }
+          });
+
+  _notifications_count = 0;
   for (int i = 0; i < 150; i++)
   {
     auto str = QString("data_vect/%1").arg(i).toStdString();
@@ -116,11 +134,17 @@ void DataStreamSample::pushSingleCycle()
 void DataStreamSample::loop()
 {
   _running = true;
+  size_t count = 1;
   while (_running)
   {
     auto prev = std::chrono::high_resolution_clock::now();
     pushSingleCycle();
     emit dataReceived();
+    if( count++ % 200 == 0 )
+    {
+      _notifications_count++;
+      emit notificationsChanged(_notifications_count);
+    }
     std::this_thread::sleep_until(prev + std::chrono::milliseconds(20));  // 50 Hz
   }
 }

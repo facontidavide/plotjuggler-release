@@ -8,21 +8,21 @@
 #include <QDomDocument>
 #include <QString>
 #include "PlotJuggler/plotdata.h"
+#include "PlotJuggler/transform_function.h"
 
 using namespace PJ;
 
 class CustomFunction;
 
 typedef std::shared_ptr<CustomFunction> CustomPlotPtr;
-typedef std::unordered_map<std::string, CustomPlotPtr> CustomPlotMap;
 
 struct SnippetData
 {
-  QString name;
-  QString globalVars;
+  QString alias_name;
+  QString global_vars;
   QString function;
-  QString linkedSource;
-  QStringList additionalSources;
+  QString linked_source;
+  QStringList additional_sources;
 };
 
 typedef std::map<QString, SnippetData> SnippetsMap;
@@ -37,42 +37,51 @@ QDomElement ExportSnippetToXML(const SnippetData& snippet, QDomDocument& destina
 
 QDomElement ExportSnippets(const SnippetsMap& snippets, QDomDocument& destination_doc);
 
-
-class CustomFunction
+class CustomFunction : public PJ::TransformFunction
 {
 public:
 
-  CustomFunction(const SnippetData& snippet);
+  CustomFunction(SnippetData snippet = {});
 
-  void clear();
+  void setSnippet(const SnippetData& snippet);
 
-  void calculateAndAdd(PlotDataMapRef& plotData);
+  void reset() override;
+
+  int numInputs() const override {
+    return -1;
+  }
+
+  int numOutputs() const override {
+    return 1;
+  }
+
+  QString aliasName() const {
+    return _snippet.alias_name;
+  }
+
+  void calculate() override;
+
+  bool xmlSaveState(QDomDocument& doc, QDomElement& parent_element) const override;
+
+  bool xmlLoadState(const QDomElement& parent_element) override;
 
   const SnippetData& snippet() const;
-
-  const std::string& name() const;
-
-  const std::string& linkedPlotName() const;
-
-  QDomElement xmlSaveState(QDomDocument& doc) const;
-
-  static CustomPlotPtr createFromXML(QDomElement& element);
-
-  void calculate(const PlotDataMapRef& plotData, PlotData* dst_data);
 
   virtual QString language() const = 0;
 
   virtual void initEngine() = 0;
 
-  virtual void calculatePoints(const PlotData& src_data,
-                               const std::vector<const PlotData*>& channels_data,
-                               size_t point_index,
-                               std::vector<PlotData::Point> &new_points) = 0;
+  void calculateAndAdd(PlotDataMapRef &src_data);
+
+  virtual void calculatePoints(
+      const std::vector<const PlotData*>& src_data,
+      size_t point_index,
+      std::vector<PlotData::Point> &new_points) = 0;
 
 protected:
-  const SnippetData _snippet;
-  const std::string _linked_plot_name;
-  const std::string _plot_name;
+  SnippetData _snippet;
+  std::string _linked_plot_name;
+  std::string _plot_name;
 
   std::vector<std::string> _used_channels;
 };

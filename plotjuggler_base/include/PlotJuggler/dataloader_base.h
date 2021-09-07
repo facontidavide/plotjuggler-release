@@ -12,33 +12,33 @@ namespace PJ {
 
 struct FileLoadInfo
 {
-  // name of the file to open
+  /// name of the file to open
   QString filename;
-  // prefix to be added to the name of the series (optional)
+  /// prefix to be added to the name of the series (optional)
   QString prefix;
-  // Optional list of pre-selected datasource
+  /// Optional list of pre-selected datasource
   QStringList selected_datasources;
-  // Saved configuration from a previous run or a Layout file
+  /// Saved configuration from a previous run or a Layout file
   QDomDocument plugin_config;
 };
 
+/**
+ * @brief The DataLoader plugin type is used to load files.
+ *
+ * The main application selects the correct plugin using the
+ * compatibleFileExtensions()
+ */
 class DataLoader : public PlotJugglerPlugin
 {
 public:
-  DataLoader()
-  {
-  }
+  DataLoader() = default;
 
-  // Provide a list of file extensions that this plugin can open
+  virtual ~DataLoader() = default;
+
+  /// Provide a list of file extensions that this plugin can open
   virtual const std::vector<const char*>& compatibleFileExtensions() const = 0;
 
   virtual bool readDataFromFile(FileLoadInfo* fileload_info, PlotDataMapRef& destination) = 0;
-
-  virtual ~DataLoader()
-  {
-  }
-
-protected:
 };
 
 using DataLoaderPtr = std::shared_ptr<DataLoader>;

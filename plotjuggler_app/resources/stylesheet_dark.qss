@@ -21,12 +21,10 @@ item_selection_background: #148CD2
 
 QWidget {
   background: transparent;
-  border: 0px solid ${border_default};
   padding: 0px;
   color: ${default_text};
   font-size: 10pt;
 }
-
 
 QWidget:disabled{
   color: ${disabled_text};
@@ -79,6 +77,10 @@ QTabWidget::right-corner {
     subcontrol-position: left bottom;
 }
 
+QTabWidget::tab-bar {
+    left: 0; 
+}
+
 QTabBar::tab {
     border-top-left-radius: 2px;
     border-top-right-radius: 2px;
@@ -109,6 +111,7 @@ QTextBrowser {
    color: ${default_text};
 }
 
+QTextEdit,
 QPlainTextEdit {
    background: ${widget_background};
    color: ${default_text};
@@ -121,6 +124,12 @@ QToolTip {
     border-radius: 2px;
     background: ${widget_background};
     color: ${default_text}; }
+
+
+/* QScrollArea ------------------------------------------------------------
+
+--------------------------------------------------------------------------- */
+
 
 /* QScrollBar -------------------------------------------------------------
 
@@ -359,7 +368,6 @@ QAbstractSpinBox::down-arrow:hover {
 QAbstractSpinBox:hover {
   border: 1px solid ${border_hover};
 }
-
 
 
 /* QRadioButton ----------------------------------------------------------- */
@@ -635,6 +643,14 @@ QListView::item:selected {
    color: black;
 }
 
+QHeaderView::section {
+    background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                                      stop:0 #E2E1E0,   stop:0.5 #F2F1F0,
+                                      stop:0.6 #F5F4F3, stop:1.0 #D2D1D0);
+    color: black;
+    padding-left: 4px;
+    border: 1px solid #6c6c6c;
+}
 
 QTreeView:branch {
     background-color: transparent;
@@ -802,7 +818,10 @@ QSplitter#mainSplitter::handle:horizontal::hover {
         stop:0.6 #cc00cc, stop:1.0 #1177ff);
 }
 
-QWidget#framePlotPreview{
+QFrame#framePlotPreview,
+QFrame#framePlotPreviewA,
+QFrame#framePlotPreviewB,
+QFrame#framePlotPreviewC {
    background-color: ${widget_background};
    border: 1px solid ${border_default};
    margin: 0px;
@@ -828,6 +847,11 @@ ads--CDockWidget {
 }
 
 QwtPlot {
+   background: ${widget_background};
+   border: 0px;
+}
+
+QWidget#qwtCanvas {
    background: ${widget_background};
    border: 0px;
 }

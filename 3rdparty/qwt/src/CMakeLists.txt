@@ -1,6 +1,4 @@
 
-add_definitions( -DQWT_MOC_INCLUDE )
-
 include_directories( ./  )
 
 set( QWT_SRC
@@ -193,12 +191,27 @@ set( QWT_SRC
     qwt_plot_opengl_canvas.cpp
     )
 
-add_library(qwt_static STATIC ${QWT_SRC})
+add_library(plotjuggler_qwt STATIC ${QWT_SRC})
 
-target_link_libraries(qwt_static
-        ${Qt5Widgets_LIBRARIES}
-        ${Qt5PrintSupport_LIBRARIES}
-        ${Qt5Concurrent_LIBRARIES}
-        ${Qt5Svg_LIBRARIES}
-        )
+
+target_link_libraries(plotjuggler_qwt
+    ${Qt5Widgets_LIBRARIES}
+    ${Qt5Concurrent_LIBRARIES}
+    ${Qt5Svg_LIBRARIES}
+    )
+target_compile_definitions(plotjuggler_qwt PUBLIC QWT_MOC_INCLUDE)
+#target_compile_definitions(plotjuggler_qwt PUBLIC QWT_DLL QWT_MAKEDLL )
+
+#install(
+#    TARGETS plotjuggler_qwt
+#    EXPORT export_plotjuggler_qwt)
+
+install(
+     TARGETS
+        plotjuggler_qwt
+     EXPORT export_plotjuggler_qwt
+     LIBRARY DESTINATION lib
+     ARCHIVE DESTINATION lib
+     RUNTIME DESTINATION bin
+     INCLUDES DESTINATION include )
 
