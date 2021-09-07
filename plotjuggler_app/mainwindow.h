@@ -20,6 +20,7 @@
 #include "utils.h"
 #include "PlotJuggler/dataloader_base.h"
 #include "PlotJuggler/statepublisher_base.h"
+#include "PlotJuggler/toolbox_base.h"
 #include "PlotJuggler/datastreamer_base.h"
 #include "transforms/custom_function.h"
 #include "transforms/function_editor.h"
@@ -42,6 +43,7 @@ public:
 
   void stopStreamingPlugin();
   void startStreamingPlugin(QString streamer_name);
+  void enableStreamingNotificationsButton(bool enabled);
 
 public slots:
 
@@ -55,6 +57,7 @@ public slots:
   void on_streamingToggled();
 
   void on_buttonStreamingPause_toggled(bool paused);
+  void on_buttonStreamingNotifications_clicked();
 
   void on_streamingSpinBox_valueChanged(int value);
 
@@ -106,12 +109,16 @@ private:
   CurveListPanel* _curvelist_widget;
 
   PlotDataMapRef _mapped_plot_data;
-  CustomPlotMap _custom_plots;
+
+  TransformsMap _transform_functions;
 
   std::map<QString, DataLoaderPtr> _data_loader;
   std::map<QString, StatePublisherPtr> _state_publisher;
   std::map<QString, DataStreamerPtr> _data_streamer;
-  std::map<QString, std::shared_ptr<MessageParserCreator>> _message_parser_factory;
+
+  QString _default_streamer;
+
+  std::shared_ptr<MessageParserFactory> _message_parser_factory;
 
   std::shared_ptr<DataStreamer> _active_streamer_plugin;
 
@@ -125,6 +132,9 @@ private:
   bool _autostart_publishers;
 
   double _tracker_time;
+
+  QStringList _enabled_plugins;
+  QStringList _disabled_plugins;
 
   std::vector<FileLoadInfo> _loaded_datafiles;
   CurveTracker::Parameter _tracker_param;
@@ -143,8 +153,6 @@ private:
 
   QMovie* _animated_streaming_movie;
   QTimer* _animated_streaming_timer;
-  
-  
 
   enum LabelStatus
   {
@@ -157,6 +165,8 @@ private:
 
   QMenu* _recent_data_files;
   QMenu* _recent_layout_files;
+
+  QString _skin_path;
 
   void initializeActions();
   QStringList initializePlugins(QString subdir_name);
@@ -211,6 +221,8 @@ public slots:
 
   void on_deleteSerieFromGroup(std::string group_name );
 
+  void on_streamingNotificationsChanged(int active_notifications_count);
+
   void onActionFullscreenTriggered();
 
   void on_actionReportBug_triggered();
@@ -228,6 +240,8 @@ public slots:
   void on_pushButtonTimeTracker_pressed();
   void on_pushButtonRemoveTimeOffset_toggled(bool checked);
 
+  void on_buttonStreamingStart_clicked();
+
 private slots:
   void on_stylesheetChanged(QString style_name);
   void on_actionPreferences_triggered();
@@ -237,7 +251,6 @@ private slots:
   void on_pushButtonLegend_clicked();
   void on_pushButtonZoomOut_clicked();
 
-  void on_buttonStreamingStart_clicked();
   void on_buttonStreamingOptions_clicked();
   void on_buttonHideFileFrame_clicked();
   void on_buttonHideStreamingFrame_clicked();

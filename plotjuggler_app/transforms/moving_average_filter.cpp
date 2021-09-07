@@ -24,10 +24,10 @@ MovingAverageFilter::~MovingAverageFilter()
   delete _widget;
 }
 
-void MovingAverageFilter::init()
+void MovingAverageFilter::reset()
 {
   _buffer.clear();
-  TimeSeriesTransform::init();
+  TransformFunction_SISO::reset();
 }
 
 std::optional<PlotData::Point>

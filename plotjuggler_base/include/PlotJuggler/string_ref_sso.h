@@ -11,7 +11,7 @@ namespace PJ
  * @brief Super simple, unmutable, string_view with
  * small string optimization.
  * If the string is 15 bytes or less, it is copied, otherwise,
- * StringRef stroe a not-owning reference.
+ * StringRef store a not-owning reference.
  */
 class StringRef
 {
