@@ -62,6 +62,8 @@ class DockWidget: public ads::CDockWidget
 public:
   DockWidget(PlotDataMapRef& datamap, QWidget* parent = nullptr);
 
+  ~DockWidget() override;
+
   PlotWidget* plotWidget();
 
   DraggableToolbar* toolBar();
@@ -72,6 +74,8 @@ public slots:
   DockWidget* splitVertical();
 
 private:
+  PlotWidget* _plot_widget = nullptr;
+
   DraggableToolbar* _toolbar;
 
   PlotDataMapRef& _datamap;
