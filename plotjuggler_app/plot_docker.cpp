@@ -228,7 +228,8 @@ int PlotDocker::plotCount() const
 
 PlotWidget *PlotDocker::plotAt(int index)
 {
-  return static_cast<PlotWidget*>( dockArea(index)->currentDockWidget()->widget() );
+  DockWidget* dock_widget = dynamic_cast<DockWidget*>( dockArea(index)->currentDockWidget() );
+  return static_cast<PlotWidget*>(dock_widget->plotWidget() );
 }
 
 void PlotDocker::setHorizontalLink(bool enabled)
@@ -268,8 +269,8 @@ DockWidget::DockWidget(PlotDataMapRef& datamap, QWidget *parent):
 
   static int plot_count = 0;
   QString plot_name = QString("_plot_%1_").arg(plot_count++);
-  auto plot_widget = new PlotWidget(datamap, this);
-  setWidget( plot_widget );
+  _plot_widget = new PlotWidget(datamap, this);
+  setWidget( _plot_widget->widget() );
   setFeature(ads::CDockWidget::DockWidgetFloatable, false);
   setFeature(ads::CDockWidget::DockWidgetDeleteOnClose, true);
 
@@ -283,10 +284,10 @@ DockWidget::DockWidget(PlotDataMapRef& datamap, QWidget *parent):
   connect(_toolbar->buttonSplitVertical(), &QPushButton::clicked,
           this, &DockWidget::splitVertical);
 
-  connect(plot_widget, &PlotWidget::splitHorizontal,
+  connect(_plot_widget, &PlotWidget::splitHorizontal,
           this, &DockWidget::splitHorizontal);
 
-  connect(plot_widget, &PlotWidget::splitVertical,
+  connect(_plot_widget, &PlotWidget::splitVertical,
           this, &DockWidget::splitVertical);
 
   auto FullscreenAction = [=]() {
@@ -315,6 +316,11 @@ DockWidget::DockWidget(PlotDataMapRef& datamap, QWidget *parent):
                    } );
 
   this->layout()->setMargin(10);
+}
+
+DockWidget::~DockWidget()
+{
+
 }
 
 DockWidget* DockWidget::splitHorizontal()
@@ -358,7 +364,7 @@ DockWidget* DockWidget::splitVertical()
 
 PlotWidget *DockWidget::plotWidget()
 {
-  return static_cast<PlotWidget*>( widget() );
+  return _plot_widget;
 }
 
 DraggableToolbar *DockWidget::toolBar()
@@ -463,12 +469,12 @@ bool DraggableToolbar::eventFilter(QObject *object, QEvent *event)
 
 void DraggableToolbar::on_stylesheetChanged(QString theme)
 {
-  _expand_icon = LoadSvgIcon(":/resources/svg/expand.svg", theme);
-  _collapse_icon = LoadSvgIcon(":/resources/svg/collapse.svg", theme);
+  _expand_icon = LoadSvg(":/resources/svg/expand.svg", theme);
+  _collapse_icon = LoadSvg(":/resources/svg/collapse.svg", theme);
   setButtonIcon(ui->buttonFullscreen, _fullscreen_mode ? _collapse_icon : _expand_icon );
-  setButtonIcon(ui->buttonClose, LoadSvgIcon( ":/resources/svg/close-button.svg", theme));
-  setButtonIcon(ui->buttonSplitHorizontal,  LoadSvgIcon(":/resources/svg/add_column.svg", theme));
-  setButtonIcon(ui->buttonSplitVertical,  LoadSvgIcon(":/resources/svg/add_row.svg", theme));
+  setButtonIcon(ui->buttonClose, LoadSvg( ":/resources/svg/close-button.svg", theme));
+  setButtonIcon(ui->buttonSplitHorizontal,  LoadSvg(":/resources/svg/add_column.svg", theme));
+  setButtonIcon(ui->buttonSplitVertical,  LoadSvg(":/resources/svg/add_row.svg", theme));
 }
 
 void DraggableToolbar::leaveEvent(QEvent *ev)
