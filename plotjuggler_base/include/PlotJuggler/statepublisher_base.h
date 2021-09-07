@@ -13,30 +13,34 @@ namespace PJ {
 
 class StatePublisher : public PlotJugglerPlugin
 {
+
   Q_OBJECT
+
 public:
+
+  /// True if started
   virtual bool enabled() const = 0;
 
+  /// Method called when the timetracker is moved manually to a certain position.
   virtual void updateState(double current_time) = 0;
 
+  /// Method called when the "play" button is cheked.
+  /// @param interval is seconds passed since the last time play was called.
   virtual void play(double interval) = 0;
 
   virtual ~StatePublisher() = default;
 
-  virtual QWidget* embeddedWidget()
-  {
-    return nullptr;
-  }
-
-  void setDataMap(const PlotDataMapRef* datamap)
-  {
+  void setDataMap(const PlotDataMapRef* datamap) {
     _datamap = datamap;
   }
 
 public slots:
+  /// Method called when the checkbox "enabled" is checked in the main app.
   virtual void setEnabled(bool enabled) = 0;
 
 signals:
+
+  /// signal to be emitted when the plugin disable itself.
   void closed();
 
 protected:
@@ -44,7 +48,6 @@ protected:
 };
 
 using StatePublisherPtr = std::shared_ptr<StatePublisher>;
-
 
 }
 

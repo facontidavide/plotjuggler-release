@@ -26,8 +26,8 @@ PreferencesDialog::PreferencesDialog(QWidget* parent) : QDialog(parent), ui(new 
   ui->radioLocalColorIndex->setChecked(use_plot_color_index);
   ui->radioGlobalColorIndex->setChecked(!use_plot_color_index);
 
-  ui->pushButtonAdd->setIcon( LoadSvgIcon(":/resources/svg/add_tab.svg", theme));
-  ui->pushButtonRemove->setIcon( LoadSvgIcon(":/resources/svg/remove_red.svg", theme));
+  ui->pushButtonAdd->setIcon( LoadSvg(":/resources/svg/add_tab.svg", theme));
+  ui->pushButtonRemove->setIcon( LoadSvg(":/resources/svg/trash.svg", theme));
 
 
   bool use_separator = settings.value("Preferences::use_separator", true).toBool();
@@ -100,7 +100,7 @@ void PreferencesDialog::on_pushButtonRemove_clicked()
   }
 }
 
-void PreferencesDialog::on_listWidget_itemSelectionChanged()
+void PreferencesDialog::on_listWidgetCustom_itemSelectionChanged()
 {
    ui->pushButtonRemove->setEnabled( !ui->listWidgetCustom->selectedItems().isEmpty() );
 }

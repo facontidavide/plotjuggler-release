@@ -45,23 +45,23 @@ void BuildDummyData(PlotDataMapRef& datamap)
 
   //-------------------------------
   auto tcGroup = datamap.getOrCreateGroup("myGroup/subGroup");
-  tcGroup->setAttribute("TextColor", QColor(Qt::blue) );
-  tcGroup->setAttribute("ToolTip", QString("This is a group") );
+  tcGroup->setAttribute(PJ::TEXT_COLOR, QColor(Qt::blue) );
+  tcGroup->setAttribute(PJ::TOOL_TIP, QString("This is a group") );
 
   auto& tc_default = datamap.addNumeric("color/default", tcGroup)->second;
   auto& tc_red = datamap.addNumeric("color/red", tcGroup)->second;
 
-  tc_red.setAttribute("TextColor", QColor(Qt::red) );
+  tc_red.setAttribute(PJ::TEXT_COLOR, QColor(Qt::red) );
 
   PlotData& sin_plot = datamap.addNumeric("_sin")->second;
   PlotData& cos_plot = datamap.addNumeric("_cos")->second;
   StringSeries& str_plot = datamap.addStringSeries("str_value")->second;
 
-  sin_plot.setAttribute("ToolTip", QString("sine") );
-  cos_plot.setAttribute("ToolTip", QString("cosine") );
-  str_plot.setAttribute("ToolTip", QString("this is a string") );
+  sin_plot.setAttribute(PJ::TOOL_TIP, QString("sine") );
+  cos_plot.setAttribute(PJ::TOOL_TIP, QString("cosine") );
+  str_plot.setAttribute(PJ::TOOL_TIP, QString("this is a string") );
 
-  sin_plot.setAttribute("Italic", true);
+  sin_plot.setAttribute(PJ::ITALIC_FONTS, true);
 
   //--------------------------------
   double t = 0;

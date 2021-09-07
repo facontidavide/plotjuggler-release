@@ -21,7 +21,6 @@ item_selection_background: #62c5ff
 
 QWidget {
   background: transparent;
-  border: 0px solid ${border_default};
   padding: 0px;
   color: ${default_text};
   font-size: 10pt;
@@ -78,6 +77,10 @@ QTabWidget::right-corner {
     subcontrol-position: left bottom;
 }
 
+QTabWidget::tab-bar {
+    left: 0; 
+}
+
 QTabBar::tab {
     border-top-left-radius: 2px;
     border-top-right-radius: 2px;
@@ -108,6 +111,7 @@ QTextBrowser {
    color: ${default_text};
 }
 
+QTextEdit,
 QPlainTextEdit {
    background: ${widget_background};
    color: ${default_text};
@@ -263,7 +267,7 @@ QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
 /* QMenu ----------------------------------------------------------- */
 
 QMenu {
-    background: ${widget_background};
+    background-color: ${widget_background};
     border: 1px solid ${border_default};
 }
 
@@ -519,6 +523,10 @@ QPushButton[flat="false"]
     border: 1px solid ${border_default};
 }
 
+QPushButton:disabled {
+    color: ${disabled_text};
+}
+
 
 QPushButton:checked {
   border: 2px solid ${border_checked};
@@ -756,7 +764,6 @@ QWidget#leftMainWindowFrame
   background-color: ${main_background};
 }
 
-
 QWidget#widgetLabelLoad,
 QWidget#widgetLabelStreaming,
 QWidget#widgetLabelPublishers,
@@ -812,7 +819,10 @@ QSplitter#mainSplitter::handle:horizontal::hover {
         stop:0.6 #cc00cc, stop:1.0 #1177ff);
 }
 
-QWidget#framePlotPreview{
+QFrame#framePlotPreview,
+QFrame#framePlotPreviewA,
+QFrame#framePlotPreviewB,
+QFrame#framePlotPreviewC {
    background-color: ${widget_background};
    border: 1px solid ${border_default};
    margin: 0px;
@@ -838,6 +848,11 @@ ads--CDockWidget {
 }
 
 QwtPlot {
+   background: ${widget_background};
+   border: 0px;
+}
+
+QWidget#qwtCanvas {
    background: ${widget_background};
    border: 0px;
 }
