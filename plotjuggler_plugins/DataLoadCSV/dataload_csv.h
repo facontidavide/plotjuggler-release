@@ -3,6 +3,7 @@
 #include <QObject>
 #include <QtPlugin>
 #include "PlotJuggler/dataloader_base.h"
+#include "ui_dataload_csv.h"
 
 using namespace PJ;
 
@@ -31,12 +32,21 @@ public:
   virtual bool xmlLoadState(const QDomElement& parent_element) override;
 
 protected:
-  QSize parseHeader(QFile* file, std::vector<std::string>& ordered_names);
+  void parseHeader(QFile &file,
+                   std::vector<std::string> *ordered_names);
+
+  int launchDialog(QFile &file,
+                   std::vector<std::string> *ordered_names);
 
 private:
   std::vector<const char*> _extensions;
 
   std::string _default_time_axis;
+
+  QChar _separator;
+
+  QDialog* _dialog;
+  Ui::DialogCSV* _ui;
 };
 
 

@@ -8,86 +8,98 @@
 
 namespace PJ {
 
-class TimeSeriesTransform : public PlotJugglerPlugin
+/** @brief Generic interface for a multi input - multi output transformation function.
+ * Contrariwise to other plugins, multiple instances of the this class might be created.
+ * For this reason, a TransformFactory is also defined
+ */
+class TransformFunction : public PlotJugglerPlugin
 {
   Q_OBJECT
+
 public:
+  using Ptr = std::shared_ptr<TransformFunction>;
 
-  TimeSeriesTransform(): _src_data(nullptr)
-  {
-    init();
-  }
+  TransformFunction();
 
-  virtual ~TimeSeriesTransform() {}
-
-  void setDataSource(const PlotData *src_data){
-    _src_data = src_data;
-  }
-
-  virtual void init()
-  {
-    _last_timestamp = - std::numeric_limits<double>::max();
-  }
+  virtual ~TransformFunction() = default;
 
   virtual const char* name() const = 0;
 
-  void calculate(PlotData* dst_data)
-  {
-    if (_src_data->size() == 0)
-    {
-      return;
-    }
-    dst_data->setMaximumRangeX( _src_data->maximumRangeX() );
-    if (dst_data->size() != 0)
-    {
-      _last_timestamp = dst_data->back().x;
-    }
+  /** Number of inputs. Return -1 if it is not a constant.
+  *
+  * When numInputs() > 0, then the data will be initialized using
+  * the method:
+  *     setDataSource(const std::vector<const PlotData*>& src_data)
+  *
+  * When  numInputs() == -1, then the number of inputs is undefined and the
+  * data will be initialized using the method_
+  *     setDataSource( PlotDataMapRef* data )
+  */
+  virtual int numInputs() const = 0;
 
-    int pos = _src_data->getIndexFromX( _last_timestamp );
-    size_t index = pos < 0 ? 0 : static_cast<size_t>(pos);
+  /** Number of outputs. Define the size of the vector used in:
+   *     calculate(std::vector<PlotData*>& dst_data)
+   */
+  virtual int numOutputs() const = 0;
 
-    while(index < _src_data->size())
-    {
-      const auto& in_point = _src_data->at(index);
+  /** Clear the cache, state and any stored data */
+  virtual void reset() {}
 
-      if (in_point.x >= _last_timestamp)
-      {
-        auto out_point = calculateNextPoint(index);
-        if (out_point){
-          dst_data->pushBack( std::move(out_point.value()) );
-        }
-        _last_timestamp = in_point.x;
-      }
-      index++;
-    }
+  PlotDataMapRef* plotData() {
+    return _data;
   }
 
-  const PlotData* dataSource() const{
-    return _src_data;
-  }
+  std::vector<const PlotData*>& dataSources();
 
-  QString alias() const {
-    return _alias;
-  }
+  virtual void setData(
+      PlotDataMapRef* data,
+      const std::vector<const PlotData*>& src_vect,
+      std::vector<PlotData*>& dst_vect);
 
-  void setAlias(QString alias) {
-    _alias = alias;
-  }
+  virtual void calculate() = 0;
 
 signals:
   void parametersChanged();
 
 protected:
+  std::vector<const PlotData*> _src_vector;
+  std::vector<PlotData*> _dst_vector;
+  PlotDataMapRef* _data;
 
-  const PlotData *_src_data;
-  QString _alias;
-  double _last_timestamp;
-
-  virtual std::optional<PlotData::Point>
-  calculateNextPoint(size_t index) = 0;
 };
 
-using TimeSeriesTransformPtr = std::shared_ptr<TimeSeriesTransform>;
+using TransformsMap = std::unordered_map<std::string, std::shared_ptr<TransformFunction>>;
+
+/// Simplified version with Single input and Single output
+class TransformFunction_SISO : public TransformFunction
+{
+  Q_OBJECT
+public:
+
+  TransformFunction_SISO() = default;
+
+  void reset() override;
+
+  int numInputs() const override {
+    return 1;
+  }
+
+  int numOutputs() const override {
+    return 1;
+  }
+
+  void calculate() override;
+
+  /// Method to be implemented by the user to apply a statefull function to each point.
+  /// Index will increase monotonically, unless reset() is used.
+  virtual std::optional<PlotData::Point> calculateNextPoint(size_t index) = 0;
+
+  const PlotData* dataSource() const;
+
+protected:
+
+  double _last_timestamp = - std::numeric_limits<double>::max();
+};
 
 ///------ The factory to create instances of a SeriesTransform -------------
 
@@ -100,16 +112,14 @@ private:
   TransformFactory(const TransformFactory&) = delete;
   TransformFactory& operator=(const TransformFactory&) = delete;
 
-  std::map<std::string, std::function<TimeSeriesTransformPtr()>> creators_;
+  std::map<std::string, std::function<TransformFunction::Ptr()>> creators_;
   std::set<std::string> names_;
 
   static TransformFactory* instance();
 
 public:
 
-  static const std::set<std::string>& registeredTransforms() {
-    return instance()->names_;
-  }
+  static const std::set<std::string>& registeredTransforms();
 
   template <typename T> static void registerTransform()
   {
@@ -119,15 +129,7 @@ public:
     instance()->creators_[name] = [](){ return std::make_shared<T>(); };
   }
 
-  static TimeSeriesTransformPtr create(const std::string& name)
-  {
-    auto it = instance()->creators_.find(name);
-    if( it == instance()->creators_.end())
-    {
-      return {};
-    }
-    return it->second();
-  }
+  static TransformFunction::Ptr create(const std::string& name);
 };
 
 } // end namespace
@@ -136,25 +138,14 @@ Q_DECLARE_OPAQUE_POINTER(PJ::TransformFactory *)
 Q_DECLARE_METATYPE(PJ::TransformFactory *)
 Q_GLOBAL_STATIC(PJ::TransformFactory, _transform_factory_ptr_from_macro)
 
-inline PJ::TransformFactory* PJ::TransformFactory::instance()
-{
-  static TransformFactory * _ptr(nullptr);
-  if (!qApp->property("TransformFactory").isValid() && !_ptr) {
-    _ptr = _transform_factory_ptr_from_macro;
-    qApp->setProperty("TransformFactory", QVariant::fromValue(_ptr));
-  }
-  else if (!_ptr) {
-    _ptr = qvariant_cast<TransformFactory *>(qApp->property("TransformFactory"));
-  }
-  else if (!qApp->property("TransformFactory").isValid()) {
-    qApp->setProperty("TransformFactory", QVariant::fromValue(_ptr));
-  }
-  return _ptr;
-}
-
 
 QT_BEGIN_NAMESPACE
-#define TimeSeriesTransform_iid "facontidavide.PlotJuggler3.TimeSeriesTransform"
-Q_DECLARE_INTERFACE(PJ::TimeSeriesTransform, TimeSeriesTransform_iid)
+
+#define TransformFunction_iid "facontidavide.PlotJuggler3.TransformFunction"
+Q_DECLARE_INTERFACE(PJ::TransformFunction, TransformFunction_iid)
+
+#define TransformFunctionSISO_iid "facontidavide.PlotJuggler3.TransformFunctionSISO"
+Q_DECLARE_INTERFACE(PJ::TransformFunction_SISO, TransformFunctionSISO_iid)
+
 QT_END_NAMESPACE
 
