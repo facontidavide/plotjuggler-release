@@ -38,7 +38,7 @@ PlotwidgetEditor::PlotwidgetEditor(PlotWidget *plotwidget, QWidget *parent) :
 
   auto layout = new QVBoxLayout();
   ui->framePlotPreview->setLayout(layout);
-  layout->addWidget(_plotwidget);
+  layout->addWidget(_plotwidget->widget());
   layout->setMargin(6);
 
   _plotwidget->zoomOut(false);
@@ -48,13 +48,17 @@ PlotwidgetEditor::PlotwidgetEditor(PlotWidget *plotwidget, QWidget *parent) :
   QSettings settings;
   restoreGeometry(settings.value("PlotwidgetEditor.geometry").toByteArray());
 
-  if( _plotwidget->curveStyle() == QwtPlotCurve::Lines)
+  if( _plotwidget->curveStyle() == PlotWidgetBase::LINES)
   {
     ui->radioLines->setChecked(true);
   }
-  else if( _plotwidget->curveStyle() == QwtPlotCurve::Dots)
+  else if( _plotwidget->curveStyle() == PlotWidgetBase::DOTS)
   {
     ui->radioPoints->setChecked(true);
+  }
+  else if( _plotwidget->curveStyle() == PlotWidgetBase::STICKS)
+  {
+    ui->radioSticks->setChecked(true);
   }
   else {
     ui->radioBoth->setChecked(true);
@@ -64,8 +68,8 @@ PlotwidgetEditor::PlotwidgetEditor(PlotWidget *plotwidget, QWidget *parent) :
   ui->lineLimitMin->setValidator(new QDoubleValidator(this));
 
   auto ylimits = _plotwidget->customAxisLimit();
-  auto range_x = _plotwidget->getMaximumRangeX();
-  Range suggested_limits = _plotwidget->getMaximumRangeY(range_x);
+  auto range_x = _plotwidget->getVisualizationRangeX();
+  Range suggested_limits = _plotwidget->getVisualizationRangeY(range_x);
 
   if( ylimits.min != -MAX_DOUBLE)
   {
@@ -97,6 +101,7 @@ PlotwidgetEditor::~PlotwidgetEditor()
   QSettings settings;
   settings.setValue("PlotwidgetEditor.geometry", saveGeometry());
 
+  delete _plotwidget;
   delete ui;
 }
 
@@ -260,7 +265,7 @@ void PlotwidgetEditor::on_radioLines_toggled(bool checked)
 {
   if(checked)
   {
-    _plotwidget->changeCurveStyle( QwtPlotCurve::Lines );
+    _plotwidget->changeCurvesStyle( PlotWidgetBase::LINES );
   }
 }
 
@@ -269,7 +274,7 @@ void PlotwidgetEditor::on_radioPoints_toggled(bool checked)
 {
   if(checked)
   {
-    _plotwidget->changeCurveStyle( QwtPlotCurve::Dots );
+    _plotwidget->changeCurvesStyle( PlotWidgetBase::DOTS );
   }
 }
 
@@ -277,9 +282,18 @@ void PlotwidgetEditor::on_radioBoth_toggled(bool checked)
 {
   if(checked)
   {
-    _plotwidget->changeCurveStyle( QwtPlotCurve::LinesAndDots );
+    _plotwidget->changeCurvesStyle( PlotWidgetBase::LINES_AND_DOTS );
   }
 }
+
+void PlotwidgetEditor::on_radioSticks_toggled(bool checked)
+{
+  if(checked)
+  {
+    _plotwidget->changeCurvesStyle( PlotWidgetBase::STICKS );
+  }
+}
+
 
 void PlotwidgetEditor::on_checkBoxMax_toggled(bool checked)
 {
@@ -301,8 +315,8 @@ void PlotwidgetEditor::on_pushButtonReset_clicked()
 
   _plotwidget->setCustomAxisLimits(no_limits);
 
-  auto range_x = _plotwidget->getMaximumRangeX();
-  Range limits = _plotwidget->getMaximumRangeY(range_x);
+  auto range_x = _plotwidget->getVisualizationRangeX();
+  Range limits = _plotwidget->getVisualizationRangeY(range_x);
 
   ui->lineLimitMin->setText(QString::number(limits.min));
   ui->lineLimitMax->setText(QString::number(limits.max));
@@ -348,7 +362,7 @@ EditorRowWidget::EditorRowWidget(QString text, QColor color): QWidget()
   _delete_button = new QPushButton(this);
   _delete_button->setFlat(true);
   _delete_button->setFixedSize( button_size );
-  auto icon = QIcon(":/resources/svg/remove_red.svg");
+  auto icon = QIcon(":/resources/svg/trash.svg");
   _delete_button->setStyleSheet("QPushButton:hover{ border: 0px;}");
 
   _delete_button->setIcon( icon) ;

@@ -12,7 +12,7 @@
 #include <qwt_text.h>
 
 DialogTransformEditor::DialogTransformEditor(PlotWidget* plotwidget) :
-  QDialog(plotwidget),
+  QDialog(plotwidget->widget()),
   ui(new Ui::plotwidget_transforms),
   _plotwidget_origin(plotwidget)
 {
@@ -26,7 +26,7 @@ DialogTransformEditor::DialogTransformEditor(PlotWidget* plotwidget) :
 
   auto layout = new QVBoxLayout();
   ui->framePlotPreview->setLayout(layout);
-  layout->addWidget(_plotwidget);
+  layout->addWidget(_plotwidget->widget());
   layout->setMargin(6);
 
   _plotwidget->zoomOut(false);
@@ -181,15 +181,15 @@ void DialogTransformEditor::on_listTransforms_itemSelectionChanged()
     ui->lineEditAlias->setEnabled(true);
 
     QString curve_title = qwt_curve->title().text();
-    if( ts->transform()->alias().isEmpty())
+    if( ts->alias().isEmpty())
     {
       auto src_name = QString::fromStdString(curve_info->src_name);
       auto new_title = QString("%1[%2]").arg(src_name).arg(transform_ID);
-      ts->transform()->setAlias(new_title);
+      ts->setAlias(new_title);
     }
 
-    ui->lineEditAlias->setText( ts->transform()->alias() );
-    qwt_curve->setTitle( ts->transform()->alias() );
+    ui->lineEditAlias->setText( ts->alias() );
+    qwt_curve->setTitle( ts->alias() );
 
     auto widget = ts->transform()->optionsWidget();
     int index = ui->stackedWidgetArguments->indexOf(widget);
@@ -202,7 +202,7 @@ void DialogTransformEditor::on_listTransforms_itemSelectionChanged()
 
     if( _connected_transform_widgets.count(widget) == 0)
     {
-      connect( ts->transform().get(), &TimeSeriesTransform::parametersChanged,
+      connect( ts->transform().get(), &TransformFunction::parametersChanged,
               this, [=]() {
                 ts->updateCache(true);
                 _plotwidget->zoomOut(false);
@@ -249,7 +249,7 @@ void DialogTransformEditor::on_lineEditAlias_editingFinished()
 
   if( ts && ts->transform() )
   {
-    ts->transform()->setAlias(ui->lineEditAlias->text());
+    ts->setAlias(ui->lineEditAlias->text());
   }
 
   _plotwidget->replot();
