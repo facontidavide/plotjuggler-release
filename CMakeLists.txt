@@ -9,10 +9,24 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}  "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
 add_definitions(
     -DPJ_MAJOR_VERSION="3"
-    -DPJ_MINOR_VERSION="2"
+    -DPJ_MINOR_VERSION="3"
     -DPJ_PATCH_VERSION="0" )
 
+# You can add some command line arguments at compilation time
+# Use _0x3b_ instead of semicolon
+
+#set(PJ_DEFAULT_ARGS "-n --enabled_plugins=libDataLoadCSV_0x3b_libDataStreamSample")
+#add_definitions( -DPJ_DEFAULT_ARGS="${PJ_DEFAULT_ARGS}")
+
+IF (NOT WIN32)
+  set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address")
+  set (CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_LINKER_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address")
+endif()
+
 include_directories( plotjuggler_base/include )
+include_directories( plotjuggler_base/src )
+
+add_definitions( -DFMT_HEADER_ONLY )
 
 # http://answers.ros.org/question/230877/optionally-build-a-package-with-catkin/
 if( CATKIN_DEVEL_PREFIX OR catkin_FOUND OR CATKIN_BUILD_BINARY_PACKAGE)
@@ -26,7 +40,7 @@ if( CATKIN_DEVEL_PREFIX OR catkin_FOUND OR CATKIN_BUILD_BINARY_PACKAGE)
 
     catkin_package(
         INCLUDE_DIRS  plotjuggler_base/include
-        LIBRARIES  plotjuggler_plugin_base
+        LIBRARIES  plotjuggler_base
         CATKIN_DEPENDS roslib
     )
 
@@ -129,15 +143,27 @@ include_directories(
 )
 
 #########################  BASE library  ####################################
-
 qt5_wrap_cpp(PLOTJUGGLER_BASE_MOCS
   plotjuggler_base/include/PlotJuggler/dataloader_base.h
-  plotjuggler_base/include/PlotJuggler/datastreamer_base.h
   plotjuggler_base/include/PlotJuggler/statepublisher_base.h
+  plotjuggler_base/include/PlotJuggler/toolbox_base.h
+  plotjuggler_base/include/PlotJuggler/datastreamer_base.h
   plotjuggler_base/include/PlotJuggler/transform_function.h
+  plotjuggler_base/include/PlotJuggler/plotwidget_base.h
 )
 
-add_library( plotjuggler_plugin_base STATIC ${PLOTJUGGLER_BASE_MOCS} )
+add_library( plotjuggler_base
+    ${PLOTJUGGLER_BASE_MOCS}
+     plotjuggler_base/src/plotdata.cpp
+     plotjuggler_base/src/datastreamer_base.cpp
+     plotjuggler_base/src/transform_function.cpp
+     plotjuggler_base/src/plotwidget_base.cpp
+     plotjuggler_base/src/plotzoomer.cpp
+     plotjuggler_base/src/plotmagnifier.cpp
+     plotjuggler_base/src/plotlegend.cpp
+     plotjuggler_base/src/timeseries_qwt.cpp
+     )
+# target_link_libraries(plotjuggler_base plotjuggler_qwt)
 
 #########################  INSTALL  ####################################
 
@@ -155,7 +181,10 @@ elseif(COMPILING_WITH_AMENT)
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
     set(PJ_PLUGIN_INSTALL_DIRECTORY lib/${PROJECT_NAME} )
 
-    ament_export_targets(export_plotjuggler_plugin_base HAS_LIBRARY_TARGET)
+    ament_export_targets(
+        export_plotjuggler_base
+        export_plotjuggler_qwt
+        HAS_LIBRARY_TARGET)
     ament_package()
 
 else()
@@ -175,9 +204,14 @@ install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/PlotJuggler.desktop
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/plotjuggler.svg
         DESTINATION ${DESKTOP_ICON_DIR}  )
 
+
+add_subdirectory( 3rdparty/qwt/src )
+
+
 install(
-     TARGETS plotjuggler_plugin_base
-     EXPORT export_plotjuggler_plugin_base
+     TARGETS
+        plotjuggler_base
+     EXPORT export_plotjuggler_base
      LIBRARY DESTINATION lib
      ARCHIVE DESTINATION lib
      RUNTIME DESTINATION bin
@@ -193,7 +227,6 @@ endif()
 
 add_subdirectory( 3rdparty/color_widgets )
 add_subdirectory( 3rdparty/Qt-Advanced-Docking )
-add_subdirectory( 3rdparty/qwt/src )
 add_subdirectory( 3rdparty/lua-5.4.1 )
 
 add_subdirectory( plotjuggler_app )
@@ -204,6 +237,8 @@ add_subdirectory( plotjuggler_plugins/DataStreamSample )
 add_subdirectory( plotjuggler_plugins/DataStreamWebsocket )
 add_subdirectory( plotjuggler_plugins/DataStreamUDP )
 add_subdirectory( plotjuggler_plugins/StatePublisherCSV )
+add_subdirectory( plotjuggler_plugins/ToolboxQuaternion )
+add_subdirectory( plotjuggler_plugins/ToolboxFFT )
 
 if( ZMQ_FOUND )
   add_subdirectory( plotjuggler_plugins/DataStreamZMQ )

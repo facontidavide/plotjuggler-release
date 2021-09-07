@@ -7,12 +7,12 @@
 class LuaCustomFunction : public CustomFunction
 {
 public:
-  LuaCustomFunction(const SnippetData& snippet);
+
+  LuaCustomFunction(SnippetData snippet = {});
 
   void initEngine() override;
 
-  void calculatePoints(const PlotData& src_data,
-                       const std::vector<const PlotData*>& channels_data,
+  void calculatePoints(const std::vector<const PlotData*>& channels_data,
                        size_t point_index,
                        std::vector<PlotData::Point> &points) override;
 
@@ -20,6 +20,13 @@ public:
   {
     return "LUA";
   }
+
+  const char* name() const override
+  {
+    return "LuaCustomFunction";
+  }
+
+  bool xmlLoadState(const QDomElement& parent_element) override;
 
 private:
   std::unique_ptr<sol::state> _lua_engine;

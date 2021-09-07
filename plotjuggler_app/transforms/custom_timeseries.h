@@ -2,8 +2,9 @@
 #define CUSTOM_TIMESERIES_H
 
 #include "timeseries_qwt.h"
-#include "custom_function.h"
+#include "point_series_xy.h"
 #include "PlotJuggler/plotdata.h"
+#include "custom_function.h"
 
 class CustomTimeseries : public TransformedTimeseries
 {

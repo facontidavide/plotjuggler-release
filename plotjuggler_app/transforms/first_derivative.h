@@ -7,7 +7,7 @@
 
 using namespace PJ;
 
-class FirstDerivative: public TimeSeriesTransform
+class FirstDerivative: public TransformFunction_SISO
 {
 public:
   FirstDerivative();
