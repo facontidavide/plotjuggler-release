@@ -77,10 +77,10 @@ QWidget *IntegralTransform::optionsWidget()
   return _widget;
 }
 
-void IntegralTransform::init()
+void IntegralTransform::reset()
 {
   _accumulated_value = 0.0;
-  TimeSeriesTransform::init();
+  TransformFunction_SISO::reset();
 }
 
 bool IntegralTransform::xmlSaveState(QDomDocument &doc, QDomElement &parent_element) const

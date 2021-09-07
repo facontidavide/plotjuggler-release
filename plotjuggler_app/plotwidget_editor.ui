@@ -334,6 +334,13 @@
               </property>
              </widget>
             </item>
+            <item>
+             <widget class="QRadioButton" name="radioSticks">
+              <property name="text">
+               <string>Sticks</string>
+              </property>
+             </widget>
+            </item>
            </layout>
           </widget>
          </item>
