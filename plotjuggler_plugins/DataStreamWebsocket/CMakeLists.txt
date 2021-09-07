@@ -20,7 +20,7 @@ else()
     target_link_libraries(DataStreamWebSocket
         ${Qt5Widgets_LIBRARIES}
         Qt5::WebSockets
-        plotjuggler_plugin_base )
+        plotjuggler_base )
 
     install(TARGETS DataStreamWebSocket DESTINATION ${PJ_PLUGIN_INSTALL_DIRECTORY}  )
 
