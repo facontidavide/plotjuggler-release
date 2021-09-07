@@ -275,5 +275,11 @@
         <file>cheatsheet/img/tutorial_layout.png</file>
         <file>resources/svg/trash.svg</file>
         <file>resources/svg/clear.svg</file>
+        <file>resources/svg/move_view.svg</file>
+        <file>resources/skin/about_window_body.html</file>
+        <file>resources/skin/about_window_title.html</file>
+        <file>resources/skin/mainwindow_title.txt</file>
+        <file>resources/svg/alarm-bell.svg</file>
+        <file>resources/svg/alarm-bell-active.svg</file>
     </qresource>
 </RCC>
