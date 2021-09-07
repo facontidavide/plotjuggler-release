@@ -10,7 +10,7 @@ namespace Ui {
 class ScaleTransform;
 }
 
-class ScaleTransform : public TimeSeriesTransform
+class ScaleTransform : public TransformFunction_SISO
 {
 
 public:

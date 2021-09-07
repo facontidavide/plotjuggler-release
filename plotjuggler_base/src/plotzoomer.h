@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QPoint>
+#include <QDebug>
 #include "qwt_plot_zoomer.h"
 
 class PlotZoomer : public QwtPlotZoomer

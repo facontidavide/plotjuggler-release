@@ -7,7 +7,7 @@
 
 using namespace PJ;
 
-class IntegralTransform: public TimeSeriesTransform
+class IntegralTransform: public TransformFunction_SISO
 {
 public:
   IntegralTransform();
@@ -18,7 +18,7 @@ public:
 
   QWidget* optionsWidget() override;
 
-  void init() override;
+  void reset() override;
 
   bool xmlSaveState(QDomDocument& doc, QDomElement& parent_element) const override;
 
