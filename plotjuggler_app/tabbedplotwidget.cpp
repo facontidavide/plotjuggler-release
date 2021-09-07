@@ -150,7 +150,7 @@ PlotDocker* TabbedPlotWidget::addTab(QString tab_name)
 
   QSettings settings;
   QString theme = settings.value("StyleSheet::theme", "light").toString();
-  close_button->setIcon(LoadSvgIcon(":/resources/svg/close-button.svg", theme));
+  close_button->setIcon(LoadSvg(":/resources/svg/close-button.svg", theme));
 
   close_button->setFixedSize( QSize(16,16));
   close_button->setFlat(true);
@@ -254,7 +254,7 @@ void TabbedPlotWidget::on_renameCurrentTab()
 
 void TabbedPlotWidget::on_stylesheetChanged(QString theme)
 {
-  _buttonAddTab->setIcon(LoadSvgIcon(":/resources/svg/add_tab.svg", theme));
+  _buttonAddTab->setIcon(LoadSvg(":/resources/svg/add_tab.svg", theme));
 }
 
 
