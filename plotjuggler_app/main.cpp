@@ -87,9 +87,49 @@ QPixmap getFunnySplashscreen()
   return QPixmap(filename);
 }
 
+
+std::pair<int,char**> MergeArguments(int argc, char* argv[])
+{
+  #ifdef PJ_DEFAULT_ARGS
+  auto default_cmdline_args = QString( PJ_DEFAULT_ARGS ).split(" ", QString::SkipEmptyParts);
+  int new_argc = argc + default_cmdline_args.size();
+  static char *new_argv[100];
+
+  // preserve arg[0] => executable path
+  new_argv[0] = argv[0];
+
+  // Add the remain arguments, replacing escaped characters if necessary.
+  // Escaping needed because some chars cannot be entered easily in the -DPJ_DEFAULT_ARGS
+  // preprocessor directive
+  //   _0x20_   -->   ' '   (space)
+  //   _0x3b_   -->   ';'   (semicolon)
+  int index = 1;
+  for ( auto cmdline_arg : default_cmdline_args  )
+  {
+    // replace(const QString &before, const QString &after, Qt::CaseSensitivity cs = Qt::CaseSensitive)
+    cmdline_arg = cmdline_arg.replace("_0x20_", " ", Qt::CaseSensitive);
+    cmdline_arg = cmdline_arg.replace("_0x3b_", ";", Qt::CaseSensitive);
+    new_argv[index++] = strdup(cmdline_arg.toLocal8Bit().data());
+  }
+
+  // If an argument appears repeated, the second value overrides previous one. 
+  // Do this after adding default_cmdline_args so the command-line overide default
+  for (int i=1; i< argc; ++i ) {
+    new_argv[index++] = argv[i];
+  }
+
+  return {new_argc, new_argv};
+
+#else
+  return {argc, argv};
+#endif
+}
+
+
 int main(int argc, char* argv[])
 {
-  QApplication app(argc, argv);
+  auto arg = MergeArguments(argc, argv);
+  QApplication app(arg.first, arg.second);
 
   QCoreApplication::setOrganizationName("PlotJuggler");
   QCoreApplication::setApplicationName("PlotJuggler-3");
@@ -145,14 +185,17 @@ int main(int argc, char* argv[])
   parser.addOption(publish_option);
 
   QCommandLineOption folder_option(QStringList() << "plugin_folders",
-                                    "Add semicolon-separated list of folders where you should look for additional plugins.",
+                                   "Add semicolon-separated list of folders where you should look "
+                                   "for additional plugins.",
                                    "directory_paths");
   parser.addOption(folder_option);
 
-  QCommandLineOption buffersize_option(QStringList() << "buffer_size",
-                                       QCoreApplication::translate("main", "Change the maximum size of the streaming "
-                                                                           "buffer (minimum: 10 default: 60)"),
-                                       QCoreApplication::translate("main", "seconds"));
+  QCommandLineOption buffersize_option(
+      QStringList() << "buffer_size",
+      QCoreApplication::translate("main", "Change the maximum size of the streaming "
+                                          "buffer (minimum: 10 default: 60)"),
+      QCoreApplication::translate("main", "seconds"));
+
   parser.addOption(buffersize_option);
 
   QCommandLineOption nogl_option(QStringList() << "disable_opengl",
@@ -160,6 +203,23 @@ int main(int argc, char* argv[])
                                  "You can enable it again in the 'Preferences' menu.");
 
   parser.addOption(nogl_option);
+
+  QCommandLineOption enabled_plugins_option(QStringList() << "enabled_plugins",
+                                            "Limit the loaded plugins to ones in the semicolon-separated list", "name_list");
+  parser.addOption(enabled_plugins_option);
+
+  QCommandLineOption disabled_plugins_option(QStringList() << "disabled_plugins",
+                                             "Do not load any of the plugins in the semicolon separated list", "name_list");
+  parser.addOption(disabled_plugins_option);
+
+  QCommandLineOption skin_path_option(QStringList() << "skin_path",
+                                      "New \"skin\". Refer to the sample in [plotjuggler_app/resources/skin]", "path to folder");
+  parser.addOption(skin_path_option);
+
+  QCommandLineOption start_streamer(QStringList() << "start_streamer",
+                                    "Automatically start a Streaming Plugin with the give filename",
+                                    "file_name (no extension)");
+  parser.addOption(start_streamer);
 
   parser.process(*qApp);
 
@@ -169,9 +229,24 @@ int main(int argc, char* argv[])
     return -1;
   }
 
+  if (parser.isSet(enabled_plugins_option) && parser.isSet(disabled_plugins_option))
+  {
+      std::cerr << "Option [ --enabled_plugins ] and [ --disabled_plugins ] can't be used together." << std::endl;
+      return -1;
+  }
+
   if (parser.isSet(nogl_option))
   {
     settings.setValue("Preferences::use_opengl", false);
+  }
+
+  if (parser.isSet(skin_path_option))
+  {
+    QDir path( parser.value(skin_path_option ) );
+    if( !path.exists() ) {
+      qDebug() << "Skin path [" <<  parser.value(skin_path_option) << "] not found";
+      return -1;
+    }
   }
 
   QIcon app_icon("://resources/plotjuggler.svg");
@@ -183,6 +258,9 @@ int main(int argc, char* argv[])
   QNetworkRequest request;
   request.setUrl(QUrl("https://api.github.com/repos/facontidavide/PlotJuggler/releases/latest"));
   manager.get(request);
+
+
+  MainWindow* w = nullptr;
 
   /*
    * You, fearless code reviewer, decided to start a journey into my source code.
@@ -197,10 +275,24 @@ int main(int argc, char* argv[])
    * Please don't do it.
    */
 
-  if (!parser.isSet(nosplash_option) && !(parser.isSet(loadfile_option) || parser.isSet(layout_option)))
+  if (!parser.isSet(nosplash_option) &&
+      !(parser.isSet(loadfile_option) || parser.isSet(layout_option)) )
   // if(false) // if you uncomment this line, a kitten will die somewhere in the world.
   {
-    QPixmap main_pixmap = getFunnySplashscreen();
+    QPixmap main_pixmap;
+
+    if (parser.isSet(skin_path_option))
+    {
+      QDir path( parser.value(skin_path_option ) );
+      QFile splash = path.filePath( "pj_splashscreen.png");
+      if( splash.exists() ){
+        main_pixmap = QPixmap( splash.fileName() );
+      }
+    }
+
+    if( main_pixmap.isNull() ){
+      main_pixmap = getFunnySplashscreen();
+    }
     QSplashScreen splash(main_pixmap, Qt::WindowStaysOnTopHint);
     QDesktopWidget* desktop = QApplication::desktop();
     const int scrn = desktop->screenNumber();
@@ -216,19 +308,24 @@ int main(int argc, char* argv[])
       app.processEvents();
     }
 
-    MainWindow w(parser);
+    w = new MainWindow(parser);
 
     deadline = QDateTime::currentDateTime().addMSecs(3000);
     while (QDateTime::currentDateTime() < deadline && !splash.isHidden())
     {
       app.processEvents();
     }
-
-    w.show();
-    splash.finish(&w);
-    return app.exec();
   }
-  MainWindow w(parser);
-  w.show();
+  else{
+    w = new MainWindow(parser);
+  }
+
+  w->show();
+
+  if ( parser.isSet(start_streamer))
+  {
+     w->on_buttonStreamingStart_clicked();
+  }
+
   return app.exec();
 }

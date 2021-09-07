@@ -13,7 +13,7 @@ namespace Ui {
 class OutlierRemovalFilter;
 }
 
-class OutlierRemovalFilter: public TimeSeriesTransform
+class OutlierRemovalFilter: public TransformFunction_SISO
 {
 public:
   explicit OutlierRemovalFilter();
