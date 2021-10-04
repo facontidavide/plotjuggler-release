@@ -269,14 +269,14 @@ PlotWidget::CurveInfo *PlotWidget::addCurveXY(std::string name_x, std::string na
   while (name.empty())
   {
     SuggestDialog dialog(name_x, name_y, qwtPlot());
+    auto ret = dialog.exec();
 
-    bool ok = (dialog.exec() == QDialog::Accepted);
     curve_name = dialog.suggestedName();
     name = curve_name.toStdString();
     name_x = dialog.nameX().toStdString();
     name_y = dialog.nameY().toStdString();
 
-    if (!ok)
+    if (ret != QDialog::Accepted)
     {
       return nullptr;
     }
@@ -287,8 +287,8 @@ PlotWidget::CurveInfo *PlotWidget::addCurveXY(std::string name_x, std::string na
     {
       int ret = QMessageBox::warning(qwtPlot(), "Missing name",
                                      "The name of the curve is missing or exist already. Try again or abort.",
-                                     QMessageBox::Abort | QMessageBox::Retry, QMessageBox::Retry);
-      if (ret == QMessageBox::Abort)
+                                     QMessageBox::Abort | QMessageBox::Retry, QMessageBox::NoButton);
+      if (ret == QMessageBox::Abort || ret == QMessageBox::NoButton)
       {
         return nullptr;
       }

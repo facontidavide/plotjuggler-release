@@ -1237,13 +1237,7 @@ void MainWindow::importPlotDataMap(PlotDataMapRef& new_data, bool remove_old)
 
     if (!old_plots_to_delete.empty())
     {
-      QMessageBox::StandardButton reply;
-      reply = QMessageBox::question(this, tr("Warning"), tr("Do you want to remove the previously loaded data?\n"),
-                                    QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes);
-      if (reply == QMessageBox::Yes)
-      {
-        onDeleteMultipleCurves(old_plots_to_delete);
-      }
+      onDeleteMultipleCurves(old_plots_to_delete);
     }
   }
 
@@ -1270,7 +1264,8 @@ bool MainWindow::isStreamingActive() const
 
 bool MainWindow::loadDataFromFiles(QStringList filenames)
 {
-  if (filenames.size() > 1)
+  static bool show_me = true;
+  if (filenames.size() > 1 && show_me)
   {
     QMessageBox msgbox;
     msgbox.setWindowTitle("Loading multiple files");
@@ -1278,10 +1273,30 @@ bool MainWindow::loadDataFromFiles(QStringList filenames)
                    "timeseries.\n\n"
                    "This is an experimental feature. Publishers will not work as you may expect.");
     msgbox.addButton(QMessageBox::Ok);
-    //    QCheckBox *cb = new QCheckBox("Don't show this again");
-    //    msgbox.setCheckBox(cb);
-    //    connect(cb, &QCheckBox::stateChanged, this, [this, cb , &show_me]() {  show_me = !cb->isChecked(); } );
+    QCheckBox *cb = new QCheckBox("Don't show this again");
+    cb->setChecked(!show_me);
+    msgbox.setCheckBox(cb);
+    connect(cb, &QCheckBox::stateChanged, this, [&]() {  show_me = !cb->isChecked(); } );
     msgbox.exec();
+  }
+
+  if( _mapped_plot_data.numeric.size() > 0 ||
+      _mapped_plot_data.strings.size() > 0 ||
+      _mapped_plot_data.user_defined.size() > 0 )
+  {
+    QMessageBox::StandardButton reply;
+    reply = QMessageBox::question(this, tr("Warning"), tr("Do you want to remove the previously loaded data?\n"),
+                                  QMessageBox::Yes | QMessageBox::No, QMessageBox::NoButton);
+
+    if (reply == QMessageBox::Yes)
+    {
+      deleteAllData();
+    }
+    if(reply == QMessageBox::NoButton)
+    {
+      QMessageBox::information(this, tr("Closed"), "File loading interrupted by the user");
+      return false;
+    }
   }
 
   QStringList loaded_filenames;
@@ -1387,7 +1402,7 @@ bool MainWindow::loadDataFromFile(const FileLoadInfo& info)
         AddPrefixToPlotData(info.prefix.toStdString(), mapped_data.numeric);
         AddPrefixToPlotData(info.prefix.toStdString(), mapped_data.strings);
 
-        importPlotDataMap(mapped_data, true);
+        importPlotDataMap(mapped_data, false);
 
         QDomElement plugin_elem = dataloader->xmlSaveState(new_info.plugin_config);
         new_info.plugin_config.appendChild(plugin_elem);
