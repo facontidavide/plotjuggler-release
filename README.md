@@ -7,7 +7,7 @@
 [![Tweet](https://img.shields.io/twitter/url/http/shields.io.svg?style=social)](https://twitter.com/intent/tweet?text=I%20use%20PlotJuggler%20and%20it%20is%20amazing%0D%0A&url=https://github.com/facontidavide/PlotJuggler&via=facontidavide&hashtags=dataviz,plotjuggler,GoROS,PX4)
 **Gold Sponsor**: [Greenzie](https://www.greenzie.com/)
 
-# PlotJuggler 3.2
+# PlotJuggler 3.3
 
 PlotJuggler is a tool to visualize time series that is **fast**, **powerful** and  **intuitive**.
 
@@ -81,7 +81,7 @@ If you want a simple example to learn how to write your own plugins, have a look
 [PlotJuggler-3.2.0-x86_64.AppImage](https://github.com/facontidavide/PlotJuggler/releases/download/3.2.0/PlotJuggler-3.2.0-x86_64.AppImage)
 
 **Windows Installer**: 
-[PlotJuggler-Windows-3.1.1-installer](https://github.com/facontidavide/PlotJuggler/releases/download/3.1.1/PlotJuggler-Windows-3.1.1-installer.exe)
+[PlotJuggler-Windows-3.1.1-installer](https://github.com/facontidavide/PlotJuggler/releases/download/3.3.0/PlotJuggler-Windows-3.3.0-installer.exe)
 
 ### For ROS User
 
@@ -123,8 +123,6 @@ To install PlotJuggler, just type:
 
     sudo apt install ros-${ROS_DISTRO}-plotjuggler-ros
        
-I added a fix that will be available in the next release.
-
 To launch PlotJuggler on ROS, use the command:
 
       rosrun plotjuggler plotjuggler

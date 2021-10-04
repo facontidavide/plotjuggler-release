@@ -28,7 +28,7 @@ QWidget *OutlierRemovalFilter::optionsWidget()
 bool OutlierRemovalFilter::xmlSaveState(QDomDocument &doc, QDomElement &parent_element) const
 {
   QDomElement widget_el = doc.createElement("options");
-  widget_el.setAttribute("factor",  ui->spinBoxFactor->value() );
+  widget_el.setAttribute("value",  ui->spinBoxFactor->value() );
   parent_element.appendChild( widget_el );
   return true;
 }
@@ -46,33 +46,20 @@ OutlierRemovalFilter::calculateNextPoint(size_t index)
   const auto& p = dataSource()->at(index);
   _ring_view.push_back(p.y);
 
-  if( index <= 2 )
+  if( index < 3 )
   {
     return p;
-  }
-
-  if( index == 3 ) // skip this
-  {
-    return {};
   }
 
   double d1 = (_ring_view[1] -  _ring_view[2]);
   double d2 = (_ring_view[2] -  _ring_view[3]);
   if( d1*d2 < 0 ) // spike
   {
-    double min_y = _ring_view[0];
-    double max_y = _ring_view[0];
-
-    min_y = std::min(min_y, _ring_view[1]);
-    min_y = std::min(min_y, _ring_view[3]);
-
-    max_y = std::max(max_y, _ring_view[1]);
-    max_y = std::max(max_y, _ring_view[3]);
-
-    double thresh = (max_y - min_y) * ui->spinBoxFactor->value();
+    double d0 = (_ring_view[0] -  _ring_view[1]);
+    double thresh = ui->spinBoxFactor->value();
 
     double jump = std::max(std::abs(d1), std::abs(d2));
-    if( jump > thresh )
+    if( jump / std::abs(d0) > thresh )
     {
       return {};
     }
