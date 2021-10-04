@@ -25,6 +25,7 @@ QT5_WRAP_UI ( UI_SRC
 
     transforms/first_derivative.ui
     transforms/moving_average_filter.ui
+    transforms/moving_rms.ui
     transforms/outlier_removal.ui
     transforms/integral_transform.ui
 
@@ -68,6 +69,7 @@ SET( PLOtJUGGLER_SRC
     transforms/transform_selector.cpp
     transforms/lua_custom_function.cpp
     transforms/moving_average_filter.cpp
+    transforms/moving_rms.cpp
     transforms/outlier_removal.cpp
     transforms/integral_transform.cpp
 
