@@ -33,7 +33,7 @@ public:
 
 protected:
   void parseHeader(QFile &file,
-                   std::vector<std::string> *ordered_names);
+                   std::vector<std::string> &ordered_names);
 
   int launchDialog(QFile &file,
                    std::vector<std::string> *ordered_names);
@@ -47,6 +47,8 @@ private:
 
   QDialog* _dialog;
   Ui::DialogCSV* _ui;
+
+  bool multiple_columns_warning_ = true;
 };
 
 
