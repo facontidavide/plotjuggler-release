@@ -33,7 +33,8 @@ void MovingAverageFilter::reset()
 std::optional<PlotData::Point>
 MovingAverageFilter::calculateNextPoint(size_t index)
 {
-  size_t buffer_size = std::min( int(ui->spinBoxSamples->value()), int(dataSource()->size()));
+  size_t buffer_size = std::min( size_t(ui->spinBoxSamples->value()),
+                                 size_t(dataSource()->size()));
   if( buffer_size != _buffer.size() ) {
     _buffer.resize( buffer_size );
     _ring_view = nonstd::ring_span<PlotData::Point>(_buffer.begin(), _buffer.end());
