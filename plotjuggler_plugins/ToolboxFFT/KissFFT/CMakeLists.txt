@@ -36,7 +36,7 @@ endif()
 # Declare kissfft library ( libkissfft.a / libkissfft-${KISSFFT_DATATYPE}.so.${MAKEFILE_EXTRACTED_VERSION} )
 #
 
-add_library(kissfft
+add_library(kissfft STATIC
   kiss_fft.c
   kfc.c
   kiss_fftnd.c
@@ -92,12 +92,6 @@ else()
         endif()
     endif()
 endif()
-
-
-#
-# Static library
-#
-set(KISSFFT_EXPORT_SUFFIX "${KISSFFT_EXPORT_SUFFIX}-static")
 
 
 # Set library name, version, soversion and aliases

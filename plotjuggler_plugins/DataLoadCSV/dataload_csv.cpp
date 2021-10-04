@@ -133,11 +133,11 @@ const std::vector<const char*>& DataLoadCSV::compatibleFileExtensions() const
 }
 
 void DataLoadCSV::parseHeader(QFile& file,
-                              std::vector<std::string>* column_names )
+                              std::vector<std::string>& column_names )
 {
   file.open(QFile::ReadOnly);
 
-  column_names->clear();
+  column_names.clear();
   _ui->listWidgetSeries->clear();
 
   QTextStream inA(&file);
@@ -150,6 +150,8 @@ void DataLoadCSV::parseHeader(QFile& file,
   QStringList firstline_items = SplitLine( first_line, _separator );
 
   int is_number_count = 0;
+
+  std::set<std::string> different_columns;
 
   // check if all the elements in first row are numbers
   for (int i = 0; i < firstline_items.size(); i++)
@@ -167,8 +169,9 @@ void DataLoadCSV::parseHeader(QFile& file,
     for (int i = 0; i < firstline_items.size(); i++)
     {
       auto field_name = QString("_Column_%1").arg(i);
-      _ui->listWidgetSeries->addItem( field_name );
-      column_names->push_back(field_name.toStdString());
+      auto column_name = field_name.toStdString();
+      column_names.push_back(column_name);
+      different_columns.insert(column_name);
     }
   }
   else
@@ -182,9 +185,49 @@ void DataLoadCSV::parseHeader(QFile& file,
       {
         field_name = QString("_Column_%1").arg(i);
       }
-      _ui->listWidgetSeries->addItem( field_name );
-      column_names->push_back(field_name.toStdString());
+      auto column_name = field_name.toStdString();
+      column_names.push_back(column_name);
+      different_columns.insert(column_name);
     }
+  }
+
+  if( different_columns.size() < column_names.size() )
+  {
+    if( multiple_columns_warning_ )
+    {
+      QMessageBox::warning(nullptr, "Duplicate Column Name",
+                           "Multiple Columns have the same name.\n"
+                           "The column number will be added (as suffix) to the name.");
+      multiple_columns_warning_ = false;
+    }
+
+    std::vector<size_t> repeated_columns;
+    for (size_t i=0; i<column_names.size(); i++)
+    {
+      repeated_columns.clear();
+      repeated_columns.push_back(i);
+
+      for (size_t j=i+1; j<column_names.size(); j++)
+      {
+        if( column_names[i] == column_names[j] ) {
+          repeated_columns.push_back(j);
+        }
+      }
+      if (repeated_columns.size() > 1)
+      {
+        for (size_t index: repeated_columns)
+        {
+          QString suffix = "_";
+          suffix += QString::number(index).rightJustified(2, '0');
+          column_names[index] += suffix.toStdString();
+        }
+      }
+    }
+  }
+
+  for(const auto& name: column_names)
+  {
+    _ui->listWidgetSeries->addItem( QString::fromStdString(name) );
   }
 
   int linecount = 1;
@@ -255,11 +298,11 @@ int DataLoadCSV::launchDialog(QFile &file, std::vector<std::string> *column_name
     case 1: _separator = ';'; break;
     case 2: _separator = ' '; break;
     }
-    parseHeader( file, column_names );
+    parseHeader( file, *column_names );
   });
 
   // parse the header once and launch the dialog
-  parseHeader(file, column_names);
+  parseHeader(file, *column_names);
 
   int res = _dialog->exec();
 
@@ -290,6 +333,8 @@ int DataLoadCSV::launchDialog(QFile &file, std::vector<std::string> *column_name
 bool DataLoadCSV::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_data)
 {
   bool use_provided_configuration = false;
+  multiple_columns_warning_ = true;
+
   _default_time_axis.clear();
 
   if (info->plugin_config.hasChildNodes())
@@ -309,7 +354,7 @@ bool DataLoadCSV::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_data
   }
   else
   {
-    parseHeader(file, &column_names );
+    parseHeader(file, column_names );
     if (_default_time_axis == "__TIME_INDEX_GENERATED__")
     {
       time_index = TIME_INDEX_GENERATED;
