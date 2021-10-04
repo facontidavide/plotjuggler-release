@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>MovingAverageFilter</class>
- <widget class="QWidget" name="MovingAverageFilter">
+ <class>MovingRMS</class>
+ <widget class="QWidget" name="MovingRMS">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -56,16 +56,6 @@
       </widget>
      </item>
     </layout>
-   </item>
-   <item>
-    <widget class="QCheckBox" name="checkBoxTimeOffset">
-     <property name="toolTip">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The Moving Average filter mathematically introduce a &amp;quot;delay&amp;quot; in your signal.&lt;/p&gt;&lt;p&gt;Checking this, the signal will look &amp;quot;centered&amp;quot;, because you look at (N/2) samples into the past and (N/2) sample into the future.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-     </property>
-     <property name="text">
-      <string>Compensate time offset</string>
-     </property>
-    </widget>
    </item>
    <item>
     <spacer name="verticalSpacer">
