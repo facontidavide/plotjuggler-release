@@ -3,10 +3,10 @@
 #include <cstdlib>
 
 PointSeriesXY::PointSeriesXY(const PlotData* x_axis, const PlotData* y_axis)
-  : QwtSeriesWrapper(&_cached_curve),
-    _x_axis(x_axis),
-    _y_axis(y_axis),
-    _cached_curve("", x_axis->group())
+  : QwtSeriesWrapper(&_cached_curve)
+  , _x_axis(x_axis)
+  , _y_axis(y_axis)
+  , _cached_curve("", x_axis->group())
 {
   updateCache(true);
 }
@@ -65,7 +65,7 @@ bool PointSeriesXY::updateCache(bool reset_old_data)
     }
 
     const QPointF p(_x_axis->at(i).y, _y_axis->at(i).y);
-    _cached_curve.pushBack( { p.x(), p.y() } );
+    _cached_curve.pushBack({ p.x(), p.y() });
   }
   return true;
 }

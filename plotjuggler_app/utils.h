@@ -35,7 +35,6 @@ private:
   double _value;
 };
 
-
 struct MoveDataRet
 {
   std::vector<std::string> added_curves;
@@ -43,10 +42,7 @@ struct MoveDataRet
   bool data_pushed = false;
 };
 
-
-MoveDataRet MoveData(PlotDataMapRef& source,
-            PlotDataMapRef& destination,
-            bool remove_older);
-
+MoveDataRet MoveData(PlotDataMapRef& source, PlotDataMapRef& destination,
+                     bool remove_older);
 
 #endif  // UTILS_H
