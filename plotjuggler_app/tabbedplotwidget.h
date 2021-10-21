@@ -16,10 +16,8 @@ public:
   {
   } MainWindowArea;
 
-  explicit TabbedPlotWidget(QString name,
-                            QMainWindow* main_window,
-                            PlotDataMapRef& mapped_data,
-                            QMainWindow* parent);
+  explicit TabbedPlotWidget(QString name, QMainWindow* main_window,
+                            PlotDataMapRef& mapped_data, QMainWindow* parent);
 
   PlotDocker* currentTab();
 
@@ -50,7 +48,7 @@ public slots:
 
   void setStreamingMode(bool streaming_mode);
 
-  //static void saveTabImage(QString fileName, PlotDocker* matrix);
+  // static void saveTabImage(QString fileName, PlotDocker* matrix);
 
   void on_stylesheetChanged(QString style_dir);
 
@@ -58,7 +56,7 @@ private slots:
 
   void on_renameCurrentTab();
 
-  //void on_savePlotsToFile();
+  // void on_savePlotsToFile();
 
   void on_addTabButton_pressed();
 
@@ -77,7 +75,6 @@ private slots:
   void paintEvent(QPaintEvent* event) override;
 
 private:
-
   QTabWidget* _tabWidget;
 
   QPushButton* _buttonHorizontalLink;
@@ -86,7 +83,7 @@ private:
 
   // TODO QAction* _action_savePlots;
 
- // QMenu* _tab_menu;
+  // QMenu* _tab_menu;
 
   const QString _name;
 
@@ -100,7 +97,7 @@ private:
 
   virtual void closeEvent(QCloseEvent* event) override;
 
- // void printPlotsNames();
+  // void printPlotsNames();
 
 protected:
   virtual bool eventFilter(QObject* obj, QEvent* event) override;

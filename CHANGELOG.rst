@@ -2,6 +2,13 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+3.3.2 (2021-10-21)
+------------------
+* don't add the prefix. Checkbox added
+* bug fix when accidentally merging datafiles
+* clang-format
+* Contributors: Davide Faconti
+
 3.3.1 (2021-10-04)
 ------------------
 * fix `#527 <https://github.com/facontidavide/PlotJuggler/issues/527>`_

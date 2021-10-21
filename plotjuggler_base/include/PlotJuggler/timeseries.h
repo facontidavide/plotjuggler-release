@@ -4,84 +4,90 @@
 #include "plotdatabase.h"
 #include <algorithm>
 
-namespace PJ {
-
+namespace PJ
+{
 template <typename Value>
-class TimeseriesBase: public PlotDataBase<double, Value>
+class TimeseriesBase : public PlotDataBase<double, Value>
 {
 protected:
-    double _max_range_x;
-    using PlotDataBase<double, Value>::_points;
+  double _max_range_x;
+  using PlotDataBase<double, Value>::_points;
 
 public:
-    using Point = typename PlotDataBase<double, Value>::Point;
+  using Point = typename PlotDataBase<double, Value>::Point;
 
-    TimeseriesBase(const std::string& name, PlotGroup::Ptr group):
-        PlotDataBase<double, Value>(name, group),
-        _max_range_x( std::numeric_limits<double>::max() )
-    { }
+  TimeseriesBase(const std::string& name, PlotGroup::Ptr group)
+    : PlotDataBase<double, Value>(name, group)
+    , _max_range_x(std::numeric_limits<double>::max())
+  {
+  }
 
-    TimeseriesBase(const TimeseriesBase& other) = delete;
-    TimeseriesBase(TimeseriesBase&& other) = default;
+  TimeseriesBase(const TimeseriesBase& other) = delete;
+  TimeseriesBase(TimeseriesBase&& other) = default;
 
-    TimeseriesBase& operator=(const TimeseriesBase& other) = delete;
-    TimeseriesBase& operator=(TimeseriesBase&& other) = default;
+  TimeseriesBase& operator=(const TimeseriesBase& other) = delete;
+  TimeseriesBase& operator=(TimeseriesBase&& other) = default;
 
-    void clone(const TimeseriesBase& other)
+  void clone(const TimeseriesBase& other)
+  {
+    _max_range_x = other._max_range_x;
+    _points = other._points;
+  }
+
+  void setMaximumRangeX(double max_range)
+  {
+    _max_range_x = max_range;
+    trimRange();
+  }
+
+  double maximumRangeX() const
+  {
+    return _max_range_x;
+  }
+
+  int getIndexFromX(double x) const;
+
+  std::optional<Value> getYfromX(double x) const
+  {
+    int index = getIndexFromX(x);
+    return (index < 0) ? std::nullopt : std::optional(_points[index].y);
+  }
+
+  void pushBack(const Point& p) override
+  {
+    auto temp = p;
+    pushBack(std::move(temp));
+  }
+
+  void pushBack(Point&& p) override
+  {
+    bool need_sorting = (!_points.empty() && p.x < this->back().x);
+
+    if (need_sorting)
     {
-      _max_range_x = other._max_range_x;
-      _points = other._points;
+      auto it = std::upper_bound(_points.begin(), _points.end(), p, TimeCompare);
+      PlotDataBase<double, Value>::insert(it, std::move(p));
     }
-
-    void setMaximumRangeX(double max_range)
+    else
     {
-        _max_range_x = max_range;
-        trimRange();
+      PlotDataBase<double, Value>::pushBack(std::move(p));
     }
-
-    double maximumRangeX() const
-    {
-        return _max_range_x;
-    }
-
-    int getIndexFromX(double x) const;
-
-    std::optional<Value> getYfromX(double x) const
-    {
-      int index = getIndexFromX(x);
-      return ( index < 0 ) ? std::nullopt : std::optional( _points[index].y );
-    }
-
-    void pushBack(const Point &p) override
-    {
-        auto temp = p;
-        pushBack(std::move(temp));
-    }
-
-    void pushBack(Point&& p) override
-    {
-        bool need_sorting = ( !_points.empty() && p.x < this->back().x );
-
-        if( need_sorting ) {
-            auto it = std::upper_bound(_points.begin(), _points.end(), p, TimeCompare );
-            PlotDataBase<double, Value>::insert( it, std::move(p) );
-        }
-        else{
-            PlotDataBase<double, Value>::pushBack( std::move(p) );
-        }
-        trimRange();
-    }
+    trimRange();
+  }
 
 private:
-    void trimRange()
+  void trimRange()
+  {
+    while (_points.size() > 2 && (_points.back().x - _points.front().x) > _max_range_x)
     {
-        while (_points.size() > 2 && (_points.back().x - _points.front().x) > _max_range_x)
-        {
-            this->popFront();
-        }
+      this->popFront();
     }
+  }
 
-    static bool TimeCompare(const Point& a, const Point& b) { return a.x < b.x; }
+  static bool TimeCompare(const Point& a, const Point& b)
+  {
+    return a.x < b.x;
+  }
 };
 
 //--------------------
@@ -93,7 +99,8 @@ inline int TimeseriesBase<Value>::getIndexFromX(double x) const
   {
     return -1;
   }
-  auto lower = std::lower_bound(_points.begin(), _points.end(), Point(x, {}), TimeCompare );
+  auto lower =
+      std::lower_bound(_points.begin(), _points.end(), Point(x, {}), TimeCompare);
   auto index = std::distance(_points.begin(), lower);
 
   if (index >= _points.size())
@@ -105,13 +112,13 @@ inline int TimeseriesBase<Value>::getIndexFromX(double x) const
     return 0;
   }
 
-  if (index > 0 && (abs(_points[index - 1].x - x) < abs(_points[index].x - x) ) )
+  if (index > 0 && (abs(_points[index - 1].x - x) < abs(_points[index].x - x)))
   {
-      index =  index - 1;
+    index = index - 1;
   }
   return index;
 }
 
-} // end namespace
+}  // namespace PJ
 
 #endif
