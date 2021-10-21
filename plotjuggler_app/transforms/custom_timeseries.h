@@ -9,8 +9,7 @@
 class CustomTimeseries : public TransformedTimeseries
 {
 public:
-  CustomTimeseries(const PlotData* source_data,
-                   const SnippetData& snippet,
+  CustomTimeseries(const PlotData* source_data, const SnippetData& snippet,
                    PlotDataMapRef& mapped_data);
 
   bool updateCache(bool reset_old_data) override;

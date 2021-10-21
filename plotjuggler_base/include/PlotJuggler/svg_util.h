@@ -2,7 +2,7 @@
 #define PJ_SVG_UTIL_H
 
 #ifdef QT_NO_SVGRENDERER
-  #error "QT_NO_SVGRENDERER defined"
+#error "QT_NO_SVGRENDERER defined"
 #endif
 
 #include <QtSvg>
@@ -24,19 +24,20 @@ inline QPixmap LoadSvg(QString filename, QString style_name = "light")
   auto svg_data = file.readAll();
   file.close();
 
-  if( style_name.contains("light") )
+  if (style_name.contains("light"))
   {
     svg_data.replace("#000000", "#111111");
     svg_data.replace("#ffffff", "#dddddd");
   }
-  else{
+  else
+  {
     svg_data.replace("#000000", "#dddddd");
     svg_data.replace("#ffffff", "#111111");
   }
 
   QByteArray content(svg_data);
 
-  QSvgRenderer rr( content );
+  QSvgRenderer rr(content);
   QImage image(64, 64, QImage::Format_ARGB32);
   QPainter painter(&image);
   image.fill(Qt::transparent);
@@ -45,5 +46,4 @@ inline QPixmap LoadSvg(QString filename, QString style_name = "light")
   return QPixmap::fromImage(image);
 }
 
-
-#endif // PJ_SVG_UTIL_H
+#endif  // PJ_SVG_UTIL_H

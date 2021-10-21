@@ -1,16 +1,12 @@
 #include "utils.h"
 #include <QDebug>
 
-
-MoveDataRet MoveData(PlotDataMapRef &source,
-                     PlotDataMapRef &destination,
-                     bool remove_older )
+MoveDataRet MoveData(PlotDataMapRef& source, PlotDataMapRef& destination,
+                     bool remove_older)
 {
-
   MoveDataRet ret;
 
-  auto moveDataImpl = [&](auto& source_series, auto& destination_series)
-  {
+  auto moveDataImpl = [&](auto& source_series, auto& destination_series) {
     for (auto& it : source_series)
     {
       const std::string& ID = it.first;
@@ -23,16 +19,14 @@ MoveDataRet MoveData(PlotDataMapRef &source,
         ret.added_curves.push_back(ID);
 
         PlotGroup::Ptr group;
-        if( source_plot.group() )
+        if (source_plot.group())
         {
-          destination.getOrCreateGroup( source_plot.group()->name() );
+          destination.getOrCreateGroup(source_plot.group()->name());
         }
-        dest_plot_it =
-            destination_series
-            .emplace(std::piecewise_construct,
-                     std::forward_as_tuple(ID),
-                     std::forward_as_tuple(plot_name, group))
-            .first;
+        dest_plot_it = destination_series
+                           .emplace(std::piecewise_construct, std::forward_as_tuple(ID),
+                                    std::forward_as_tuple(plot_name, group))
+                           .first;
         ret.curves_updated = true;
       }
 
@@ -40,44 +34,47 @@ MoveDataRet MoveData(PlotDataMapRef &source,
       PlotGroup::Ptr destination_group = destination_plot.group();
 
       // copy plot attributes
-      for (const auto& [name, attr]: source_plot.attributes() )
+      for (const auto& [name, attr] : source_plot.attributes())
       {
-        if( destination_plot.attribute(name) != attr ){
-          destination_plot.setAttribute( name, attr );
+        if (destination_plot.attribute(name) != attr)
+        {
+          destination_plot.setAttribute(name, attr);
           ret.curves_updated = true;
         }
       }
       // Copy the group name and attributes
-      if( source_plot.group() )
+      if (source_plot.group())
       {
-        if( !destination_group || destination_group->name() != source_plot.group()->name() )
+        if (!destination_group ||
+            destination_group->name() != source_plot.group()->name())
         {
-          destination_group = destination.getOrCreateGroup( source_plot.group()->name() );
-          destination_plot.changeGroup( destination_group );
+          destination_group = destination.getOrCreateGroup(source_plot.group()->name());
+          destination_plot.changeGroup(destination_group);
         }
 
-        for (const auto& [name, attr]: source_plot.group()->attributes() )
+        for (const auto& [name, attr] : source_plot.group()->attributes())
         {
-          if( destination_group->attribute(name) != attr )
+          if (destination_group->attribute(name) != attr)
           {
-            destination_group->setAttribute( name, attr );
+            destination_group->setAttribute(name, attr);
             ret.curves_updated = true;
           }
         }
       }
 
-      if( remove_older ) {
+      if (remove_older)
+      {
         destination_plot.clear();
       }
 
-      if( source_plot.size() > 0 )
+      if (source_plot.size() > 0)
       {
         ret.data_pushed = true;
       }
 
       for (size_t i = 0; i < source_plot.size(); i++)
       {
-        destination_plot.pushBack( source_plot.at(i) );
+        destination_plot.pushBack(source_plot.at(i));
       }
 
       double max_range_x = source_plot.maximumRangeX();
@@ -88,9 +85,9 @@ MoveDataRet MoveData(PlotDataMapRef &source,
   };
 
   //--------------------------------------------
-  moveDataImpl( source.numeric, destination.numeric );
-  moveDataImpl( source.strings, destination.strings );
-  moveDataImpl( source.user_defined, destination.user_defined );
+  moveDataImpl(source.numeric, destination.numeric);
+  moveDataImpl(source.strings, destination.strings);
+  moveDataImpl(source.user_defined, destination.user_defined);
 
   return ret;
 }
