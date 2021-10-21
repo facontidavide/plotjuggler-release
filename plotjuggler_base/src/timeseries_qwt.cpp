@@ -8,7 +8,7 @@
 RangeOpt QwtTimeseries::getVisualizationRangeY(Range range_X)
 {
   int first_index = _ts_data->getIndexFromX(range_X.min);
-  int last_index  = _ts_data->getIndexFromX(range_X.max);
+  int last_index = _ts_data->getIndexFromX(range_X.max);
 
   if (first_index > last_index || first_index < 0 || last_index < 0)
   {
@@ -43,15 +43,12 @@ std::optional<QPointF> QwtTimeseries::sampleFromTime(double t)
   return QPointF(p.x, p.y);
 }
 
-
 TransformedTimeseries::TransformedTimeseries(const PlotData* source_data)
   : QwtTimeseries(&_dst_data)
-  ,_dst_data(source_data->plotName(), {} )
-  ,_src_data( source_data )
+  , _dst_data(source_data->plotName(), {})
+  , _src_data(source_data)
 {
-
 }
-
 
 TransformFunction::Ptr TransformedTimeseries::transform()
 {
@@ -60,40 +57,42 @@ TransformFunction::Ptr TransformedTimeseries::transform()
 
 void TransformedTimeseries::setTransform(QString transform_ID)
 {
-  if( transformName() == transform_ID)
+  if (transformName() == transform_ID)
   {
     return;
   }
-  if( transform_ID.isEmpty() )
+  if (transform_ID.isEmpty())
   {
     _transform.reset();
   }
-  else{
+  else
+  {
     _dst_data.clear();
     _transform = TransformFactory::create(transform_ID.toStdString());
-    std::vector<PlotData*> dest = {&_dst_data};
-    _transform->setData( nullptr, {_src_data}, dest );
+    std::vector<PlotData*> dest = { &_dst_data };
+    _transform->setData(nullptr, { _src_data }, dest);
   }
 }
 
 bool TransformedTimeseries::updateCache(bool reset_old_data)
 {
-   if( _transform )
+  if (_transform)
   {
-    if( reset_old_data )
+    if (reset_old_data)
     {
       _dst_data.clear();
       _transform->reset();
     }
-    std::vector<PlotData*> dest = {&_dst_data};
-    _transform->calculate( );
+    std::vector<PlotData*> dest = { &_dst_data };
+    _transform->calculate();
   }
-  else{
+  else
+  {
     // TODO: optimize ??
     _dst_data.clear();
-    for(size_t i=0; i < _src_data->size(); i++)
+    for (size_t i = 0; i < _src_data->size(); i++)
     {
-      _dst_data.pushBack( _src_data->at(i) );
+      _dst_data.pushBack(_src_data->at(i));
     }
   }
   return true;
@@ -101,7 +100,7 @@ bool TransformedTimeseries::updateCache(bool reset_old_data)
 
 QString TransformedTimeseries::transformName()
 {
-  return ( !_transform ) ? QString() : _transform->name();
+  return (!_transform) ? QString() : _transform->name();
 }
 
 QString TransformedTimeseries::alias() const
@@ -116,7 +115,7 @@ void TransformedTimeseries::setAlias(QString alias)
 
 QRectF QwtSeriesWrapper::boundingRect() const
 {
-  if( size() == 0 )
+  if (size() == 0)
   {
     return {};
   }
@@ -130,7 +129,6 @@ QRectF QwtSeriesWrapper::boundingRect() const
   box.setBottom(range_y.min);
   return box;
 }
-
 
 QPointF QwtSeriesWrapper::sample(size_t i) const
 {
@@ -150,18 +148,18 @@ void QwtSeriesWrapper::setTimeOffset(double offset)
 
 RangeOpt QwtSeriesWrapper::getVisualizationRangeX()
 {
-  if (this->size() < 2){
+  if (this->size() < 2)
+  {
     return {};
   }
   else
   {
     auto range = _data->rangeX().value();
-    return RangeOpt({ range.min - _time_offset,
-                      range.max - _time_offset });
+    return RangeOpt({ range.min - _time_offset, range.max - _time_offset });
   }
 }
 
-const PlotDataBase<double,double> *QwtSeriesWrapper::plotData() const
+const PlotDataBase<double, double>* QwtSeriesWrapper::plotData() const
 {
   return _data;
 }

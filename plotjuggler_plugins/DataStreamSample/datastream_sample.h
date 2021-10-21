@@ -31,17 +31,17 @@ public:
     return true;
   }
 
-  virtual bool xmlSaveState(QDomDocument& doc, QDomElement& parent_element) const override;
+  virtual bool xmlSaveState(QDomDocument& doc,
+                            QDomElement& parent_element) const override;
 
   virtual bool xmlLoadState(const QDomElement& parent_element) override;
 
   std::pair<QAction*, int> notificationAction() override
   {
-    return {_dummy_notification, _notifications_count};
+    return { _dummy_notification, _notifications_count };
   }
 
 private:
-
   struct Parameters
   {
     double A, B, C, D;
@@ -61,4 +61,3 @@ private:
 
   int _notifications_count;
 };
-
