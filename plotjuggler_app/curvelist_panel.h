@@ -25,14 +25,13 @@ class CurveListPanel : public QWidget
 
 public:
   explicit CurveListPanel(PlotDataMapRef& mapped_plot_data,
-                          const TransformsMap& mapped_math_plots,
-                          QWidget* parent);
+                          const TransformsMap& mapped_math_plots, QWidget* parent);
 
   ~CurveListPanel() override;
 
   void clear();
 
-  void addCurve(const std::string &plot_name);
+  void addCurve(const std::string& plot_name);
 
   void addCustom(const QString& item_name);
 
@@ -53,7 +52,7 @@ public:
   virtual void keyPressEvent(QKeyEvent* event) override;
 
   void updateColors();
-  
+
 private slots:
 
   void on_lineEditFilter_textChanged(const QString& search_string);
@@ -64,7 +63,8 @@ private slots:
 
   void on_buttonEditCustom_clicked();
 
-  void onCustomSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
+  void onCustomSelectionChanged(const QItemSelection& selected,
+                                const QItemSelection& deselected);
 
   void on_checkBoxShowValues_toggled(bool show);
 
@@ -81,7 +81,6 @@ public slots:
   void refreshValues();
 
 protected:
-
 private:
   Ui::CurveListPanel* ui;
 

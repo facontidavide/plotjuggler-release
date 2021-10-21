@@ -24,15 +24,14 @@
 //-------------------------------------------------
 
 CurveListPanel::CurveListPanel(PlotDataMapRef& mapped_plot_data,
-                               const TransformsMap &mapped_math_plots,
-                               QWidget* parent)
+                               const TransformsMap& mapped_math_plots, QWidget* parent)
   : QWidget(parent)
   , ui(new Ui::CurveListPanel)
-  , _plot_data( mapped_plot_data )
+  , _plot_data(mapped_plot_data)
   , _custom_view(new CurveTableView(this))
   , _tree_view(new CurveTreeView(this))
   , _transforms_map(mapped_math_plots)
-  , _column_width_dirty (true)
+  , _column_width_dirty(true)
 {
   ui->setupUi(this);
 
@@ -59,12 +58,14 @@ CurveListPanel::CurveListPanel(PlotDataMapRef& mapped_plot_data,
   ui->splitter->setStretchFactor(0, 5);
   ui->splitter->setStretchFactor(1, 1);
 
-  connect(_custom_view->selectionModel(), &QItemSelectionModel::selectionChanged,
-          this, &CurveListPanel::onCustomSelectionChanged);
+  connect(_custom_view->selectionModel(), &QItemSelectionModel::selectionChanged, this,
+          &CurveListPanel::onCustomSelectionChanged);
 
-  connect(_custom_view->verticalScrollBar(), &QScrollBar::valueChanged, this, &CurveListPanel::refreshValues);
+  connect(_custom_view->verticalScrollBar(), &QScrollBar::valueChanged, this,
+          &CurveListPanel::refreshValues);
 
-  connect(_tree_view->verticalScrollBar(), &QScrollBar::valueChanged, this, &CurveListPanel::refreshValues);
+  connect(_tree_view->verticalScrollBar(), &QScrollBar::valueChanged, this,
+          &CurveListPanel::refreshValues);
 
   connect(_tree_view, &QTreeWidget::itemExpanded, this, &CurveListPanel::refreshValues);
 }
@@ -81,33 +82,34 @@ void CurveListPanel::clear()
   ui->labelNumberDisplayed->setText("0 of 0");
 }
 
-void CurveListPanel::addCurve(const std::string &plot_name)
+void CurveListPanel::addCurve(const std::string& plot_name)
 {
   QString group_name;
 
-  auto FindInPlotData = [&](auto& plot_data, const std::string &plot_name)
-  {
-    auto it = plot_data.find( plot_name );
-    if( it != plot_data.end() ){
+  auto FindInPlotData = [&](auto& plot_data, const std::string& plot_name) {
+    auto it = plot_data.find(plot_name);
+    if (it != plot_data.end())
+    {
       auto& plot = it->second;
-      if( plot.group() ){
-        group_name = QString::fromStdString( plot.group()->name() );
+      if (plot.group())
+      {
+        group_name = QString::fromStdString(plot.group()->name());
       }
       return true;
     }
     return false;
   };
 
-  bool found =
-      FindInPlotData( _plot_data.numeric, plot_name ) ||
-      FindInPlotData( _plot_data.strings, plot_name );
+  bool found = FindInPlotData(_plot_data.numeric, plot_name) ||
+               FindInPlotData(_plot_data.strings, plot_name);
 
-  if( !found ) {
+  if (!found)
+  {
     return;
   }
 
-  QString plot_id = QString::fromStdString( plot_name );
-  _tree_view->addItem(group_name, getTreeName( plot_id ), plot_id );
+  QString plot_id = QString::fromStdString(plot_name);
+  _tree_view->addItem(group_name, getTreeName(plot_id), plot_id);
 
   _column_width_dirty = true;
 }
@@ -120,51 +122,47 @@ void CurveListPanel::addCustom(const QString& item_name)
 
 void CurveListPanel::updateColors()
 {
-  QColor default_color = _tree_view->palette().color( QPalette::Text );
+  QColor default_color = _tree_view->palette().color(QPalette::Text);
   //------------------------------------------
   // Propagate change in color and style to the children of a group
-  std::function<void(QTreeWidgetItem*,QColor,bool)> ChangeColorAndStyle;
-  ChangeColorAndStyle = [&](QTreeWidgetItem* cell, QColor color, bool italic)
-  {
+  std::function<void(QTreeWidgetItem*, QColor, bool)> ChangeColorAndStyle;
+  ChangeColorAndStyle = [&](QTreeWidgetItem* cell, QColor color, bool italic) {
     cell->setForeground(0, color);
     auto font = cell->font(0);
-    font.setItalic( italic );
+    font.setItalic(italic);
     cell->setFont(0, font);
     for (int c = 0; c < cell->childCount(); c++)
     {
-        ChangeColorAndStyle(cell->child(c), color, italic);
+      ChangeColorAndStyle(cell->child(c), color, italic);
     };
   };
 
   // set everything to default first
   for (int c = 0; c < _tree_view->invisibleRootItem()->childCount(); c++)
   {
-    ChangeColorAndStyle(_tree_view->invisibleRootItem()->child(c),
-                        default_color,
-                        false);
+    ChangeColorAndStyle(_tree_view->invisibleRootItem()->child(c), default_color, false);
   }
   //------------- Change groups first ---------------------
 
-  auto ChangeGroupVisitor = [&](QTreeWidgetItem* cell)
-  {
-    if( cell->data(0, CustomRoles::IsGroupName).toBool() )
+  auto ChangeGroupVisitor = [&](QTreeWidgetItem* cell) {
+    if (cell->data(0, CustomRoles::IsGroupName).toBool())
     {
       auto group_name = cell->data(0, CustomRoles::Name).toString();
-      auto it = _plot_data.groups.find( group_name.toStdString() );
-      if ( it != _plot_data.groups.end() )
+      auto it = _plot_data.groups.find(group_name.toStdString());
+      if (it != _plot_data.groups.end())
       {
         QVariant color_var = it->second->attribute(PJ::TEXT_COLOR);
-        QColor text_color = color_var.isValid() ?
-              color_var.value<QColor>() : default_color;
+        QColor text_color =
+            color_var.isValid() ? color_var.value<QColor>() : default_color;
 
         QVariant style_var = it->second->attribute(PJ::ITALIC_FONTS);
-        bool italic =( style_var.isValid() && style_var.value<bool>() );
+        bool italic = (style_var.isValid() && style_var.value<bool>());
 
         ChangeColorAndStyle(cell, text_color, italic);
 
         // tooltip doesn't propagate
         QVariant tooltip = it->second->attribute("ToolTip");
-        cell->setData(0, CustomRoles::ToolTip, tooltip );
+        cell->setData(0, CustomRoles::ToolTip, tooltip);
       }
     }
   };
@@ -173,30 +171,30 @@ void CurveListPanel::updateColors()
 
   //------------- Change leaves ---------------------
 
-  auto ChangeLeavesVisitor = [&](QTreeWidgetItem* cell)
-  {
-    if( cell->childCount() == 0 )
+  auto ChangeLeavesVisitor = [&](QTreeWidgetItem* cell) {
+    if (cell->childCount() == 0)
     {
-      const std::string& curve_name = cell->data(0, CustomRoles::Name).toString().toStdString();
+      const std::string& curve_name =
+          cell->data(0, CustomRoles::Name).toString().toStdString();
 
       QVariant text_color;
 
-      auto GetTextColor = [&](auto& plot_data, const std::string& curve_name){
+      auto GetTextColor = [&](auto& plot_data, const std::string& curve_name) {
         auto it = plot_data.find(curve_name);
-        if ( it != plot_data.end() )
+        if (it != plot_data.end())
         {
           QVariant color_var = it->second.attribute(PJ::TEXT_COLOR);
-          if( color_var.isValid() )
+          if (color_var.isValid())
           {
-            cell->setForeground(0, color_var.value<QColor>() );
+            cell->setForeground(0, color_var.value<QColor>());
           }
 
           QVariant tooltip_var = it->second.attribute(PJ::TOOL_TIP);
-          cell->setData(0, CustomRoles::ToolTip, tooltip_var );
+          cell->setData(0, CustomRoles::ToolTip, tooltip_var);
 
           QVariant style_var = it->second.attribute(PJ::ITALIC_FONTS);
-          bool italic = ( style_var.isValid() && style_var.value<bool>() );
-          if( italic )
+          bool italic = (style_var.isValid() && style_var.value<bool>());
+          if (italic)
           {
             QFont font = cell->font(0);
             font.setItalic(italic);
@@ -207,8 +205,8 @@ void CurveListPanel::updateColors()
         return false;
       };
 
-      bool valid = ( GetTextColor( _plot_data.numeric, curve_name ) ||
-                     GetTextColor( _plot_data.strings, curve_name ));
+      bool valid = (GetTextColor(_plot_data.numeric, curve_name) ||
+                    GetTextColor(_plot_data.strings, curve_name));
     }
   };
 
@@ -287,7 +285,8 @@ void CurveListPanel::refreshValues()
       {
         auto& plot_data = it->second;
         auto val = plot_data.getYfromX(_tracker_time);
-        if( val ) {
+        if (val)
+        {
           return FormattedNumber(val.value());
         }
       }
@@ -299,14 +298,17 @@ void CurveListPanel::refreshValues()
       {
         auto& plot_data = it->second;
         auto val = plot_data.getYfromX(_tracker_time);
-        if( val ) {
+        if (val)
+        {
           auto str_view = val.value();
-          char last_byte = str_view.data()[ str_view.size()-1 ];
-          if( last_byte == '\0') {
-            return QString::fromLocal8Bit( str_view.data(), str_view.size() - 1 );
+          char last_byte = str_view.data()[str_view.size() - 1];
+          if (last_byte == '\0')
+          {
+            return QString::fromLocal8Bit(str_view.data(), str_view.size() - 1);
           }
-          else{
-            return QString::fromLocal8Bit( str_view.data(), str_view.size() );
+          else
+          {
+            return QString::fromLocal8Bit(str_view.data(), str_view.size());
           }
         }
       }
@@ -332,21 +334,21 @@ void CurveListPanel::refreshValues()
         break;
       }
 
-      if ( !is2ndColumnHidden() )
+      if (!is2ndColumnHidden())
       {
         const std::string& name = table->item(row, 0)->text().toStdString();
         QString str_value = GetValue(name);
-        table->item(row, 1)->setText( str_value );
+        table->item(row, 1)->setText(str_value);
       }
     }
-    if(_column_width_dirty)
+    if (_column_width_dirty)
     {
       _column_width_dirty = false;
       table->setViewResizeEnabled(true);
     }
   }
   //------------------------------------
-  for (CurveTreeView* tree_view : {_tree_view})
+  for (CurveTreeView* tree_view : { _tree_view })
   {
     const int vertical_height = tree_view->visibleRegion().boundingRect().height();
 
@@ -366,10 +368,10 @@ void CurveListPanel::refreshValues()
           return;
         }
 
-        if ( !is2ndColumnHidden() )
+        if (!is2ndColumnHidden())
         {
           QString str_value = GetValue(curve_name.toStdString());
-          cell->setText(1, str_value );
+          cell->setText(1, str_value);
         }
       }
     };
@@ -384,16 +386,17 @@ QString StringifyArray(QString str)
 {
   static const QRegExp rx("(\\[\\d+\\])");
   int pos = 0;
-  std::vector<std::pair<int,int>> index_positions;
+  std::vector<std::pair<int, int>> index_positions;
 
-  while ((pos = rx.indexIn(str, pos)) != -1) {
+  while ((pos = rx.indexIn(str, pos)) != -1)
+  {
     QString array_index = rx.cap(1);
 
-    std::pair<int,int> index = {pos+1, array_index.size()-2};
+    std::pair<int, int> index = { pos + 1, array_index.size() - 2 };
     index_positions.push_back(index);
     pos += rx.matchedLength();
   }
-  if( index_positions.empty() )
+  if (index_positions.empty())
   {
     return str;
   }
@@ -401,10 +404,10 @@ QString StringifyArray(QString str)
   QStringList out_list;
   out_list.push_back(str);
 
-  for(int i = index_positions.size()-1; i >= 0; i--)
+  for (int i = index_positions.size() - 1; i >= 0; i--)
   {
-    std::pair<int,int> index = index_positions[i];
-    str.remove( index.first, index.second );
+    std::pair<int, int> index = index_positions[i];
+    str.remove(index.first, index.second);
     out_list.push_front(str);
   }
 
@@ -416,10 +419,10 @@ QString CurveListPanel::getTreeName(QString name)
   auto parts = name.split('/', QString::SplitBehavior::SkipEmptyParts);
 
   QString out;
-  for(int i=0; i < parts.size(); i++)
+  for (int i = 0; i < parts.size(); i++)
   {
     out += StringifyArray(parts[i]);
-    if( i+1 < parts.size() )
+    if (i + 1 < parts.size())
     {
       out += "/";
     }
@@ -439,7 +442,8 @@ void CurveListPanel::on_lineEditFilter_textChanged(const QString& search_string)
   int item_count = h_c.second;
   int visible_count = item_count - h_c.first;
 
-  ui->labelNumberDisplayed->setText(QString::number(visible_count) + QString(" of ") + QString::number(item_count));
+  ui->labelNumberDisplayed->setText(QString::number(visible_count) + QString(" of ") +
+                                    QString::number(item_count));
   if (updated)
   {
     emit hiddenItemsChanged();
@@ -449,7 +453,8 @@ void CurveListPanel::on_lineEditFilter_textChanged(const QString& search_string)
 void CurveListPanel::removeSelectedCurves()
 {
   QMessageBox::StandardButton reply;
-  reply = QMessageBox::question(nullptr, tr("Warning"), tr("Do you really want to remove these data?\n"),
+  reply = QMessageBox::question(nullptr, tr("Warning"),
+                                tr("Do you really want to remove these data?\n"),
                                 QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
 
   if (reply == QMessageBox::Yes)
@@ -487,14 +492,16 @@ void CurveListPanel::on_buttonAddCustom_clicked()
   on_lineEditFilter_textChanged(ui->lineEditFilter->text());
 }
 
-void CurveListPanel::onCustomSelectionChanged(const QItemSelection&, const QItemSelection&)
+void CurveListPanel::onCustomSelectionChanged(const QItemSelection&,
+                                              const QItemSelection&)
 {
-  auto selected = _custom_view->getSelectedNames(); 
+  auto selected = _custom_view->getSelectedNames();
 
   bool enabled = (selected.size() == 1);
   ui->buttonEditCustom->setEnabled(enabled);
   ui->buttonEditCustom->setToolTip(enabled ? "Edit the selected custom timeserie" :
-                                             "Select a single custom Timeserie to Edit it");
+                                             "Select a single custom Timeserie to Edit "
+                                             "it");
 }
 
 void CurveListPanel::on_buttonEditCustom_clicked()
@@ -508,10 +515,10 @@ void CurveListPanel::on_buttonEditCustom_clicked()
 
 std::vector<std::string> CurveListPanel::getSelectedNames() const
 {
-    auto selected =  _tree_view->getSelectedNames();
-    auto custom_select =  _custom_view->getSelectedNames();
-    selected.insert( selected.end(), custom_select.begin(), custom_select.end() );
-    return selected;
+  auto selected = _tree_view->getSelectedNames();
+  auto custom_select = _custom_view->getSelectedNames();
+  selected.insert(selected.end(), custom_select.begin(), custom_select.end());
+  return selected;
 }
 
 void CurveListPanel::clearSelections()
@@ -535,14 +542,14 @@ void CurveListPanel::on_checkBoxShowValues_toggled(bool show)
   emit hiddenItemsChanged();
 }
 
-void CurveListPanel::on_pushButtonTrash_clicked(bool )
+void CurveListPanel::on_pushButtonTrash_clicked(bool)
 {
   QMessageBox msgBox(this);
   msgBox.setWindowTitle("Warning. Can't be undone.");
   msgBox.setText(tr("Delete data:\n\n"
                     "[Delete All]: remove timeseries and plots.\n"
-                    "[Delete Points]: reset data points, but keep plots and timeseries.\n"
-                    ));
+                    "[Delete Points]: reset data points, but keep plots and "
+                    "timeseries.\n"));
   QPushButton* buttonAll = msgBox.addButton(tr("Delete All"), QMessageBox::NoRole);
   QPushButton* buttonPoints = msgBox.addButton(tr("Delete Points"), QMessageBox::NoRole);
   msgBox.addButton(QMessageBox::Cancel);
@@ -554,7 +561,8 @@ void CurveListPanel::on_pushButtonTrash_clicked(bool )
   {
     requestDeleteAll(1);
   }
-  else if (msgBox.clickedButton() == buttonPoints) {
+  else if (msgBox.clickedButton() == buttonPoints)
+  {
     requestDeleteAll(2);
   }
 }

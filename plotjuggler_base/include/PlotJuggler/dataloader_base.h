@@ -8,8 +8,8 @@
 #include "PlotJuggler/pj_plugin.h"
 #include "PlotJuggler/messageparser_base.h"
 
-namespace PJ {
-
+namespace PJ
+{
 struct FileLoadInfo
 {
   /// name of the file to open
@@ -38,12 +38,13 @@ public:
   /// Provide a list of file extensions that this plugin can open
   virtual const std::vector<const char*>& compatibleFileExtensions() const = 0;
 
-  virtual bool readDataFromFile(FileLoadInfo* fileload_info, PlotDataMapRef& destination) = 0;
+  virtual bool readDataFromFile(FileLoadInfo* fileload_info,
+                                PlotDataMapRef& destination) = 0;
 };
 
 using DataLoaderPtr = std::shared_ptr<DataLoader>;
 
-}
+}  // namespace PJ
 
 QT_BEGIN_NAMESPACE
 #define DataRead_iid "facontidavide.PlotJuggler3.DataLoader"

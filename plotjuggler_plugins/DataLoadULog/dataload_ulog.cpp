@@ -29,7 +29,8 @@ const std::vector<const char*>& DataLoadULog::compatibleFileExtensions() const
   return extensions;
 }
 
-bool DataLoadULog::readDataFromFile(FileLoadInfo* fileload_info, PlotDataMapRef& plot_data)
+bool DataLoadULog::readDataFromFile(FileLoadInfo* fileload_info,
+                                    PlotDataMapRef& plot_data)
 {
   const auto& filename = fileload_info->filename;
 
@@ -40,7 +41,7 @@ bool DataLoadULog::readDataFromFile(FileLoadInfo* fileload_info, PlotDataMapRef&
     throw std::runtime_error("ULog: Failed to open file");
   }
   QByteArray file_array = file.readAll();
-  ULogParser::DataStream datastream( file_array.data(), file_array.size() );
+  ULogParser::DataStream datastream(file_array.data(), file_array.size());
 
   ULogParser parser(datastream);
 
