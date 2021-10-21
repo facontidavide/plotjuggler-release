@@ -9,7 +9,7 @@ class MenuBar : public QMenuBar
 {
 public:
   MenuBar(QWidget* parent);
- // void paintEvent(QPaintEvent* event);
+  // void paintEvent(QPaintEvent* event);
 
 private:
   QFont _font;
