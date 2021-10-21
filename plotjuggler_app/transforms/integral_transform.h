@@ -7,14 +7,17 @@
 
 using namespace PJ;
 
-class IntegralTransform: public TransformFunction_SISO
+class IntegralTransform : public TransformFunction_SISO
 {
 public:
   IntegralTransform();
 
   ~IntegralTransform() override;
 
-  const char* name() const override { return "Integral"; }
+  const char* name() const override
+  {
+    return "Integral";
+  }
 
   QWidget* optionsWidget() override;
 
@@ -27,14 +30,13 @@ public:
   void on_buttonCompute_clicked();
 
 private:
-  std::optional<PlotData::Point>
-  calculateNextPoint(size_t index) override;
+  std::optional<PlotData::Point> calculateNextPoint(size_t index) override;
 
-  QWidget *_widget;
+  QWidget* _widget;
   Ui::IntegralTransform* ui;
   double _dT;
 
   double _accumulated_value;
 };
 
-#endif // INTEGRAL_TRANSFORM_H
+#endif  // INTEGRAL_TRANSFORM_H
