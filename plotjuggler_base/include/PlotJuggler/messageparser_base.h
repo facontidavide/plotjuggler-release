@@ -11,8 +11,8 @@
 #include "PlotJuggler/plotdata.h"
 #include "PlotJuggler/pj_plugin.h"
 
-namespace PJ {
-
+namespace PJ
+{
 /*
  * A messgaeParser is a clas that is able to convert a message received by
  * a DataStreamer plugin into data in PlotDataMapRef.
@@ -27,23 +27,28 @@ namespace PJ {
 class MessageRef
 {
 public:
-  explicit MessageRef(uint8_t* first_ptr, size_t size) :
-    _first_ptr(first_ptr), _size(size)
-  { }
+  explicit MessageRef(uint8_t* first_ptr, size_t size)
+    : _first_ptr(first_ptr), _size(size)
+  {
+  }
 
-  explicit MessageRef(std::vector<uint8_t>& vect) :
-    _first_ptr(vect.data()), _size(vect.size())
-  { }
+  explicit MessageRef(std::vector<uint8_t>& vect)
+    : _first_ptr(vect.data()), _size(vect.size())
+  {
+  }
 
-  const uint8_t* data() const {
+  const uint8_t* data() const
+  {
     return _first_ptr;
   }
 
-  uint8_t* data() {
+  uint8_t* data()
+  {
     return _first_ptr;
   }
 
-  size_t size() const {
+  size_t size() const
+  {
     return _size;
   }
 
@@ -53,10 +58,9 @@ private:
 };
 
 /**
- * @brief The MessageParser is the base class to create plugins that are able to parse one or
- * multiple Message types.
- * Each message type is uniquely identified by a MessageKey (128 bits, sufficiently large to
- * hold a MD5Sum identifier).
+ * @brief The MessageParser is the base class to create plugins that are able to parse one
+ * or multiple Message types. Each message type is uniquely identified by a MessageKey
+ * (128 bits, sufficiently large to hold a MD5Sum identifier).
  *
  * You push one or more raw messages using the method pushMessageRef()
  * Once you have done, the result can be copied using plotData()
@@ -64,26 +68,26 @@ private:
 class MessageParser
 {
 public:
-  MessageParser(const std::string& topic_name,
-                PlotDataMapRef& plot_data): _plot_data(plot_data), _topic_name(topic_name)
-  { }
+  MessageParser(const std::string& topic_name, PlotDataMapRef& plot_data)
+    : _plot_data(plot_data), _topic_name(topic_name)
+  {
+  }
   virtual ~MessageParser() = default;
 
-  virtual bool parseMessage(const MessageRef serialized_msg,
-                            double& timestamp) = 0;
-protected:
+  virtual bool parseMessage(const MessageRef serialized_msg, double& timestamp) = 0;
 
+protected:
   PlotDataMapRef& _plot_data;
   std::string _topic_name;
 
   PlotData& getSeries(const std::string& key)
   {
-    return _plot_data.getOrCreateNumeric( key );
+    return _plot_data.getOrCreateNumeric(key);
   }
 
   StringSeries& getStringSeries(const std::string& key)
   {
-    return _plot_data.getOrCreateStringSeries( key );
+    return _plot_data.getOrCreateStringSeries(key);
   }
 };
 
@@ -93,15 +97,14 @@ using MessageParserPtr = std::shared_ptr<MessageParser>;
 class MessageParserCreator : public PlotJugglerPlugin
 {
 public:
-
-  virtual MessageParserPtr createInstance(const std::string& topic_name, PlotDataMapRef& data) = 0;
+  virtual MessageParserPtr createInstance(const std::string& topic_name,
+                                          PlotDataMapRef& data) = 0;
 };
 //----------------------------------------------------------------
 
 using MessageParserFactory = std::map<QString, std::shared_ptr<MessageParserCreator>>;
 
-} // end namespace
-
+}  // namespace PJ
 
 QT_BEGIN_NAMESPACE
 #define MessageParserCreator_iid "facontidavide.PlotJuggler3.MessageParserCreator"
