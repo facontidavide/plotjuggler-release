@@ -7,8 +7,8 @@
 #include "PlotJuggler/pj_plugin.h"
 #include "PlotJuggler/messageparser_base.h"
 
-namespace PJ {
-
+namespace PJ
+{
 /**
  * @brief The DataStreamer base classm used to read streaming of data.
  *
@@ -20,7 +20,6 @@ class DataStreamer : public PlotJugglerPlugin
 {
   Q_OBJECT
 public:
-
   DataStreamer() = default;
 
   virtual ~DataStreamer() = default;
@@ -49,22 +48,25 @@ public:
    * @brief Gets the action to execute when clicking the 'notifications' button and
    * the current number of outstanding notifications.
    */
-  virtual std::pair<QAction*, int> notificationAction() 
+  virtual std::pair<QAction*, int> notificationAction()
   {
-    return {nullptr, 0};
-  } 
+    return { nullptr, 0 };
+  }
 
-  std::mutex& mutex() {
+  std::mutex& mutex()
+  {
     return _mutex;
   }
 
   void setMaximumRangeX(double range);
 
-  PlotDataMapRef& dataMap() {
+  PlotDataMapRef& dataMap()
+  {
     return _data_map;
   }
 
-  const PlotDataMapRef& dataMap() const {
+  const PlotDataMapRef& dataMap() const
+  {
     return _data_map;
   }
 
@@ -74,7 +76,7 @@ public:
    *
    * @param parsers
    */
-  void setAvailableParsers(std::shared_ptr<MessageParserFactory> parsers_factory );
+  void setAvailableParsers(std::shared_ptr<MessageParserFactory> parsers_factory);
 
   std::shared_ptr<MessageParserFactory> availableParsers();
 
@@ -107,7 +109,7 @@ private:
 
 using DataStreamerPtr = std::shared_ptr<DataStreamer>;
 
-}
+}  // namespace PJ
 
 QT_BEGIN_NAMESPACE
 #define DataStream_iid "facontidavide.PlotJuggler3.DataStreamer"

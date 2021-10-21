@@ -6,7 +6,6 @@
 
 namespace PJ
 {
-
 /**
  * @brief Super simple, unmutable, string_view with
  * small string optimization.
@@ -16,8 +15,7 @@ namespace PJ
 class StringRef
 {
 private:
-
-  static const uint64_t TYPE_BIT = uint64_t(1) << (sizeof(size_t)*8 -1 );
+  static const uint64_t TYPE_BIT = uint64_t(1) << (sizeof(size_t) * 8 - 1);
 
   struct noSSO
   {
@@ -32,42 +30,42 @@ private:
     char data[sizeof(noSSO)];
   };
 
-  union {
+  union
+  {
     noSSO no_sso;
     SSO sso;
   } _storage;
 
 public:
-
-
   bool isSSO() const
   {
     return !(_storage.no_sso.size & TYPE_BIT);
   }
 
-  StringRef()
-    : StringRef( nullptr, 0 )
-  {}
+  StringRef() : StringRef(nullptr, 0)
+  {
+  }
 
-  StringRef(const std::string& str)
-    : StringRef( str.data(), str.size() )
-  {}
+  StringRef(const std::string& str) : StringRef(str.data(), str.size())
+  {
+  }
 
-  StringRef(const char* str)
-    : StringRef( str, strlen(str) )
-  {}
+  StringRef(const char* str) : StringRef(str, strlen(str))
+  {
+  }
 
   explicit StringRef(const char* data_ptr, size_t length)
   {
     _storage.no_sso.data = nullptr;
     _storage.no_sso.size = 0;
 
-    if( length <= SSO_SIZE )
+    if (length <= SSO_SIZE)
     {
-      memcpy( _storage.sso.data, data_ptr, length );
+      memcpy(_storage.sso.data, data_ptr, length);
       _storage.sso.data[SSO_SIZE] = SSO_SIZE - length;
     }
-    else{
+    else
+    {
       _storage.no_sso.data = data_ptr;
       _storage.no_sso.size = length;
       _storage.no_sso.size |= TYPE_BIT;
@@ -76,17 +74,16 @@ public:
 
   const char* data() const
   {
-    return isSSO() ? _storage.sso.data :
-                     _storage.no_sso.data;
+    return isSSO() ? _storage.sso.data : _storage.no_sso.data;
   }
 
   size_t size() const
   {
     return isSSO() ? (SSO_SIZE - _storage.sso.data[SSO_SIZE]) :
-                     _storage.no_sso.size  & ~TYPE_BIT;
+                     _storage.no_sso.size & ~TYPE_BIT;
   }
 };
 
-}
+}  // namespace PJ
 
-#endif // STRING_REF_SSO_H
+#endif  // STRING_REF_SSO_H
