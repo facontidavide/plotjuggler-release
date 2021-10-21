@@ -43,11 +43,11 @@ public:
 
   void editExistingPlot(CustomPlotPtr data);
 
-  bool eventFilter(QObject *obj, QEvent *event) override;
+  bool eventFilter(QObject* obj, QEvent* event) override;
 
 public slots:
   void on_stylesheetChanged(QString theme);
-  
+
 private slots:
 
   void on_snippetsListSaved_currentRowChanged(int currentRow);
@@ -75,8 +75,8 @@ private slots:
   void on_pushButtonDeleteCurves_clicked();
 
   void on_listSourcesChanged();
-  
-  void on_lineEditSource_textChanged(const QString &text);
+
+  void on_lineEditSource_textChanged(const QString& text);
 
   void on_mathEquation_textChanged();
 

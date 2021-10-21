@@ -117,7 +117,8 @@ void CurveTracker::setPosition(const QPointF& position)
 
     if (!_marker[i]->symbol() || _marker[i]->symbol()->brush().color() != color)
     {
-      QwtSymbol* sym = new QwtSymbol(QwtSymbol::Ellipse, color, QPen(Qt::black), QSize(5, 5));
+      QwtSymbol* sym =
+          new QwtSymbol(QwtSymbol::Ellipse, color, QPen(Qt::black), QSize(5, 5));
       _marker[i]->setSymbol(sym);
     }
 
@@ -159,7 +160,10 @@ void CurveTracker::setPosition(const QPointF& position)
         while (whitespaces-- > 0)
           value.prepend("&nbsp;");
 
-        line = QString("<font color=%1>%2 : %3</font>").arg(color.name()).arg(value).arg(curve->title().text());
+        line = QString("<font color=%1>%2 : %3</font>")
+                   .arg(color.name())
+                   .arg(value)
+                   .arg(curve->title().text());
       }
 
       text_lines.insert(std::make_pair(val, line));

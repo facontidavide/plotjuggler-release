@@ -273,6 +273,16 @@
                </property>
               </widget>
              </item>
+             <item>
+              <widget class="QCheckBox" name="checkBoxLoadDataPrefix">
+               <property name="toolTip">
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If checked, the name of the file will be added as prefix.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;Probably, you want to use it only when opening 2 or more files at once (when they containing the same data).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               </property>
+               <property name="text">
+                <string>add prefix</string>
+               </property>
+              </widget>
+             </item>
             </layout>
            </item>
            <item>
@@ -1364,7 +1374,7 @@
                      <string>tt</string>
                     </property>
                     <property name="icon">
-                     <iconset resource="resource.qrc">
+                     <iconset>
                       <normaloff>:/style_light/line_tracker_1.png</normaloff>:/style_light/line_tracker_1.png</iconset>
                     </property>
                     <property name="iconSize">
@@ -1863,7 +1873,7 @@
   </action>
   <action name="actionReportBug">
    <property name="icon">
-    <iconset resource="resource.qrc">
+    <iconset>
      <normaloff>:/resources/github.png</normaloff>:/resources/github.png</iconset>
    </property>
    <property name="text">
@@ -1924,7 +1934,7 @@
   </action>
   <action name="actionShare_the_love">
    <property name="icon">
-    <iconset resource="resource.qrc">
+    <iconset>
      <normaloff>:/resources/twitter.png</normaloff>:/resources/twitter.png</iconset>
    </property>
    <property name="text">
@@ -1950,8 +1960,6 @@
    <header location="global">menubar.h</header>
   </customwidget>
  </customwidgets>
- <resources>
-  <include location="resource.qrc"/>
- </resources>
+ <resources/>
  <connections/>
 </ui>
