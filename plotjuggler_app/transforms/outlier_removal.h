@@ -8,19 +8,22 @@
 
 using namespace PJ;
 
-
-namespace Ui {
+namespace Ui
+{
 class OutlierRemovalFilter;
 }
 
-class OutlierRemovalFilter: public TransformFunction_SISO
+class OutlierRemovalFilter : public TransformFunction_SISO
 {
 public:
   explicit OutlierRemovalFilter();
 
   ~OutlierRemovalFilter() override;
 
-  const char* name() const override { return "Outlier Removal"; }
+  const char* name() const override
+  {
+    return "Outlier Removal";
+  }
 
   QWidget* optionsWidget() override;
 
@@ -29,11 +32,10 @@ public:
   bool xmlLoadState(const QDomElement& parent_element) override;
 
 private:
-  Ui::OutlierRemovalFilter *ui;
-  QWidget *_widget;
+  Ui::OutlierRemovalFilter* ui;
+  QWidget* _widget;
   std::vector<double> _buffer;
   nonstd::ring_span_lite::ring_span<double> _ring_view;
 
-  std::optional<PlotData::Point>
-  calculateNextPoint(size_t index) override;
+  std::optional<PlotData::Point> calculateNextPoint(size_t index) override;
 };

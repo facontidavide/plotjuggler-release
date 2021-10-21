@@ -5,7 +5,8 @@
 #include "PlotJuggler/toolbox_base.h"
 #include "PlotJuggler/plotwidget_base.h"
 
-namespace Ui {
+namespace Ui
+{
 class toolbox_fft;
 }
 
@@ -25,8 +26,7 @@ public:
     return "Fast Fourier Transform";
   }
 
-  void init( PJ::PlotDataMapRef& src_data,
-            PJ::TransformsMap& transform_map) override;
+  void init(PJ::PlotDataMapRef& src_data, PJ::TransformsMap& transform_map) override;
 
   std::pair<QWidget*, WidgetType> providedWidget() const override;
 
@@ -36,9 +36,9 @@ public slots:
 
 private:
   QWidget* _widget;
-  Ui::toolbox_fft *ui;
+  Ui::toolbox_fft* ui;
 
-  //bool eventFilter(QObject *obj, QEvent *event) override;
+  // bool eventFilter(QObject *obj, QEvent *event) override;
 
   QStringList _dragging_curves;
 
@@ -63,4 +63,3 @@ private slots:
   void calculateCurveFFT();
   void onClearCurves();
 };
-
