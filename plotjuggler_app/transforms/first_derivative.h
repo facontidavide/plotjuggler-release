@@ -7,14 +7,17 @@
 
 using namespace PJ;
 
-class FirstDerivative: public TransformFunction_SISO
+class FirstDerivative : public TransformFunction_SISO
 {
 public:
   FirstDerivative();
 
   ~FirstDerivative() override;
 
-  const char* name() const override { return "Derivative"; }
+  const char* name() const override
+  {
+    return "Derivative";
+  }
 
   QWidget* optionsWidget() override;
 
@@ -25,13 +28,11 @@ public:
   void on_buttonCompute_clicked();
 
 private:
-  std::optional<PlotData::Point>
-  calculateNextPoint(size_t index) override;
+  std::optional<PlotData::Point> calculateNextPoint(size_t index) override;
 
-  QWidget *_widget;
+  QWidget* _widget;
   Ui::FirstDerivariveForm* ui;
   double _dT;
-
 };
 
-#endif // FIRST_DERIVATIVE_H
+#endif  // FIRST_DERIVATIVE_H
