@@ -17,7 +17,8 @@ public:
     _hidden_count = 0;
   }
 
-  void addItem(const QString& prefix, const QString& tree_name, const QString &plot_ID) override;
+  void addItem(const QString& prefix, const QString& tree_name,
+               const QString& plot_ID) override;
 
   void refreshColumns() override;
 
@@ -37,19 +38,18 @@ public:
   }
 
   void setViewResizeEnabled(bool) override
-  { }
+  {
+  }
 
   virtual void hideValuesColumn(bool hide) override;
 
   void treeVisitor(std::function<void(QTreeWidgetItem*)> visitor);
 
 private:
-
-  void expandChildren(QTreeWidgetItem *item);
+  void expandChildren(QTreeWidgetItem* item);
 
   int _hidden_count = 0;
   int _leaf_count = 0;
-
 };
 
 #endif  // CURVETREE_VIEW_H

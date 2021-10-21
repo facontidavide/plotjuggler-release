@@ -27,14 +27,17 @@ ULogParametersDialog::ULogParametersDialog(const ULogParser& parser, QWidget* pa
   row = 0;
   for (const auto& param : parser.getParameters())
   {
-    table_params->setItem(row, 0, new QTableWidgetItem(QString::fromStdString(param.name)));
+    table_params->setItem(row, 0,
+                          new QTableWidgetItem(QString::fromStdString(param.name)));
     if (param.val_type == ULogParser::FLOAT)
     {
-      table_params->setItem(row, 1, new QTableWidgetItem(QString::number(param.value.val_real)));
+      table_params->setItem(row, 1,
+                            new QTableWidgetItem(QString::number(param.value.val_real)));
     }
     else
     {
-      table_params->setItem(row, 1, new QTableWidgetItem(QString::number(param.value.val_int)));
+      table_params->setItem(row, 1,
+                            new QTableWidgetItem(QString::number(param.value.val_int)));
     }
     row++;
   }
@@ -76,7 +79,8 @@ ULogParametersDialog::ULogParametersDialog(const ULogParser& parser, QWidget* pa
       default:
         table_logs->setItem(row, 1, new QTableWidgetItem(QString::number(log_msg.level)));
     }
-    table_logs->setItem(row, 2, new QTableWidgetItem(QString::fromStdString(log_msg.msg)));
+    table_logs->setItem(row, 2,
+                        new QTableWidgetItem(QString::fromStdString(log_msg.msg)));
     row++;
   }
 }
@@ -88,8 +92,10 @@ void ULogParametersDialog::restoreSettings()
 
   QSettings settings;
   restoreGeometry(settings.value("ULogParametersDialog/geometry").toByteArray());
-  table_info->horizontalHeader()->restoreState(settings.value("ULogParametersDialog/info/state").toByteArray());
-  table_params->horizontalHeader()->restoreState(settings.value("ULogParametersDialog/params/state").toByteArray());
+  table_info->horizontalHeader()->restoreState(
+      settings.value("ULogParametersDialog/info/state").toByteArray());
+  table_params->horizontalHeader()->restoreState(
+      settings.value("ULogParametersDialog/params/state").toByteArray());
 
   table_info->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Interactive);
   table_info->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Interactive);
@@ -105,8 +111,10 @@ ULogParametersDialog::~ULogParametersDialog()
 
   QSettings settings;
   settings.setValue("ULogParametersDialog/geometry", this->saveGeometry());
-  settings.setValue("ULogParametersDialog/info/state", table_info->horizontalHeader()->saveState());
-  settings.setValue("ULogParametersDialog/params/state", table_params->horizontalHeader()->saveState());
+  settings.setValue("ULogParametersDialog/info/state",
+                    table_info->horizontalHeader()->saveState());
+  settings.setValue("ULogParametersDialog/params/state",
+                    table_params->horizontalHeader()->saveState());
 
   delete ui;
 }

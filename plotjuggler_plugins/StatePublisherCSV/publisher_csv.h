@@ -26,16 +26,19 @@ public:
 
   virtual ~StatePublisherCSV() override;
 
-  virtual bool enabled() const override {
+  virtual bool enabled() const override
+  {
     return _enabled;
   }
 
-  virtual void updateState(double current_time) override {
+  virtual void updateState(double current_time) override
+  {
     _previous_time = current_time;
   }
 
   virtual void play(double) override
-  {}
+  {
+  }
 
 public slots:
   virtual void setEnabled(bool enabled) override;
@@ -44,7 +47,6 @@ private slots:
   void onWindowClosed();
 
 private:
-
   std::mutex _mutex;
 
   bool _enabled = false;

@@ -40,22 +40,24 @@ QDomElement ExportSnippets(const SnippetsMap& snippets, QDomDocument& destinatio
 class CustomFunction : public PJ::TransformFunction
 {
 public:
-
   CustomFunction(SnippetData snippet = {});
 
   void setSnippet(const SnippetData& snippet);
 
   void reset() override;
 
-  int numInputs() const override {
+  int numInputs() const override
+  {
     return -1;
   }
 
-  int numOutputs() const override {
+  int numOutputs() const override
+  {
     return 1;
   }
 
-  QString aliasName() const {
+  QString aliasName() const
+  {
     return _snippet.alias_name;
   }
 
@@ -71,12 +73,11 @@ public:
 
   virtual void initEngine() = 0;
 
-  void calculateAndAdd(PlotDataMapRef &src_data);
+  void calculateAndAdd(PlotDataMapRef& src_data);
 
-  virtual void calculatePoints(
-      const std::vector<const PlotData*>& src_data,
-      size_t point_index,
-      std::vector<PlotData::Point> &new_points) = 0;
+  virtual void calculatePoints(const std::vector<const PlotData*>& src_data,
+                               size_t point_index,
+                               std::vector<PlotData::Point>& new_points) = 0;
 
 protected:
   SnippetData _snippet;
