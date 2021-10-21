@@ -7,7 +7,8 @@
 
 MenuBar::MenuBar(QWidget* parent) : QMenuBar(parent)
 {
-  int font_id = QFontDatabase::addApplicationFont("://resources/DejaVuSans-ExtraLight.ttf");
+  int font_id = QFontDatabase::addApplicationFont("://resources/"
+                                                  "DejaVuSans-ExtraLight.ttf");
   QString family = QFontDatabase::applicationFontFamilies(font_id).at(0);
 
   _font.setFamily(family);
@@ -19,7 +20,7 @@ MenuBar::MenuBar(QWidget* parent) : QMenuBar(parent)
   _width_juggler = fm.width("Juggler");
 }
 
-//void MenuBar::paintEvent(QPaintEvent* event)
+// void MenuBar::paintEvent(QPaintEvent* event)
 //{
 //  QMenuBar::paintEvent(event);
 //  QPainter painter(this);
@@ -30,12 +31,14 @@ MenuBar::MenuBar(QWidget* parent) : QMenuBar(parent)
 //    QPoint topleft(this->rect().width() - text_width - 12, 0);
 //    QSize rect_size(_width_plot, this->rect().height());
 //    painter.setPen(QColor("#dd22dd"));
-//    painter.drawText(QRect(topleft, rect_size), Qt::AlignHCenter | Qt::AlignVCenter, "Plot");
+//    painter.drawText(QRect(topleft, rect_size), Qt::AlignHCenter | Qt::AlignVCenter,
+//    "Plot");
 //  }
 //  {
 //    QPoint topleft(this->rect().width() - _width_juggler - 10, 0);
 //    QSize rect_size(_width_juggler, this->rect().height());
 //    painter.setPen(QColor("#2288ff"));
-//    painter.drawText(QRect(topleft, rect_size), Qt::AlignHCenter | Qt::AlignVCenter, "Juggler");
+//    painter.drawText(QRect(topleft, rect_size), Qt::AlignHCenter | Qt::AlignVCenter,
+//    "Juggler");
 //  }
 //}

@@ -10,7 +10,7 @@
 
 using ios = std::ios;
 
-ULogParser::ULogParser(DataStream &datastream) : _file_start_time(0)
+ULogParser::ULogParser(DataStream& datastream) : _file_start_time(0)
 {
   bool ret = readFileHeader(datastream);
 
@@ -58,8 +58,8 @@ ULogParser::ULogParser(DataStream &datastream) : _file_start_time(0)
           _message_name_with_multi_id.insert(sub.message_name);
         }
 
-        //            printf("ADD_LOGGED_MSG: %d %d %s\n", sub.msg_id, sub.multi_id, sub.message_name.c_str() );
-        //            std::cout << std::endl;
+        //            printf("ADD_LOGGED_MSG: %d %d %s\n", sub.msg_id, sub.multi_id,
+        //            sub.message_name.c_str() ); std::cout << std::endl;
       }
       break;
       case (int)ULogMessageType::REMOVE_LOGGED_MSG:
@@ -148,7 +148,8 @@ void ULogParser::parseDataMessage(const ULogParser::Subscription& sub, char* mes
   parseSimpleDataMessage(timeseries, sub.format, message, &index);
 }
 
-char* ULogParser::parseSimpleDataMessage(Timeseries& timeseries, const Format* format, char* message, size_t* index)
+char* ULogParser::parseSimpleDataMessage(Timeseries& timeseries, const Format* format,
+                                         char* message, size_t* index)
 {
   for (const auto& field : format->fields)
   {
@@ -297,7 +298,8 @@ size_t ULogParser::fieldsCount(const ULogParser::Format& format) const
   return count;
 }
 
-std::vector<StringView> ULogParser::splitString(const StringView& strToSplit, char delimeter)
+std::vector<StringView> ULogParser::splitString(const StringView& strToSplit,
+                                                char delimeter)
 {
   std::vector<StringView> splitted_strings;
   splitted_strings.reserve(4);
@@ -347,11 +349,11 @@ bool ULogParser::readFileDefinitions(DataStream& datastream)
 
   while (true)
   {
-//    qDebug() <<"\noffset before" << datastream.offset;
+    //    qDebug() <<"\noffset before" << datastream.offset;
     datastream.read((char*)&message_header, ULOG_MSG_HEADER_LEN);
-//    qDebug() <<"msg_size" << message_header.msg_size;
-//    qDebug() <<"type" << char(message_header.msg_type);
-//    qDebug() <<"offset after" << datastream.offset;
+    //    qDebug() <<"msg_size" << message_header.msg_size;
+    //    qDebug() <<"type" << char(message_header.msg_type);
+    //    qDebug() <<"offset after" << datastream.offset;
 
     if (!datastream)
     {
@@ -395,15 +397,14 @@ bool ULogParser::readFileDefinitions(DataStream& datastream)
         }
       }
       break;
-      case (int)ULogMessageType::INFO_MULTIPLE:  // skip
+      case (int)ULogMessageType::INFO_MULTIPLE:      // skip
       case (int)ULogMessageType::PARAMETER_DEFAULT:  // skip
         datastream.offset += message_header.msg_size;
         break;
 
       default:
         printf("unknown log definition type %i, size %i (offset %i)\n",
-               (int)message_header.msg_type,
-               (int)message_header.msg_size,
+               (int)message_header.msg_type, (int)message_header.msg_size,
                (int)datastream.offset);
         datastream.offset += message_header.msg_size;
         break;
@@ -428,7 +429,8 @@ bool ULogParser::readFlagBits(DataStream& datastream, uint16_t msg_size)
   uint8_t* incompat_flags = message + 8;
 
   // handle & validate the flags
-  bool contains_appended_data = incompat_flags[0] & ULOG_INCOMPAT_FLAG0_DATA_APPENDED_MASK;
+  bool contains_appended_data =
+      incompat_flags[0] & ULOG_INCOMPAT_FLAG0_DATA_APPENDED_MASK;
   bool has_unknown_incompat_bits = false;
 
   if (incompat_flags[0] & ~0x1)
@@ -457,7 +459,8 @@ bool ULogParser::readFlagBits(DataStream& datastream, uint16_t msg_size)
 
     if (appended_offsets[0] > 0)
     {
-      // the appended data is currently only used for hardfault dumps, so it's safe to ignore it.
+      // the appended data is currently only used for hardfault dumps, so it's safe to
+      // ignore it.
       //  LOG_INFO("Log contains appended data. Replay will ignore this data" );
       _read_until_file_position = appended_offsets[0];
     }
@@ -767,7 +770,8 @@ ULogParser::Timeseries ULogParser::createTimeseries(const ULogParser::Format* fo
 
   Timeseries timeseries;
 
-  appendVector = [&appendVector, this, &timeseries](const Format& format, const std::string& prefix) {
+  appendVector = [&appendVector, this, &timeseries](const Format& format,
+                                                    const std::string& prefix) {
     for (const auto& field : format.fields)
     {
       // skip padding messages

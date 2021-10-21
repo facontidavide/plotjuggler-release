@@ -36,4 +36,3 @@ private:
   std::string _default_time_axis;
   QWidget* _main_win;
 };
-

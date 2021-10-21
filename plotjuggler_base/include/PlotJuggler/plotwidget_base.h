@@ -16,14 +16,13 @@ class PlotLegend;
 
 namespace PJ
 {
-
-class PlotWidgetBase: public QObject
+class PlotWidgetBase : public QObject
 {
   Q_OBJECT
 
 public:
-
-  enum CurveStyle {
+  enum CurveStyle
+  {
     LINES,
     DOTS,
     LINES_AND_DOTS,
@@ -41,13 +40,12 @@ public:
 
   ~PlotWidgetBase();
 
-  virtual CurveInfo* addCurve(const std::string& name,
-                              PlotData &src_data,
+  virtual CurveInfo* addCurve(const std::string& name, PlotData& src_data,
                               QColor color = Qt::transparent);
 
   virtual void removeCurve(const QString& title);
 
-  const std::list<CurveInfo> &curveList() const;
+  const std::list<CurveInfo>& curveList() const;
 
   bool isEmpty() const;
 
@@ -55,11 +53,10 @@ public:
 
   std::map<QString, QColor> getCurveColors() const;
 
-  CurveInfo* curveFromTitle(const QString &title);
+  CurveInfo* curveFromTitle(const QString& title);
 
-  virtual QwtSeriesWrapper* createTimeSeries(
-      const QString& transform_ID,
-      const PlotData* data);
+  virtual QwtSeriesWrapper* createTimeSeries(const QString& transform_ID,
+                                             const PlotData* data);
 
   virtual void resetZoom();
 
@@ -116,16 +113,15 @@ signals:
   void legendSizeChanged(int new_size);
 
 protected:
-
   class QwtPlotPimpl;
   QwtPlotPimpl* p = nullptr;
 
-  static void setStyle( QwtPlotCurve* curve, CurveStyle style );
+  static void setStyle(QwtPlotCurve* curve, CurveStyle style);
 
   QwtPlot* qwtPlot();
   const QwtPlot* qwtPlot() const;
 
-  std::list<CurveInfo> &curveList();
+  std::list<CurveInfo>& curveList();
 
   PlotLegend* legend();
   PlotZoomer* zoomer();
@@ -143,8 +139,6 @@ private:
   bool _keep_aspect_ratio;
 };
 
-}
+}  // namespace PJ
 
-
-
-#endif // PLOTWIDGET_PROXY_H
+#endif  // PLOTWIDGET_PROXY_H
