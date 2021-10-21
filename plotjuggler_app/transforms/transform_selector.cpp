@@ -6,10 +6,15 @@
 #include <QComboBox>
 #include <QDebug>
 
-TransformSelector::TransformSelector(QStringList builtin_transform, QStringList available_transforms,
-                                     QString* default_tansform, std::map<std::string, QString>* curve_transforms,
+TransformSelector::TransformSelector(QStringList builtin_transform,
+                                     QStringList available_transforms,
+                                     QString* default_tansform,
+                                     std::map<std::string, QString>* curve_transforms,
                                      QWidget* parent)
-  : QDialog(parent), ui(new Ui::transform_selector), _curves_trans(curve_transforms), _default_trans(default_tansform)
+  : QDialog(parent)
+  , ui(new Ui::transform_selector)
+  , _curves_trans(curve_transforms)
+  , _default_trans(default_tansform)
 {
   ui->setupUi(this);
 

@@ -5,4 +5,4 @@
 
 void BuildDummyData(PJ::PlotDataMapRef& datamap);
 
-#endif // DUMMY_DATA_H
+#endif  // DUMMY_DATA_H

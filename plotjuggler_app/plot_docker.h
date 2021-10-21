@@ -22,19 +22,35 @@ public:
   explicit DraggableToolbar(ads::CDockWidget* parent);
   ~DraggableToolbar() override;
 
-  QLabel* label(){ return ui->label;}
-  QPushButton* buttonFullscreen() { return ui->buttonFullscreen; }
-  QPushButton* buttonClose() { return ui->buttonClose; }
-  QPushButton* buttonSplitHorizontal() { return ui->buttonSplitHorizontal; }
-  QPushButton* buttonSplitVertical() { return ui->buttonSplitVertical; }
+  QLabel* label()
+  {
+    return ui->label;
+  }
+  QPushButton* buttonFullscreen()
+  {
+    return ui->buttonFullscreen;
+  }
+  QPushButton* buttonClose()
+  {
+    return ui->buttonClose;
+  }
+  QPushButton* buttonSplitHorizontal()
+  {
+    return ui->buttonSplitHorizontal;
+  }
+  QPushButton* buttonSplitVertical()
+  {
+    return ui->buttonSplitVertical;
+  }
 
   void toggleFullscreen();
 
-  bool isFullscreen() const{
+  bool isFullscreen() const
+  {
     return _fullscreen_mode;
   }
 
-  bool eventFilter(QObject* object,QEvent* event) override;
+  bool eventFilter(QObject* object, QEvent* event) override;
 
 public slots:
 
@@ -44,18 +60,18 @@ private:
   void mousePressEvent(QMouseEvent* ev) override;
   void mouseReleaseEvent(QMouseEvent* ev) override;
   void mouseMoveEvent(QMouseEvent* ev) override;
-  void enterEvent(QEvent *) override;
-  void leaveEvent(QEvent *) override;
+  void enterEvent(QEvent*) override;
+  void leaveEvent(QEvent*) override;
 
   ads::CDockWidget* _parent;
-  Ui::DraggableToolbar *ui;
+  Ui::DraggableToolbar* ui;
   bool _fullscreen_mode;
 
   QIcon _expand_icon;
   QIcon _collapse_icon;
 };
 
-class DockWidget: public ads::CDockWidget
+class DockWidget : public ads::CDockWidget
 {
   Q_OBJECT
 
@@ -84,13 +100,12 @@ signals:
   void undoableChange();
 };
 
-class PlotDocker: public ads::CDockManager
+class PlotDocker : public ads::CDockManager
 {
-
-Q_OBJECT
+  Q_OBJECT
 
 public:
-  PlotDocker(QString name, PlotDataMapRef &datamap, QWidget* parent = nullptr);
+  PlotDocker(QString name, PlotDataMapRef& datamap, QWidget* parent = nullptr);
 
   QString name() const;
 
@@ -115,7 +130,6 @@ public slots:
   void on_stylesheetChanged(QString theme);
 
 private:
-
   void restoreSplitter(QDomElement elem, DockWidget* widget);
 
   QString _name;
@@ -127,8 +141,6 @@ signals:
   void plotWidgetAdded(PlotWidget*);
 
   void undoableChange();
-
 };
 
-
-#endif // PLOT_DOCKER_H
+#endif  // PLOT_DOCKER_H
