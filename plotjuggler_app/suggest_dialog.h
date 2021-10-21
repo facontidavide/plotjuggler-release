@@ -13,7 +13,8 @@ class SuggestDialog : public QDialog
   Q_OBJECT
 
 public:
-  explicit SuggestDialog(const std::string& name_x, const std::string& name_y, QWidget* parent = nullptr);
+  explicit SuggestDialog(const std::string& name_x, const std::string& name_y,
+                         QWidget* parent = nullptr);
   ~SuggestDialog();
 
   QString nameX() const;

@@ -8,22 +8,21 @@
 #include "PlotJuggler/pj_plugin.h"
 #include "PlotJuggler/transform_function.h"
 
-namespace PJ {
-
+namespace PJ
+{
 class ToolboxPlugin : public PlotJugglerPlugin
 {
   Q_OBJECT
 
 public:
-
   ToolboxPlugin() = default;
 
-  virtual void init( PlotDataMapRef& src_data,
-                     TransformsMap& transform_map) = 0;
+  virtual void init(PlotDataMapRef& src_data, TransformsMap& transform_map) = 0;
 
   virtual ~ToolboxPlugin() = default;
 
-  enum WidgetType {
+  enum WidgetType
+  {
     FLOATING,
     FIXED
   };
@@ -39,12 +38,11 @@ signals:
   void plotCreated(std::string plot_name);
 
   void closed();
-
 };
 
 using ToolboxPluginPtr = std::shared_ptr<ToolboxPlugin>;
 
-}
+}  // namespace PJ
 
 QT_BEGIN_NAMESPACE
 #define Toolbox_iid "facontidavide.PlotJuggler3.Toolbox"
