@@ -7,7 +7,8 @@
 #include <QScrollBar>
 #include "curvelist_panel.h"
 
-CurveTableView::CurveTableView(CurveListPanel* parent) : QTableWidget(parent), CurvesView(parent)
+CurveTableView::CurveTableView(CurveListPanel* parent)
+  : QTableWidget(parent), CurvesView(parent)
 {
   setColumnCount(2);
   setEditTriggers(NoEditTriggers);
@@ -35,7 +36,8 @@ CurveTableView::CurveTableView(CurveListPanel* parent) : QTableWidget(parent), C
   setShowGrid(false);
 }
 
-void CurveTableView::addItem(const QString &prefix, const QString& plot_name, const QString &plot_ID)
+void CurveTableView::addItem(const QString& prefix, const QString& plot_name,
+                             const QString& plot_ID)
 {
   if (_inserted_curves.contains(plot_ID))
   {
@@ -43,7 +45,7 @@ void CurveTableView::addItem(const QString &prefix, const QString& plot_name, co
   }
 
   QString row_name = prefix;
-  if( !prefix.isEmpty() && !prefix.endsWith('/'))
+  if (!prefix.isEmpty() && !prefix.endsWith('/'))
   {
     row_name += "/";
   }
@@ -104,7 +106,7 @@ void CurveTableView::refreshFontSize()
 
     cell = item(row, 1);
     font = QFontDatabase::systemFont(QFontDatabase::FixedFont);
-    font.setPointSize(_point_size - 2 );
+    font.setPointSize(_point_size - 2);
     cell->setFont(font);
   }
   setViewResizeEnabled(true);
@@ -194,7 +196,7 @@ void CurveTableView::hideValuesColumn(bool hide)
   }
 }
 
-CurvesView::CurvesView(CurveListPanel *parent) : _parent_panel(parent)
+CurvesView::CurvesView(CurveListPanel* parent) : _parent_panel(parent)
 {
 }
 
@@ -214,7 +216,8 @@ bool CurvesView::eventFilterBase(QObject* object, QEvent* event)
     table_widget = qobject_cast<QAbstractItemView*>(obj);
   }
 
-  bool ctrl_modifier_pressed = (QGuiApplication::keyboardModifiers() == Qt::ControlModifier);
+  bool ctrl_modifier_pressed =
+      (QGuiApplication::keyboardModifiers() == Qt::ControlModifier);
 
   if (event->type() == QEvent::MouseButtonPress)
   {
@@ -242,7 +245,8 @@ bool CurvesView::eventFilterBase(QObject* object, QEvent* event)
     QMouseEvent* mouse_event = static_cast<QMouseEvent*>(event);
     double distance_from_click = (mouse_event->pos() - _drag_start_pos).manhattanLength();
 
-    if ((mouse_event->buttons() == Qt::LeftButton || mouse_event->buttons() == Qt::RightButton) &&
+    if ((mouse_event->buttons() == Qt::LeftButton ||
+         mouse_event->buttons() == Qt::RightButton) &&
         distance_from_click >= QApplication::startDragDistance() && !_dragging)
     {
       _dragging = true;
@@ -312,11 +316,11 @@ bool CurvesView::eventFilterBase(QObject* object, QEvent* event)
       int prev_size = _point_size;
       if (wheel_event->delta() < 0)
       {
-        _point_size = std::max(8, prev_size-1);
+        _point_size = std::max(8, prev_size - 1);
       }
       else if (wheel_event->delta() > 0)
       {
-        _point_size = std::min(14, prev_size+1);
+        _point_size = std::min(14, prev_size + 1);
       }
       if (_point_size != prev_size)
       {

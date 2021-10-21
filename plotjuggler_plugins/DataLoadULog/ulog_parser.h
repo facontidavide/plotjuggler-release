@@ -19,10 +19,9 @@ public:
     const size_t _length;
     size_t offset;
 
-    DataStream(char* data, int len):
-      _data(data),
-      _length(len),
-      offset(0) {}
+    DataStream(char* data, int len) : _data(data), _length(len), offset(0)
+    {
+    }
 
     void read(char* dst, int len)
     {
@@ -30,7 +29,8 @@ public:
       offset += len;
     }
 
-    operator bool() {
+    operator bool()
+    {
       return offset < _length;
     }
   };
@@ -110,7 +110,7 @@ public:
   };
 
 public:
-  ULogParser(DataStream &datastream);
+  ULogParser(DataStream& datastream);
 
   const std::map<std::string, Timeseries>& getTimeseriesMap() const;
 
@@ -121,7 +121,6 @@ public:
   const std::vector<MessageLog>& getLogs() const;
 
 private:
-
   bool readFileHeader(DataStream& datastream);
 
   bool readFileDefinitions(DataStream& datastream);
@@ -148,7 +147,8 @@ private:
 
   std::streampos _data_section_start;  ///< first ADD_LOGGED_MSG message
 
-  int64_t _read_until_file_position = 1ULL << 60;  ///< read limit if log contains appended data
+  int64_t _read_until_file_position =
+      1ULL << 60;  ///< read limit if log contains appended data
 
   std::set<std::string> _overridden_params;
 
@@ -168,6 +168,6 @@ private:
 
   void parseDataMessage(const Subscription& sub, char* message);
 
-  char* parseSimpleDataMessage(Timeseries& timeseries, const Format* format, char* message, size_t* index);
+  char* parseSimpleDataMessage(Timeseries& timeseries, const Format* format,
+                               char* message, size_t* index);
 };
-

@@ -6,8 +6,8 @@
 #include "PlotJuggler/plotdata.h"
 #include "PlotJuggler/pj_plugin.h"
 
-namespace PJ {
-
+namespace PJ
+{
 /** @brief Generic interface for a multi input - multi output transformation function.
  * Contrariwise to other plugins, multiple instances of the this class might be created.
  * For this reason, a TransformFactory is also defined
@@ -26,15 +26,15 @@ public:
   virtual const char* name() const = 0;
 
   /** Number of inputs. Return -1 if it is not a constant.
-  *
-  * When numInputs() > 0, then the data will be initialized using
-  * the method:
-  *     setDataSource(const std::vector<const PlotData*>& src_data)
-  *
-  * When  numInputs() == -1, then the number of inputs is undefined and the
-  * data will be initialized using the method_
-  *     setDataSource( PlotDataMapRef* data )
-  */
+   *
+   * When numInputs() > 0, then the data will be initialized using
+   * the method:
+   *     setDataSource(const std::vector<const PlotData*>& src_data)
+   *
+   * When  numInputs() == -1, then the number of inputs is undefined and the
+   * data will be initialized using the method_
+   *     setDataSource( PlotDataMapRef* data )
+   */
   virtual int numInputs() const = 0;
 
   /** Number of outputs. Define the size of the vector used in:
@@ -43,18 +43,19 @@ public:
   virtual int numOutputs() const = 0;
 
   /** Clear the cache, state and any stored data */
-  virtual void reset() {}
+  virtual void reset()
+  {
+  }
 
-  PlotDataMapRef* plotData() {
+  PlotDataMapRef* plotData()
+  {
     return _data;
   }
 
   std::vector<const PlotData*>& dataSources();
 
-  virtual void setData(
-      PlotDataMapRef* data,
-      const std::vector<const PlotData*>& src_vect,
-      std::vector<PlotData*>& dst_vect);
+  virtual void setData(PlotDataMapRef* data, const std::vector<const PlotData*>& src_vect,
+                       std::vector<PlotData*>& dst_vect);
 
   virtual void calculate() = 0;
 
@@ -65,7 +66,6 @@ protected:
   std::vector<const PlotData*> _src_vector;
   std::vector<PlotData*> _dst_vector;
   PlotDataMapRef* _data;
-
 };
 
 using TransformsMap = std::unordered_map<std::string, std::shared_ptr<TransformFunction>>;
@@ -75,16 +75,17 @@ class TransformFunction_SISO : public TransformFunction
 {
   Q_OBJECT
 public:
-
   TransformFunction_SISO() = default;
 
   void reset() override;
 
-  int numInputs() const override {
+  int numInputs() const override
+  {
     return 1;
   }
 
-  int numOutputs() const override {
+  int numOutputs() const override
+  {
     return 1;
   }
 
@@ -97,16 +98,17 @@ public:
   const PlotData* dataSource() const;
 
 protected:
-
-  double _last_timestamp = - std::numeric_limits<double>::max();
+  double _last_timestamp = -std::numeric_limits<double>::max();
 };
 
 ///------ The factory to create instances of a SeriesTransform -------------
 
-class TransformFactory: public QObject
+class TransformFactory : public QObject
 {
 public:
-  TransformFactory() {}
+  TransformFactory()
+  {
+  }
 
 private:
   TransformFactory(const TransformFactory&) = delete;
@@ -118,26 +120,25 @@ private:
   static TransformFactory* instance();
 
 public:
-
   static const std::set<std::string>& registeredTransforms();
 
-  template <typename T> static void registerTransform()
+  template <typename T>
+  static void registerTransform()
   {
     T temp;
     std::string name = temp.name();
     instance()->names_.insert(name);
-    instance()->creators_[name] = [](){ return std::make_shared<T>(); };
+    instance()->creators_[name] = []() { return std::make_shared<T>(); };
   }
 
   static TransformFunction::Ptr create(const std::string& name);
 };
 
-} // end namespace
+}  // namespace PJ
 
-Q_DECLARE_OPAQUE_POINTER(PJ::TransformFactory *)
-Q_DECLARE_METATYPE(PJ::TransformFactory *)
+Q_DECLARE_OPAQUE_POINTER(PJ::TransformFactory*)
+Q_DECLARE_METATYPE(PJ::TransformFactory*)
 Q_GLOBAL_STATIC(PJ::TransformFactory, _transform_factory_ptr_from_macro)
-
 
 QT_BEGIN_NAMESPACE
 
@@ -148,4 +149,3 @@ Q_DECLARE_INTERFACE(PJ::TransformFunction, TransformFunction_iid)
 Q_DECLARE_INTERFACE(PJ::TransformFunction_SISO, TransformFunctionSISO_iid)
 
 QT_END_NAMESPACE
-
