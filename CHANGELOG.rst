@@ -2,6 +2,15 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+3.3.3 (2021-10-30)
+------------------
+* Fix critical bug when loading a file twice
+* change order of removal
+* fix crash when one of the source of XY is deleted
+* fix issue `#549 <https://github.com/facontidavide/PlotJuggler/issues/549>`_ (comma decima separator)
+* Fix issue `#545 <https://github.com/facontidavide/PlotJuggler/issues/545>`_
+* Contributors: Davide Faconti
+
 3.3.2 (2021-10-21)
 ------------------
 * don't add the prefix. Checkbox added
