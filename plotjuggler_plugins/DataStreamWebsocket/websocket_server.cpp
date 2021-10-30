@@ -109,8 +109,10 @@ bool WebsocketServer::start(QStringList*)
           this, [&](int index) {
             if (parser_creator)
             {
-              QWidget* prev_widget = parser_creator->optionsWidget();
-              prev_widget->setVisible(false);
+              if( auto prev_widget = parser_creator->optionsWidget())
+              {
+                prev_widget->setVisible(false);
+              }
             }
             QString protocol = dialog->ui->comboBoxProtocol->itemText(index);
             parser_creator = availableParsers()->at(protocol);
