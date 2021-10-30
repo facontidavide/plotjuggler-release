@@ -1123,9 +1123,9 @@ void MainWindow::onDeleteMultipleCurves(const std::vector<std::string>& curve_na
 {
   for (const auto& curve_name : curve_names)
   {
-    _mapped_plot_data.erase(curve_name);
     emit dataSourceRemoved(curve_name);
     _curvelist_widget->removeCurve(curve_name);
+    _mapped_plot_data.erase(curve_name);
   }
 
   forEachWidget([](PlotWidget* plot) { plot->replot(); });
@@ -1260,7 +1260,7 @@ void MainWindow::importPlotDataMap(PlotDataMapRef& new_data, bool remove_old)
         // timeseries in both
         if (new_plot_data.count(it.first) != 0)
         {
-          prev_plot_data.clear();
+          it.second.clear();
         }
       }
     };
@@ -2010,15 +2010,40 @@ bool MainWindow::loadLayoutFromFile(QString filename)
   //-------------------------------------------------
   auto custom_equations = root.firstChildElement("customMathEquations");
 
-  try
+  if (!custom_equations.isNull())
   {
-    if (!custom_equations.isNull())
+    using SnippetPair = std::pair<SnippetData, QDomElement>;
+    std::vector<SnippetPair> snippets;
+
+    for (QDomElement custom_eq = custom_equations.firstChildElement("snippet");
+         custom_eq.isNull() == false;
+         custom_eq = custom_eq.nextSiblingElement("snippet"))
     {
-      for (QDomElement custom_eq = custom_equations.firstChildElement("snippet");
-           custom_eq.isNull() == false; custom_eq = custom_eq.nextSiblingElement("snippe"
-                                                                                 "t"))
+      snippets.push_back( { GetSnippetFromXML(custom_eq), custom_eq} );
+    }
+    // A custom plot may depend on other custom plots.
+    // Reorder them to respect the mutual depencency.
+    auto DependOn = [](const SnippetPair& a, const SnippetPair& b)
+    {
+      if(b.first.linked_source == a.first.alias_name)
       {
-        auto snippet = GetSnippetFromXML(custom_eq);
+        return true;
+      }
+      for (const auto& source: b.first.additional_sources)
+      {
+        if(source == a.first.alias_name)
+        {
+          return true;
+        }
+      }
+      return false;
+    };
+    std::sort(snippets.begin(), snippets.end(), DependOn);
+
+    for (const auto& [snippet, custom_eq]: snippets)
+    {
+      try
+      {
         CustomPlotPtr new_custom_plot = std::make_shared<LuaCustomFunction>(snippet);
         new_custom_plot->xmlLoadState(custom_eq);
 
@@ -2028,14 +2053,14 @@ bool MainWindow::loadLayoutFromFile(QString filename)
 
         _transform_functions.insert({ alias_name.toStdString(), new_custom_plot });
       }
-      _curvelist_widget->refreshColumns();
+      catch (std::runtime_error& err)
+      {
+        QMessageBox::warning(
+            this, tr("Exception"),
+            tr("Failed to load customMathEquation [%1] \n\n %2\n").arg(snippet.alias_name).arg(err.what()));
+      }
     }
-  }
-  catch (std::runtime_error& err)
-  {
-    QMessageBox::warning(
-        this, tr("Exception"),
-        tr("Failed to refresh a customMathEquation \n\n %1\n").arg(err.what()));
+    _curvelist_widget->refreshColumns();
   }
 
   QByteArray snippets_saved_xml =

@@ -243,6 +243,16 @@
               </spacer>
              </item>
              <item>
+              <widget class="QCheckBox" name="checkBoxLoadDataPrefix">
+               <property name="toolTip">
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If checked, the name of the file will be added as prefix.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;Probably, you want to use it only when opening 2 or more files at once (when they containing the same data).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               </property>
+               <property name="text">
+                <string>add prefix</string>
+               </property>
+              </widget>
+             </item>
+             <item>
               <widget class="QPushButton" name="buttonRecentData">
                <property name="minimumSize">
                 <size>
@@ -270,16 +280,6 @@
                </property>
                <property name="flat">
                 <bool>true</bool>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QCheckBox" name="checkBoxLoadDataPrefix">
-               <property name="toolTip">
-                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If checked, the name of the file will be added as prefix.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;Probably, you want to use it only when opening 2 or more files at once (when they containing the same data).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-               </property>
-               <property name="text">
-                <string>add prefix</string>
                </property>
               </widget>
              </item>

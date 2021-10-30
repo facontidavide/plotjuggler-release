@@ -107,8 +107,10 @@ bool UDP_Server::start(QStringList*)
           this, [&](int) {
             if (parser_creator)
             {
-              QWidget* prev_widget = parser_creator->optionsWidget();
-              prev_widget->setVisible(false);
+              if( auto prev_widget = parser_creator->optionsWidget())
+              {
+                prev_widget->setVisible(false);
+              }
             }
             parser_creator = availableParsers()->at(protocol);
 
