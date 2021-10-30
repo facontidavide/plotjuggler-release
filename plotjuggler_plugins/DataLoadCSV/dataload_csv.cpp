@@ -11,9 +11,9 @@
 const int TIME_INDEX_NOT_DEFINED = -2;
 const int TIME_INDEX_GENERATED = -1;
 
-QStringList SplitLine(const QString& line, QChar separator)
+void SplitLine(const QString& line, QChar separator, QStringList& parts)
 {
-  QStringList parts;
+  parts.clear();
   bool inside_quotes = false;
   bool quoted_word = false;
   int start_pos = 0;
@@ -79,8 +79,6 @@ QStringList SplitLine(const QString& line, QChar separator)
       parts.push_back(QString());
     }
   }
-
-  return parts;
 }
 
 DataLoadCSV::DataLoadCSV()
@@ -140,7 +138,8 @@ void DataLoadCSV::parseHeader(QFile& file, std::vector<std::string>& column_name
 
   QString preview_lines = first_line + "\n";
 
-  QStringList firstline_items = SplitLine(first_line, _separator);
+  QStringList firstline_items;
+  SplitLine(first_line, _separator, firstline_items);
 
   int is_number_count = 0;
 
@@ -426,10 +425,17 @@ bool DataLoadCSV::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_data
   QString format_string = _ui->lineEditDateFormat->text();
 
   auto ParseNumber = [&](QString str, bool& is_number) {
-    double val = str.trimmed().toDouble(&is_number);
+    QString str_trimmed = str.trimmed();
+    double val = str_trimmed.toDouble(&is_number);
+    // handle numbers with comma instead of point as decimal separator
+    if(!is_number)
+    {
+      static QLocale locale_with_comma(QLocale::German);
+      val = locale_with_comma.toDouble(str_trimmed, &is_number);
+    }
     if (!is_number && parse_date_format && !format_string.isEmpty())
     {
-      QDateTime ts = QDateTime::fromString(str, format_string);
+      QDateTime ts = QDateTime::fromString(str_trimmed, format_string);
       is_number = ts.isValid();
       if (is_number)
       {
@@ -444,10 +450,12 @@ bool DataLoadCSV::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_data
   // remove first line (header)
   in.readLine();
 
+  QStringList string_items;
+
   while (!in.atEnd())
   {
     QString line = in.readLine();
-    QStringList string_items = SplitLine(line, _separator);
+    SplitLine(line, _separator, string_items);
 
     if (string_items.size() != column_names.size())
     {
