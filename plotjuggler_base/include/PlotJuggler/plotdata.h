@@ -55,6 +55,8 @@ struct PlotDataMapRef
 
   PlotGroup::Ptr getOrCreateGroup(const std::string& name);
 
+  std::unordered_set<std::string> getAllNames() const;
+
   void clear();
 
   void setMaximumRangeX(double range);

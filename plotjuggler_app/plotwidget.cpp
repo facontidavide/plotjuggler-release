@@ -370,7 +370,7 @@ void PlotWidget::removeCurve(const QString& title)
   _tracker->redraw();
 }
 
-void PlotWidget::onSourceDataRemoved(const std::string& src_name)
+void PlotWidget::onDataSourceRemoved(const std::string& src_name)
 {
   bool deleted = false;
 
@@ -972,12 +972,12 @@ Range PlotWidget::getVisualizationRangeY(Range range_X) const
   return Range({ bottom, top });
 }
 
-void PlotWidget::updateCurves()
+void PlotWidget::updateCurves(bool reset_older_data)
 {
   for (auto& it : curveList())
   {
     auto series = dynamic_cast<QwtSeriesWrapper*>(it.curve->data());
-    series->updateCache(false);
+    series->updateCache(reset_older_data);
     // TODO check res and do something if false.
   }
   updateMaximumZoomArea();
