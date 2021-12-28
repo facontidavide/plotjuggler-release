@@ -2,8 +2,11 @@
 
 namespace PJ
 {
+
 TransformFunction::TransformFunction() : _data(nullptr)
 {
+  static unsigned order = 0;
+  _order = order++;
 }
 
 std::vector<const PlotData*>& TransformFunction::dataSources()

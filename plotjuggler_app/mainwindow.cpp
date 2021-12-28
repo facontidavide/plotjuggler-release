@@ -884,10 +884,7 @@ void MainWindow::onPlotAdded(PlotWidget* plot)
 
   connect(plot, &PlotWidget::trackerMoved, this, &MainWindow::onTrackerMovedFromWidget);
 
-  // TODO connect(plot, &PlotWidget::swapWidgetsRequested, this,
-  // &MainWindow::onSwapPlots);
-
-  connect(this, &MainWindow::dataSourceRemoved, plot, &PlotWidget::onSourceDataRemoved);
+  connect(this, &MainWindow::dataSourceRemoved, plot, &PlotWidget::onDataSourceRemoved);
 
   connect(plot, &PlotWidget::curveListChanged, this, [this]() {
     updateTimeOffset();
@@ -1121,13 +1118,37 @@ bool MainWindow::xmlLoadState(QDomDocument state_document)
 
 void MainWindow::onDeleteMultipleCurves(const std::vector<std::string>& curve_names)
 {
+  std::set<std::string> orphaned_transforms;
+
   for (const auto& curve_name : curve_names)
   {
     emit dataSourceRemoved(curve_name);
     _curvelist_widget->removeCurve(curve_name);
+
+    _transform_functions.erase(curve_name);
+    for(auto it = _transform_functions.begin(); it != _transform_functions.end(); )
+    {
+      bool removed = false;
+      for(const auto& source: it->second->dataSources() )
+      {
+        if(source->plotName() == curve_name)
+        {
+          it = _transform_functions.erase(it);
+          removed = true;
+          break;
+        }
+      }
+      if(!removed)
+      {
+        it++;
+      }
+    }
+  }
+  for (const auto& curve_name : curve_names)
+  {
     _mapped_plot_data.erase(curve_name);
   }
-
+  updateTimeOffset();
   forEachWidget([](PlotWidget* plot) { plot->replot(); });
 }
 
@@ -1308,25 +1329,7 @@ bool MainWindow::loadDataFromFiles(QStringList filenames)
     msgbox.exec();
   }
 
-  if (_mapped_plot_data.numeric.size() > 0 || _mapped_plot_data.strings.size() > 0 ||
-      _mapped_plot_data.user_defined.size() > 0)
-  {
-    QMessageBox::StandardButton reply;
-    reply = QMessageBox::question(
-        this, tr("Warning"), tr("Do you want to remove the previously loaded data?\n"),
-        QMessageBox::Yes | QMessageBox::No, QMessageBox::NoButton);
-
-    if (reply == QMessageBox::Yes)
-    {
-      deleteAllData();
-    }
-    if (reply == QMessageBox::NoButton)
-    {
-      QMessageBox::information(this, tr("Closed"),
-                               "File loading interrupted by the user");
-      return false;
-    }
-  }
+  std::unordered_set<std::string> previous_names = _mapped_plot_data.getAllNames();
 
   QStringList loaded_filenames;
 
@@ -1338,21 +1341,61 @@ bool MainWindow::loadDataFromFiles(QStringList filenames)
     {
       info.prefix = QFileInfo(info.filename).baseName();
     }
-
-    if (loadDataFromFile(info))
+    auto added_names = loadDataFromFile(info);
+    if (!added_names.empty())
     {
       loaded_filenames.push_back(filenames[i]);
     }
+    for(const auto& name: added_names)
+    {
+      previous_names.erase(name);
+    }
   }
+
+  bool data_replaced_entirely = false;
+
+  if (previous_names.empty())
+  {
+    data_replaced_entirely = true;
+  }
+  else
+  {
+    QMessageBox::StandardButton reply;
+    reply = QMessageBox::question(
+        this, tr("Warning"), tr("Do you want to remove the previously loaded data?\n"),
+        QMessageBox::Yes | QMessageBox::No, QMessageBox::NoButton);
+
+    if (reply == QMessageBox::Yes)
+    {
+      std::vector<std::string> to_delete;
+      for(const auto& name: previous_names)
+      {
+        to_delete.push_back(name);
+      }
+      onDeleteMultipleCurves(to_delete);
+      data_replaced_entirely = true;
+    }
+  }
+
+  // special case when only the last file should be remembered
+  if(loaded_filenames.size() == 1 &&
+      data_replaced_entirely &&
+      _loaded_datafiles.size() > 1)
+  {
+    std::swap(_loaded_datafiles.back(), _loaded_datafiles.front());
+    _loaded_datafiles.resize(1);
+  }
+
   if (loaded_filenames.size() > 0)
   {
     updateRecentDataMenu(loaded_filenames);
+    forEachWidget([&](PlotWidget* plot) { plot->zoomOut(false); });
     return true;
   }
   return false;
 }
 
-bool MainWindow::loadDataFromFile(const FileLoadInfo& info)
+std::unordered_set<std::string> MainWindow::loadDataFromFile(const FileLoadInfo& info)
 {
   ui->pushButtonPlay->setChecked(false);
 
@@ -1378,6 +1421,7 @@ bool MainWindow::loadDataFromFile(const FileLoadInfo& info)
   }
 
   DataLoaderPtr dataloader;
+  std::unordered_set<std::string> added_names;
 
   if (compatible_loaders.size() == 1)
   {
@@ -1422,7 +1466,7 @@ bool MainWindow::loadDataFromFile(const FileLoadInfo& info)
       QMessageBox::warning(
           this, tr("Datafile"),
           tr("Cannot read file %1:\n%2.").arg(info.filename).arg(file.errorString()));
-      return false;
+      return {};
     }
     file.close();
 
@@ -1436,6 +1480,7 @@ bool MainWindow::loadDataFromFile(const FileLoadInfo& info)
         AddPrefixToPlotData(info.prefix.toStdString(), mapped_data.numeric);
         AddPrefixToPlotData(info.prefix.toStdString(), mapped_data.strings);
 
+        added_names = mapped_data.getAllNames();
         importPlotDataMap(mapped_data, true);
 
         QDomElement plugin_elem = dataloader->xmlSaveState(new_info.plugin_config);
@@ -1467,7 +1512,7 @@ bool MainWindow::loadDataFromFile(const FileLoadInfo& info)
                            tr("The plugin [%1] thrown the following exception: \n\n %3\n")
                                .arg(dataloader->name())
                                .arg(ex.what()));
-      return false;
+      return {};
     }
   }
   else
@@ -1482,18 +1527,19 @@ bool MainWindow::loadDataFromFile(const FileLoadInfo& info)
   // clean the custom plot. Function updateDataAndReplot will update them
   for (auto& custom_it : _transform_functions)
   {
-    auto dst_data_it = _mapped_plot_data.numeric.find(custom_it.first);
-    if (dst_data_it != _mapped_plot_data.numeric.end())
+    auto it = _mapped_plot_data.numeric.find(custom_it.first);
+    if (it != _mapped_plot_data.numeric.end())
     {
-      dst_data_it->second.clear();
+      it->second.clear();
     }
     custom_it.second->reset();
   }
+  forEachWidget([](PlotWidget* plot) { plot->updateCurves(true); });
 
   updateDataAndReplot(true);
   ui->timeSlider->setRealValue(ui->timeSlider->getMinimum());
 
-  return true;
+  return added_names;
 }
 
 void MainWindow::on_buttonStreamingNotifications_clicked()
@@ -1690,6 +1736,14 @@ void MainWindow::loadStyleSheet(QString file_path)
   }
 }
 
+void MainWindow::updateDerivedSeries()
+{
+  for(auto& [id, series]: _transform_functions)
+  {
+
+  }
+}
+
 void MainWindow::on_stylesheetChanged(QString theme)
 {
   ui->pushButtonLoadDatafile->setIcon(LoadSvg(":/resources/svg/import.svg", theme));
@@ -1869,8 +1923,6 @@ std::tuple<double, double, int> MainWindow::calculateVisibleRangeX()
   return std::tuple<double, double, int>(min_time, max_time, max_steps);
 }
 
-static const QString LAYOUT_VERSION = "2.3.8";
-
 bool MainWindow::loadLayoutFromFile(QString filename)
 {
   QSettings settings;
@@ -1901,27 +1953,6 @@ bool MainWindow::loadLayoutFromFile(QString filename)
   // refresh plugins
   QDomElement root = domDocument.namedItem("root").toElement();
 
-  if (!root.hasAttribute("version") || root.attribute("version") != LAYOUT_VERSION)
-  {
-    QMessageBox msgBox(this);
-    msgBox.setWindowTitle("Obsolate Layout version");
-    msgBox.setText(tr("This Layout ID is not supported [%1].\nThis version of "
-                      "PlotJuggler use Layout ID [%2]")
-                       .arg(root.attribute("version"))
-                       .arg(LAYOUT_VERSION));
-
-    msgBox.setStandardButtons(QMessageBox::Abort);
-    QPushButton* continueButton =
-        msgBox.addButton(tr("Continue anyway"), QMessageBox::ActionRole);
-    msgBox.setDefaultButton(continueButton);
-
-    int ret = msgBox.exec();
-    if (ret == QMessageBox::Abort)
-    {
-      return false;
-    }
-  }
-
   loadPluginState(root);
   //-------------------------------------------------
   QDomElement previously_loaded_datafile = root.firstChildElement("previouslyLoaded_"
@@ -1930,8 +1961,16 @@ bool MainWindow::loadLayoutFromFile(QString filename)
   QDomElement datafile_elem = previously_loaded_datafile.firstChildElement("fileInfo");
   while (!datafile_elem.isNull())
   {
+    QString datafile_path = datafile_elem.attribute("filename");
+    if( QDir(datafile_path).isRelative() )
+    {
+      QDir layout_directory = QFileInfo(filename).absoluteDir();
+      QString new_path = layout_directory.filePath(datafile_path);
+      datafile_path = QFileInfo(new_path).absoluteFilePath();
+    }
+
     FileLoadInfo info;
-    info.filename = datafile_elem.attribute("filename");
+    info.filename = datafile_path;
     info.prefix = datafile_elem.attribute("prefix");
 
     QDomElement datasources_elem = datafile_elem.firstChildElement("selected_"
@@ -2212,13 +2251,26 @@ void MainWindow::updateDataAndReplot(bool replot_hidden_tabs)
 
   const bool is_streaming_active = isStreamingActive();
 
-  // TODO 3.3
+  //--------------------------------
+  std::vector<TransformFunction*> transforms;
+  transforms.reserve(_transform_functions.size());
   for (auto& [id, function] : _transform_functions)
+  {
+    transforms.push_back(function.get());
+  }
+  std::sort(transforms.begin(), transforms.end(),
+            [](TransformFunction* a, TransformFunction*b)
+            {
+              return a->order() < b->order();
+            });
+
+  for (auto& function : transforms)
   {
     function->calculate();
   }
 
-  forEachWidget([](PlotWidget* plot) { plot->updateCurves(); });
+  forEachWidget([](PlotWidget* plot)
+                { plot->updateCurves(false); });
 
   //--------------------------------
   // trigger again the execution of this callback if steaming == true
@@ -2616,7 +2668,7 @@ void MainWindow::onCustomPlotCreated(CustomPlotPtr custom_plot)
 
     if (info)
     {
-      plot->updateCurves();
+      plot->updateCurves(true);
       plot->replot();
     }
   });
@@ -2863,7 +2915,7 @@ void MainWindow::on_pushButtonSaveLayout_clicked()
   separator->setFrameStyle(QFrame::HLine | QFrame::Plain);
 
   auto checkbox_datasource = new QCheckBox("Save data source");
-  checkbox_datasource->setToolTip("ant the layout to remember the source of your data,\n"
+  checkbox_datasource->setToolTip("the layout will remember the source of your data,\n"
                                   "i.e. the Datafile used or the Streaming Plugin loaded "
                                   "?");
   checkbox_datasource->setFocusPolicy(Qt::NoFocus);
@@ -2911,7 +2963,6 @@ void MainWindow::on_pushButtonSaveLayout_clicked()
   settings.setValue("MainWindow.saveLayoutSnippets", checkbox_snippets->isChecked());
 
   QDomElement root = doc.namedItem("root").toElement();
-  root.setAttribute("version", LAYOUT_VERSION);
 
   root.appendChild(doc.createComment(" - - - - - - - - - - - - - - "));
 
@@ -2927,8 +2978,10 @@ void MainWindow::on_pushButtonSaveLayout_clicked()
 
     for (const auto& loaded : _loaded_datafiles)
     {
+      QString loaded_datafile = QDir(directory_path).relativeFilePath(loaded.filename);
+
       QDomElement file_elem = doc.createElement("fileInfo");
-      file_elem.setAttribute("filename", loaded.filename);
+      file_elem.setAttribute("filename", loaded_datafile);
       file_elem.setAttribute("prefix", loaded.prefix);
 
       QDomElement datasources_elem = doc.createElement("selected_datasources");
