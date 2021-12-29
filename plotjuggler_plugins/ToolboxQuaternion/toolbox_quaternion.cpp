@@ -5,6 +5,8 @@
 #include <QEvent>
 #include <QMimeData>
 #include <QDragEnterEvent>
+#include <array>
+#include <math.h>
 #include "quaternion_to_rpy.h"
 
 ToolboxQuaternion::ToolboxQuaternion()

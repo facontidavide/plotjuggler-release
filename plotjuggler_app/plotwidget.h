@@ -90,9 +90,9 @@ signals:
 
 public slots:
 
-  void updateCurves();
+  void updateCurves(bool reset_older_data);
 
-  void onSourceDataRemoved(const std::string& src_name);
+  void onDataSourceRemoved(const std::string& src_name);
 
   void removeAllCurves() override;
 
