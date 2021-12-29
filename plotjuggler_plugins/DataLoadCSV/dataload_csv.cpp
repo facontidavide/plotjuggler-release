@@ -11,9 +11,9 @@
 const int TIME_INDEX_NOT_DEFINED = -2;
 const int TIME_INDEX_GENERATED = -1;
 
-QStringList SplitLine(const QString& line, QChar separator)
+void SplitLine(const QString& line, QChar separator, QStringList& parts)
 {
-  QStringList parts;
+  parts.clear();
   bool inside_quotes = false;
   bool quoted_word = false;
   int start_pos = 0;
@@ -79,14 +79,12 @@ QStringList SplitLine(const QString& line, QChar separator)
       parts.push_back(QString());
     }
   }
-
-  return parts;
 }
 
 DataLoadCSV::DataLoadCSV()
 {
   _extensions.push_back("csv");
-  _separator = ',';
+  _delimiter = ',';
   // setup the dialog
 
   _dialog = new QDialog();
@@ -140,7 +138,8 @@ void DataLoadCSV::parseHeader(QFile& file, std::vector<std::string>& column_name
 
   QString preview_lines = first_line + "\n";
 
-  QStringList firstline_items = SplitLine(first_line, _separator);
+  QStringList firstline_items;
+  SplitLine(first_line, _delimiter, firstline_items);
 
   int is_number_count = 0;
 
@@ -269,22 +268,22 @@ int DataLoadCSV::launchDialog(QFile& file, std::vector<std::string>* column_name
     if (comma_count > 3 && comma_count > semicolon_count)
     {
       _ui->comboBox->setCurrentIndex(0);
-      _separator = ',';
+      _delimiter = ',';
     }
     if (semicolon_count > 3 && semicolon_count > comma_count)
     {
       _ui->comboBox->setCurrentIndex(1);
-      _separator = ';';
+      _delimiter = ';';
     }
     if (space_count > 3 && comma_count == 0 && semicolon_count == 0)
     {
       _ui->comboBox->setCurrentIndex(2);
-      _separator = ' ';
+      _delimiter = ' ';
     }
     file.close();
   }
 
-  // temporaryy connection
+  // temporary connection
   std::unique_ptr<QObject> pcontext(new QObject);
   QObject* context = pcontext.get();
   QObject::connect(_ui->comboBox, qOverload<int>(&QComboBox::currentIndexChanged),
@@ -292,13 +291,13 @@ int DataLoadCSV::launchDialog(QFile& file, std::vector<std::string>* column_name
                      switch (index)
                      {
                        case 0:
-                         _separator = ',';
+                         _delimiter = ',';
                          break;
                        case 1:
-                         _separator = ';';
+                         _delimiter = ';';
                          break;
                        case 2:
-                         _separator = ' ';
+                         _delimiter = ' ';
                          break;
                      }
                      parseHeader(file, *column_names);
@@ -426,10 +425,17 @@ bool DataLoadCSV::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_data
   QString format_string = _ui->lineEditDateFormat->text();
 
   auto ParseNumber = [&](QString str, bool& is_number) {
-    double val = str.trimmed().toDouble(&is_number);
+    QString str_trimmed = str.trimmed();
+    double val = str_trimmed.toDouble(&is_number);
+    // handle numbers with comma instead of point as decimal separator
+    if(!is_number)
+    {
+      static QLocale locale_with_comma(QLocale::German);
+      val = locale_with_comma.toDouble(str_trimmed, &is_number);
+    }
     if (!is_number && parse_date_format && !format_string.isEmpty())
     {
-      QDateTime ts = QDateTime::fromString(str, format_string);
+      QDateTime ts = QDateTime::fromString(str_trimmed, format_string);
       is_number = ts.isValid();
       if (is_number)
       {
@@ -444,10 +450,12 @@ bool DataLoadCSV::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_data
   // remove first line (header)
   in.readLine();
 
+  QStringList string_items;
+
   while (!in.atEnd())
   {
     QString line = in.readLine();
-    QStringList string_items = SplitLine(line, _separator);
+    SplitLine(line, _delimiter, string_items);
 
     if (string_items.size() != column_names.size())
     {
@@ -554,6 +562,8 @@ bool DataLoadCSV::xmlSaveState(QDomDocument& doc, QDomElement& parent_element) c
 {
   QDomElement elem = doc.createElement("default");
   elem.setAttribute("time_axis", _default_time_axis.c_str());
+  elem.setAttribute("delimiter", _ui->comboBox->currentIndex());
+
   QString date_format;
   if (_ui->checkBoxDateFormat->isChecked())
   {
@@ -572,6 +582,23 @@ bool DataLoadCSV::xmlLoadState(const QDomElement& parent_element)
     if (elem.hasAttribute("time_axis"))
     {
       _default_time_axis = elem.attribute("time_axis").toStdString();
+    }
+    if (elem.hasAttribute("delimiter"))
+    {
+      int separator_index = elem.attribute("delimiter").toInt();
+      _ui->comboBox->setCurrentIndex(separator_index);
+      switch (separator_index)
+      {
+        case 0:
+          _delimiter = ',';
+          break;
+        case 1:
+          _delimiter = ';';
+          break;
+        case 2:
+          _delimiter = ' ';
+          break;
+      }
     }
     if (elem.hasAttribute("date_format"))
     {
