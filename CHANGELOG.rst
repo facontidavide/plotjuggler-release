@@ -2,6 +2,27 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+3.3.4 (2021-12-28)
+------------------
+* Video plugin (`#574 <https://github.com/facontidavide/PlotJuggler/issues/574>`_)
+* gitignore *.swp files (`#569 <https://github.com/facontidavide/PlotJuggler/issues/569>`_)
+* Added libprotoc-dev to the apt install targets (`#573 <https://github.com/facontidavide/PlotJuggler/issues/573>`_)
+* turn on Sol3 safety flag
+* trying to solve reported issue with Lua
+* add fields that were not set in Protobuf
+* Protobuf update (`#568 <https://github.com/facontidavide/PlotJuggler/issues/568>`_)
+* add zoomOut after loadDataFile
+* Protobuf options refactored
+* changed the protobuf implementation to deal with dependencies
+* Protobuf parser and MQTT plugins
+* Merge pull request `#531 <https://github.com/facontidavide/PlotJuggler/issues/531>`_ from erickisos/fix/517
+  Homebrew path added into CMakeLists `#517 <https://github.com/facontidavide/PlotJuggler/issues/517>`_
+* LUA version updated
+* fix dependency between transformed series
+* fix issue `#557 <https://github.com/facontidavide/PlotJuggler/issues/557>`_
+* Homebrew path added into CMakeLists
+* Contributors: Adeeb Shihadeh, Davide Faconti, Erick G. Islas-Osuna, Miklós Márton
+
 3.3.3 (2021-10-30)
 ------------------
 * Fix critical bug when loading a file twice
