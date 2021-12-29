@@ -10,7 +10,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}  "${CMAKE_CURRENT_LIST_DIR}/cmake")
 add_definitions(
     -DPJ_MAJOR_VERSION="3"
     -DPJ_MINOR_VERSION="3"
-    -DPJ_PATCH_VERSION="0" )
+    -DPJ_PATCH_VERSION="4" )
 
 # You can add some command line arguments at compilation time
 # Use _0x3b_ instead of semicolon
@@ -85,8 +85,10 @@ if(APPLE AND EXISTS /usr/local/opt/qt5)
     # source: https://github.com/Homebrew/homebrew-core/issues/8392#issuecomment-325226494
     list(APPEND CMAKE_PREFIX_PATH "/usr/local/opt/qt5")
     set(CMAKE_MACOSX_RPATH 1)
+elseif(APPLE AND EXISTS /opt/homebrew/opt/qt@5)
+    list(APPEND CMAKE_PREFIX_PATH "/opt/homebrew/opt/qt@5")
+    set(CMAKE_MACOSX_RPATH 1)
 endif()
-
 
 find_package(Qt5 REQUIRED COMPONENTS
     Core
@@ -119,11 +121,10 @@ endif()
 IF (NOT WIN32)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  -fPIC")
 else()
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  -D_USE_MATH_DEFINES")
     set(CMAKE_WIN32_EXECUTABLE ON)
     set(GUI_TYPE WIN32)
 ENDIF()
-
-find_package(ZMQ)
 
 include_directories(
     ${Qt5Core_INCLUDE_DIRS}
@@ -139,7 +140,7 @@ include_directories(
     ./3rdparty/Qt-Advanced-Docking/include
     ./3rdparty/qwt/src
     ./3rdparty/sol
-    ./3rdparty/lua-5.4.1/src
+    ./3rdparty/lua-5.4.3/src
 )
 
 #########################  BASE library  ####################################
@@ -227,19 +228,23 @@ endif()
 
 add_subdirectory( 3rdparty/color_widgets )
 add_subdirectory( 3rdparty/Qt-Advanced-Docking )
-add_subdirectory( 3rdparty/lua-5.4.1 )
+add_subdirectory( 3rdparty/lua-5.4.3 )
 
 add_subdirectory( plotjuggler_app )
 
 add_subdirectory( plotjuggler_plugins/DataLoadCSV )
 add_subdirectory( plotjuggler_plugins/DataLoadULog )
+
 add_subdirectory( plotjuggler_plugins/DataStreamSample )
 add_subdirectory( plotjuggler_plugins/DataStreamWebsocket )
 add_subdirectory( plotjuggler_plugins/DataStreamUDP )
+add_subdirectory( plotjuggler_plugins/DataStreamMQTT )
+#add_subdirectory( plotjuggler_plugins/DataStreamZMQ )
+
 add_subdirectory( plotjuggler_plugins/StatePublisherCSV )
+add_subdirectory( plotjuggler_plugins/VideoViewer )
+
 add_subdirectory( plotjuggler_plugins/ToolboxQuaternion )
 add_subdirectory( plotjuggler_plugins/ToolboxFFT )
 
-if( ZMQ_FOUND )
-  add_subdirectory( plotjuggler_plugins/DataStreamZMQ )
-endif()
+add_subdirectory( plotjuggler_plugins/ParserProtobuf )

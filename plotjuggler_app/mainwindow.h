@@ -32,14 +32,14 @@ class MainWindow : public QMainWindow
   Q_OBJECT
 
 public:
-  explicit MainWindow(const QCommandLineParser& commandline_parser, QWidget* parent = nullptr);
+  explicit MainWindow(const QCommandLineParser& commandline_parser,
+                      QWidget* parent = nullptr);
 
   ~MainWindow();
 
   bool loadLayoutFromFile(QString filename);
   bool loadDataFromFiles(QStringList filenames);
-  bool loadDataFromFile(const FileLoadInfo& info);
-
+  std::unordered_set<std::string> loadDataFromFile(const FileLoadInfo& info);
 
   void stopStreamingPlugin();
   void startStreamingPlugin(QString streamer_name);
@@ -61,7 +61,7 @@ public slots:
 
   void on_streamingSpinBox_valueChanged(int value);
 
-  void on_comboStreaming_currentIndexChanged(const QString &current_text);
+  void on_comboStreaming_currentIndexChanged(const QString& current_text);
 
   void on_splitterMoved(int, int);
 
@@ -171,7 +171,7 @@ private:
   void initializeActions();
   QStringList initializePlugins(QString subdir_name);
 
-  void forEachWidget(std::function<void(PlotWidget *, PlotDocker *, int)> op);
+  void forEachWidget(std::function<void(PlotWidget*, PlotDocker*, int)> op);
   void forEachWidget(std::function<void(PlotWidget*)> op);
 
   void rearrangeGridLayout();
@@ -206,8 +206,11 @@ private:
 
   void loadStyleSheet(QString file_path);
 
+  void updateDerivedSeries();
+
 signals:
   void dataSourceRemoved(const std::string& name);
+  void dataSourceUpdated(const std::string& name);
   void activateTracker(bool active);
   void stylesheetChanged(QString style_name);
 
@@ -219,7 +222,7 @@ public slots:
   void on_actionDeleteAllData_triggered();
   void on_actionClearBuffer_triggered();
 
-  void on_deleteSerieFromGroup(std::string group_name );
+  void on_deleteSerieFromGroup(std::string group_name);
 
   void on_streamingNotificationsChanged(int active_notifications_count);
 
@@ -228,7 +231,7 @@ public slots:
   void on_actionReportBug_triggered();
   void on_actionCheatsheet_triggered();
   void on_actionSupportPlotJuggler_triggered();
-// TODO ?  void on_actionSaveAllPlotTabs_triggered();
+  // TODO ?  void on_actionSaveAllPlotTabs_triggered();
 
   void on_actionAbout_triggered();
   void on_actionExit_triggered();
@@ -276,9 +279,9 @@ public:
   void showEvent(QShowEvent*) override;
   void leaveEvent(QEvent*) override;
   void closeEvent(QCloseEvent*) override;
+
 private:
   QWidget* _w;
 };
-
 
 #endif  // MAINWINDOW_H

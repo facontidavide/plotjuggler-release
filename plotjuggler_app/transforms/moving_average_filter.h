@@ -9,12 +9,12 @@
 
 using namespace PJ;
 
-
-namespace Ui {
+namespace Ui
+{
 class MovingAverageFilter;
 }
 
-class MovingAverageFilter: public TransformFunction_SISO
+class MovingAverageFilter : public TransformFunction_SISO
 {
 public:
   explicit MovingAverageFilter();
@@ -23,7 +23,10 @@ public:
 
   void reset() override;
 
-  const char* name() const override { return "Moving Average"; }
+  const char* name() const override
+  {
+    return "Moving Average";
+  }
 
   QWidget* optionsWidget() override;
 
@@ -32,12 +35,10 @@ public:
   bool xmlLoadState(const QDomElement& parent_element) override;
 
 private:
-  Ui::MovingAverageFilter *ui;
-  QWidget *_widget;
+  Ui::MovingAverageFilter* ui;
+  QWidget* _widget;
   std::vector<PlotData::Point> _buffer;
   nonstd::ring_span_lite::ring_span<PlotData::Point> _ring_view;
 
-  std::optional<PlotData::Point>
-  calculateNextPoint(size_t index) override;
+  std::optional<PlotData::Point> calculateNextPoint(size_t index) override;
 };
-
