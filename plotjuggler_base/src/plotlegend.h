@@ -16,7 +16,8 @@ public:
   const QwtPlotItem* processMousePressEvent(QMouseEvent* mouse_event);
 
 private:
-  virtual void draw(QPainter* p, const QwtScaleMap& xMap, const QwtScaleMap& yMap, const QRectF& rect) const override;
+  virtual void draw(QPainter* p, const QwtScaleMap& xMap, const QwtScaleMap& yMap,
+                    const QRectF& rect) const override;
 
   virtual void drawLegendData(QPainter* painter, const QwtPlotItem*, const QwtLegendData&,
                               const QRectF&) const override;
@@ -25,7 +26,6 @@ private:
 
   QwtPlot* _parent_plot;
   bool _collapsed;
-
 };
 
 #endif  // PLOTLEGEND_H

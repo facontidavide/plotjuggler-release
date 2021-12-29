@@ -23,4 +23,3 @@ public:
 private:
   Ui::ULogParametersDialog* ui;
 };
-
