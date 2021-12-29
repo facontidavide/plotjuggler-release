@@ -13,16 +13,14 @@
 
 const double MAX_DOUBLE = std::numeric_limits<double>::max() / 2;
 
-PlotwidgetEditor::PlotwidgetEditor(PlotWidget *plotwidget, QWidget *parent) :
-  QDialog(parent),
-  ui(new Ui::PlotWidgetEditor),
-  _plotwidget_origin(plotwidget)
+PlotwidgetEditor::PlotwidgetEditor(PlotWidget* plotwidget, QWidget* parent)
+  : QDialog(parent), ui(new Ui::PlotWidgetEditor), _plotwidget_origin(plotwidget)
 {
   ui->setupUi(this);
 
   installEventFilter(this);
 
-//  setWindowFlags(windowFlags() | Qt::FramelessWindowHint);
+  //  setWindowFlags(windowFlags() | Qt::FramelessWindowHint);
 
   setupColorWidget();
 
@@ -31,7 +29,7 @@ PlotwidgetEditor::PlotwidgetEditor(PlotWidget *plotwidget, QWidget *parent) :
 
   _plotwidget = new PlotWidget(plotwidget->datamap());
   _plotwidget->xmlLoadState(saved_state);
-  _plotwidget->on_changeTimeOffset( plotwidget->timeOffset() );
+  _plotwidget->on_changeTimeOffset(plotwidget->timeOffset());
   _plotwidget->setContextMenuEnabled(false);
 
   _bounding_rect_original = _plotwidget_origin->canvasBoundingRect();
@@ -48,19 +46,20 @@ PlotwidgetEditor::PlotwidgetEditor(PlotWidget *plotwidget, QWidget *parent) :
   QSettings settings;
   restoreGeometry(settings.value("PlotwidgetEditor.geometry").toByteArray());
 
-  if( _plotwidget->curveStyle() == PlotWidgetBase::LINES)
+  if (_plotwidget->curveStyle() == PlotWidgetBase::LINES)
   {
     ui->radioLines->setChecked(true);
   }
-  else if( _plotwidget->curveStyle() == PlotWidgetBase::DOTS)
+  else if (_plotwidget->curveStyle() == PlotWidgetBase::DOTS)
   {
     ui->radioPoints->setChecked(true);
   }
-  else if( _plotwidget->curveStyle() == PlotWidgetBase::STICKS)
+  else if (_plotwidget->curveStyle() == PlotWidgetBase::STICKS)
   {
     ui->radioSticks->setChecked(true);
   }
-  else {
+  else
+  {
     ui->radioBoth->setChecked(true);
   }
 
@@ -71,27 +70,31 @@ PlotwidgetEditor::PlotwidgetEditor(PlotWidget *plotwidget, QWidget *parent) :
   auto range_x = _plotwidget->getVisualizationRangeX();
   Range suggested_limits = _plotwidget->getVisualizationRangeY(range_x);
 
-  if( ylimits.min != -MAX_DOUBLE)
+  if (ylimits.min != -MAX_DOUBLE)
   {
     ui->checkBoxMin->setChecked(true);
     ui->lineLimitMin->setText(QString::number(ylimits.min));
   }
-  else{
+  else
+  {
     ui->lineLimitMin->setText(QString::number(suggested_limits.min));
   }
 
-  if( ylimits.max != MAX_DOUBLE)
+  if (ylimits.max != MAX_DOUBLE)
   {
     ui->checkBoxMax->setChecked(true);
     ui->lineLimitMax->setText(QString::number(ylimits.max));
   }
-  else{
+  else
+  {
     ui->lineLimitMax->setText(QString::number(suggested_limits.max));
   }
 
-  //ui->listWidget->widget_background_disabled("QListView::item:selected { background: #ddeeff; }");
+  // ui->listWidget->widget_background_disabled("QListView::item:selected { background:
+  // #ddeeff; }");
 
-  if( ui->listWidget->count() != 0 ){
+  if (ui->listWidget->count() != 0)
+  {
     ui->listWidget->item(0)->setSelected(true);
   }
 }
@@ -105,24 +108,24 @@ PlotwidgetEditor::~PlotwidgetEditor()
   delete ui;
 }
 
-
 void PlotwidgetEditor::onColorChanged(QColor c)
 {
   auto selected = ui->listWidget->selectedItems();
-  if( selected.size() != 1)
+  if (selected.size() != 1)
   {
     return;
   }
-  auto item =  selected.front();
-  if( item ){
-    auto row_widget = dynamic_cast<EditorRowWidget*>(  ui->listWidget->itemWidget(item) );
+  auto item = selected.front();
+  if (item)
+  {
+    auto row_widget = dynamic_cast<EditorRowWidget*>(ui->listWidget->itemWidget(item));
     auto name = row_widget->text();
-    if( row_widget->color() != c)
+    if (row_widget->color() != c)
     {
-      row_widget->setColor( c );
+      row_widget->setColor(c);
     }
 
-    _plotwidget->on_changeCurveColor( item->data(Qt::UserRole).toString(), c );
+    _plotwidget->on_changeCurveColor(item->data(Qt::UserRole).toString(), c);
   }
 }
 
@@ -131,7 +134,7 @@ void PlotwidgetEditor::setupColorWidget()
   auto wheel_layout = new QVBoxLayout();
   wheel_layout->setMargin(0);
   wheel_layout->setSpacing(5);
-  ui->widgetWheel->setLayout( wheel_layout );
+  ui->widgetWheel->setLayout(wheel_layout);
   _color_wheel = new color_widgets::ColorWheel(this);
   wheel_layout->addWidget(_color_wheel);
 
@@ -140,18 +143,17 @@ void PlotwidgetEditor::setupColorWidget()
 
   wheel_layout->addWidget(_color_preview);
 
-  connect(_color_wheel, &color_widgets::ColorWheel::colorChanged,
-          this, &PlotwidgetEditor::onColorChanged);
+  connect(_color_wheel, &color_widgets::ColorWheel::colorChanged, this,
+          &PlotwidgetEditor::onColorChanged);
 
-  connect(_color_wheel, &color_widgets::ColorWheel::colorChanged,
-          _color_preview, &color_widgets::ColorPreview::setColor );
+  connect(_color_wheel, &color_widgets::ColorWheel::colorChanged, _color_preview,
+          &color_widgets::ColorPreview::setColor);
 
-  connect(_color_wheel, &color_widgets::ColorWheel::colorChanged,
-          this, [this](QColor col)
-  {
-    QSignalBlocker block( ui->editColotText );
-    ui->editColotText->setText( col.name() );
-  });
+  connect(_color_wheel, &color_widgets::ColorWheel::colorChanged, this,
+          [this](QColor col) {
+            QSignalBlocker block(ui->editColotText);
+            ui->editColotText->setText(col.name());
+          });
 
   _color_wheel->setColor(Qt::blue);
 }
@@ -159,11 +161,11 @@ void PlotwidgetEditor::setupColorWidget()
 void PlotwidgetEditor::onDeleteRow(QWidget* w)
 {
   int row_count = ui->listWidget->count();
-  for(int row = 0; row < row_count; row++ )
+  for (int row = 0; row < row_count; row++)
   {
     auto item = ui->listWidget->item(row);
     auto widget = ui->listWidget->itemWidget(item);
-    if( widget == w )
+    if (widget == w)
     {
       QString curve = dynamic_cast<EditorRowWidget*>(w)->text();
 
@@ -174,7 +176,7 @@ void PlotwidgetEditor::onDeleteRow(QWidget* w)
       break;
     }
   }
-  if( row_count == 0)
+  if (row_count == 0)
   {
     disableWidgets();
   }
@@ -202,17 +204,18 @@ void PlotwidgetEditor::setupTable()
     auto color = it.second;
     auto item = new QListWidgetItem();
     // even if it is not visible, we store here the original name (not alias)
-    item->setData(Qt::UserRole, it.first );
+    item->setData(Qt::UserRole, it.first);
 
-    ui->listWidget->addItem( item );
-    auto plot_row = new EditorRowWidget(alias, color) ;
-    item->setSizeHint( plot_row->sizeHint() );
-    ui->listWidget->setItemWidget(item, plot_row );
+    ui->listWidget->addItem(item);
+    auto plot_row = new EditorRowWidget(alias, color);
+    item->setSizeHint(plot_row->sizeHint());
+    ui->listWidget->setItemWidget(item, plot_row);
 
-    connect(plot_row, &EditorRowWidget::deleteRow, this, [this](QWidget* w) { onDeleteRow(w); });
+    connect(plot_row, &EditorRowWidget::deleteRow, this,
+            [this](QWidget* w) { onDeleteRow(w); });
     row++;
   }
-  if( row == 0 )
+  if (row == 0)
   {
     disableWidgets();
   }
@@ -227,14 +230,20 @@ void PlotwidgetEditor::updateLimits()
   {
     bool ok = false;
     double val = ui->lineLimitMax->text().toDouble(&ok);
-    if(ok) { ymax = val; }
+    if (ok)
+    {
+      ymax = val;
+    }
   }
 
   if (ui->checkBoxMin->isChecked() && !ui->lineLimitMin->text().isEmpty())
   {
     bool ok = false;
     double val = ui->lineLimitMin->text().toDouble(&ok);
-    if(ok) { ymin = val; }
+    if (ok)
+    {
+      ymin = val;
+    }
   }
 
   if (ymin > ymax)
@@ -251,49 +260,47 @@ void PlotwidgetEditor::updateLimits()
   _plotwidget->setCustomAxisLimits(range);
 }
 
-void PlotwidgetEditor::on_editColotText_textChanged(const QString &text)
+void PlotwidgetEditor::on_editColotText_textChanged(const QString& text)
 {
-  if( text.size() == 7 && text[0] == '#' && QColor::isValidColor(text))
+  if (text.size() == 7 && text[0] == '#' && QColor::isValidColor(text))
   {
     QColor col(text);
-    _color_wheel->setColor( col );
-    _color_preview->setColor( col );
+    _color_wheel->setColor(col);
+    _color_preview->setColor(col);
   }
 }
 
 void PlotwidgetEditor::on_radioLines_toggled(bool checked)
 {
-  if(checked)
+  if (checked)
   {
-    _plotwidget->changeCurvesStyle( PlotWidgetBase::LINES );
+    _plotwidget->changeCurvesStyle(PlotWidgetBase::LINES);
   }
 }
 
-
 void PlotwidgetEditor::on_radioPoints_toggled(bool checked)
 {
-  if(checked)
+  if (checked)
   {
-    _plotwidget->changeCurvesStyle( PlotWidgetBase::DOTS );
+    _plotwidget->changeCurvesStyle(PlotWidgetBase::DOTS);
   }
 }
 
 void PlotwidgetEditor::on_radioBoth_toggled(bool checked)
 {
-  if(checked)
+  if (checked)
   {
-    _plotwidget->changeCurvesStyle( PlotWidgetBase::LINES_AND_DOTS );
+    _plotwidget->changeCurvesStyle(PlotWidgetBase::LINES_AND_DOTS);
   }
 }
 
 void PlotwidgetEditor::on_radioSticks_toggled(bool checked)
 {
-  if(checked)
+  if (checked)
   {
-    _plotwidget->changeCurvesStyle( PlotWidgetBase::STICKS );
+    _plotwidget->changeCurvesStyle(PlotWidgetBase::STICKS);
   }
 }
-
 
 void PlotwidgetEditor::on_checkBoxMax_toggled(bool checked)
 {
@@ -322,14 +329,14 @@ void PlotwidgetEditor::on_pushButtonReset_clicked()
   ui->lineLimitMax->setText(QString::number(limits.max));
 }
 
-void PlotwidgetEditor::on_lineLimitMax_textChanged(const QString &)
+void PlotwidgetEditor::on_lineLimitMax_textChanged(const QString&)
 {
-   updateLimits();
+  updateLimits();
 }
 
-void PlotwidgetEditor::on_lineLimitMin_textChanged(const QString &)
+void PlotwidgetEditor::on_lineLimitMin_textChanged(const QString&)
 {
-   updateLimits();
+  updateLimits();
 }
 
 void PlotwidgetEditor::on_pushButtonCancel_pressed()
@@ -342,31 +349,31 @@ void PlotwidgetEditor::on_pushButtonSave_pressed()
   QDomDocument doc;
   _plotwidget->setZoomRectangle(_bounding_rect_original, false);
   auto elem = _plotwidget->xmlSaveState(doc);
-  _plotwidget_origin->xmlLoadState( elem );
+  _plotwidget_origin->xmlLoadState(elem);
   this->accept();
 }
 
-EditorRowWidget::EditorRowWidget(QString text, QColor color): QWidget()
+EditorRowWidget::EditorRowWidget(QString text, QColor color) : QWidget()
 {
   setMouseTracking(true);
-  const QSize button_size(20,20);
+  const QSize button_size(20, 20);
 
   auto layout = new QHBoxLayout();
-  setLayout( layout );
+  setLayout(layout);
   _text = new QLabel(text, this);
 
   _empty_spacer = new QWidget();
-  _empty_spacer->setFixedSize( button_size );
+  _empty_spacer->setFixedSize(button_size);
 
   setColor(color);
   _delete_button = new QPushButton(this);
   _delete_button->setFlat(true);
-  _delete_button->setFixedSize( button_size );
+  _delete_button->setFixedSize(button_size);
   auto icon = QIcon(":/resources/svg/trash.svg");
   _delete_button->setStyleSheet("QPushButton:hover{ border: 0px;}");
 
-  _delete_button->setIcon( icon) ;
-  _delete_button->setIconSize( button_size );
+  _delete_button->setIcon(icon);
+  _delete_button->setIconSize(button_size);
 
   layout->addWidget(_empty_spacer);
   layout->addWidget(_delete_button);
@@ -374,16 +381,17 @@ EditorRowWidget::EditorRowWidget(QString text, QColor color): QWidget()
 
   _delete_button->setHidden(true);
 
-  connect( _delete_button, &QPushButton::clicked, this, [this](){ emit deleteRow(this); });
+  connect(_delete_button, &QPushButton::clicked, this,
+          [this]() { emit deleteRow(this); });
 }
 
-void EditorRowWidget::enterEvent(QEvent *ev)
+void EditorRowWidget::enterEvent(QEvent* ev)
 {
   _delete_button->setHidden(false);
   _empty_spacer->setHidden(true);
 }
 
-void EditorRowWidget::leaveEvent(QEvent *ev)
+void EditorRowWidget::leaveEvent(QEvent* ev)
 {
   _delete_button->setHidden(true);
   _empty_spacer->setHidden(false);
@@ -396,7 +404,7 @@ QString EditorRowWidget::text() const
 
 void EditorRowWidget::setColor(QColor color)
 {
-  setStyleSheet( QString("color: %1;").arg(color.name()));
+  setStyleSheet(QString("color: %1;").arg(color.name()));
   _color = color;
 }
 
@@ -408,24 +416,24 @@ QColor EditorRowWidget::color() const
 void PlotwidgetEditor::on_listWidget_itemSelectionChanged()
 {
   auto selected = ui->listWidget->selectedItems();
-  if( selected.size() == 0 || ui->listWidget->count() == 0)
+  if (selected.size() == 0 || ui->listWidget->count() == 0)
   {
     ui->widgetColor->setEnabled(false);
-    ui->editColotText->setText( "#000000" );
+    ui->editColotText->setText("#000000");
     return;
   }
 
   ui->widgetColor->setEnabled(true);
 
-  if( selected.size() != 1)
+  if (selected.size() != 1)
   {
     return;
   }
 
   auto item = selected.front();
-  auto row_widget = dynamic_cast<EditorRowWidget*>(  ui->listWidget->itemWidget(item) );
-  if( row_widget )
+  auto row_widget = dynamic_cast<EditorRowWidget*>(ui->listWidget->itemWidget(item));
+  if (row_widget)
   {
-    ui->editColotText->setText( row_widget->color().name() );
+    ui->editColotText->setText(row_widget->color().name());
   }
 }

@@ -13,13 +13,11 @@ class StreamZMQDialog : public QDialog
   Q_OBJECT
 
 public:
-  explicit StreamZMQDialog(QWidget *parent = nullptr);
+  explicit StreamZMQDialog(QWidget* parent = nullptr);
   ~StreamZMQDialog();
 
-  Ui::DataStreamZMQ *ui;
-
+  Ui::DataStreamZMQ* ui;
 };
-
 
 class DataStreamZMQ : public PJ::DataStreamer
 {

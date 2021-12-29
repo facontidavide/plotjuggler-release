@@ -1,9 +1,8 @@
 #include "cheatsheet_dialog.h"
 #include "ui_cheatsheet_dialog.h"
 
-CheatsheetDialog::CheatsheetDialog(QWidget *parent) :
-  QDialog(parent),
-  ui(new Ui::CheatsheetDialog)
+CheatsheetDialog::CheatsheetDialog(QWidget* parent)
+  : QDialog(parent), ui(new Ui::CheatsheetDialog)
 {
   ui->setupUi(this);
 

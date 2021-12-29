@@ -29,7 +29,6 @@ class PlotWidget : public PlotWidgetBase
   Q_OBJECT
 
 public:
-
   PlotWidget(PlotDataMapRef& datamap, QWidget* parent = nullptr);
 
   void setContextMenuEnabled(bool enabled);
@@ -58,12 +57,9 @@ public:
     return _mapped_data;
   }
 
-  CurveInfo* addCurveXY(std::string name_x,
-                        std::string name_y,
-                        QString curve_name = "");
+  CurveInfo* addCurveXY(std::string name_x, std::string name_y, QString curve_name = "");
 
-  CurveInfo* addCurve(const std::string& name,
-                      QColor color = Qt::transparent);
+  CurveInfo* addCurve(const std::string& name, QColor color = Qt::transparent);
 
   void setCustomAxisLimits(Range range);
 
@@ -94,9 +90,9 @@ signals:
 
 public slots:
 
-  void updateCurves();
+  void updateCurves(bool reset_older_data);
 
-  void onSourceDataRemoved(const std::string &src_name);
+  void onDataSourceRemoved(const std::string& src_name);
 
   void removeAllCurves() override;
 
@@ -124,11 +120,11 @@ public slots:
 
   void on_changeDateTimeScale(bool enable);
 
-  void on_changeCurveColor(const QString &curve_name, QColor new_color);
+  void on_changeCurveColor(const QString& curve_name, QColor new_color);
 
 private slots:
 
-  //void on_changeToBuiltinTransforms(QString new_transform);
+  // void on_changeToBuiltinTransforms(QString new_transform);
 
   void setModeXY(bool enable) override;
 
@@ -147,7 +143,6 @@ private slots:
   void on_externallyResized(const QRectF& new_rect);
 
 private:
-
   QAction* _action_removeAllCurves;
   QAction* _action_edit;
   QAction* _action_formula;
@@ -181,7 +176,6 @@ private:
 
   DragInfo _dragging;
 
-
   void buildActions();
 
   void updateAvailableTransformers();
@@ -203,10 +197,9 @@ private:
 
   bool _context_menu_enabled;
 
-  //void updateMaximumZoomArea();
+  // void updateMaximumZoomArea();
   void rescaleEqualAxisScaling();
   void overrideCursonMove();
-
 };
 
 #endif
