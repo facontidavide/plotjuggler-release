@@ -59,6 +59,11 @@ public:
 
   virtual void calculate() = 0;
 
+  unsigned order() const
+  {
+    return _order;
+  }
+
 signals:
   void parametersChanged();
 
@@ -66,6 +71,8 @@ protected:
   std::vector<const PlotData*> _src_vector;
   std::vector<PlotData*> _dst_vector;
   PlotDataMapRef* _data;
+
+  unsigned _order;
 };
 
 using TransformsMap = std::unordered_map<std::string, std::shared_ptr<TransformFunction>>;
