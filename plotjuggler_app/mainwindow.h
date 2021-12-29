@@ -39,7 +39,7 @@ public:
 
   bool loadLayoutFromFile(QString filename);
   bool loadDataFromFiles(QStringList filenames);
-  bool loadDataFromFile(const FileLoadInfo& info);
+  std::unordered_set<std::string> loadDataFromFile(const FileLoadInfo& info);
 
   void stopStreamingPlugin();
   void startStreamingPlugin(QString streamer_name);
@@ -206,8 +206,11 @@ private:
 
   void loadStyleSheet(QString file_path);
 
+  void updateDerivedSeries();
+
 signals:
   void dataSourceRemoved(const std::string& name);
+  void dataSourceUpdated(const std::string& name);
   void activateTracker(bool active);
   void stylesheetChanged(QString style_name);
 
