@@ -1,4 +1,6 @@
 #include "quaternion_to_rpy.h"
+#include <array>
+#include <math.h>
 
 QuaternionToRollPitchYaw::QuaternionToRollPitchYaw()
 {

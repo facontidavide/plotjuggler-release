@@ -1,21 +1,27 @@
 
-include_directories(../)
+find_package(ZeroMQ CONFIG QUIET)
 
-add_definitions(${QT_DEFINITIONS})
-add_definitions(-DQT_PLUGIN)
+if(ZeroMQ_FOUND)
+    include_directories(../ ${ZeroMQ_INCLUDE_DIR})
 
-QT5_WRAP_UI ( UI_SRC  datastream_zmq.ui  )
+    add_definitions(${QT_DEFINITIONS})
+    add_definitions(-DQT_PLUGIN)
 
-SET( SRC datastream_zmq.cpp )
+    QT5_WRAP_UI ( UI_SRC  datastream_zmq.ui  )
 
-add_library(DataStreamZMQ SHARED ${SRC} ${UI_SRC}  )
+    SET( SRC datastream_zmq.cpp )
 
-target_link_libraries(DataStreamZMQ
-    ${Qt5Widgets_LIBRARIES}
-    plotjuggler_base
-    zmq
-    )
+    add_library(DataStreamZMQ SHARED ${SRC} ${UI_SRC}  )
 
-install(TARGETS DataStreamZMQ DESTINATION ${PJ_PLUGIN_INSTALL_DIRECTORY}  )
+    target_link_libraries(DataStreamZMQ
+        ${Qt5Widgets_LIBRARIES}
+        plotjuggler_base
+        ${ZeroMQ_LIBRARY}
+        ${ZeroMQ_STATIC_LIBRARY}
+        )
 
+    install(TARGETS DataStreamZMQ DESTINATION ${PJ_PLUGIN_INSTALL_DIRECTORY}  )
+else()
+    message("[libzmq-dev] not found. Skipping plugin DataStreamZMQ.")
+endif()
 
