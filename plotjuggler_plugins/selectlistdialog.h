@@ -15,8 +15,8 @@ class SelectFromListDialog : public QDialog
   Q_OBJECT
 
 public:
-  explicit SelectFromListDialog(const std::deque<std::string>& fields, bool single_selection = true,
-                                QWidget* parent = 0);
+  explicit SelectFromListDialog(const std::deque<std::string>& fields,
+                                bool single_selection = true, QWidget* parent = 0);
   ~SelectFromListDialog();
 
   std::vector<int> getSelectedRowNumber() const;
@@ -39,8 +39,8 @@ private:
 };
 
 //-----------------------------------------------
-inline SelectFromListDialog::SelectFromListDialog(const std::deque<std::string>& fields, bool single_selection,
-                                                  QWidget* parent)
+inline SelectFromListDialog::SelectFromListDialog(const std::deque<std::string>& fields,
+                                                  bool single_selection, QWidget* parent)
   : QDialog(parent), ui(new Ui::SelectXAxisDialog), _single_selection(single_selection)
 {
   auto flags = this->windowFlags();

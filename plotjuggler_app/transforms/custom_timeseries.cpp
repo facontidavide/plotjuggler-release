@@ -2,7 +2,8 @@
 #include <QSettings>
 #include "lua_custom_function.h"
 
-//CustomTimeseries::CustomTimeseries(const Timeseries* source_data, const SnippetData& snippet, PlotDataMapRef& mapped_data)
+// CustomTimeseries::CustomTimeseries(const Timeseries* source_data, const SnippetData&
+// snippet, PlotDataMapRef& mapped_data)
 //  : TimeseriesQwt(source_data, &_cached_data), _mapped_data(mapped_data)
 //{
 //  if (snippet.language == "LUA")
@@ -17,7 +18,7 @@
 //  updateCache();
 //}
 
-//bool CustomTimeseries::updateCache()
+// bool CustomTimeseries::updateCache()
 //{
 //  if (_source_data->size() == 0)
 //  {

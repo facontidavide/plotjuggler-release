@@ -6,7 +6,9 @@
 #include <thread>
 
 StatePublisherZMQ::StatePublisherZMQ()
-  : _prev_dataplot(0), _thread(std::bind(&StatePublisherZMQ::run_thread, this)), _prev_time(0)
+  : _prev_dataplot(0)
+  , _thread(std::bind(&StatePublisherZMQ::run_thread, this))
+  , _prev_time(0)
 {
 }
 

@@ -6,13 +6,13 @@
 
 using namespace PJ;
 
-namespace Ui {
+namespace Ui
+{
 class ScaleTransform;
 }
 
 class ScaleTransform : public TransformFunction_SISO
 {
-
 public:
   explicit ScaleTransform();
 
@@ -27,11 +27,10 @@ public:
   bool xmlLoadState(const QDomElement& parent_element) override;
 
 private:
-  QWidget *_widget;
-  Ui::ScaleTransform *ui;
+  QWidget* _widget;
+  Ui::ScaleTransform* ui;
 
-  std::optional<PlotData::Point>
-  calculateNextPoint(size_t index) override;
+  std::optional<PlotData::Point> calculateNextPoint(size_t index) override;
 };
 
-#endif // SCALE_TRANSFORM_H
+#endif  // SCALE_TRANSFORM_H

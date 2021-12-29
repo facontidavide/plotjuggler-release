@@ -2,14 +2,16 @@
 
 namespace PJ
 {
-
-void DataStreamer::setAvailableParsers(std::shared_ptr<MessageParserFactory> parsers_factory) {
+void DataStreamer::setAvailableParsers(
+    std::shared_ptr<MessageParserFactory> parsers_factory)
+{
   _available_parsers = parsers_factory;
 }
 
 std::shared_ptr<MessageParserFactory> DataStreamer::availableParsers()
 {
-  if( _available_parsers && _available_parsers->empty() ) {
+  if (_available_parsers && _available_parsers->empty())
+  {
     return {};
   }
   return _available_parsers;
@@ -32,5 +34,4 @@ void PJ::DataStreamer::setMaximumRangeX(double range)
   }
 }
 
-
-}
+}  // namespace PJ

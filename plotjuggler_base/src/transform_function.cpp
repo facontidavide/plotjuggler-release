@@ -1,29 +1,29 @@
 #include "PlotJuggler/transform_function.h"
 
-namespace PJ {
-
-TransformFunction::TransformFunction():
-  _data(nullptr)
+namespace PJ
 {
 
+TransformFunction::TransformFunction() : _data(nullptr)
+{
+  static unsigned order = 0;
+  _order = order++;
 }
 
-std::vector<const PlotData *> &TransformFunction::dataSources()
+std::vector<const PlotData*>& TransformFunction::dataSources()
 {
   return _src_vector;
 }
 
-void TransformFunction::setData(
-    PlotDataMapRef *data,
-    const std::vector<const PlotData *> &src_vect,
-    std::vector<PlotData*>& dst_vect)
+void TransformFunction::setData(PlotDataMapRef* data,
+                                const std::vector<const PlotData*>& src_vect,
+                                std::vector<PlotData*>& dst_vect)
 {
-  if( numInputs() >= 0 && src_vect.size() != numInputs() )
+  if (numInputs() >= 0 && src_vect.size() != numInputs())
   {
     throw std::runtime_error("Wrong number of input data sources "
                              "in setDataSource");
   }
-  if( dst_vect.size() != numOutputs() )
+  if (dst_vect.size() != numOutputs())
   {
     throw std::runtime_error("Wrong number of output data destinations");
   }
@@ -32,8 +32,9 @@ void TransformFunction::setData(
   _dst_vector = dst_vect;
 }
 
-void TransformFunction_SISO::reset() {
-  _last_timestamp = - std::numeric_limits<double>::max();
+void TransformFunction_SISO::reset()
+{
+  _last_timestamp = -std::numeric_limits<double>::max();
 }
 
 void TransformFunction_SISO::calculate()
@@ -44,16 +45,16 @@ void TransformFunction_SISO::calculate()
   {
     return;
   }
-  dst_data->setMaximumRangeX( src_data->maximumRangeX() );
+  dst_data->setMaximumRangeX(src_data->maximumRangeX());
   if (dst_data->size() != 0)
   {
     _last_timestamp = dst_data->back().x;
   }
 
-  int pos = src_data->getIndexFromX( _last_timestamp );
+  int pos = src_data->getIndexFromX(_last_timestamp);
   size_t index = pos < 0 ? 0 : static_cast<size_t>(pos);
 
-  while(index < src_data->size())
+  while (index < src_data->size())
   {
     const auto& in_point = src_data->at(index);
 
@@ -62,7 +63,7 @@ void TransformFunction_SISO::calculate()
       auto out_point = calculateNextPoint(index);
       if (out_point)
       {
-        dst_data->pushBack( std::move(out_point.value()) );
+        dst_data->pushBack(std::move(out_point.value()));
       }
       _last_timestamp = in_point.x;
     }
@@ -70,49 +71,47 @@ void TransformFunction_SISO::calculate()
   }
 }
 
-
-TransformFunction::Ptr TransformFactory::create(const std::string &name)
+TransformFunction::Ptr TransformFactory::create(const std::string& name)
 {
   auto it = instance()->creators_.find(name);
-  if( it == instance()->creators_.end())
+  if (it == instance()->creators_.end())
   {
     return {};
   }
   return it->second();
 }
 
-TransformFactory *PJ::TransformFactory::instance()
+TransformFactory* PJ::TransformFactory::instance()
 {
-  static TransformFactory * _ptr(nullptr);
-  if (!qApp->property("TransformFactory").isValid() && !_ptr) {
+  static TransformFactory* _ptr(nullptr);
+  if (!qApp->property("TransformFactory").isValid() && !_ptr)
+  {
     _ptr = _transform_factory_ptr_from_macro;
     qApp->setProperty("TransformFactory", QVariant::fromValue(_ptr));
   }
-  else if (!_ptr) {
-    _ptr = qvariant_cast<TransformFactory *>(qApp->property("TransformFactory"));
+  else if (!_ptr)
+  {
+    _ptr = qvariant_cast<TransformFactory*>(qApp->property("TransformFactory"));
   }
-  else if (!qApp->property("TransformFactory").isValid()) {
+  else if (!qApp->property("TransformFactory").isValid())
+  {
     qApp->setProperty("TransformFactory", QVariant::fromValue(_ptr));
   }
   return _ptr;
 }
 
-const std::set<std::string> &TransformFactory::registeredTransforms()
+const std::set<std::string>& TransformFactory::registeredTransforms()
 {
   return instance()->names_;
 }
 
-const PlotData *TransformFunction_SISO::dataSource() const
+const PlotData* TransformFunction_SISO::dataSource() const
 {
-  if( _src_vector.empty() )
+  if (_src_vector.empty())
   {
     return nullptr;
   }
   return _src_vector.front();
 }
 
-
-}
-
-
-
+}  // namespace PJ
