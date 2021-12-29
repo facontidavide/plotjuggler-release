@@ -76,8 +76,9 @@ bool DataStreamZMQ::start(QStringList*)
 
   std::shared_ptr<PJ::MessageParserCreator> parser_creator;
 
-  connect(dialog->ui->comboBoxProtocol, qOverload<int>(&QComboBox::currentIndexChanged),
-          this, [&](int index) {
+  connect(dialog->ui->comboBoxProtocol,
+          qOverload<const QString &>(&QComboBox::currentIndexChanged),
+          this, [&](const QString & selected_protocol) {
             if (parser_creator)
             {
               if( auto prev_widget = parser_creator->optionsWidget())
@@ -85,8 +86,7 @@ bool DataStreamZMQ::start(QStringList*)
                 prev_widget->setVisible(false);
               }
             }
-            QString protocol = dialog->ui->comboBoxProtocol->itemText(index);
-            parser_creator = availableParsers()->at(protocol);
+            parser_creator = availableParsers()->at(selected_protocol);
 
             if (auto widget = parser_creator->optionsWidget())
             {

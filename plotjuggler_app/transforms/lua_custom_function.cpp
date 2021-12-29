@@ -9,9 +9,10 @@ void LuaCustomFunction::initEngine()
 {
   std::unique_lock<std::mutex> lk(mutex_);
 
-  _lua_engine = std::unique_ptr<sol::state>(new sol::state());
-  _lua_engine->open_libraries();
-  _lua_engine->script(_snippet.global_vars.toStdString());
+  _lua_function = {};
+  _lua_engine = {};
+  _lua_engine.open_libraries();
+  _lua_engine.safe_script(_snippet.global_vars.toStdString());
 
   auto calcMethodStr = QString("function calc(time, value");
   for (int index = 1; index <= _snippet.additional_sources.size(); index++)
@@ -20,9 +21,8 @@ void LuaCustomFunction::initEngine()
   }
   calcMethodStr += QString(")\n%1\nend").arg(snippet().function);
 
-  _lua_engine->safe_script(calcMethodStr.toStdString());
-
-  _lua_function = (*_lua_engine)["calc"];
+  _lua_engine.safe_script(calcMethodStr.toStdString());
+  _lua_function = _lua_engine["calc"];
 }
 
 void LuaCustomFunction::calculatePoints(const std::vector<const PlotData*>& src_data,

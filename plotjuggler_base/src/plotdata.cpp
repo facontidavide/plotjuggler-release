@@ -86,6 +86,24 @@ PlotGroup::Ptr PlotDataMapRef::getOrCreateGroup(const std::string& name)
   return group;
 }
 
+std::unordered_set<std::string> PlotDataMapRef::getAllNames() const
+{
+  std::unordered_set<std::string> out;
+  for (auto& it : numeric)
+  {
+    out.insert(it.first);
+  }
+  for (auto& it : strings)
+  {
+    out.insert(it.first);
+  }
+  for (auto& it : user_defined)
+  {
+    out.insert(it.first);
+  }
+  return out;
+}
+
 void PlotDataMapRef::clear()
 {
   numeric.clear();
