@@ -7,14 +7,12 @@
 class LuaCustomFunction : public CustomFunction
 {
 public:
-
   LuaCustomFunction(SnippetData snippet = {});
 
   void initEngine() override;
 
   void calculatePoints(const std::vector<const PlotData*>& channels_data,
-                       size_t point_index,
-                       std::vector<PlotData::Point> &points) override;
+                       size_t point_index, std::vector<PlotData::Point>& points) override;
 
   QString language() const override
   {
@@ -29,7 +27,7 @@ public:
   bool xmlLoadState(const QDomElement& parent_element) override;
 
 private:
-  std::unique_ptr<sol::state> _lua_engine;
+  sol::state _lua_engine;
   sol::protected_function _lua_function;
   std::vector<double> _chan_values;
   std::mutex mutex_;
