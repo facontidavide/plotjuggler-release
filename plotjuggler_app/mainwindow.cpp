@@ -1098,10 +1098,7 @@ bool MainWindow::xmlLoadState(QDomDocument state_document)
   //-----------------------------------------------------
 
   for (QDomElement tw = root.firstChildElement("tabbed_widget"); tw.isNull() == false;
-       tw = tw.nextSiblingElement("tabb"
-                                  "ed_"
-                                  "widg"
-                                  "et"))
+       tw = tw.nextSiblingElement("tabbed_widget"))
   {
     TabbedPlotWidget* tabwidget = TabbedPlotWidget::instance(tw.attribute("name"));
     tabwidget->xmlLoadState(tw);
@@ -1871,7 +1868,7 @@ std::tuple<double, double, int> MainWindow::calculateVisibleRangeX()
 {
   // find min max time
   double min_time = std::numeric_limits<double>::max();
-  double max_time = -std::numeric_limits<double>::max();
+  double max_time = std::numeric_limits<double>::lowest();
   int max_steps = 0;
 
   forEachWidget([&](const PlotWidget* widget) {

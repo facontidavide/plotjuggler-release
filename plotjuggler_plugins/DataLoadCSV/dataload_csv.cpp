@@ -420,7 +420,7 @@ bool DataLoadCSV::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_data
   }
 
   //-----------------
-  double prev_time = -std::numeric_limits<double>::max();
+  double prev_time = std::numeric_limits<double>::lowest();
   bool parse_date_format = _ui->checkBoxDateFormat->isChecked();
   QString format_string = _ui->lineEditDateFormat->text();
 
