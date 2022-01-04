@@ -39,9 +39,7 @@ RangeOpt PointSeriesXY::getVisualizationRangeY(Range)
 
 bool PointSeriesXY::updateCache(bool reset_old_data)
 {
-  // TODO use reset_old_data
-
-  _cached_curve.clear();
+   _cached_curve.clear();
 
   if (_x_axis == nullptr)
   {
