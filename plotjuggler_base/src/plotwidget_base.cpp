@@ -185,12 +185,14 @@ void PlotWidgetBase::resetZoom()
 Range PlotWidgetBase::getVisualizationRangeX() const
 {
   double left = std::numeric_limits<double>::max();
-  double right = -std::numeric_limits<double>::max();
+  double right = std::numeric_limits<double>::lowest();
 
   for (auto& it : curveList())
   {
     if (!it.curve->isVisible())
+    {
       continue;
+    }
 
     auto series = dynamic_cast<QwtSeriesWrapper*>(it.curve->data());
     const auto max_range_X = series->getVisualizationRangeX();
@@ -222,13 +224,15 @@ Range PlotWidgetBase::getVisualizationRangeX() const
 
 Range PlotWidgetBase::getVisualizationRangeY(Range range_X) const
 {
-  double top = -std::numeric_limits<double>::max();
+  double top = std::numeric_limits<double>::lowest();
   double bottom = std::numeric_limits<double>::max();
 
   for (auto& it : curveList())
   {
     if (!it.curve->isVisible())
+    {
       continue;
+    }
 
     auto series = dynamic_cast<QwtSeriesWrapper*>(it.curve->data());
 
@@ -777,7 +781,7 @@ void PlotWidgetBase::updateMaximumZoomArea()
   max_rect.setLeft(rangeX.min);
   max_rect.setRight(rangeX.max);
 
-  rangeX.min = -std::numeric_limits<double>::max();
+  rangeX.min = std::numeric_limits<double>::lowest();
   rangeX.max = std::numeric_limits<double>::max();
   auto rangeY = getVisualizationRangeY(rangeX);
   max_rect.setBottom(rangeY.min);
