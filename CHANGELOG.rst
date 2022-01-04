@@ -2,6 +2,14 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+3.3.5 (2022-01-04)
+------------------
+* fix zoom issue when toggling T_offset
+* cosmetic changes
+* show missing curves in error dialog (`#579 <https://github.com/facontidavide/PlotJuggler/issues/579>`_)
+* fix `#550 <https://github.com/facontidavide/PlotJuggler/issues/550>`_
+* Contributors: Adeeb Shihadeh, Davide Faconti
+
 3.3.4 (2021-12-28)
 ------------------
 * Video plugin (`#574 <https://github.com/facontidavide/PlotJuggler/issues/574>`_)

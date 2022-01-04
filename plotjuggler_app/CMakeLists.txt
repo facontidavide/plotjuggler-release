@@ -64,7 +64,6 @@ SET( PLOtJUGGLER_SRC
     tree_completer.h
 
     transforms/custom_function.cpp
-    transforms/custom_timeseries.cpp
     transforms/function_editor.cpp
     transforms/transform_selector.cpp
     transforms/lua_custom_function.cpp
