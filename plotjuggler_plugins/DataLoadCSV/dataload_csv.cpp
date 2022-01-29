@@ -530,6 +530,7 @@ bool DataLoadCSV::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_data
   {
     progress_dialog.cancel();
     plot_data.clear();
+    return false;
   }
 
   if (time_index >= 0)
