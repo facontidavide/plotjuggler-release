@@ -2,6 +2,17 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+3.4.0 (2022-01-29)
+------------------
+* fix `#585 <https://github.com/facontidavide/PlotJuggler/issues/585>`_
+* fix `#560 <https://github.com/facontidavide/PlotJuggler/issues/560>`_
+* fix `#575 <https://github.com/facontidavide/PlotJuggler/issues/575>`_
+* Reactive scripts (`#589 <https://github.com/facontidavide/PlotJuggler/issues/589>`_)
+* Fix Quaternion toolbox, issue `#587 <https://github.com/facontidavide/PlotJuggler/issues/587>`_
+* fix double delete
+* fix memory leaks `#582 <https://github.com/facontidavide/PlotJuggler/issues/582>`_
+* Contributors: Davide Faconti
+
 3.3.5 (2022-01-04)
 ------------------
 * fix zoom issue when toggling T_offset
