@@ -16,7 +16,7 @@ class PlotLegend;
 
 namespace PJ
 {
-class PlotWidgetBase : public QObject
+class PlotWidgetBase : public QWidget
 {
   Q_OBJECT
 
@@ -57,8 +57,8 @@ public:
 
   CurveInfo* curveFromTitle(const QString& title);
 
-  virtual QwtSeriesWrapper* createTimeSeries(const QString& transform_ID,
-                                             const PlotData* data);
+  virtual QwtSeriesWrapper* createTimeSeries(const PlotData* data,
+                                             const QString& transform_ID = {});
 
   virtual void resetZoom();
 
@@ -83,10 +83,6 @@ public:
   QRectF canvasBoundingRect() const;
 
   QRectF maxZoomRect() const;
-
-  QWidget* widget();
-
-  const QWidget* widget() const;
 
   CurveStyle curveStyle() const;
 
