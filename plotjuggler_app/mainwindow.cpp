@@ -1115,35 +1115,34 @@ bool MainWindow::xmlLoadState(QDomDocument state_document)
 
 void MainWindow::onDeleteMultipleCurves(const std::vector<std::string>& curve_names)
 {
-  std::set<std::string> orphaned_transforms;
-
-  for (const auto& curve_name : curve_names)
+  std::set<std::string> to_be_deleted;
+  for(auto& name: curve_names)
   {
-    emit dataSourceRemoved(curve_name);
-    _curvelist_widget->removeCurve(curve_name);
-
-    _transform_functions.erase(curve_name);
-    for(auto it = _transform_functions.begin(); it != _transform_functions.end(); )
+    to_be_deleted.insert(name);
+  }
+  // add to the list of curves to delete the derived transforms
+  size_t prev_size = 0;
+  while( prev_size < to_be_deleted.size() )
+  {
+    prev_size = to_be_deleted.size();
+    for(auto& [trans_name, transform]: _transform_functions )
     {
-      bool removed = false;
-      for(const auto& source: it->second->dataSources() )
+      for(const auto& source: transform->dataSources() )
       {
-        if(source->plotName() == curve_name)
+        if( to_be_deleted.count(source->plotName()) > 0)
         {
-          it = _transform_functions.erase(it);
-          removed = true;
-          break;
+          to_be_deleted.insert(trans_name);
         }
-      }
-      if(!removed)
-      {
-        it++;
       }
     }
   }
-  for (const auto& curve_name : curve_names)
+
+  for (const auto& curve_name : to_be_deleted)
   {
+    emit dataSourceRemoved(curve_name);
+    _curvelist_widget->removeCurve(curve_name);
     _mapped_plot_data.erase(curve_name);
+    _transform_functions.erase(curve_name);
   }
   updateTimeOffset();
   forEachWidget([](PlotWidget* plot) { plot->replot(); });
