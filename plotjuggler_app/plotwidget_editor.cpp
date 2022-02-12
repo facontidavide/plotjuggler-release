@@ -36,7 +36,7 @@ PlotwidgetEditor::PlotwidgetEditor(PlotWidget* plotwidget, QWidget* parent)
 
   auto layout = new QVBoxLayout();
   ui->framePlotPreview->setLayout(layout);
-  layout->addWidget(_plotwidget->widget());
+  layout->addWidget(_plotwidget);
   layout->setMargin(6);
 
   _plotwidget->zoomOut(false);
