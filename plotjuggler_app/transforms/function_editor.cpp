@@ -35,6 +35,9 @@ void FunctionEditorWidget::on_stylesheetChanged(QString theme)
   ui->buttonLoadFunctions->setIcon(LoadSvg(":/resources/svg/import.svg", theme));
   ui->buttonSaveFunctions->setIcon(LoadSvg(":/resources/svg/export.svg", theme));
   ui->buttonSaveCurrent->setIcon(LoadSvg(":/resources/svg/save.svg", theme));
+
+  _global_highlighter->setTheme(theme);
+  _function_highlighter->setTheme(theme);
 }
 
 FunctionEditorWidget::FunctionEditorWidget(PlotDataMapRef& plotMapData,
@@ -48,6 +51,9 @@ FunctionEditorWidget::FunctionEditorWidget(PlotDataMapRef& plotMapData,
   , _preview_widget(new PlotWidget(_local_plot_data, this))
 {
   ui->setupUi(this);
+
+  _global_highlighter = new LuaHighlighter( ui->globalVarsTextField->document() );
+  _function_highlighter = new LuaHighlighter( ui->mathEquation->document() );
 
   QSettings settings;
 
@@ -108,7 +114,7 @@ FunctionEditorWidget::FunctionEditorWidget(PlotDataMapRef& plotMapData,
 
   auto preview_layout = new QHBoxLayout(ui->framePlotPreview);
   preview_layout->setMargin(6);
-  preview_layout->addWidget(_preview_widget->widget());
+  preview_layout->addWidget(_preview_widget);
 
   _preview_widget->setContextMenuEnabled(false);
 
@@ -118,6 +124,7 @@ FunctionEditorWidget::FunctionEditorWidget(PlotDataMapRef& plotMapData,
           &FunctionEditorWidget::on_updatePreview);
 
   updatePreview();
+
 }
 
 FunctionEditorWidget::~FunctionEditorWidget()

@@ -27,7 +27,7 @@ PlotwidgetEditor::PlotwidgetEditor(PlotWidget* plotwidget, QWidget* parent)
   QDomDocument doc;
   auto saved_state = plotwidget->xmlSaveState(doc);
 
-  _plotwidget = new PlotWidget(plotwidget->datamap());
+  _plotwidget = new PlotWidget(plotwidget->datamap(), this);
   _plotwidget->xmlLoadState(saved_state);
   _plotwidget->on_changeTimeOffset(plotwidget->timeOffset());
   _plotwidget->setContextMenuEnabled(false);
@@ -36,7 +36,7 @@ PlotwidgetEditor::PlotwidgetEditor(PlotWidget* plotwidget, QWidget* parent)
 
   auto layout = new QVBoxLayout();
   ui->framePlotPreview->setLayout(layout);
-  layout->addWidget(_plotwidget->widget());
+  layout->addWidget(_plotwidget);
   layout->setMargin(6);
 
   _plotwidget->zoomOut(false);

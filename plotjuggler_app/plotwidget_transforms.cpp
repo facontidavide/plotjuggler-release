@@ -12,7 +12,7 @@
 #include <qwt_text.h>
 
 DialogTransformEditor::DialogTransformEditor(PlotWidget* plotwidget)
-  : QDialog(plotwidget->widget())
+  : QDialog(plotwidget)
   , ui(new Ui::plotwidget_transforms)
   , _plotwidget_origin(plotwidget)
 {
@@ -20,13 +20,13 @@ DialogTransformEditor::DialogTransformEditor(PlotWidget* plotwidget)
 
   QDomDocument doc;
   auto saved_state = plotwidget->xmlSaveState(doc);
-  _plotwidget = new PlotWidget(plotwidget->datamap());
+  _plotwidget = new PlotWidget(plotwidget->datamap(), this);
   _plotwidget->on_changeTimeOffset(plotwidget->timeOffset());
   _plotwidget->xmlLoadState(saved_state);
 
   auto layout = new QVBoxLayout();
   ui->framePlotPreview->setLayout(layout);
-  layout->addWidget(_plotwidget->widget());
+  layout->addWidget(_plotwidget);
   layout->setMargin(6);
 
   _plotwidget->zoomOut(false);
@@ -115,17 +115,18 @@ void DialogTransformEditor::on_listCurves_itemSelectionChanged()
   auto curve_name = row_widget->text();
 
   auto curve_it = _plotwidget->curveFromTitle(curve_name);
-  auto ts = dynamic_cast<TransformedTimeseries*>(curve_it->curve->data());
-
   int transform_row = 0;
-  if (ts->transform())
+  if( auto ts = dynamic_cast<TransformedTimeseries*>(curve_it->curve->data()) )
   {
-    for (int row = 1; row < ui->listTransforms->count(); row++)
+    if (ts->transform())
     {
-      if (ui->listTransforms->item(row)->text() == ts->transformName())
+      for (int row = 1; row < ui->listTransforms->count(); row++)
       {
-        transform_row = row;
-        break;
+        if (ui->listTransforms->item(row)->text() == ts->transformName())
+        {
+          transform_row = row;
+          break;
+        }
       }
     }
   }

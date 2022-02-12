@@ -29,7 +29,7 @@ class PlotWidget : public PlotWidgetBase
   Q_OBJECT
 
 public:
-  PlotWidget(PlotDataMapRef& datamap, QWidget* parent = nullptr);
+  PlotWidget(PlotDataMapRef& datamap, QWidget* parent);
 
   void setContextMenuEnabled(bool enabled);
 
@@ -122,6 +122,8 @@ public slots:
 
   void on_changeCurveColor(const QString& curve_name, QColor new_color);
 
+  void onFlipAxis();
+
 private slots:
 
   // void on_changeToBuiltinTransforms(QString new_transform);
@@ -157,6 +159,9 @@ private:
   QAction* _action_paste;
   QAction* _action_image_to_clipboard;
 
+  QAction* _flip_x;
+  QAction* _flip_y;
+
   CurveTracker* _tracker;
   QwtPlotGrid* _grid;
 
@@ -184,8 +189,8 @@ private:
 
   QwtSeriesWrapper* createCurveXY(const PlotData* data_x, const PlotData* data_y);
 
-  QwtSeriesWrapper* createTimeSeries(const QString& transform_ID,
-                                     const PlotData* data) override;
+  QwtSeriesWrapper* createTimeSeries(const PlotData* data,
+                                     const QString& transform_ID = {}) override;
 
   double _time_offset;
 
@@ -200,6 +205,9 @@ private:
   // void updateMaximumZoomArea();
   void rescaleEqualAxisScaling();
   void overrideCursonMove();
+
+  void setAxisScale(QwtAxisId axisId, double min, double max);
+
 };
 
 #endif

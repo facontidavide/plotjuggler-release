@@ -35,7 +35,6 @@
 #include "qwt_date_scale_draw.h"
 #include "suggest_dialog.h"
 #include "transforms/custom_function.h"
-#include "transforms/custom_timeseries.h"
 #include "plotwidget_editor.h"
 #include "plotwidget_transforms.h"
 
@@ -89,6 +88,14 @@ PlotWidget::PlotWidget(PlotDataMapRef& datamap, QWidget* parent)
   connect(this, &PlotWidgetBase::dragEnterSignal, this, &PlotWidget::onDragEnterEvent);
 
   connect(this, &PlotWidgetBase::dropSignal, this, &PlotWidget::onDropEvent);
+
+  connect(this, &PlotWidgetBase::widgetResized, this, [this]()
+  {
+    if( isXYPlot() && keepRatioXY())
+    {
+      rescaleEqualAxisScaling();
+    }
+  });
 
   //-------------------------
 
@@ -196,6 +203,14 @@ void PlotWidget::buildActions()
   _action_image_to_clipboard = new QAction("&Copy image to clipboard", this);
   connect(_action_image_to_clipboard, &QAction::triggered, this,
           &PlotWidget::on_copyToClipboard);
+
+  _flip_x = new QAction("&Flip Horizontal Axis", this);
+  _flip_x->setCheckable(true);
+  connect(_flip_x, &QAction::changed, this, &PlotWidget::onFlipAxis );
+
+  _flip_y = new QAction("&Flip Vertical Axis", this);
+  _flip_y->setCheckable(true);
+  connect(_flip_y, &QAction::changed, this, &PlotWidget::onFlipAxis );
 }
 
 void PlotWidget::canvasContextMenuTriggered(const QPoint& pos)
@@ -236,6 +251,12 @@ void PlotWidget::canvasContextMenuTriggered(const QPoint& pos)
   menu.addSeparator();
   menu.addAction(_action_removeAllCurves);
   menu.addSeparator();
+  if(isXYPlot())
+  {
+    menu.addAction(_flip_x);
+  }
+  menu.addAction(_flip_y);
+  menu.addSeparator();
   menu.addAction(_action_copy);
   menu.addAction(_action_paste);
   menu.addAction(_action_image_to_clipboard);
@@ -257,7 +278,8 @@ void PlotWidget::canvasContextMenuTriggered(const QPoint& pos)
   menu.exec(qwtPlot()->canvas()->mapToGlobal(pos));
 }
 
-PlotWidget::CurveInfo* PlotWidget::addCurveXY(std::string name_x, std::string name_y,
+PlotWidget::CurveInfo* PlotWidget::addCurveXY(std::string name_x,
+                                              std::string name_y,
                                               QString curve_name)
 {
   std::string name = curve_name.toStdString();
@@ -356,12 +378,29 @@ PlotWidget::CurveInfo* PlotWidget::addCurveXY(std::string name_x, std::string na
 
 PlotWidgetBase::CurveInfo* PlotWidget::addCurve(const std::string& name, QColor color)
 {
-  auto it = _mapped_data.numeric.find(name);
-  if (it == _mapped_data.numeric.end())
+  PlotWidgetBase::CurveInfo* info = nullptr;
+
+  auto it1 = _mapped_data.numeric.find(name);
+  if (it1 != _mapped_data.numeric.end())
   {
-    return nullptr;
+    info = PlotWidgetBase::addCurve(name, it1->second, color);
   }
-  return PlotWidgetBase::addCurve(name, it->second, color);
+
+  auto it2 = _mapped_data.scatter_xy.find(name);
+  if (it2 != _mapped_data.scatter_xy.end())
+  {
+    info = PlotWidgetBase::addCurve(name, it2->second, color);
+  }
+
+  if( info && info->curve )
+  {
+    if( auto timeseries = dynamic_cast<QwtTimeseries*>( info->curve->data() ))
+    {
+      timeseries->setTimeOffset(_time_offset);
+    }
+  }
+
+  return info;
 }
 
 void PlotWidget::removeCurve(const QString& title)
@@ -383,10 +422,8 @@ void PlotWidget::onDataSourceRemoved(const std::string& src_name)
     if (it->src_name == src_name || remove_curve_xy)
     {
       deleted = true;
-
       it->curve->detach();
       it->marker->detach();
-
       it = curveList().erase(it);
     }
     else
@@ -407,51 +444,63 @@ void PlotWidget::removeAllCurves()
   PlotWidgetBase::removeAllCurves();
   setModeXY(false);
   _tracker->redraw();
+  _flip_x->setChecked(false);
+  _flip_y->setChecked(false);
 }
 
 void PlotWidget::onDragEnterEvent(QDragEnterEvent* event)
 {
   const QMimeData* mimeData = event->mimeData();
   QStringList mimeFormats = mimeData->formats();
+
+  _dragging.mode = DragInfo::NONE;
   _dragging.curves.clear();
   _dragging.source = event->source();
 
-  for (const QString& format : mimeFormats)
+  auto& format = mimeFormats.first();
+  QByteArray encoded = mimeData->data(format);
+  QDataStream stream(&encoded, QIODevice::ReadOnly);
+
+  while (!stream.atEnd())
   {
-    QByteArray encoded = mimeData->data(format);
-    QDataStream stream(&encoded, QIODevice::ReadOnly);
-
-    while (!stream.atEnd())
+    QString curve_name;
+    stream >> curve_name;
+    auto name = curve_name.toStdString();
+    if (!curve_name.isEmpty())
     {
-      QString curve_name;
-      stream >> curve_name;
-      if (!curve_name.isEmpty())
-      {
-        _dragging.curves.push_back(curve_name);
-      }
+      _dragging.curves.push_back(curve_name);
     }
-
-    if (format == "curveslist/add_curve")
+    if( _mapped_data.numeric.count(name) == 0 &&
+        _mapped_data.scatter_xy.count(name) == 0 )
     {
-      _dragging.mode = DragInfo::CURVES;
+      event->ignore();
+      return;
+    }
+  }
+
+  if(_dragging.curves.empty())
+  {
+    event->ignore();
+    return;
+  }
+
+  if (format == "curveslist/add_curve")
+  {
+    _dragging.mode = DragInfo::CURVES;
+    event->acceptProposedAction();
+  }
+
+  if (format == "curveslist/new_XY_axis")
+  {
+    if (_dragging.curves.size() != 2)
+    {
+      qDebug() << "FATAL: Dragging " << _dragging.curves.size() << " curves";
+      return;
+    }
+    if (curveList().empty() || isXYPlot())
+    {
+      _dragging.mode = DragInfo::NEW_XY;
       event->acceptProposedAction();
-    }
-    if (format == "curveslist/new_XY_axis")
-    {
-      if (_dragging.curves.size() != 2)
-      {
-        qDebug() << "FATAL: Dragging " << _dragging.curves.size() << " curves";
-        return;
-      }
-      if (curveList().empty() || isXYPlot())
-      {
-        _dragging.mode = DragInfo::NEW_XY;
-        event->acceptProposedAction();
-      }
-      else
-      {
-        event->ignore();
-      }
     }
   }
 }
@@ -462,19 +511,49 @@ void PlotWidget::onDropEvent(QDropEvent*)
 
   if (_dragging.mode == DragInfo::CURVES)
   {
-    if (isXYPlot() && !curveList().empty())
+    size_t scatter_count = 0;
+    for (const auto& curve_name : _dragging.curves)
+    {
+      scatter_count += _mapped_data.scatter_xy.count( curve_name.toStdString() );
+    }
+    bool scatter_curves = (scatter_count == _dragging.curves.size());
+    if( scatter_count > 0 && !scatter_curves )
     {
       _dragging.mode = DragInfo::NONE;
       _dragging.curves.clear();
       QMessageBox::warning(qwtPlot(), "Warning",
-                           tr("This is a XY plot, you can not drop normal time series "
-                              "here.\n"
-                              "Clear all curves to reset it to normal mode."));
+                           "You can not drag XY (scatter) data and timeseries into the same plot");
       return;
     }
-    else if (isXYPlot() && curveList().empty())
+
+    // if there aren't other curves, you can change the mode
+    if (curveList().empty())
     {
-      setModeXY(false);
+      setModeXY(scatter_curves);
+    }
+
+    if (isXYPlot() && !scatter_curves)
+    {
+      QMessageBox::warning(qwtPlot(), "Warning",
+                           tr("This is a [XY plot], you can not drop a timeseries here.\n"
+                              "To convert this widget into a [timeseries plot], "
+                              "you must first remove all its curves."));
+    }
+    if (!isXYPlot() && scatter_curves)
+    {
+
+      QMessageBox::warning(qwtPlot(), "Warning",
+                           tr("This is a [timeseries plot], you can not "
+                              "drop XY scatter data here.\n"
+                              "To convert this widget into a [XY plot], "
+                              "you must first remove all its curves."));
+    }
+
+    if( isXYPlot() != scatter_curves )
+    {
+      _dragging.mode = DragInfo::NONE;
+      _dragging.curves.clear();
+      return;
     }
 
     for (const auto& curve_name : _dragging.curves)
@@ -490,8 +569,10 @@ void PlotWidget::onDropEvent(QDropEvent*)
       _dragging.mode = DragInfo::NONE;
       _dragging.curves.clear();
       QMessageBox::warning(qwtPlot(), "Warning",
-                           tr("To convert this widget into a XY plot, "
-                              "you must first remove all the time series."));
+                           tr("This is a [timeseries plot], you can not "
+                              "drop XY scatter data here.\n"
+                              "To convert this widget into a [XY plot], "
+                              "you must first remove all its curves."));
       return;
     }
 
@@ -568,11 +649,13 @@ QDomElement PlotWidget::xmlSaveState(QDomDocument& doc) const
 
     if (isXYPlot())
     {
-      PointSeriesXY* curve_xy = dynamic_cast<PointSeriesXY*>(curve->data());
-      curve_el.setAttribute("curve_x",
-                            QString::fromStdString(curve_xy->dataX()->plotName()));
-      curve_el.setAttribute("curve_y",
-                            QString::fromStdString(curve_xy->dataY()->plotName()));
+      if (auto xy = dynamic_cast<PointSeriesXY*>(curve->data()))
+      {
+        curve_el.setAttribute("curve_x",
+                              QString::fromStdString(xy->dataX()->plotName()));
+        curve_el.setAttribute("curve_y",
+                              QString::fromStdString(xy->dataY()->plotName()));
+      }
     }
     else
     {
@@ -590,6 +673,9 @@ QDomElement PlotWidget::xmlSaveState(QDomDocument& doc) const
 
   plot_el.setAttribute("mode", isXYPlot() ? "XYPlot" : "TimeSeries");
 
+  plot_el.setAttribute("flip_x", isXYPlot() && _flip_x->isChecked() ? "true" : "false");
+  plot_el.setAttribute("flip_y", _flip_y->isChecked() ? "true" : "false");
+
   return plot_el;
 }
 
@@ -599,6 +685,9 @@ bool PlotWidget::xmlLoadState(QDomElement& plot_widget)
 
   QString mode = plot_widget.attribute("mode");
   setModeXY(mode == "XYPlot");
+
+  _flip_x->setChecked(plot_widget.attribute("flip_x") == "true");
+  _flip_y->setChecked(plot_widget.attribute("flip_y") == "true");
 
   QDomElement limitY_el = plot_widget.firstChildElement("limitY");
 
@@ -628,34 +717,41 @@ bool PlotWidget::xmlLoadState(QDomElement& plot_widget)
   curveList().clear();
 
   // insert curves
+  QStringList missing_curves;
   for (QDomElement curve_element = plot_widget.firstChildElement("curve");
        !curve_element.isNull(); curve_element = curve_element.nextSiblingElement("curve"))
   {
+    bool is_merged_xy = curve_element.hasAttribute("curve_x") &&
+                        curve_element.hasAttribute("curve_y");
+    bool is_timeseries = !isXYPlot();
+    bool is_scatter_xy = !is_timeseries && !is_merged_xy;
+
     QString curve_name = curve_element.attribute("name");
     std::string curve_name_std = curve_name.toStdString();
     QColor color(curve_element.attribute("color"));
 
-    bool error = false;
-    if (!isXYPlot())
+    //-----------------
+    if( is_timeseries || is_scatter_xy )
     {
-      if (_mapped_data.numeric.find(curve_name_std) == _mapped_data.numeric.end())
+      if ( (is_timeseries && _mapped_data.numeric.count(curve_name_std) == 0) ||
+           (!is_timeseries && _mapped_data.scatter_xy.count(curve_name_std) == 0) )
       {
-        error = true;
+        missing_curves.append(curve_name);
       }
       else
       {
-        auto curve_it = addCurve(curve_name_std, color);
-        if (!curve_it)
+        auto curve_info = addCurve(curve_name_std, color);
+        if (!curve_info)
         {
           continue;
         }
-        auto& curve = curve_it->curve;
+        auto& curve = curve_info->curve;
         curve->setPen(color, 1.3);
         added_curve_names.insert(curve_name_std);
 
         auto ts = dynamic_cast<TransformedTimeseries*>(curve->data());
         QDomElement transform_el = curve_element.firstChildElement("transform");
-        if (transform_el.isNull() == false)
+        if (ts && transform_el.isNull() == false)
         {
           ts->setTransform(transform_el.attribute("name"));
           ts->transform()->xmlLoadState(transform_el);
@@ -666,15 +762,15 @@ bool PlotWidget::xmlLoadState(QDomElement& plot_widget)
         }
       }
     }
-    else
+    //-----------------
+    if( is_merged_xy)
     {
       std::string curve_x = curve_element.attribute("curve_x").toStdString();
       std::string curve_y = curve_element.attribute("curve_y").toStdString();
-
       if (_mapped_data.numeric.find(curve_x) == _mapped_data.numeric.end() ||
           _mapped_data.numeric.find(curve_y) == _mapped_data.numeric.end())
       {
-        error = true;
+        missing_curves.append(curve_name);
       }
       else
       {
@@ -689,14 +785,15 @@ bool PlotWidget::xmlLoadState(QDomElement& plot_widget)
         added_curve_names.insert(curve_name_std);
       }
     }
+  }
 
-    if (error && !warning_message_shown)
-    {
-      QMessageBox::warning(qwtPlot(), "Warning",
-                           tr("Can't find one or more curves.\n"
-                              "This message will be shown only once."));
-      warning_message_shown = true;
-    }
+  if (missing_curves.size() > 0 && !warning_message_shown)
+  {
+    QMessageBox::warning(qwtPlot(), "Warning",
+                         tr("Can't find one or more curves.\n"
+                            "This message will be shown only once.\n%1")
+                            .arg(missing_curves.join(",\n")));
+    warning_message_shown = true;
   }
 
   emit curveListChanged();
@@ -743,45 +840,30 @@ bool PlotWidget::xmlLoadState(QDomElement& plot_widget)
 
 void PlotWidget::rescaleEqualAxisScaling()
 {
-  const QwtScaleMap xMap = qwtPlot()->canvasMap(QwtPlot::xBottom);
-  const QwtScaleMap yMap = qwtPlot()->canvasMap(QwtPlot::yLeft);
-
   QRectF canvas_rect = qwtPlot()->canvas()->contentsRect();
-  canvas_rect = canvas_rect.normalized();
-  const double x1 = xMap.invTransform(canvas_rect.left());
-  const double x2 = xMap.invTransform(canvas_rect.right());
-  const double y1 = yMap.invTransform(canvas_rect.bottom());
-  const double y2 = yMap.invTransform(canvas_rect.top());
 
-  const double data_ratio = (x2 - x1) / (y2 - y1);
-  const double canvas_ratio = canvas_rect.width() / canvas_rect.height();
+  auto max_rect = maxZoomRect();
+  const double canvas_ratio = std::abs(canvas_rect.width() / canvas_rect.height());
+  const double max_ratio = std::abs(max_rect.width() / max_rect.height());
 
-  QRectF rect(QPointF(x1, y2), QPointF(x2, y1));
+  QRectF rect = max_rect;
 
-  if (data_ratio < canvas_ratio)
+  if( max_ratio < canvas_ratio )
   {
-    double new_width = fabs(rect.height() * canvas_ratio);
-    double increment = new_width - rect.width();
+    double new_width = ( -max_rect.height() * canvas_ratio);
     rect.setWidth(new_width);
-    rect.moveLeft(rect.left() - 0.5 * increment);
   }
-  else
-  {
-    double new_height = -(rect.width() / canvas_ratio);
-    double increment = fabs(new_height - rect.height());
+  else{
+    double new_height = ( -max_rect.width() / canvas_ratio);
     rect.setHeight(new_height);
-    rect.moveTop(rect.top() + 0.5 * increment);
-  }
-  if (rect.contains(maxZoomRect()))
-  {
-    rect = maxZoomRect();
   }
 
-  qwtPlot()->setAxisScale(QwtPlot::yLeft, std::min(rect.bottom(), rect.top()),
-                          std::max(rect.bottom(), rect.top()));
-  qwtPlot()->setAxisScale(QwtPlot::xBottom, std::min(rect.left(), rect.right()),
-                          std::max(rect.left(), rect.right()));
+  rect.moveCenter(max_rect.center());
+
+  setAxisScale(QwtPlot::yLeft, rect.bottom(), rect.top());
+  setAxisScale(QwtPlot::xBottom, rect.left(), rect.right());
   qwtPlot()->updateAxes();
+  replot();
 }
 
 void PlotWidget::setZoomRectangle(QRectF rect, bool emit_signal)
@@ -791,15 +873,16 @@ void PlotWidget::setZoomRectangle(QRectF rect, bool emit_signal)
   {
     return;
   }
-  qwtPlot()->setAxisScale(QwtPlot::yLeft, std::min(rect.bottom(), rect.top()),
-                          std::max(rect.bottom(), rect.top()));
-  qwtPlot()->setAxisScale(QwtPlot::xBottom, std::min(rect.left(), rect.right()),
-                          std::max(rect.left(), rect.right()));
-  qwtPlot()->updateAxes();
 
   if (isXYPlot() && keepRatioXY())
   {
     rescaleEqualAxisScaling();
+  }
+  else
+  {
+    setAxisScale(QwtPlot::yLeft, rect.bottom(), rect.top());
+    setAxisScale(QwtPlot::xBottom, rect.left(), rect.right());
+    qwtPlot()->updateAxes();
   }
 
   if (emit_signal)
@@ -833,8 +916,7 @@ void PlotWidget::reloadPlotData()
     auto data_it = _mapped_data.numeric.find(curve_name);
     if (data_it != _mapped_data.numeric.end())
     {
-      auto ts = dynamic_cast<TransformedTimeseries*>(it.curve->data());
-      if (ts)
+      if (auto ts = dynamic_cast<TransformedTimeseries*>(it.curve->data()))
       {
         ts->updateCache(true);
       }
@@ -882,11 +964,13 @@ void PlotWidget::setTrackerPosition(double abs_time)
   {
     for (auto& it : curveList())
     {
-      auto series = dynamic_cast<QwtSeriesWrapper*>(it.curve->data());
-      auto pointXY = series->sampleFromTime(abs_time);
-      if (pointXY)
+      if( auto series = dynamic_cast<QwtTimeseries*>(it.curve->data()) )
       {
-        it.marker->setValue(pointXY.value());
+        auto pointXY = series->sampleFromTime(abs_time);
+        if (pointXY)
+        {
+          it.marker->setValue(pointXY.value());
+        }
       }
     }
   }
@@ -906,8 +990,10 @@ void PlotWidget::on_changeTimeOffset(double offset)
   {
     for (auto& it : curveList())
     {
-      auto series = dynamic_cast<QwtSeriesWrapper*>(it.curve->data());
-      series->setTimeOffset(_time_offset);
+      if( auto series = dynamic_cast<QwtTimeseries*>(it.curve->data()) )
+      {
+        series->setTimeOffset(_time_offset);
+      }
     }
     if (!isXYPlot() && !curveList().empty())
     {
@@ -917,6 +1003,7 @@ void PlotWidget::on_changeTimeOffset(double offset)
       setZoomRectangle(rect, false);
     }
   }
+  updateMaximumZoomArea();
 }
 
 void PlotWidget::on_changeDateTimeScale(bool enable)
@@ -944,8 +1031,6 @@ void PlotWidget::on_changeDateTimeScale(bool enable)
 // TODO report failure for empty dataset
 Range PlotWidget::getVisualizationRangeY(Range range_X) const
 {
-  range_X.min += _time_offset;
-  range_X.max += _time_offset;
   auto [bottom, top] = PlotWidgetBase::getVisualizationRangeY(range_X);
 
   const bool lower_limit = _custom_Y_limits.min > -MAX_DOUBLE;
@@ -978,7 +1063,6 @@ void PlotWidget::updateCurves(bool reset_older_data)
   {
     auto series = dynamic_cast<QwtSeriesWrapper*>(it.curve->data());
     series->updateCache(reset_older_data);
-    // TODO check res and do something if false.
   }
   updateMaximumZoomArea();
 }
@@ -1000,6 +1084,31 @@ void PlotWidget::on_changeCurveColor(const QString& curve_name, QColor new_color
   }
 }
 
+void PlotWidget::onFlipAxis()
+{
+  if( isXYPlot() )
+  {
+    rescaleEqualAxisScaling();
+  }
+  else
+  {
+      QRectF canvas_rect = qwtPlot()->canvas()->contentsRect();
+      const QwtScaleMap xMap = qwtPlot()->canvasMap(QwtPlot::xBottom);
+      const QwtScaleMap yMap = qwtPlot()->canvasMap(QwtPlot::yLeft);
+      canvas_rect = canvas_rect.normalized();
+      double x1 = xMap.invTransform(canvas_rect.left());
+      double x2 = xMap.invTransform(canvas_rect.right());
+      double y1 = yMap.invTransform(canvas_rect.bottom());
+      double y2 = yMap.invTransform(canvas_rect.top());
+      // flip will be done inside the function setAxisScale()
+      setAxisScale(QwtPlot::yLeft, y1, y2);
+      setAxisScale(QwtPlot::xBottom, x1, x2);
+      qwtPlot()->updateAxes();
+      replot();
+  }
+  emit undoableChange();
+}
+
 void PlotWidget::on_externallyResized(const QRectF& rect)
 {
   QRectF current_rect = canvasBoundingRect();
@@ -1008,15 +1117,7 @@ void PlotWidget::on_externallyResized(const QRectF& rect)
     return;
   }
 
-  if (isXYPlot())
-  {
-    if (keepRatioXY())
-    {
-      rescaleEqualAxisScaling();
-    }
-    emit undoableChange();
-  }
-  else if (isZoomLinkEnabled())
+  if (!isXYPlot() && isZoomLinkEnabled())
   {
     emit rectChanged(this, rect);
   }
@@ -1278,16 +1379,35 @@ void PlotWidget::overrideCursonMove()
   QApplication::setOverrideCursor(QCursor(pixmap.scaled(24, 24)));
 }
 
+void PlotWidget::setAxisScale(QwtAxisId axisId, double min, double max)
+{
+  if( min > max )
+  {
+    std::swap(min, max);
+  }
+  if( axisId == QwtPlot::xBottom && _flip_x->isChecked() )
+  {
+    qwtPlot()->setAxisScale(QwtPlot::xBottom, max, min);
+  }
+  else if( axisId == QwtPlot::yLeft && _flip_y->isChecked() )
+  {
+    qwtPlot()->setAxisScale(QwtPlot::yLeft, max, min);
+  }
+  else {
+    qwtPlot()->setAxisScale(axisId, min, max);
+  }
+}
+
 bool PlotWidget::isZoomLinkEnabled() const
 {
-  for (const auto& it : curveList())
-  {
-    auto series = dynamic_cast<QwtSeriesWrapper*>(it.curve->data());
-    if (series->plotData()->attribute(PJ::DISABLE_LINKED_ZOOM).toBool())
-    {
-      return false;
-    }
-  }
+//  for (const auto& it : curveList())
+//  {
+//    auto series = dynamic_cast<QwtSeriesWrapper*>(it.curve->data());
+//    if (series->plotData()->attribute(PJ::DISABLE_LINKED_ZOOM).toBool())
+//    {
+//      return false;
+//    }
+//  }
   return true;
 }
 
@@ -1380,7 +1500,7 @@ void PlotWidget::setDefaultRangeX()
   if (!curveList().empty())
   {
     double min = std::numeric_limits<double>::max();
-    double max = -std::numeric_limits<double>::max();
+    double max = std::numeric_limits<double>::lowest();
     for (auto& it : _mapped_data.numeric)
     {
       const PlotData& data = it.second;
@@ -1392,18 +1512,18 @@ void PlotWidget::setDefaultRangeX()
         max = std::max(B, max);
       }
     }
-    qwtPlot()->setAxisScale(QwtPlot::xBottom, min - _time_offset, max - _time_offset);
+    setAxisScale(QwtPlot::xBottom, min - _time_offset, max - _time_offset);
   }
   else
   {
-    qwtPlot()->setAxisScale(QwtPlot::xBottom, 0.0, 1.0);
+    setAxisScale(QwtPlot::xBottom, 0.0, 1.0);
   }
 }
 
 QwtSeriesWrapper* PlotWidget::createCurveXY(const PlotData* data_x,
                                             const PlotData* data_y)
 {
-  QwtSeriesWrapper* output = nullptr;
+  PointSeriesXY* output = nullptr;
 
   try
   {
@@ -1428,8 +1548,8 @@ QwtSeriesWrapper* PlotWidget::createCurveXY(const PlotData* data_x,
   return output;
 }
 
-QwtSeriesWrapper* PlotWidget::createTimeSeries(const QString& transform_ID,
-                                               const PlotData* data)
+QwtSeriesWrapper* PlotWidget::createTimeSeries(const PlotData* data,
+                                               const QString& transform_ID)
 {
   TransformedTimeseries* output = new TransformedTimeseries(data);
   output->setTransform(transform_ID);
