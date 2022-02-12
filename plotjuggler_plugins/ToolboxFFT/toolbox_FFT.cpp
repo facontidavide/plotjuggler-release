@@ -44,11 +44,11 @@ void ToolboxFFT::init(PJ::PlotDataMapRef& src_data, PJ::TransformsMap& transform
 
   auto preview_layout_A = new QHBoxLayout(ui->framePlotPreviewA);
   preview_layout_A->setMargin(6);
-  preview_layout_A->addWidget(_plot_widget_A->widget());
+  preview_layout_A->addWidget(_plot_widget_A);
 
   auto preview_layout_B = new QHBoxLayout(ui->framePlotPreviewB);
   preview_layout_B->setMargin(6);
-  preview_layout_B->addWidget(_plot_widget_B->widget());
+  preview_layout_B->addWidget(_plot_widget_B);
 
   _plot_widget_A->setAcceptDrops(true);
 

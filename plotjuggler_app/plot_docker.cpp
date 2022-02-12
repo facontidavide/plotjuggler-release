@@ -48,6 +48,11 @@ PlotDocker::PlotDocker(QString name, PlotDataMapRef& datamap, QWidget* parent)
   CreateFirstWidget();
 }
 
+PlotDocker::~PlotDocker()
+{
+  qDebug() << "~PlotDocker()";
+}
+
 QString PlotDocker::name() const
 {
   return _name;
@@ -274,8 +279,8 @@ DockWidget::DockWidget(PlotDataMapRef& datamap, QWidget* parent)
 
   static int plot_count = 0;
   QString plot_name = QString("_plot_%1_").arg(plot_count++);
-  _plot_widget = new PlotWidget(datamap, nullptr);
-  setWidget(_plot_widget->widget());
+  _plot_widget = new PlotWidget(datamap, this);
+  setWidget(_plot_widget);
   setFeature(ads::CDockWidget::DockWidgetFloatable, false);
   setFeature(ads::CDockWidget::DockWidgetDeleteOnClose, true);
 
@@ -325,7 +330,11 @@ DockWidget::DockWidget(PlotDataMapRef& datamap, QWidget* parent)
 
 DockWidget::~DockWidget()
 {
-
+//  if( _plot_widget )
+//  {
+//    _plot_widget->deleteLater();
+//    _plot_widget = nullptr;
+//  }
 }
 
 DockWidget* DockWidget::splitHorizontal()
