@@ -107,6 +107,8 @@ class PlotDocker : public ads::CDockManager
 public:
   PlotDocker(QString name, PlotDataMapRef& datamap, QWidget* parent = nullptr);
 
+  ~PlotDocker();
+
   QString name() const;
 
   void setName(QString name);
