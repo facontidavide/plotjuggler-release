@@ -31,6 +31,7 @@
 #include <QDebug>
 #include <QDragEnterEvent>
 #include <QDropEvent>
+#include <QHBoxLayout>
 
 static int _global_color_index_ = 0;
 
@@ -157,16 +158,6 @@ QwtPlot* PlotWidgetBase::qwtPlot()
 const QwtPlot* PlotWidgetBase::qwtPlot() const
 {
   return p;
-}
-
-QWidget* PlotWidgetBase::widget()
-{
-  return qwtPlot();
-}
-
-const QWidget* PlotWidgetBase::widget() const
-{
-  return qwtPlot();
 }
 
 void PlotWidgetBase::resetZoom()
@@ -346,6 +337,11 @@ PlotWidgetBase::PlotWidgetBase(QWidget* parent)
 
   p = new QwtPlotPimpl(this, abs_canvas, onViewResized, onEvent);
 
+  auto layout = new QHBoxLayout(this);
+  layout->setMargin(0);
+  this->setLayout(layout);
+  layout->addWidget(p);
+
   qwtPlot()->setMinimumWidth(100);
   qwtPlot()->setMinimumHeight(100);
 
@@ -395,7 +391,7 @@ PlotWidgetBase::CurveInfo* PlotWidgetBase::addCurve(const std::string& name,
     QwtSeriesWrapper* plot_qwt = nullptr;
     if(auto ts_data = dynamic_cast<const PlotData*>(&data) )
     {
-      plot_qwt = new QwtTimeseries(ts_data);
+      plot_qwt = createTimeSeries(ts_data);
     }
     else{
       plot_qwt = new QwtSeriesWrapper(&data);
@@ -475,8 +471,7 @@ std::list<PlotWidgetBase::CurveInfo>& PlotWidgetBase::curveList()
   return p->curve_list;
 }
 
-QwtSeriesWrapper* PlotWidgetBase::createTimeSeries(const QString& transform_ID,
-                                                   const PlotData* data)
+QwtSeriesWrapper* PlotWidgetBase::createTimeSeries(const PlotData* data, const QString& transform_ID)
 {
   TransformedTimeseries* output = new TransformedTimeseries(data);
   output->setTransform(transform_ID);

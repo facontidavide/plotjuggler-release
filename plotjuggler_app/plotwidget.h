@@ -189,8 +189,8 @@ private:
 
   QwtSeriesWrapper* createCurveXY(const PlotData* data_x, const PlotData* data_y);
 
-  QwtSeriesWrapper* createTimeSeries(const QString& transform_ID,
-                                     const PlotData* data) override;
+  QwtSeriesWrapper* createTimeSeries(const PlotData* data,
+                                     const QString& transform_ID = {}) override;
 
   double _time_offset;
 

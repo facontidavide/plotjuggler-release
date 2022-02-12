@@ -114,7 +114,7 @@ FunctionEditorWidget::FunctionEditorWidget(PlotDataMapRef& plotMapData,
 
   auto preview_layout = new QHBoxLayout(ui->framePlotPreview);
   preview_layout->setMargin(6);
-  preview_layout->addWidget(_preview_widget->widget());
+  preview_layout->addWidget(_preview_widget);
 
   _preview_widget->setContextMenuEnabled(false);
 
