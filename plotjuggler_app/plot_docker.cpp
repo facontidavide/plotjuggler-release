@@ -50,7 +50,6 @@ PlotDocker::PlotDocker(QString name, PlotDataMapRef& datamap, QWidget* parent)
 
 PlotDocker::~PlotDocker()
 {
-  qDebug() << "~PlotDocker()";
 }
 
 QString PlotDocker::name() const
@@ -330,11 +329,6 @@ DockWidget::DockWidget(PlotDataMapRef& datamap, QWidget* parent)
 
 DockWidget::~DockWidget()
 {
-//  if( _plot_widget )
-//  {
-//    _plot_widget->deleteLater();
-//    _plot_widget = nullptr;
-//  }
 }
 
 DockWidget* DockWidget::splitHorizontal()

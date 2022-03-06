@@ -796,7 +796,18 @@ QLineEdit#lineEditFilter{
   border-bottom: 2px solid ${border_hover};
 }
 
+QLineEdit#lineEditPrefix{
+  background-color: transparent;
+  border: 0px;
+  border-radius: 0px;
+  border-bottom: 2px solid ${border_hover};
+}
+
 QLineEdit#lineEditFilter:focus{
+  border-bottom: 2px solid ${border_checked};
+}
+
+QLineEdit#lineEditPrefix:focus{
   border-bottom: 2px solid ${border_checked};
 }
 
