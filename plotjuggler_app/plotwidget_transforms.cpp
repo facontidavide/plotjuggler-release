@@ -203,7 +203,7 @@ void DialogTransformEditor::on_listTransforms_itemSelectionChanged()
 
     auto widget = ts->transform()->optionsWidget();
     int index = ui->stackedWidgetArguments->indexOf(widget);
-    if (index == -1)
+    if (index == -1 && widget)
     {
       index = ui->stackedWidgetArguments->addWidget(widget);
     }
