@@ -11,6 +11,7 @@
 #include "ui_function_editor.h"
 #include "plotwidget.h"
 #include "PlotJuggler/lua_highlighter.h"
+#include "PlotJuggler/util/delayed_callback.hpp"
 
 class FunctionEditorWidget : public QWidget
 {
@@ -34,9 +35,6 @@ public:
   void clear();
 
   QString getLinkedData() const;
-  QString getglobal_vars() const;
-  QString getEquation() const;
-  QString getName() const;
 
   const PlotData& getPlotData() const;
 
@@ -45,6 +43,8 @@ public:
   void editExistingPlot(CustomPlotPtr data);
 
   bool eventFilter(QObject* obj, QEvent* event) override;
+
+  void saveSettings();
 
 public slots:
   void on_stylesheetChanged(QString theme);
@@ -79,15 +79,31 @@ private slots:
 
   void on_lineEditSource_textChanged(const QString& text);
 
-  void on_mathEquation_textChanged();
+  void onUpdatePreview();
 
-  void on_globalVarsTextField_textChanged();
-
-  void on_updatePreview();
+  void onUpdatePreviewBatch();
 
   void on_pushButtonHelp_clicked();
 
-private:
+  void onLineEditTab2FilterChanged();
+
+  void on_pushButtonHelpTab2_clicked();
+
+  void on_lineEditTab2Filter_textChanged(const QString &arg1);
+
+  void on_functionTextBatch_textChanged();
+
+  void on_suffixLineEdit_textChanged(const QString &arg1);
+
+  void on_tabWidget_currentChanged(int index);
+
+  void on_globalVarsTextBatch_textChanged();
+
+  void on_globalVarsText_textChanged();
+
+  void on_functionText_textChanged();
+
+  private:
   void importSnippets(const QByteArray& xml_text);
 
   QByteArray exportSnippets() const;
@@ -96,7 +112,7 @@ private:
 
   void updatePreview();
 
-  QTimer _update_preview_timer;
+//  QTimer _update_preview_timer;
 
   PlotDataMapRef& _plot_map_data;
   const TransformsMap& _transform_maps;
@@ -115,9 +131,18 @@ private:
 
   LuaHighlighter* _global_highlighter;
   LuaHighlighter* _function_highlighter;
+  LuaHighlighter* _global_highlighter_batch;
+  LuaHighlighter* _function_highlighter_batch;
+
+  DelayedCallback _tab2_filter;
+
+  DelayedCallback _update_preview_tab1;
+  DelayedCallback _update_preview_tab2;
+
+  void setSemaphore(QLabel *semaphore, QString errors);
 
 signals:
-  void accept(CustomPlotPtr plot);
+  void accept(std::vector<CustomPlotPtr> plot);
   void closed();
 };
 

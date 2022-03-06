@@ -90,7 +90,7 @@ public slots:
 
   void onRefreshCustomPlot(const std::string& plot_name);
 
-  void onCustomPlotCreated(CustomPlotPtr plot);
+  void onCustomPlotCreated(std::vector<CustomPlotPtr> plot);
 
   void onPlaybackLoop();
 
