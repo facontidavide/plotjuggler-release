@@ -17,6 +17,8 @@ struct TimeseriesRef
 
   std::pair<double, double> at(unsigned i) const;
 
+  void set(unsigned index, double x, double y);
+
   double atTime(double t) const;
 
   unsigned size() const;

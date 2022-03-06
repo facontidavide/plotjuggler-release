@@ -22,7 +22,7 @@
       </font>
      </property>
      <property name="text">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The &lt;span style=&quot; font-weight:600;&quot;&gt;Script Editor &lt;/span&gt;is an advanced Lua editor that allows the user to create new series (scatteXY or timeseries) which are updated when the timetracker slider is moved or new data is received. &lt;a href=&quot;https://slides.com/davidefaconti/plotjuggler-reactive-scripts/fullscreen&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;Open Tutorial&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The &lt;span style=&quot; font-weight:600;&quot;&gt;Script Editor &lt;/span&gt;is an advanced Lua editor that allows the user to create new series (ScatteXY or Timeseries) which are updated when the timetracker slider is moved or new data is received. &lt;a href=&quot;https://slides.com/davidefaconti/plotjuggler-reactive-scripts/fullscreen&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;Tutorial link&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="wordWrap">
       <bool>true</bool>
@@ -64,7 +64,7 @@
             <widget class="QPlainTextEdit" name="textGlobal">
              <property name="font">
               <font>
-               <pointsize>14</pointsize>
+               <pointsize>12</pointsize>
               </font>
              </property>
              <property name="placeholderText">
@@ -99,11 +99,11 @@
             <widget class="QPlainTextEdit" name="textFunction">
              <property name="font">
               <font>
-               <pointsize>14</pointsize>
+               <pointsize>12</pointsize>
               </font>
              </property>
              <property name="placeholderText">
-              <string>body of the function. tracker_time is the value of the time slider at the bottom.</string>
+              <string>body of the function. tracker_time is the value of the time slider</string>
              </property>
             </widget>
            </item>
@@ -300,12 +300,11 @@
           </font>
          </property>
          <property name="plainText">
-          <string>--[[ Helper function to create a ScatterXY series from arrays.
+          <string>--[[ Helper function to create a series from arrays
 
- series_name: name of the created ScatterXY series
- prefix:      prefix of the timeseries, before the index of the array
- suffix_X:   suffix to complete the name of the series containing the X value.
-             if [nil], the index of the array will be used.
+ new_series: a series previously created with ScatterXY.new(name)
+ prefix:     prefix of the timeseries, before the index of the array
+ suffix_X:   suffix to complete the name of the series containing the X value. If [nil], use the index of the array.
  suffix_Y:   suffix to complete the name of the series containing the Y value
  timestamp:   usually the tracker_time variable
               
@@ -313,17 +312,19 @@
  
  Assuming we have multiple series in the form:
  
-   /trajectory/node.{N}/position/x
-   /trajectory/node.{N}/position/y
+   /trajectory/node.{X}/position/x
+   /trajectory/node.{X}/position/y
    
  where {N} is the index of the array (integer). We can create a reactive series from the array with:
  
-   CreateSeriesFromArray( &quot;my_trajectory&quot;, &quot;/trajectory/node&quot;,  &quot;position/x&quot;, &quot;position/y&quot;, tracker_time );
+   new_series = ScatterXY.new(&quot;my_trajectory&quot;) 
+   CreateSeriesFromArray( new_series, &quot;/trajectory/node&quot;, &quot;position/x&quot;, &quot;position/y&quot;, tracker_time );
 ]]--
 
-function CreateSeriesFromArray( series_name, prefix, suffix_X, suffix_Y, timestamp )
-  --- create a new series or overwite the previous one
-  new_series = MutableScatterXY.new(series_name)
+function CreateSeriesFromArray( new_series, prefix, suffix_X, suffix_Y, timestamp )
+  
+  --- clear previous values
+  new_series:clear()
   
   --- Append points to new_series
   index = 0
@@ -338,11 +339,42 @@ function CreateSeriesFromArray( series_name, prefix, suffix_X, suffix_Y, timesta
     end
     
     series_y = TimeseriesView.find( string.format( &quot;%s.%d/%s&quot;, prefix, index, suffix_Y) )
-    if series_x == nil then break end 
+    if series_y == nil then break end 
     y = series_y:atTime(timestamp)
     
     new_series:push_back(x,y)
     index = index+1
+  end
+end
+
+--[[ Similar to the built-in function GetSeriesNames(), but select only the names with a give prefix. ]]--
+
+function GetSeriesNamesByPrefix(prefix)
+  -- GetSeriesNames(9 is a built-in function
+  all_names = GetSeriesNames()
+  filtered_names = {}
+  for i, name in ipairs(all_names)  do
+    -- check the prefix
+    if name:find(prefix, 1, #prefix) then
+      table.insert(filtered_names, name);
+    end
+  end
+  return filtered_names
+end
+
+--[[ Modify an existing series, applying offsets to all their X and Y values
+
+ series: an existing timeseries, obtained with TimeseriesView.find(name)
+ delta_x: offset to apply to each x value
+ delta_y: offset to apply to each y value  
+
+]]--
+
+function ApplyOffsetInPlace(series, delta_x, delta_y)
+  -- use C++ indeces, not Lua indeces
+  for index=0, series:size()-1 do
+    x,y = series:at(index)
+    series:set(index, x + delta_x, y + delta_y)
   end
 end
 </string>

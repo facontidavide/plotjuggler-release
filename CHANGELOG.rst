@@ -2,6 +2,24 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+3.4.3 (2022-03-06)
+------------------
+* Apply changes to reactive Scripts
+* improve reactive Scripts
+* clear selections when CustomSeries is created
+* save batch function settings
+* cleaning up `#601 <https://github.com/facontidavide/PlotJuggler/issues/601>`_
+* Timestampfield (`#601 <https://github.com/facontidavide/PlotJuggler/issues/601>`_)
+* add new batch editor
+* check validity of the Lua function
+* consolidate tree view
+* add missing files and use CurveTree
+* multifile prefix
+* ReactiveLuaFunction cleanup
+* adding absolute transform
+* small UI fix
+* Contributors: Davide Faconti, ngpbach
+
 3.4.2 (2022-02-12)
 ------------------
 * delete orhphaned transforms
