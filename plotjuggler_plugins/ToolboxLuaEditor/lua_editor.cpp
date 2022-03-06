@@ -94,9 +94,10 @@ ToolboxLuaEditor::ToolboxLuaEditor()
     QString code = settings.value("ToolboxLuaEditor/library").toString();
     ui->textLibrary->setPlainText(code);
   }
-  onLibraryUpdated();
 
   _previous_library = ui->textLibrary->toPlainText();
+
+  onLibraryUpdated();
 }
 
 ToolboxLuaEditor::~ToolboxLuaEditor()
