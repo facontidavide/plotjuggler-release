@@ -15,6 +15,7 @@ QT5_WRAP_UI ( UI_SRC
     preferences_dialog.ui
     suggest_dialog.ui
     new_release_dialog.ui
+    multifile_prefix.ui
 
     plot_docker_toolbar.ui
     plotwidget_editor.ui
@@ -37,6 +38,7 @@ SET( PLOtJUGGLER_SRC
     cheatsheet/cheatsheet_dialog.cpp
 
     customtracker.cpp
+    multifile_prefix.cpp
 
     curvelist_panel.cpp
     curvelist_view.cpp
@@ -71,6 +73,7 @@ SET( PLOtJUGGLER_SRC
     transforms/moving_rms.cpp
     transforms/outlier_removal.cpp
     transforms/integral_transform.cpp
+    transforms/absolute_transform.cpp
 
     transforms/first_derivative.cpp
     transforms/scale_transform.cpp
