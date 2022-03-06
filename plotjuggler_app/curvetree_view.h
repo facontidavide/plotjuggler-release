@@ -46,7 +46,7 @@ public:
   void treeVisitor(std::function<void(QTreeWidgetItem*)> visitor);
 
 private:
-  void expandChildren(QTreeWidgetItem* item);
+  void expandChildren(bool expanded, QTreeWidgetItem* item);
 
   int _hidden_count = 0;
   int _leaf_count = 0;

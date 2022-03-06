@@ -186,8 +186,8 @@
       <widget class="QPushButton" name="buttonRadDeg">
        <property name="maximumSize">
         <size>
-         <width>160</width>
-         <height>80</height>
+         <width>200</width>
+         <height>16777215</height>
         </size>
        </property>
        <property name="focusPolicy">
@@ -202,7 +202,7 @@
       <widget class="QPushButton" name="buttonDegRad">
        <property name="maximumSize">
         <size>
-         <width>160</width>
+         <width>200</width>
          <height>16777215</height>
         </size>
        </property>
