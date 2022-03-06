@@ -12,7 +12,12 @@ void LuaCustomFunction::initEngine()
   _lua_function = {};
   _lua_engine = {};
   _lua_engine.open_libraries();
-  _lua_engine.safe_script(_snippet.global_vars.toStdString());
+  auto result = _lua_engine.safe_script(_snippet.global_vars.toStdString());
+  if (!result.valid())
+  {
+    sol::error err = result;
+    throw std::runtime_error(std::string("Error in Global part:\n") + err.what());
+  }
 
   auto calcMethodStr = QString("function calc(time, value");
   for (int index = 1; index <= _snippet.additional_sources.size(); index++)
@@ -21,7 +26,12 @@ void LuaCustomFunction::initEngine()
   }
   calcMethodStr += QString(")\n%1\nend").arg(snippet().function);
 
-  _lua_engine.safe_script(calcMethodStr.toStdString());
+  result = _lua_engine.safe_script(calcMethodStr.toStdString());
+  if (!result.valid())
+  {
+    sol::error err = result;
+    throw std::runtime_error(std::string("Error in Global part:\n") + err.what());
+  }
   _lua_function = _lua_engine["calc"];
 }
 

@@ -187,7 +187,7 @@
             <number>4</number>
            </property>
            <item>
-            <layout class="QHBoxLayout" name="horizontalLayout_3">
+            <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="0,0,1,0">
              <item>
               <widget class="QLabel" name="label_4">
                <property name="text">
@@ -236,21 +236,11 @@
                </property>
                <property name="sizeHint" stdset="0">
                 <size>
-                 <width>40</width>
+                 <width>60</width>
                  <height>20</height>
                 </size>
                </property>
               </spacer>
-             </item>
-             <item>
-              <widget class="QCheckBox" name="checkBoxLoadDataPrefix">
-               <property name="toolTip">
-                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If checked, the name of the file will be added as prefix.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;Probably, you want to use it only when opening 2 or more files at once (when they containing the same data).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-               </property>
-               <property name="text">
-                <string>add prefix</string>
-               </property>
-              </widget>
              </item>
              <item>
               <widget class="QPushButton" name="buttonRecentData">
@@ -287,6 +277,9 @@
            </item>
            <item>
             <layout class="QHBoxLayout" name="horizontalLayout_11">
+             <property name="topMargin">
+              <number>10</number>
+             </property>
              <item>
               <widget class="QLabel" name="label_9">
                <property name="text">
@@ -1799,7 +1792,7 @@
      <x>0</x>
      <y>0</y>
      <width>1248</width>
-     <height>25</height>
+     <height>26</height>
     </rect>
    </property>
    <property name="minimumSize">

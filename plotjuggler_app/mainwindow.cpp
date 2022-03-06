@@ -44,6 +44,7 @@
 #include "dummy_data.h"
 #include "PlotJuggler/svg_util.h"
 #include "PlotJuggler/reactive_function.h"
+#include "multifile_prefix.h"
 
 #include "ui_aboutdialog.h"
 #include "ui_support_dialog.h"
@@ -789,8 +790,9 @@ QStringList MainWindow::initializePlugins(QString directory_name)
 
         connect(toolbox, &ToolboxPlugin::plotCreated, this,
                 [=](std::string name) {
-                  _curvelist_widget->addCurve(name);
+                  _curvelist_widget->addCustom(QString::fromStdString(name));
                   _curvelist_widget->updateAppearance();
+                  _curvelist_widget->clearSelections();
                 }
                 );
       }
@@ -1308,22 +1310,18 @@ bool MainWindow::isStreamingActive() const
 
 bool MainWindow::loadDataFromFiles(QStringList filenames)
 {
-  static bool show_me = true;
-  if (filenames.size() > 1 && show_me)
+  filenames.sort();
+  std::map<QString, QString> filename_prefix;
+
+  if (filenames.size() > 1)
   {
-    QMessageBox msgbox;
-    msgbox.setWindowTitle("Loading multiple files");
-    msgbox.setText("You are loading multiple files at once. A prefix will be "
-                   "automatically added to the name of the "
-                   "timeseries.\n\n"
-                   "This is an experimental feature. Publishers will not work as you may "
-                   "expect.");
-    msgbox.addButton(QMessageBox::Ok);
-    QCheckBox* cb = new QCheckBox("Don't show this again");
-    cb->setChecked(!show_me);
-    msgbox.setCheckBox(cb);
-    connect(cb, &QCheckBox::stateChanged, this, [&]() { show_me = !cb->isChecked(); });
-    msgbox.exec();
+    DialogMultifilePrefix dialog(filenames, this);
+    int ret = dialog.exec();
+    if(ret != QDialog::Accepted)
+    {
+      return false;
+    }
+    filename_prefix = dialog.getPrefixes();
   }
 
   std::unordered_set<std::string> previous_names = _mapped_plot_data.getAllNames();
@@ -1334,9 +1332,9 @@ bool MainWindow::loadDataFromFiles(QStringList filenames)
   {
     FileLoadInfo info;
     info.filename = filenames[i];
-    if( ui->checkBoxLoadDataPrefix->isChecked() )
+    if( filename_prefix.count(info.filename) > 0 )
     {
-      info.prefix = QFileInfo(info.filename).baseName();
+      info.prefix = filename_prefix[info.filename];
     }
     auto added_names = loadDataFromFile(info);
     if (!added_names.empty())
@@ -2647,59 +2645,61 @@ void MainWindow::onPlaybackLoop()
   });
 }
 
-void MainWindow::onCustomPlotCreated(CustomPlotPtr custom_plot)
+void MainWindow::onCustomPlotCreated(std::vector<CustomPlotPtr> custom_plots)
 {
-  const std::string& curve_name = custom_plot->aliasName().toStdString();
+  std::set<PlotWidget*> widget_to_replot;
 
-  // clear already existing data first
-  auto data_it = _mapped_plot_data.numeric.find(curve_name);
-  if (data_it != _mapped_plot_data.numeric.end())
+  for(auto custom_plot: custom_plots)
   {
-    data_it->second.clear();
+    const std::string& curve_name = custom_plot->aliasName().toStdString();
+    // clear already existing data first
+    auto data_it = _mapped_plot_data.numeric.find(curve_name);
+    if (data_it != _mapped_plot_data.numeric.end())
+    {
+      data_it->second.clear();
+    }
+    try
+    {
+      custom_plot->calculateAndAdd(_mapped_plot_data);
+    }
+    catch (std::exception& ex)
+    {
+      QMessageBox::warning(this, tr("Warning"),
+                           tr("Failed to create the custom timeseries. "
+                              "Error:\n\n%1")
+                               .arg(ex.what()));
+    }
+
+    // keep data for reference
+    auto custom_it = _transform_functions.find(curve_name);
+    if (custom_it == _transform_functions.end())
+    {
+      _transform_functions.insert({ curve_name, custom_plot });
+      _curvelist_widget->addCustom(QString::fromStdString(curve_name));
+    }
+    else
+    {
+      custom_it->second = custom_plot;
+    }
+
+    forEachWidget([&](PlotWidget* plot) {
+      if ( plot->curveFromTitle(QString::fromStdString(curve_name)) )
+      {
+        widget_to_replot.insert(plot);
+      }
+    });
   }
 
-  try
-  {
-    custom_plot->calculateAndAdd(_mapped_plot_data);
-  }
-  catch (std::exception& ex)
-  {
-    QMessageBox::warning(this, tr("Warning"),
-                         tr("Failed to create the custom timeseries. "
-                            "Error:\n\n%1")
-                             .arg(ex.what()));
-
-    return;
-  }
+  onUpdateLeftTableValues();
   ui->widgetStack->setCurrentIndex(0);
   _function_editor->clear();
-
-  // keep data for reference
-  auto custom_it = _transform_functions.find(curve_name);
-  if (custom_it == _transform_functions.end())
+  
+  for(auto plot: widget_to_replot)
   {
-    _transform_functions.insert({ curve_name, custom_plot });
-    _curvelist_widget->addCustom(QString::fromStdString(curve_name));
-    onUpdateLeftTableValues();
+    plot->updateCurves(true);
+    plot->replot();
   }
-  else
-  {
-    custom_it->second = custom_plot;
-  }
-
-  _function_editor->clear();
-
-  // update plots
-  forEachWidget([&](PlotWidget* plot) {
-    PlotWidgetBase::CurveInfo* info =
-        plot->curveFromTitle(QString::fromStdString(curve_name));
-
-    if (info)
-    {
-      plot->updateCurves(true);
-      plot->replot();
-    }
-  });
+  _curvelist_widget->clearSelections();
 }
 
 void MainWindow::on_actionReportBug_triggered()
