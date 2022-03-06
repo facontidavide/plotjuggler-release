@@ -1,6 +1,7 @@
 #include "PlotJuggler/reactive_function.h"
 #include <sol/sol.hpp>
 #include <PlotJuggler/fmt/format.h>
+#include <QMessageBox>
 
 namespace PJ
 {
@@ -13,6 +14,7 @@ void ReactiveLuaFunction::init()
   _lua_engine.open_libraries(sol::lib::base);
   _lua_engine.open_libraries(sol::lib::string);
   _lua_engine.open_libraries(sol::lib::math);
+  _lua_engine.open_libraries(sol::lib::table);
 
   _lua_engine.script(_library_code);
 
@@ -65,7 +67,18 @@ void ReactiveLuaFunction::setTimeTracker(double time_tracker_value)
 
 void ReactiveLuaFunction::calculate()
 {
-  _lua_function(_tracker_value);
+  try {
+    auto result = _lua_function(_tracker_value);
+    if (!result.valid())
+    {
+      sol::error err = result;
+      throw std::runtime_error(err.what());
+    }
+  } catch (std::exception& err) {
+
+    QMessageBox::warning(nullptr, "Error in Reactive Script",
+                         QString(err.what()), QMessageBox::Cancel);
+  }
 }
 
 bool ReactiveLuaFunction::xmlSaveState(QDomDocument &, QDomElement &) const
@@ -80,30 +93,29 @@ bool ReactiveLuaFunction::xmlLoadState(const QDomElement &)
 
 void ReactiveLuaFunction::prepareLua()
 {
-  _timeseries_ref = _lua_engine.new_usertype<TimeseriesRef>("TimeseriesView");
+  _timeseries_ref = _lua_engine.new_usertype<TimeseriesRef>(
+      "TimeseriesView");
 
-  _timeseries_ref["find"] = [&](sol::object name)
+  _timeseries_ref["find"] = [this](sol::object name)
   {
-    if (name.is<std::string>() == false)
-    {
-      return sol::make_object(_lua_engine, sol::lua_nil);
-    }
-
-    auto it = plotData()->numeric.find(name.as<std::string>());
+    auto str = name.as<std::string>();
+    auto it = plotData()->numeric.find(str);
     if( it == plotData()->numeric.end() )
     {
       return sol::make_object(_lua_engine, sol::lua_nil);
     }
-    return sol::object(_lua_engine, sol::in_place, TimeseriesRef( &(it->second)) );
+    auto series = std::make_unique<TimeseriesRef>( &(it->second) );
+    return sol::object(_lua_engine, sol::in_place, std::move(series) );
   };
   _timeseries_ref["size"] = &TimeseriesRef::size;
   _timeseries_ref["at"] = &TimeseriesRef::at;
+  _timeseries_ref["set"] = &TimeseriesRef::set;
   _timeseries_ref["atTime"] = &TimeseriesRef::atTime;
 
   //---------------------------------------
-  _created_timeseries = _lua_engine.new_usertype<CreatedSeriesTime>("MutableTimeseries");
+  _created_timeseries = _lua_engine.new_usertype<CreatedSeriesTime>("Timeseries");
 
-  _created_timeseries["new"] = [&](sol::object name)
+  _created_timeseries["new"] = [this](sol::object name)
   {
     if (name.is<std::string>() == false)
     {
@@ -122,9 +134,9 @@ void ReactiveLuaFunction::prepareLua()
   _created_timeseries["push_back"] = &CreatedSeriesTime::push_back;
 
   //---------------------------------------
-  _created_scatter = _lua_engine.new_usertype<CreatedSeriesXY>("MutableScatterXY");
+  _created_scatter = _lua_engine.new_usertype<CreatedSeriesXY>("ScatterXY");
 
-  _created_scatter["new"] = [&](sol::object name)
+  _created_scatter["new"] = [this](sol::object name)
   {
     if (name.is<std::string>() == false)
     {
@@ -143,15 +155,32 @@ void ReactiveLuaFunction::prepareLua()
   _created_scatter["push_back"] = &CreatedSeriesXY::push_back;
 
   //---------------------------------------
+  auto GetSeriesNames = [this]()
+  {
+    std::vector<std::string> names;
+    for(const auto& it: plotData()->numeric)
+    {
+      names.push_back(it.first);
+    }
+    return names;
+  };
+  _lua_engine.set_function("GetSeriesNames", GetSeriesNames);
 }
 
-TimeseriesRef::TimeseriesRef(PlotData *data): _plot_data(data)
-{}
+TimeseriesRef:: TimeseriesRef(PlotData *data): _plot_data(data)
+{
+}
 
 std::pair<double, double> TimeseriesRef::at(unsigned i) const
 {
   const auto& p = _plot_data->at(i);
   return {p.x, p.y};
+}
+
+void TimeseriesRef::set(unsigned index, double x, double y)
+{
+  auto& p = _plot_data->at(index);
+  p = {x, y};
 }
 
 double TimeseriesRef::atTime(double t) const
@@ -169,12 +198,10 @@ CreatedSeriesBase::CreatedSeriesBase(PlotDataMapRef *data_map, const std::string
 {
   if( timeseries )
   {
-    std::cout << "[DEBUG] Create timeserie, bool timeseries=" << timeseries << "\n";
     _plot_data = &(data_map->getOrCreateNumeric(name));
   }
   else
   {
-    std::cout << "[DEBUG] Create scatterplot, bool timeseries=" << timeseries << "\n";
     _plot_data = &(data_map->getOrCreateScatterXY(name));
   }
 }
