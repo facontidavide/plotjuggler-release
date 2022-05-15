@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>924</width>
-    <height>607</height>
+    <width>1095</width>
+    <height>647</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -41,7 +41,7 @@
      <property name="maximumSize">
       <size>
        <width>16777215</width>
-       <height>250</height>
+       <height>16777215</height>
       </size>
      </property>
      <layout class="QHBoxLayout" name="horizontalLayout_3">
@@ -181,7 +181,7 @@
             <property name="frameShape">
              <enum>QFrame::Box</enum>
             </property>
-            <layout class="QHBoxLayout" name="horizontalLayout">
+            <layout class="QHBoxLayout" name="horizontalLayout" stretch="2,2">
              <property name="spacing">
               <number>0</number>
              </property>
@@ -207,7 +207,7 @@
                </property>
                <property name="maximumSize">
                 <size>
-                 <width>200</width>
+                 <width>16777215</width>
                  <height>16777215</height>
                 </size>
                </property>
@@ -236,13 +236,6 @@
                  </font>
                 </property>
                </item>
-              </widget>
-             </item>
-             <item>
-              <widget class="Line" name="line">
-               <property name="orientation">
-                <enum>Qt::Vertical</enum>
-               </property>
               </widget>
              </item>
              <item>
