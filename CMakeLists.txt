@@ -10,7 +10,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}  "${CMAKE_CURRENT_LIST_DIR}/cmake")
 add_definitions(
     -DPJ_MAJOR_VERSION="3"
     -DPJ_MINOR_VERSION="4"
-    -DPJ_PATCH_VERSION="2" )
+    -DPJ_PATCH_VERSION="4" )
 
 # You can add some command line arguments at compilation time
 # Use _0x3b_ instead of semicolon
@@ -38,15 +38,15 @@ if( CATKIN_DEVEL_PREFIX OR catkin_FOUND OR CATKIN_BUILD_BINARY_PACKAGE)
     message(STATUS "PlotJuggler is being built using CATKIN.")
     message(STATUS "--------------------------------------------------")
 
-    find_package(catkin REQUIRED COMPONENTS roslib )
+    find_package(catkin REQUIRED COMPONENTS roslib roscpp)
 
     catkin_package(
         INCLUDE_DIRS  plotjuggler_base/include
         LIBRARIES  plotjuggler_base
-        CATKIN_DEPENDS roslib
+        CATKIN_DEPENDS roslib roscpp
     )
 
-message(${catkin_INCLUDE_DIRS})
+message(STATUS ${catkin_INCLUDE_DIRS})
 
     include_directories(${catkin_INCLUDE_DIRS})
     add_definitions(-DCOMPILED_WITH_CATKIN)
@@ -54,7 +54,9 @@ message(${catkin_INCLUDE_DIRS})
 elseif( DEFINED ENV{AMENT_PREFIX_PATH})
     set(COMPILING_WITH_AMENT 1)
 
+    find_package(ament_cmake REQUIRED)
     find_package(ament_index_cpp REQUIRED)
+    find_package(rclcpp REQUIRED)
     include_directories(${ament_index_cpp_INCLUDE_DIRS})
 
     message(STATUS "--------------------------------------------------")
@@ -182,7 +184,6 @@ if(COMPILING_WITH_CATKIN)
 
 elseif(COMPILING_WITH_AMENT)
 
-    find_package(ament_cmake REQUIRED)
     set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
     set(PJ_PLUGIN_INSTALL_DIRECTORY lib/${PROJECT_NAME} )
@@ -244,7 +245,7 @@ add_subdirectory( plotjuggler_plugins/DataStreamSample )
 add_subdirectory( plotjuggler_plugins/DataStreamWebsocket )
 add_subdirectory( plotjuggler_plugins/DataStreamUDP )
 add_subdirectory( plotjuggler_plugins/DataStreamMQTT )
-#add_subdirectory( plotjuggler_plugins/DataStreamZMQ )
+add_subdirectory( plotjuggler_plugins/DataStreamZMQ )
 
 add_subdirectory( plotjuggler_plugins/StatePublisherCSV )
 add_subdirectory( plotjuggler_plugins/VideoViewer )

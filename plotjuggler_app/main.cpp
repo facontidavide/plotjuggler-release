@@ -19,9 +19,17 @@
 #include "transforms/moving_rms.h"
 #include "transforms/outlier_removal.h"
 #include "transforms/integral_transform.h"
+#include "transforms/absolute_transform.h"
 
 #include "nlohmann_parsers.h"
 #include "new_release_dialog.h"
+
+#ifdef COMPILED_WITH_CATKIN
+#include <ros/ros.h>
+#endif
+#ifdef COMPILED_WITH_AMENT
+#include <rclcpp/rclcpp.hpp>
+#endif
 
 static QString VERSION_STRING =
     QString("%1.%2.%3").arg(PJ_MAJOR_VERSION).arg(PJ_MINOR_VERSION).arg(PJ_PATCH_VERSION);
@@ -113,50 +121,70 @@ QPixmap getFunnySplashscreen()
   return QPixmap(filename);
 }
 
-std::pair<int, char**> MergeArguments(int argc, char* argv[])
+std::vector<std::string> MergeArguments(const std::vector<std::string>& args)
 {
 #ifdef PJ_DEFAULT_ARGS
   auto default_cmdline_args =
       QString(PJ_DEFAULT_ARGS).split(" ", QString::SkipEmptyParts);
-  int new_argc = argc + default_cmdline_args.size();
-  static char* new_argv[100];
 
-  // preserve arg[0] => executable path
-  new_argv[0] = argv[0];
+  std::vector<std::string> new_args;
+  new_args.push_back(args.front());
 
   // Add the remain arguments, replacing escaped characters if necessary.
   // Escaping needed because some chars cannot be entered easily in the -DPJ_DEFAULT_ARGS
   // preprocessor directive
   //   _0x20_   -->   ' '   (space)
   //   _0x3b_   -->   ';'   (semicolon)
-  int index = 1;
   for (auto cmdline_arg : default_cmdline_args)
   {
     // replace(const QString &before, const QString &after, Qt::CaseSensitivity cs =
     // Qt::CaseSensitive)
     cmdline_arg = cmdline_arg.replace("_0x20_", " ", Qt::CaseSensitive);
     cmdline_arg = cmdline_arg.replace("_0x3b_", ";", Qt::CaseSensitive);
-    new_argv[index++] = strdup(cmdline_arg.toLocal8Bit().data());
+    new_args.push_back( strdup(cmdline_arg.toLocal8Bit().data()) );
   }
 
   // If an argument appears repeated, the second value overrides previous one.
-  // Do this after adding default_cmdline_args so the command-line overide default
-  for (int i = 1; i < argc; ++i)
+  // Do this after adding default_cmdline_args so the command-line override default
+  for (size_t i = 1; i < args.size(); ++i)
   {
-    new_argv[index++] = argv[i];
+    new_args.push_back( args[i] );
   }
 
-  return { new_argc, new_argv };
+  return new_args;
 
 #else
-  return { argc, argv };
+  return args;
 #endif
 }
 
 int main(int argc, char* argv[])
 {
-  auto arg = MergeArguments(argc, argv);
-  QApplication app(arg.first, arg.second);
+  std::vector<std::string> args;
+
+#if !defined(COMPILED_WITH_CATKIN) && !defined(COMPILED_WITH_AMENT)
+  for(int i=0; i<argc; i++)
+  {
+    args.push_back( args[i] );
+  }
+#elif defined(COMPILED_WITH_CATKIN)
+  ros::removeROSArgs(argc, argv, args);
+#elif defined(COMPILED_WITH_AMENT)
+  args = rclcpp::remove_ros_arguments(argc, argv);
+#endif
+
+  args = MergeArguments(args);
+
+  int new_argc = args.size();
+  std::vector<char*> new_argv;
+  for(int i=0; i<new_argc; i++)
+  {
+    new_argv.push_back( args[i].data() );
+  }
+
+  QApplication app( new_argc, new_argv.data() );
+
+  //-------------------------
 
   QCoreApplication::setOrganizationName("PlotJuggler");
   QCoreApplication::setApplicationName("PlotJuggler-3");
@@ -181,6 +209,7 @@ int main(int argc, char* argv[])
   TransformFactory::registerTransform<MovingRMS>();
   TransformFactory::registerTransform<OutlierRemovalFilter>();
   TransformFactory::registerTransform<IntegralTransform>();
+  TransformFactory::registerTransform<AbsoluteTransform>();
   //---------------------------
 
   QCommandLineParser parser;
