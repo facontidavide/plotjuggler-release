@@ -3,7 +3,6 @@
 
 #include "nlohmann/json.hpp"
 #include "PlotJuggler/messageparser_base.h"
-#include <QCheckBox>
 #include <QDebug>
 
 using namespace PJ;
@@ -11,8 +10,11 @@ using namespace PJ;
 class NlohmannParser : public MessageParser
 {
 public:
-  NlohmannParser(const std::string& topic_name, PlotDataMapRef& data, bool use_msg_stamp)
-    : MessageParser(topic_name, data), _use_message_stamp(use_msg_stamp)
+  NlohmannParser(const std::string& topic_name,
+                 PlotDataMapRef& data,
+                 bool use_msg_stamp,
+                 const std::string& stamp_fieldname)
+    : MessageParser(topic_name, data), _use_message_stamp(use_msg_stamp), _stamp_fieldname(stamp_fieldname)
   {
   }
 
@@ -21,13 +23,17 @@ protected:
 
   nlohmann::json _json;
   bool _use_message_stamp;
+  std::string _stamp_fieldname;
 };
 
 class JSON_Parser : public NlohmannParser
 {
 public:
-  JSON_Parser(const std::string& topic_name, PlotDataMapRef& data, bool use_msg_stamp)
-    : NlohmannParser(topic_name, data, use_msg_stamp)
+    JSON_Parser(const std::string& topic_name,
+                PlotDataMapRef& data,
+                bool use_msg_stamp,
+                const std::string& stamp_fieldname)
+    : NlohmannParser(topic_name, data, use_msg_stamp, stamp_fieldname)
   {
   }
 
@@ -37,8 +43,11 @@ public:
 class CBOR_Parser : public NlohmannParser
 {
 public:
-  CBOR_Parser(const std::string& topic_name, PlotDataMapRef& data, bool use_msg_stamp)
-    : NlohmannParser(topic_name, data, use_msg_stamp)
+    CBOR_Parser(const std::string& topic_name,
+                PlotDataMapRef& data,
+                bool use_msg_stamp,
+                const std::string& stamp_fieldname)
+    : NlohmannParser(topic_name, data, use_msg_stamp, stamp_fieldname)
   {
   }
 
@@ -48,8 +57,11 @@ public:
 class BSON_Parser : public NlohmannParser
 {
 public:
-  BSON_Parser(const std::string& topic_name, PlotDataMapRef& data, bool use_msg_stamp)
-    : NlohmannParser(topic_name, data, use_msg_stamp)
+    BSON_Parser(const std::string& topic_name,
+                PlotDataMapRef& data,
+                bool use_msg_stamp,
+                const std::string& stamp_fieldname)
+    : NlohmannParser(topic_name, data, use_msg_stamp, stamp_fieldname)
   {
   }
 
@@ -59,9 +71,11 @@ public:
 class MessagePack_Parser : public NlohmannParser
 {
 public:
-  MessagePack_Parser(const std::string& topic_name, PlotDataMapRef& data,
-                     bool use_msg_stamp)
-    : NlohmannParser(topic_name, data, use_msg_stamp)
+    MessagePack_Parser(const std::string& topic_name,
+                       PlotDataMapRef& data,
+                       bool use_msg_stamp,
+                       const std::string& stamp_fieldname)
+    : NlohmannParser(topic_name, data, use_msg_stamp, stamp_fieldname)
   {
   }
 
@@ -70,16 +84,29 @@ public:
 
 //------------------------------------------
 
-class QCheckBoxClose : public QCheckBox
+#include <QGroupBox>
+#include <QVBoxLayout>
+#include <QLineEdit>
+class QCheckBoxClose : public QGroupBox
 {
 public:
-  QCheckBoxClose(QString text) : QCheckBox(text)
+  QLineEdit *lineedit;
+  QGroupBox *groupbox;
+  QCheckBoxClose(QString text) : QGroupBox(text)
   {
+      QGroupBox::setCheckable(true);
+      QGroupBox::setChecked(false);
+      lineedit = new QLineEdit(this);
+      QVBoxLayout *vbox = new QVBoxLayout;
+      vbox->addSpacing(20);
+      vbox->addWidget(lineedit);
+      QGroupBox::setLayout(vbox);
   }
   ~QCheckBoxClose() override
   {
     qDebug() << "Destroying QCheckBoxClose";
   }
+
 };
 
 class NlohmannParserCreator : public MessageParserCreator
@@ -87,7 +114,8 @@ class NlohmannParserCreator : public MessageParserCreator
 public:
   NlohmannParserCreator()
   {
-    _checkbox_use_timestamp = new QCheckBoxClose("use field [timestamp] if available");
+    _checkbox_use_timestamp = new QCheckBoxClose("use field as timestamp if available");
+
   }
 
   virtual QWidget* optionsWidget()
@@ -96,7 +124,7 @@ public:
   }
 
 protected:
-  QCheckBox* _checkbox_use_timestamp;
+  QCheckBoxClose* _checkbox_use_timestamp;
 };
 
 class JSON_ParserCreator : public NlohmannParserCreator
@@ -105,8 +133,10 @@ public:
   MessageParserPtr createInstance(const std::string& topic_name,
                                   PlotDataMapRef& data) override
   {
+    std::string timestamp_name = _checkbox_use_timestamp->lineedit->text().toStdString();
     return std::make_shared<JSON_Parser>(topic_name, data,
-                                         _checkbox_use_timestamp->isChecked());
+                                         _checkbox_use_timestamp->isChecked(),
+                                         timestamp_name);
   }
   const char* name() const override
   {
@@ -120,8 +150,10 @@ public:
   MessageParserPtr createInstance(const std::string& topic_name,
                                   PlotDataMapRef& data) override
   {
+    std::string timestamp_name = _checkbox_use_timestamp->lineedit->text().toStdString();
     return std::make_shared<CBOR_Parser>(topic_name, data,
-                                         _checkbox_use_timestamp->isChecked());
+                                         _checkbox_use_timestamp->isChecked(),
+                                         timestamp_name);
   }
   const char* name() const override
   {
@@ -135,8 +167,10 @@ public:
   MessageParserPtr createInstance(const std::string& topic_name,
                                   PlotDataMapRef& data) override
   {
+    std::string timestamp_name = _checkbox_use_timestamp->lineedit->text().toStdString();
     return std::make_shared<BSON_Parser>(topic_name, data,
-                                         _checkbox_use_timestamp->isChecked());
+                                         _checkbox_use_timestamp->isChecked(),
+                                         timestamp_name);
   }
   const char* name() const override
   {
@@ -150,8 +184,10 @@ public:
   MessageParserPtr createInstance(const std::string& topic_name,
                                   PlotDataMapRef& data) override
   {
+    std::string timestamp_name = _checkbox_use_timestamp->lineedit->text().toStdString();
     return std::make_shared<MessagePack_Parser>(topic_name, data,
-                                                _checkbox_use_timestamp->isChecked());
+                                                _checkbox_use_timestamp->isChecked(),
+                                                timestamp_name);
   }
   const char* name() const override
   {

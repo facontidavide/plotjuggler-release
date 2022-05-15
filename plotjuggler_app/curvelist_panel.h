@@ -89,7 +89,7 @@ private:
 
   void updateTreeModel();
 
-  CurveTableView* _custom_view;
+  CurveTreeView* _custom_view;
   CurveTreeView* _tree_view;
   std::unordered_set<std::string> _tree_view_items;
 
