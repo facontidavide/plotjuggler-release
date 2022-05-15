@@ -4,12 +4,16 @@
 
 bool NlohmannParser::parseMessageImpl(double& timestamp)
 {
-  if (_use_message_stamp)
+  if (_use_message_stamp && _stamp_fieldname.empty() == false)
   {
-    auto ts = _json.find("timestamp");
+    auto ts = _json.find(_stamp_fieldname);
     if (ts != _json.end() && ts.value().is_number())
-    {
+    { 
       timestamp = ts.value().get<double>();
+    }
+    else
+    {
+      _use_message_stamp = false;
     }
   }
 

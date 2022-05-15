@@ -2,6 +2,35 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+3.4.4 (2022-05-15)
+------------------
+* fix issue `#561 <https://github.com/facontidavide/PlotJuggler/issues/561>`_
+* add STATUS to CmakeLists.txt message() to avoid 'message called with incorrect number of arguments' (`#649 <https://github.com/facontidavide/PlotJuggler/issues/649>`_)
+  cmake 3.22.1 errors on this
+* Passing CI on ROS2 Rolling (`#629 <https://github.com/facontidavide/PlotJuggler/issues/629>`_)
+  * fix ament-index-cpp dependency on ubuntu jammy
+  * add rolling ci
+* Modify install command and make it easier to install (`#620 <https://github.com/facontidavide/PlotJuggler/issues/620>`_)
+* Contributors: Davide Faconti, Kenji Brameld, Krishna, Lucas Walter
+
+3.4.3 (2022-03-06)
+------------------
+* Apply changes to reactive Scripts
+* improve reactive Scripts
+* clear selections when CustomSeries is created
+* save batch function settings
+* cleaning up `#601 <https://github.com/facontidavide/PlotJuggler/issues/601>`_
+* Timestampfield (`#601 <https://github.com/facontidavide/PlotJuggler/issues/601>`_)
+* add new batch editor
+* check validity of the Lua function
+* consolidate tree view
+* add missing files and use CurveTree
+* multifile prefix
+* ReactiveLuaFunction cleanup
+* adding absolute transform
+* small UI fix
+* Contributors: Davide Faconti, ngpbach
+
 3.4.2 (2022-02-12)
 ------------------
 * delete orhphaned transforms
