@@ -165,7 +165,7 @@ int main(int argc, char* argv[])
 #if !defined(COMPILED_WITH_CATKIN) && !defined(COMPILED_WITH_AMENT)
   for(int i=0; i<argc; i++)
   {
-    args.push_back( args[i] );
+    args.push_back( argv[i] );
   }
 #elif defined(COMPILED_WITH_CATKIN)
   ros::removeROSArgs(argc, argv, args);

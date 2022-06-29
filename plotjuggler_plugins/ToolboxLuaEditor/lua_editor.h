@@ -7,8 +7,11 @@
 #include "PlotJuggler/toolbox_base.h"
 #include "PlotJuggler/plotwidget_base.h"
 #include "PlotJuggler/reactive_function.h"
-#include "PlotJuggler/lua_highlighter.h"
 #include "PlotJuggler/util/delayed_callback.hpp"
+
+#include "QCodeEditor"
+#include "QLuaHighlighter"
+#include "QLuaCompleter"
 
 namespace Ui
 {
@@ -64,9 +67,7 @@ private:
   bool eventFilter(QObject *obj, QEvent *event) override;
   QStringList _dragging_curves;
 
-  LuaHighlighter* _global_highlighter;
-  LuaHighlighter* _function_highlighter;
-  LuaHighlighter* _helper_highlighter;
+  QLuaCompleter* _completer;
 
   int _font_size;
   DelayedCallback _delay_library_check;

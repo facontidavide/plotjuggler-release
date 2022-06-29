@@ -214,7 +214,13 @@ void DialogTransformEditor::on_listTransforms_itemSelectionChanged()
     {
       connect(ts->transform().get(), &TransformFunction::parametersChanged, this, [=]() {
         ts->updateCache(true);
-        _plotwidget->zoomOut(false);
+        if( ui->checkBoxAutoZoom->isChecked())
+        {
+          _plotwidget->zoomOut(false);
+        }
+        else{
+          _plotwidget->replot();
+        }
       });
       _connected_transform_widgets.insert(widget);
     }
