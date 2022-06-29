@@ -1,8 +1,25 @@
 #include "lua_custom_function.h"
+#include <QTextStream>
 
 LuaCustomFunction::LuaCustomFunction(SnippetData snippet) : CustomFunction(snippet)
 {
   initEngine();
+  {
+    QTextStream in(&snippet.global_vars);
+    while( !in.atEnd())
+    {
+        in.readLine();
+        global_lines_++;
+    }
+  }
+  {
+    QTextStream in(&snippet.function);
+    while( !in.atEnd())
+    {
+        in.readLine();
+        function_lines_++;
+    }
+  }
 }
 
 void LuaCustomFunction::initEngine()
@@ -16,7 +33,7 @@ void LuaCustomFunction::initEngine()
   if (!result.valid())
   {
     sol::error err = result;
-    throw std::runtime_error(std::string("Error in Global part:\n") + err.what());
+    throw std::runtime_error( getError(err) );
   }
 
   auto calcMethodStr = QString("function calc(time, value");
@@ -30,7 +47,7 @@ void LuaCustomFunction::initEngine()
   if (!result.valid())
   {
     sol::error err = result;
-    throw std::runtime_error(std::string("Error in Global part:\n") + err.what());
+    throw std::runtime_error( getError(err) );
   }
   _lua_function = _lua_engine["calc"];
 }
@@ -95,12 +112,13 @@ void LuaCustomFunction::calculatePoints(const std::vector<const PlotData*>& src_
                              v[8]);
       break;
     default:
-      throw std::runtime_error("Lua Engine : maximum number of additional source is 8");
+      throw std::runtime_error("Lua Engine: maximum number of additional data sources is 8");
   }
 
   if (!result.valid())
   {
-    throw std::runtime_error("Lua Engine : invalid function (missing variable?)");
+    sol::error err = result;
+    throw std::runtime_error( getError(err) );
   }
 
   if (result.return_count() == 2)
@@ -134,8 +152,8 @@ void LuaCustomFunction::calculatePoints(const std::vector<const PlotData*>& src_
   }
   else
   {
-    throw std::runtime_error("Lua Engine : return either a single value, two values "
-                             "(time, value) "
+    throw std::runtime_error("Wrong return object: expecting either a single value, "
+                             "two values (time, value) "
                              "or an array of two-sized arrays (time, value)");
   }
 }
@@ -145,4 +163,27 @@ bool LuaCustomFunction::xmlLoadState(const QDomElement& parent_element)
   bool ret = CustomFunction::xmlLoadState(parent_element);
   initEngine();
   return ret;
+}
+
+std::string LuaCustomFunction::getError(sol::error err)
+{
+  std::string out;
+  auto parts = QString(err.what()).split(":");
+
+  if( parts.size() < 3 )
+  {
+    return err.what();
+  }
+
+  bool is_function = parts[0].contains("[string \"function calc(time,");
+  out = is_function ? "[Function]: line " : "[Global]: line ";
+
+  int line_num = parts[1].toInt();
+  if( is_function )
+  {
+    line_num -= 1;
+  }
+  out += std::to_string(line_num) + ": ";
+  out += parts[2].toStdString();
+  return out;
 }
