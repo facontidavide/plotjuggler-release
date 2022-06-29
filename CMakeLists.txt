@@ -10,7 +10,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}  "${CMAKE_CURRENT_LIST_DIR}/cmake")
 add_definitions(
     -DPJ_MAJOR_VERSION="3"
     -DPJ_MINOR_VERSION="4"
-    -DPJ_PATCH_VERSION="4" )
+    -DPJ_PATCH_VERSION="5" )
 
 # You can add some command line arguments at compilation time
 # Use _0x3b_ instead of semicolon
@@ -145,6 +145,7 @@ include_directories(
     ./3rdparty/qwt/src
     ./3rdparty/sol
     ./3rdparty/lua-5.4.3/src
+    ./3rdparty/QCodeEditor/include
 )
 
 #########################  BASE library  ####################################
@@ -155,7 +156,6 @@ qt5_wrap_cpp(PLOTJUGGLER_BASE_MOCS
   plotjuggler_base/include/PlotJuggler/datastreamer_base.h
   plotjuggler_base/include/PlotJuggler/transform_function.h
   plotjuggler_base/include/PlotJuggler/plotwidget_base.h
-  plotjuggler_base/include/PlotJuggler/lua_highlighter.h
 )
 
 add_library( plotjuggler_base
@@ -169,7 +169,6 @@ add_library( plotjuggler_base
      plotjuggler_base/src/plotlegend.cpp
      plotjuggler_base/src/timeseries_qwt.cpp
      plotjuggler_base/src/reactive_function.cpp
-     plotjuggler_base/src/lua_highlighter.cpp
      )
 # target_link_libraries(plotjuggler_base plotjuggler_qwt)
 
@@ -213,7 +212,7 @@ install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/plotjuggler.svg
 
 
 add_subdirectory( 3rdparty/qwt/src )
-
+add_subdirectory( 3rdparty/QCodeEditor )
 
 install(
      TARGETS
@@ -222,9 +221,31 @@ install(
      LIBRARY DESTINATION lib
      ARCHIVE DESTINATION lib
      RUNTIME DESTINATION bin
-     INCLUDES DESTINATION include )
+     INCLUDES DESTINATION include)
 
 install(DIRECTORY plotjuggler_base/include/ DESTINATION include )
+
+set(CMAKECONFIG_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/lib/cmake/${PROJECT_NAME}")
+
+install(EXPORT export_plotjuggler_base 
+        FILE ${PROJECT_NAME}Targets.cmake
+        DESTINATION ${CMAKECONFIG_INSTALL_DIR} )
+
+export(PACKAGE ${PROJECT_NAME})
+
+include(CMakePackageConfigHelpers)
+
+set(PJ_INCLUDE_INSTALL_DIR include )
+
+configure_package_config_file(${PROJECT_NAME}Config.cmake.in
+        ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
+        INSTALL_DESTINATION ${CMAKECONFIG_INSTALL_DIR}
+        PATH_VARS CMAKE_INSTALL_PREFIX PJ_INCLUDE_INSTALL_DIR
+    )
+
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
+        DESTINATION ${CMAKECONFIG_INSTALL_DIR}
+    )
 
 ######################## Main App, Libraries amd Plugins ###################################
 
@@ -240,6 +261,7 @@ add_subdirectory( plotjuggler_app )
 
 add_subdirectory( plotjuggler_plugins/DataLoadCSV )
 add_subdirectory( plotjuggler_plugins/DataLoadULog )
+add_subdirectory( plotjuggler_plugins/DataLoadParquet )
 
 add_subdirectory( plotjuggler_plugins/DataStreamSample )
 add_subdirectory( plotjuggler_plugins/DataStreamWebsocket )

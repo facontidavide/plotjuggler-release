@@ -555,7 +555,7 @@
                 <number>0</number>
                </property>
                <item>
-                <widget class="QPlainTextEdit" name="globalVarsText">
+                <widget class="QCodeEditor" name="globalVarsText">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
                    <horstretch>0</horstretch>
@@ -572,7 +572,7 @@
                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Portion of code outside the function.&lt;/p&gt;&lt;p&gt;Usefull to add global variables.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                  </property>
                  <property name="placeholderText">
-                  <string>Declare your global variables here</string>
+                  <string>Add your global variables here</string>
                  </property>
                 </widget>
                </item>
@@ -584,7 +584,7 @@
                 </widget>
                </item>
                <item>
-                <widget class="QPlainTextEdit" name="functionText">
+                <widget class="QCodeEditor" name="functionText">
                  <property name="minimumSize">
                   <size>
                    <width>0</width>
@@ -595,7 +595,7 @@
                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Write your function implementation here. &lt;/p&gt;&lt;p&gt;It &lt;span style=&quot; font-weight:600;&quot;&gt;must&lt;/span&gt; return a new value. &lt;/p&gt;&lt;p&gt;The time used in the new time series will be the same.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                  </property>
                  <property name="placeholderText">
-                  <string>Declare your function here</string>
+                  <string>Write your function here</string>
                  </property>
                 </widget>
                </item>
@@ -622,7 +622,7 @@
          <property name="childrenCollapsible">
           <bool>false</bool>
          </property>
-         <widget class="QWidget" name="">
+         <widget class="QWidget" name="layoutWidget">
           <layout class="QVBoxLayout" name="verticalLayout_6">
            <property name="rightMargin">
             <number>10</number>
@@ -871,7 +871,7 @@
                <number>0</number>
               </property>
               <item>
-               <widget class="QPlainTextEdit" name="globalVarsTextBatch">
+               <widget class="QCodeEditor" name="globalVarsTextBatch">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
                   <horstretch>0</horstretch>
@@ -888,7 +888,7 @@
                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Portion of code outside the function.&lt;/p&gt;&lt;p&gt;Usefull to add global variables.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                 </property>
                 <property name="placeholderText">
-                 <string>Declare your global variables here</string>
+                 <string>Add your global variables here</string>
                 </property>
                </widget>
               </item>
@@ -900,7 +900,7 @@
                </widget>
               </item>
               <item>
-               <widget class="QPlainTextEdit" name="functionTextBatch">
+               <widget class="QCodeEditor" name="functionTextBatch">
                 <property name="minimumSize">
                  <size>
                   <width>0</width>
@@ -911,7 +911,7 @@
                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Write your function implementation here. &lt;/p&gt;&lt;p&gt;It &lt;span style=&quot; font-weight:600;&quot;&gt;must&lt;/span&gt; return a new value. &lt;/p&gt;&lt;p&gt;The time used in the new time series will be the same.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                 </property>
                 <property name="placeholderText">
-                 <string>Declare your function here</string>
+                 <string>Write your function here</string>
                 </property>
                </widget>
               </item>
@@ -974,6 +974,13 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QCodeEditor</class>
+   <extends>QTextEdit</extends>
+   <header location="global">QCodeEditor</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

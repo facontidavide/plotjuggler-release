@@ -10,8 +10,10 @@
 #include "qwt_plot_curve.h"
 #include "ui_function_editor.h"
 #include "plotwidget.h"
-#include "PlotJuggler/lua_highlighter.h"
 #include "PlotJuggler/util/delayed_callback.hpp"
+
+#include "QLuaCompleter"
+#include "QSyntaxStyle"
 
 class FunctionEditorWidget : public QWidget
 {
@@ -129,10 +131,11 @@ private slots:
 
   EditorMode _editor_mode;
 
-  LuaHighlighter* _global_highlighter;
-  LuaHighlighter* _function_highlighter;
-  LuaHighlighter* _global_highlighter_batch;
-  LuaHighlighter* _function_highlighter_batch;
+  QLuaCompleter* lua_completer_;
+  QLuaCompleter* lua_completer_batch_;
+
+  QSyntaxStyle* light_style_ = nullptr;
+  QSyntaxStyle* dark_style_ = nullptr;
 
   DelayedCallback _tab2_filter;
 
