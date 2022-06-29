@@ -104,6 +104,7 @@ target_link_libraries(plotjuggler
     qt_advanced_docking
     plotjuggler_base
     plotjuggler_qwt
+    QCodeEditor
     )
 
 if(COMPILING_WITH_CATKIN)
@@ -118,7 +119,7 @@ if(COMPILING_WITH_CATKIN)
 
 elseif(COMPILING_WITH_AMENT)
 
-    target_link_libraries(plotjuggler ${ament_index_cpp_LIBRARIES} )
+    ament_target_dependencies(plotjuggler ament_index_cpp rclcpp)
 
     install(TARGETS plotjuggler
         DESTINATION lib/${PROJECT_NAME} )
