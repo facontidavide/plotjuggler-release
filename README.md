@@ -1,10 +1,10 @@
 ![PlotJuggler](docs/plotjuggler3_banner.svg)
 
-
+[![cmake](https://github.com/facontidavide/PlotJuggler/actions/workflows/cmake.yaml/badge.svg)](https://github.com/facontidavide/PlotJuggler/actions/workflows/cmake.yaml)
 [![CI](https://github.com/facontidavide/PlotJuggler/workflows/ros1/badge.svg)](https://github.com/facontidavide/PlotJuggler/actions?query=workflow%3Aros1)
 [![CI](https://github.com/facontidavide/PlotJuggler/workflows/ros2/badge.svg)](https://github.com/facontidavide/PlotJuggler/actions?query=workflow%3Aros2)
-[![Join the chat at https://gitter.im/PlotJuggler/Lobby](https://badges.gitter.im/PlotJuggler/Lobby.svg)](https://gitter.im/PlotJuggler/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) 
 [![Tweet](https://img.shields.io/twitter/url/http/shields.io.svg?style=social)](https://twitter.com/intent/tweet?text=I%20use%20PlotJuggler%20and%20it%20is%20amazing%0D%0A&url=https://github.com/facontidavide/PlotJuggler&via=facontidavide&hashtags=dataviz,plotjuggler,GoROS,PX4)
+
 **Gold Sponsor**: [Greenzie](https://www.greenzie.com/)
 
 # PlotJuggler 3.4
@@ -52,7 +52,7 @@ If you are not familiar with Lua, don't be afraid, you won't need more than 5 mi
 
 ## Tutorials
 
-To learns how to use PlotJuggler, check the tutorials here:
+To learn how to use PlotJuggler, check the tutorials here:
 
 | Tutorial 1   |  Tutorial 2 | Tutorial 3 |
 :-------------------------:|:-------------------------:|:-------------------------:
