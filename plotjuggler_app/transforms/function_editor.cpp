@@ -27,6 +27,8 @@
 #include <QListWidgetItem>
 #include <QSyntaxHighlighter>
 
+#include "QLuaHighlighter"
+
 #include "lua_custom_function.h"
 #include "PlotJuggler/svg_util.h"
 #include "ui_function_editor_help.h"
@@ -38,10 +40,13 @@ void FunctionEditorWidget::on_stylesheetChanged(QString theme)
   ui->buttonSaveFunctions->setIcon(LoadSvg(":/resources/svg/export.svg", theme));
   ui->buttonSaveCurrent->setIcon(LoadSvg(":/resources/svg/save.svg", theme));
 
-  _global_highlighter->setTheme(theme);
-  _function_highlighter->setTheme(theme);
-  _global_highlighter_batch->setTheme(theme);
-  _function_highlighter_batch->setTheme(theme);
+  auto style = ( theme == "light" ) ? light_style_ : dark_style_;
+
+  ui->globalVarsText->setSyntaxStyle( style );
+  ui->globalVarsTextBatch->setSyntaxStyle( style );
+
+  ui->functionText->setSyntaxStyle( style );
+  ui->functionTextBatch->setSyntaxStyle( style );
 }
 
 FunctionEditorWidget::FunctionEditorWidget(PlotDataMapRef& plotMapData,
@@ -56,11 +61,20 @@ FunctionEditorWidget::FunctionEditorWidget(PlotDataMapRef& plotMapData,
 {
   ui->setupUi(this);
 
-  _global_highlighter = new LuaHighlighter( ui->globalVarsText->document() );
-  _function_highlighter = new LuaHighlighter( ui->functionText->document() );
+  ui->globalVarsText->setHighlighter( new QLuaHighlighter );
+  ui->globalVarsTextBatch->setHighlighter( new QLuaHighlighter );
 
-  _global_highlighter_batch = new LuaHighlighter( ui->globalVarsTextBatch->document() );
-  _function_highlighter_batch = new LuaHighlighter( ui->functionTextBatch->document() );
+  ui->functionText->setHighlighter( new QLuaHighlighter );
+  ui->functionTextBatch->setHighlighter( new QLuaHighlighter );
+
+  lua_completer_ = new QLuaCompleter(this);
+  lua_completer_batch_ = new QLuaCompleter(this);
+
+  ui->globalVarsText->setCompleter( lua_completer_ );
+  ui->globalVarsTextBatch->setCompleter( lua_completer_ );
+
+  ui->functionText->setCompleter( lua_completer_batch_ );
+  ui->functionTextBatch->setCompleter( lua_completer_batch_ );
 
   QSettings settings;
 
@@ -74,6 +88,23 @@ FunctionEditorWidget::FunctionEditorWidget(PlotDataMapRef& plotMapData,
   ui->globalVarsTextBatch->setFont(fixedFont);
   ui->functionTextBatch->setFont(fixedFont);
   ui->snippetPreview->setFont(fixedFont);
+
+  auto loadStyle = [this](const char* path) -> QSyntaxStyle*
+  {
+      QFile fl(path);
+      QSyntaxStyle* style = nullptr;
+      if (fl.open(QIODevice::ReadOnly))
+      {
+         style = new QSyntaxStyle(this);
+         if (!style->load(fl.readAll()))
+         {
+           delete style;
+         }
+      }
+      return style;
+  };
+  light_style_ = loadStyle(":/resources/lua_style_light.xml");
+  dark_style_ = loadStyle(":/resources/lua_style_dark.xml");
 
   auto theme = settings.value("StyleSheet::theme", "light").toString();
   on_stylesheetChanged(theme);
@@ -149,6 +180,7 @@ FunctionEditorWidget::FunctionEditorWidget(PlotDataMapRef& plotMapData,
 
   bool use_batch_prefix = settings.value("FunctionEditorWidget.batchPrefix", false).toBool();
   ui->radioButtonPrefix->setChecked( use_batch_prefix );
+
 }
 
 void FunctionEditorWidget::saveSettings()
@@ -797,9 +829,9 @@ void FunctionEditorWidget::onUpdatePreview()
     lua_function = std::make_unique<LuaCustomFunction>(snippet);
     ui->buttonSaveCurrent->setEnabled(true);
   }
-  catch (...)
+  catch (std::runtime_error& err)
   {
-    errors += "- The Lua function is not valid.\n";
+    errors += QString("- Error in Lua script: %1").arg(err.what());
     ui->buttonSaveCurrent->setEnabled(false);
   }
 
@@ -819,9 +851,9 @@ void FunctionEditorWidget::onUpdatePreview()
       _preview_widget->addCurve(name, Qt::blue);
       _preview_widget->zoomOut(false);
     }
-    catch (...)
+    catch (std::runtime_error& err)
     {
-      errors += "- The Lua function can not compute the result.\n";
+      errors += QString("- Error in Lua script: %1").arg(err.what());
     }
   }
 
@@ -850,9 +882,9 @@ void FunctionEditorWidget::onUpdatePreviewBatch()
   {
     auto lua_function = std::make_unique<LuaCustomFunction>(snippet);
   }
-  catch (...)
+  catch (std::runtime_error& err)
   {
-    errors += "- The Lua function is not valid.\n";
+    errors += QString("- Error in Lua script: %1").arg(err.what());
   }
 
   setSemaphore( ui->labelSemaphoreBatch, errors );
