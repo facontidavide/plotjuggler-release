@@ -30,6 +30,7 @@ if(MOSQUITTO_FOUND)
         ${Qt5Widgets_LIBRARIES}
         ${MOSQUITTO_LIBRARIES}
         Qt5::Network
+        Qt5::Svg
         plotjuggler_base
         )
     target_include_directories(DataStreamMQTT_Mosquitto
