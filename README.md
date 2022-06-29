@@ -1,3 +1,26 @@
+## plotjuggler (galactic) - 3.4.5-1
+
+The packages in the `plotjuggler` repository were released into the `galactic` distro by running `/usr/bin/bloom-release --rosdistro galactic -y plotjuggler` on `Wed, 29 Jun 2022 10:21:22 -0000`
+
+The `plotjuggler` package was released.
+
+Version of package(s) in repository `plotjuggler`:
+
+- upstream repository: https://github.com/facontidavide/PlotJuggler.git
+- release repository: https://github.com/facontidavide/plotjuggler-release.git
+- rosdistro version: `3.4.4-1`
+- old version: `3.4.4-1`
+- new version: `3.4.5-1`
+
+Versions of tools used:
+
+- bloom version: `0.11.1`
+- catkin_pkg version: `0.5.2`
+- rosdep version: `0.21.0`
+- rosdistro version: `0.8.3`
+- vcstools version: `0.1.42`
+
+
 ## plotjuggler (foxy) - 3.4.5-1
 
 The packages in the `plotjuggler` repository were released into the `foxy` distro by running `/usr/bin/bloom-release --rosdistro foxy -y plotjuggler` on `Wed, 29 Jun 2022 10:18:48 -0000`
