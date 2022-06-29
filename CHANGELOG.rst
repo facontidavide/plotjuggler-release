@@ -2,6 +2,33 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+3.4.5 (2022-06-29)
+------------------
+* fix compilation
+* add QCodeEditor
+* CI: cmake ubuntu/Windows
+* Fix CSV generated time axis. (`#666 <https://github.com/facontidavide/PlotJuggler/issues/666>`_)
+  Previously the CSV dataload plugin was not saving the correct XML state
+  when a generated time axis was used.
+* Added support for converted int types (`#673 <https://github.com/facontidavide/PlotJuggler/issues/673>`_)
+  * Added support for converted int types
+  * Added fallback for int32 and int64
+  Co-authored-by: Rano Veder <r.veder@primevision.com>
+* Add tooltip to the zoom out button (`#670 <https://github.com/facontidavide/PlotJuggler/issues/670>`_)
+* PlotJuggler will generate its own cmake target
+* Parquet plugin (`#664 <https://github.com/facontidavide/PlotJuggler/issues/664>`_)
+* fix Cancel button in CSV loader (`#659 <https://github.com/facontidavide/PlotJuggler/issues/659>`_)
+* Make tutorial link open in browser when clicked (`#660 <https://github.com/facontidavide/PlotJuggler/issues/660>`_)
+  Similar to https://github.com/facontidavide/PlotJuggler/pull/658 but applied to the tutorial link in the reactive lua editor
+* accept white lines in CSV
+* Update README.md (`#661 <https://github.com/facontidavide/PlotJuggler/issues/661>`_)
+* Make link open in browser when clicked (`#658 <https://github.com/facontidavide/PlotJuggler/issues/658>`_)
+  Set openExternalLinks property of label_4 to true to allow the hyperlink to open in a web browser when clicked
+* Fix  `#655 <https://github.com/facontidavide/PlotJuggler/issues/655>`_. Add autoZoom to transform dialog
+* Rememvber CSV time column. Cherry picking from `#657 <https://github.com/facontidavide/PlotJuggler/issues/657>`_.
+* fix `#650 <https://github.com/facontidavide/PlotJuggler/issues/650>`_
+* Contributors: Andrew Goessling, Bartimaeus-, Davide Faconti, Konstantinos Lyrakis, Rano Veder, Zach Davis
+
 3.4.4 (2022-05-15)
 ------------------
 * fix issue `#561 <https://github.com/facontidavide/PlotJuggler/issues/561>`_
