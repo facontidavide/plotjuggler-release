@@ -295,5 +295,7 @@
         <file>resources/memes/meme_70.jpg</file>
         <file>resources/memes/meme_71.jpg</file>
         <file>resources/svg/zoom_in.svg</file>
+        <file>resources/lua_style_dark.xml</file>
+        <file>resources/lua_style_light.xml</file>
     </qresource>
 </RCC>
