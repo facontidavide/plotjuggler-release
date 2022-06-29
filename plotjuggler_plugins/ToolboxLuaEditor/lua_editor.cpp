@@ -11,6 +11,8 @@
 #include "PlotJuggler/reactive_function.h"
 #include "PlotJuggler/svg_util.h"
 
+#include "QSyntaxStyle"
+
 ToolboxLuaEditor::ToolboxLuaEditor()
 {
   _widget = new QWidget(nullptr);
@@ -54,7 +56,7 @@ ToolboxLuaEditor::ToolboxLuaEditor()
     onLibraryUpdated();
   } );
 
-  connect(ui->textLibrary, &QPlainTextEdit::textChanged,
+  connect(ui->textLibrary, &QTextEdit::textChanged,
           [this]() {
             _delay_library_check.triggerSignal(250); }
           );
@@ -65,9 +67,15 @@ ToolboxLuaEditor::ToolboxLuaEditor()
   connect(ui->pushButtonApplyLibrary, &QPushButton::clicked,
           this, &ToolboxLuaEditor::onReloadLibrary);
 
-  _global_highlighter = new LuaHighlighter( ui->textGlobal->document() );
-  _function_highlighter = new LuaHighlighter( ui->textFunction->document() );
-  _helper_highlighter = new LuaHighlighter( ui->textLibrary->document() );
+
+  ui->textGlobal->setHighlighter( new QLuaHighlighter );
+  ui->textFunction->setHighlighter( new QLuaHighlighter );
+  ui->textLibrary->setHighlighter( new QLuaHighlighter );
+
+  _completer = new QLuaCompleter(this);
+  ui->textGlobal->setCompleter( _completer );
+  ui->textFunction->setCompleter( _completer );
+  ui->textLibrary->setCompleter( _completer );
 
   // restore recent functions
   QSettings settings;
@@ -227,6 +235,21 @@ bool ToolboxLuaEditor::onShowWidget()
   ui->textGlobal->setFont( fixedFont );
   ui->textFunction->setFont( fixedFont );
   ui->textLibrary->setFont( fixedFont );
+
+  auto style_path = (theme == "light" ) ? ":/resources/lua_style_light.xml" :
+                                          ":/resources/lua_style_dark.xml";
+
+  QFile fl(style_path);
+  if (fl.open(QIODevice::ReadOnly))
+  {
+    auto style = new QSyntaxStyle(this);
+    if (style->load(fl.readAll()))
+    {
+      ui->textGlobal->setSyntaxStyle( style );
+      ui->textFunction->setSyntaxStyle( style );
+      ui->textLibrary->setSyntaxStyle( style );
+    }
+  }
 
   return true;
 }

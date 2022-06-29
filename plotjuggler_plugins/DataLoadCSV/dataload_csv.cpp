@@ -7,6 +7,7 @@
 #include <QProgressDialog>
 #include <QDateTime>
 #include <QInputDialog>
+#include <QPushButton>
 
 const int TIME_INDEX_NOT_DEFINED = -2;
 const int TIME_INDEX_GENERATED = -1;
@@ -91,16 +92,18 @@ DataLoadCSV::DataLoadCSV()
   _ui = new Ui::DialogCSV();
   _ui->setupUi(_dialog);
 
+  _ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
+
   connect(_ui->radioButtonSelect, &QRadioButton::toggled, this, [this](bool checked) {
     _ui->listWidgetSeries->setEnabled(checked);
     auto selected = _ui->listWidgetSeries->selectionModel()->selectedIndexes();
     bool box_enabled = !checked || selected.size() == 1;
-    _ui->buttonBox->setEnabled(box_enabled);
+    _ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(box_enabled);
   });
   connect(_ui->listWidgetSeries, &QListWidget::itemSelectionChanged, this, [this]() {
     auto selected = _ui->listWidgetSeries->selectionModel()->selectedIndexes();
     bool box_enabled = _ui->radioButtonIndex->isChecked() || selected.size() == 1;
-    _ui->buttonBox->setEnabled(box_enabled);
+    _ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(box_enabled);
   });
 
   connect(_ui->listWidgetSeries, &QListWidget::itemDoubleClicked, this,
@@ -306,6 +309,16 @@ int DataLoadCSV::launchDialog(QFile& file, std::vector<std::string>* column_name
   // parse the header once and launch the dialog
   parseHeader(file, *column_names);
 
+  QString previous_index = settings.value("DataLoadCSV.timeIndex", "").toString();
+  if (previous_index.isEmpty() == false)
+  {
+    auto items = _ui->listWidgetSeries->findItems(previous_index, Qt::MatchExactly);
+    if( items.size() > 0 )
+    {
+      _ui->listWidgetSeries->setCurrentItem(items.front());
+    }
+  }
+
   int res = _dialog->exec();
 
   settings.setValue("DataLoadCSV.geometry", _dialog->saveGeometry());
@@ -323,10 +336,13 @@ int DataLoadCSV::launchDialog(QFile& file, std::vector<std::string>* column_name
     return TIME_INDEX_GENERATED;
   }
 
-  QModelIndexList indexes = _ui->listWidgetSeries->selectionModel()->selectedIndexes();
+  QModelIndexList indexes = _ui->listWidgetSeries->selectionModel()->selectedRows();
   if (indexes.size() == 1)
   {
-    return indexes.front().row();
+    int row = indexes.front().row();
+    auto item = _ui->listWidgetSeries->item(row);
+    settings.setValue("DataLoadCSV.timeIndex", item->text());
+    return row;
   }
 
   return TIME_INDEX_NOT_DEFINED;
@@ -457,6 +473,12 @@ bool DataLoadCSV::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_data
     QString line = in.readLine();
     SplitLine(line, _delimiter, string_items);
 
+    // empty line? just try skipping
+    if(string_items.size() == 0)
+    {
+      continue;
+    }
+
     if (string_items.size() != column_names.size())
     {
       auto err_msg = QString("The number of values at line %1 is %2,\n"
@@ -536,6 +558,9 @@ bool DataLoadCSV::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_data
   if (time_index >= 0)
   {
     _default_time_axis = column_names[time_index];
+  } else if (time_index == TIME_INDEX_GENERATED)
+  {
+    _default_time_axis = "__TIME_INDEX_GENERATED__";
   }
 
   // cleanups
