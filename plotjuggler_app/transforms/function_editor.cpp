@@ -32,6 +32,7 @@
 #include "lua_custom_function.h"
 #include "PlotJuggler/svg_util.h"
 #include "ui_function_editor_help.h"
+#include "stylesheet.h"
 
 void FunctionEditorWidget::on_stylesheetChanged(QString theme)
 {
@@ -40,7 +41,7 @@ void FunctionEditorWidget::on_stylesheetChanged(QString theme)
   ui->buttonSaveFunctions->setIcon(LoadSvg(":/resources/svg/export.svg", theme));
   ui->buttonSaveCurrent->setIcon(LoadSvg(":/resources/svg/save.svg", theme));
 
-  auto style = ( theme == "light" ) ? light_style_ : dark_style_;
+  auto style = GetLuaSyntaxStyle(theme);
 
   ui->globalVarsText->setSyntaxStyle( style );
   ui->globalVarsTextBatch->setSyntaxStyle( style );
@@ -88,23 +89,6 @@ FunctionEditorWidget::FunctionEditorWidget(PlotDataMapRef& plotMapData,
   ui->globalVarsTextBatch->setFont(fixedFont);
   ui->functionTextBatch->setFont(fixedFont);
   ui->snippetPreview->setFont(fixedFont);
-
-  auto loadStyle = [this](const char* path) -> QSyntaxStyle*
-  {
-      QFile fl(path);
-      QSyntaxStyle* style = nullptr;
-      if (fl.open(QIODevice::ReadOnly))
-      {
-         style = new QSyntaxStyle(this);
-         if (!style->load(fl.readAll()))
-         {
-           delete style;
-         }
-      }
-      return style;
-  };
-  light_style_ = loadStyle(":/resources/lua_style_light.xml");
-  dark_style_ = loadStyle(":/resources/lua_style_dark.xml");
 
   auto theme = settings.value("StyleSheet::theme", "light").toString();
   on_stylesheetChanged(theme);

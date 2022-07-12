@@ -1,3 +1,9 @@
+/*
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ */
+
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
@@ -268,6 +274,8 @@ private slots:
   void on_pushButtonLoadLayout_clicked();
   void on_pushButtonSaveLayout_clicked();
   void on_pushButtonLoadDatafile_clicked();
+
+  void on_actionColorMap_Editor_triggered();
 
 private:
   QStringList readAllCurvesFromXML(QDomElement root_node);
