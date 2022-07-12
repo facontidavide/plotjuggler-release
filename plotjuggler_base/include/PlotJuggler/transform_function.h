@@ -1,4 +1,11 @@
-#pragma once
+/*
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ */
+
+#ifndef PJ_TRANSFORM_FUNCTION_H
+#define PJ_TRANSFORM_FUNCTION_H
 
 #include <QApplication>
 #include <set>
@@ -156,3 +163,5 @@ Q_DECLARE_INTERFACE(PJ::TransformFunction, TransformFunction_iid)
 Q_DECLARE_INTERFACE(PJ::TransformFunction_SISO, TransformFunctionSISO_iid)
 
 QT_END_NAMESPACE
+
+#endif

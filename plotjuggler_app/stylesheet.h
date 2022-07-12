@@ -1,3 +1,9 @@
+/*
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ */
+
 #ifndef STYLESHEET_H
 #define STYLESHEET_H
 
@@ -6,6 +12,9 @@
 #include <QColor>
 #include <QSettings>
 #include <QApplication>
+#include <QFile>
+
+#include "QSyntaxStyle"
 
 inline QString SetApplicationStyleSheet(QString style)
 {
@@ -75,6 +84,32 @@ inline QString SetApplicationStyleSheet(QString style)
   dynamic_cast<QApplication*>(QCoreApplication::instance())->setStyleSheet(out);
 
   return palette["theme"];
+}
+
+
+inline QSyntaxStyle* GetLuaSyntaxStyle(QString theme)
+{
+  auto loadStyle = [](const char* path) -> QSyntaxStyle*
+  {
+    QFile fl(path);
+    QSyntaxStyle* style = nullptr;
+    if (fl.open(QIODevice::ReadOnly))
+    {
+      style = new QSyntaxStyle();
+      if (!style->load(fl.readAll()))
+      {
+        delete style;
+      }
+    }
+    return style;
+  };
+
+  static QSyntaxStyle* style[2] = {
+    loadStyle(":/resources/lua_style_light.xml"),
+    loadStyle(":/resources/lua_style_dark.xml")
+  };
+
+  return theme == "light" ? style[0] : style[1];
 }
 
 #endif  // STYLESHEET_H
