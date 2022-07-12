@@ -297,5 +297,6 @@
         <file>resources/svg/zoom_in.svg</file>
         <file>resources/lua_style_dark.xml</file>
         <file>resources/lua_style_light.xml</file>
+        <file>resources/svg/color_background.svg</file>
     </qresource>
 </RCC>

@@ -16,6 +16,9 @@ QT5_WRAP_UI ( UI_SRC
     suggest_dialog.ui
     new_release_dialog.ui
     multifile_prefix.ui
+    colormap_editor.ui
+    colormap_selector.ui
+    statistics_dialog.ui
 
     plot_docker_toolbar.ui
     plotwidget_editor.ui
@@ -39,7 +42,10 @@ SET( PLOtJUGGLER_SRC
 
     customtracker.cpp
     multifile_prefix.cpp
+    colormap_editor.cpp
+    colormap_selector.cpp
 
+    color_map.cpp
     curvelist_panel.cpp
     curvelist_view.cpp
     curvetree_view.cpp
@@ -54,10 +60,12 @@ SET( PLOtJUGGLER_SRC
     plotwidget_editor.cpp
     plotwidget_transforms.cpp
     plot_docker.cpp
-#    plotmagnifier.cpp
+    plot_docker_toolbar.cpp
     preferences_dialog.cpp
     point_series_xy.cpp
 #    plotzoomer.cpp
+    plot_background.cpp
+    statistics_dialog.cpp
 
     suggest_dialog.cpp
 #    timeseries_qwt.cpp
