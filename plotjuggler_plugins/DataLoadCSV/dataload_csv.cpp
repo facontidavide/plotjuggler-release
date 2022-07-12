@@ -8,6 +8,10 @@
 #include <QDateTime>
 #include <QInputDialog>
 #include <QPushButton>
+#include "QSyntaxStyle"
+
+
+#include <QStandardItemModel>
 
 const int TIME_INDEX_NOT_DEFINED = -2;
 const int TIME_INDEX_GENERATED = -1;
@@ -86,6 +90,7 @@ DataLoadCSV::DataLoadCSV()
 {
   _extensions.push_back("csv");
   _delimiter = ',';
+  _csvHighlighter.delimiter = _delimiter;
   // setup the dialog
 
   _dialog = new QDialog();
@@ -112,8 +117,17 @@ DataLoadCSV::DataLoadCSV()
   connect(_ui->checkBoxDateFormat, &QCheckBox::toggled, this,
           [this](bool checked) { _ui->lineEditDateFormat->setEnabled(checked); });
 
+  _ui->rawText->setHighlighter(&_csvHighlighter);
+
+  QSizePolicy sp_retain = _ui->tableView->sizePolicy();
+  sp_retain.setRetainSizeWhenHidden(true);
+  _ui->tableView->setSizePolicy(sp_retain);
+
   _ui->splitter->setStretchFactor(0, 1);
   _ui->splitter->setStretchFactor(1, 2);
+
+  _model = new QStandardItemModel;
+  _ui->tableView->setModel(_model);
 }
 
 DataLoadCSV::~DataLoadCSV()
@@ -130,6 +144,8 @@ const std::vector<const char*>& DataLoadCSV::compatibleFileExtensions() const
 void DataLoadCSV::parseHeader(QFile& file, std::vector<std::string>& column_names)
 {
   file.open(QFile::ReadOnly);
+
+  _csvHighlighter.delimiter = _delimiter;
 
   column_names.clear();
   _ui->listWidgetSeries->clear();
@@ -221,25 +237,44 @@ void DataLoadCSV::parseHeader(QFile& file, std::vector<std::string>& column_name
     }
   }
 
+  QStringList column_labels;
   for (const auto& name : column_names)
   {
-    _ui->listWidgetSeries->addItem(QString::fromStdString(name));
+    auto qname = QString::fromStdString( name );
+    _ui->listWidgetSeries->addItem( qname );
+    column_labels.push_back( qname );
   }
+  _model->setColumnCount(column_labels.size());
+  _model->setHorizontalHeaderLabels(column_labels);
 
-  int linecount = 1;
-  while (!inA.atEnd())
+  QStringList lines;
+
+  for( int row = 0; row <= 100 && !inA.atEnd(); row ++)
   {
     auto line = inA.readLine();
-    if (linecount++ < 100)
+    preview_lines += line + "\n";
+    lines.push_back( line );
+  }
+
+  _model->setRowCount( lines.count() );
+  for(int row = 0; row < lines.count(); row ++)
+  {
+    QVector<QStringRef> lineToken = lines[row].splitRef(_delimiter);
+    for (int j = 0; j < lineToken.size(); j++)
     {
-      preview_lines += line + "\n";
-    }
-    else
-    {
-      break;
+      QString value = lineToken[j].toString();
+      if( auto item = _model->item(row, j) )
+      {
+        item->setText(value);
+      }
+      else{
+        _model->setItem(row, j, new QStandardItem(value));
+      }
     }
   }
+
   _ui->rawText->setPlainText(preview_lines);
+  _ui->tableView->resizeColumnsToContents();
 
   file.close();
 }
@@ -247,6 +282,7 @@ void DataLoadCSV::parseHeader(QFile& file, std::vector<std::string>& column_name
 int DataLoadCSV::launchDialog(QFile& file, std::vector<std::string>* column_names)
 {
   column_names->clear();
+  _ui->tabWidget->setCurrentIndex(0);
 
   QSettings settings;
   _dialog->restoreGeometry(settings.value("DataLoadCSV.geometry").toByteArray());
@@ -286,6 +322,21 @@ int DataLoadCSV::launchDialog(QFile& file, std::vector<std::string>* column_name
     file.close();
   }
 
+
+  QString theme = settings.value("StyleSheet::theme", "light").toString();
+  auto style_path = (theme == "light" ) ? ":/resources/lua_style_light.xml" :
+                                          ":/resources/lua_style_dark.xml";
+
+  QFile fl(style_path);
+  if (fl.open(QIODevice::ReadOnly))
+  {
+    auto style = new QSyntaxStyle(this);
+    if (style->load(fl.readAll()))
+    {
+      _ui->rawText->setSyntaxStyle( style );
+    }
+  }
+
   // temporary connection
   std::unique_ptr<QObject> pcontext(new QObject);
   QObject* context = pcontext.get();
@@ -303,6 +354,7 @@ int DataLoadCSV::launchDialog(QFile& file, std::vector<std::string>* column_name
                          _delimiter = ' ';
                          break;
                      }
+                     _csvHighlighter.delimiter = _delimiter;
                      parseHeader(file, *column_names);
                    });
 

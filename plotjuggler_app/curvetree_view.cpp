@@ -1,9 +1,17 @@
+/*
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ */
+
 #include "curvetree_view.h"
 #include "curvelist_panel.h"
 #include <QFontDatabase>
 #include <QObject>
 #include <QDebug>
 #include <QToolTip>
+#include <QKeySequence>
+#include <QClipboard>
 
 class TreeWidgetItem : public QTreeWidgetItem
 {
@@ -66,7 +74,13 @@ void CurveTreeView::addItem(const QString& group_name,
                             const QString& tree_name,
                             const QString& plot_ID)
 {
-  QSettings settings;
+  QSettings settings;/*
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ */
+
+
   bool use_separator = settings.value("Preferences::use_separator", true).toBool();
 
   QStringList parts;
@@ -346,6 +360,19 @@ void CurveTreeView::treeVisitor(std::function<void(QTreeWidgetItem*)> visitor)
   for (int c = 0; c < invisibleRootItem()->childCount(); c++)
   {
     recursiveFunction(invisibleRootItem()->child(c));
+  }
+}
+
+void CurveTreeView::keyPressEvent(QKeyEvent *event)
+{
+  if(event->matches(QKeySequence::Copy))
+  {
+    auto selected = selectedItems();
+    if (selected.size() > 0)
+    {
+      QClipboard *clipboard = QApplication::clipboard();
+      clipboard->setText( selected.front()->data(0, Name).toString() );
+    }
   }
 }
 

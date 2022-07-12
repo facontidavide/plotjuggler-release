@@ -9,8 +9,8 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}  "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
 add_definitions(
     -DPJ_MAJOR_VERSION="3"
-    -DPJ_MINOR_VERSION="4"
-    -DPJ_PATCH_VERSION="5" )
+    -DPJ_MINOR_VERSION="5"
+    -DPJ_PATCH_VERSION="0" )
 
 # You can add some command line arguments at compilation time
 # Use _0x3b_ instead of semicolon

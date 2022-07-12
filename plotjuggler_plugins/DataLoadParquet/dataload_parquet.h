@@ -49,5 +49,5 @@ private:
 
   std::unique_ptr<parquet::ParquetFileReader> parquet_reader_;
 
-  void setupDialog(QDialog* dialog);
+  QDialog* _dialog;
 };

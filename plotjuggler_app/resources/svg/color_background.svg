@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   id="svg1"
+   sodipodi:docname="color_background.svg"
+   viewBox="0 0 100 100"
+   sodipodi:version="0.32"
+   _SVGFile__filename="oldscale/actions/checkedbox.svg"
+   version="1.0"
+   y="0"
+   x="0"
+   inkscape:version="1.2 (1:1.2+202206011327+fc4e4096c5)"
+   width="100"
+   height="100"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <defs
+     id="defs1242" />
+  <sodipodi:namedview
+     id="base"
+     bordercolor="#666666"
+     inkscape:pageshadow="2"
+     inkscape:window-y="34"
+     pagecolor="#ffffff"
+     inkscape:window-height="1369"
+     inkscape:zoom="3.6908545"
+     inkscape:window-x="2008"
+     borderopacity="1.0"
+     inkscape:current-layer="svg1"
+     inkscape:cx="7.992729"
+     inkscape:cy="74.643961"
+     inkscape:window-width="2472"
+     inkscape:pageopacity="0.0000000"
+     inkscape:document-rotation="0"
+     showgrid="false"
+     inkscape:window-maximized="1"
+     inkscape:pagecheckerboard="true"
+     inkscape:showpageshadow="2"
+     inkscape:deskcolor="#d1d1d1" />
+  <rect
+     style="fill:#76e0ff;fill-opacity:1;stroke:none;stroke-width:0.0404016;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none"
+     id="rect250"
+     width="46.334305"
+     height="89.944237"
+     x="3.6457944"
+     y="5.035862" />
+  <rect
+     style="fill:#f7a8ff;fill-opacity:1;stroke:none;stroke-width:0.0404066;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none"
+     id="rect250-3"
+     width="46.26157"
+     height="90.108101"
+     x="50.019901"
+     y="4.8719978"
+     ry="0" />
+  <g
+     id="g1100-3"
+     transform="matrix(0.71342,0,0,0.71342,8.9380547,43.434883)"
+     style="stroke:#000000;stroke-width:7.0084943;stroke-miterlimit:0;stroke-dasharray:none;stroke-dashoffset:10.7222;stroke-opacity:1">
+    <path
+       id="path1815-6"
+       sodipodi:nodetypes="cc"
+       style="fill:none;stroke:#000000;stroke-width:6.91104851;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:0;stroke-dasharray:none;stroke-dashoffset:10.5731;stroke-opacity:1"
+       transform="matrix(1.0141,0,0,1.0141,0.36301,-0.46831)"
+       d="M 118.5288,71.415875 H -5.8700768" />
+  </g>
+  <path
+     id="path831"
+     style="fill:none;stroke:#000000;stroke-width:5;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 5.0012587,50 c 0,0 3.0838544,-30.140035 23.1689863,-29.920982 C 50.962931,19.887512 50.230392,80.293775 72,80 90.065927,80.300371 95,50 95,50"
+     sodipodi:nodetypes="cccc" />
+  <metadata
+     id="metadata1239">
+    <rdf:RDF>
+      <cc:Work>
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <cc:license
+           rdf:resource="http://creativecommons.org/publicdomain/zero/1.0/" />
+        <dc:publisher>
+          <cc:Agent
+             rdf:about="http://openclipart.org/">
+            <dc:title>Openclipart</dc:title>
+          </cc:Agent>
+        </dc:publisher>
+      </cc:Work>
+      <cc:License
+         rdf:about="http://creativecommons.org/publicdomain/zero/1.0/">
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#Reproduction" />
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#Distribution" />
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#DerivativeWorks" />
+      </cc:License>
+    </rdf:RDF>
+  </metadata>
+  <g
+     id="g1100-7"
+     transform="matrix(0,0.71342,-0.71342,0,55.927827,8.9822992)"
+     style="stroke:#000000;stroke-width:7.0084943;stroke-miterlimit:0;stroke-dasharray:none;stroke-dashoffset:10.7222;stroke-opacity:1">
+    <path
+       id="path1815-5"
+       sodipodi:nodetypes="cc"
+       style="fill:none;stroke:#000000;stroke-width:6.91104851;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:0;stroke-dasharray:none;stroke-dashoffset:10.5731;stroke-opacity:1"
+       transform="matrix(1.0141,0,0,1.0141,0.36301,-0.46831)"
+       d="M 118.5288,71.415875 H -5.8700768" />
+  </g>
+</svg>
