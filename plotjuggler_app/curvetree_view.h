@@ -1,3 +1,9 @@
+/*
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ */
+
 #ifndef CURVETREE_VIEW_H
 #define CURVETREE_VIEW_H
 
@@ -44,6 +50,8 @@ public:
   virtual void hideValuesColumn(bool hide) override;
 
   void treeVisitor(std::function<void(QTreeWidgetItem*)> visitor);
+
+  virtual void keyPressEvent(QKeyEvent*) override;
 
 private:
   void expandChildren(bool expanded, QTreeWidgetItem* item);
