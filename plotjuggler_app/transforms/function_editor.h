@@ -134,9 +134,6 @@ private slots:
   QLuaCompleter* lua_completer_;
   QLuaCompleter* lua_completer_batch_;
 
-  QSyntaxStyle* light_style_ = nullptr;
-  QSyntaxStyle* dark_style_ = nullptr;
-
   DelayedCallback _tab2_filter;
 
   DelayedCallback _update_preview_tab1;
