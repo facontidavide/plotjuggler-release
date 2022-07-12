@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>742</width>
+    <width>712</width>
     <height>30</height>
    </rect>
   </property>
@@ -71,13 +71,13 @@
     <widget class="QWidget" name="widgetButtons" native="true">
      <property name="minimumSize">
       <size>
-       <width>80</width>
+       <width>110</width>
        <height>24</height>
       </size>
      </property>
      <property name="maximumSize">
       <size>
-       <width>80</width>
+       <width>110</width>
        <height>24</height>
       </size>
      </property>
@@ -111,6 +111,34 @@
        </spacer>
       </item>
       <item>
+       <widget class="QPushButton" name="buttonBackground">
+        <property name="minimumSize">
+         <size>
+          <width>24</width>
+          <height>24</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>24</width>
+          <height>24</height>
+         </size>
+        </property>
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Drag and Drop &lt;/span&gt;a timeseries here, to assign a color to the background, using the ColorMap.&lt;/p&gt;&lt;p&gt;Click this button to change it.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+        <property name="checkable">
+         <bool>false</bool>
+        </property>
+        <property name="flat">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QPushButton" name="buttonSplitHorizontal">
         <property name="minimumSize">
          <size>
@@ -129,6 +157,10 @@
         </property>
         <property name="text">
          <string/>
+        </property>
+        <property name="icon">
+         <iconset>
+          <normaloff>:/resources/svg/add_column.svg</normaloff>:/resources/svg/add_column.svg</iconset>
         </property>
         <property name="iconSize">
          <size>
@@ -160,6 +192,10 @@
         </property>
         <property name="text">
          <string/>
+        </property>
+        <property name="icon">
+         <iconset>
+          <normaloff>:/resources/svg/add_row.svg</normaloff>:/resources/svg/add_row.svg</iconset>
         </property>
         <property name="iconSize">
          <size>
@@ -193,7 +229,11 @@
          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Fullscreen&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="text">
-         <string>F</string>
+         <string/>
+        </property>
+        <property name="icon">
+         <iconset>
+          <normaloff>:/resources/svg/expand.svg</normaloff>:/resources/svg/expand.svg</iconset>
         </property>
         <property name="iconSize">
          <size>
@@ -233,7 +273,11 @@
       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Close Plot Area&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="text">
-      <string>C</string>
+      <string/>
+     </property>
+     <property name="icon">
+      <iconset>
+       <normaloff>:/resources/svg/close-button.svg</normaloff>:/resources/svg/close-button.svg</iconset>
      </property>
      <property name="iconSize">
       <size>
