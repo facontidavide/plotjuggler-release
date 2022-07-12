@@ -2,8 +2,10 @@
 
 #include <QObject>
 #include <QtPlugin>
+#include <QStandardItemModel>
 #include "PlotJuggler/dataloader_base.h"
 #include "ui_dataload_csv.h"
+#include "QCSVHighlighter"
 
 using namespace PJ;
 
@@ -44,8 +46,12 @@ private:
 
   QChar _delimiter;
 
+  QCSVHighlighter _csvHighlighter;
+
   QDialog* _dialog;
   Ui::DialogCSV* _ui;
+
+  QStandardItemModel *_model;
 
   bool multiple_columns_warning_ = true;
 };
