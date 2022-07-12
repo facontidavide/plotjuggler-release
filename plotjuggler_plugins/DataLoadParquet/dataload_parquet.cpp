@@ -12,22 +12,9 @@
 DataLoadParquet::DataLoadParquet()
 {
   ui = new Ui::DialogParquet();
-}
+  _dialog = new QDialog();
 
-DataLoadParquet::~DataLoadParquet()
-{
-  delete ui;
-}
-
-const std::vector<const char*>& DataLoadParquet::compatibleFileExtensions() const
-{
-  static std::vector<const char*> extensions = {"parquet"};
-  return extensions;
-}
-
-void DataLoadParquet::setupDialog(QDialog* dialog)
-{
-  ui->setupUi(dialog);
+  ui->setupUi(_dialog);
 
   connect(ui->checkBoxDateFormat, &QCheckBox::toggled, this,
           [=](bool checked){
@@ -41,7 +28,7 @@ void DataLoadParquet::setupDialog(QDialog* dialog)
 
   connect(ui->listWidgetSeries, &QListWidget::doubleClicked, this,
           [=](const QModelIndex &) {
-            dialog->accept();
+            _dialog->accept();
           });
 
   connect(ui->radioButtonIndex, &QRadioButton::toggled, this,
@@ -65,6 +52,18 @@ void DataLoadParquet::setupDialog(QDialog* dialog)
   }
 }
 
+DataLoadParquet::~DataLoadParquet()
+{
+  delete ui;
+}
+
+const std::vector<const char*>& DataLoadParquet::compatibleFileExtensions() const
+{
+  static std::vector<const char*> extensions = {"parquet"};
+  return extensions;
+}
+
+
 bool DataLoadParquet::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_data)
 {
   using parquet::Type;
@@ -80,9 +79,6 @@ bool DataLoadParquet::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_
   std::shared_ptr<parquet::FileMetaData> file_metadata = parquet_reader_->metadata();
   const auto schema = file_metadata->schema();
   const size_t num_columns = file_metadata->num_columns();
-
-  auto dialog = new QDialog();
-  setupDialog(dialog);
 
   std::vector<parquet::Type::type> column_type;
   std::vector<parquet::ConvertedType::type> converted_column_type;
@@ -123,7 +119,7 @@ bool DataLoadParquet::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_
     }
   }
 
-  int ret = dialog->exec();
+  int ret = _dialog->exec();
   if (ret != QDialog::Accepted)
   {
     return false;
@@ -145,8 +141,6 @@ bool DataLoadParquet::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_
   settings.setValue("DataLoadParquet::radioIndexChecked", ui->radioButtonIndex->isChecked());
   settings.setValue("DataLoadParquet::parseDateTime", ui->checkBoxDateFormat->isChecked());
   settings.setValue("DataLoadParquet::dateFromat", ui->lineEditDateFormat->text());
-
-  dialog->deleteLater();
 
   //-----------------------------
   // Time to parse
@@ -296,14 +290,12 @@ bool DataLoadParquet::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_
     double timestamp = timestamp_column >= 0 ? row_values[timestamp_column] : row;
     row++;
 
-    for(int col=0; col<num_columns; col++)
+    for(size_t col=0; col<num_columns; col++)
     {
       if( !valid_column[col] )
       {
         continue;
       }
-      auto column =  schema->Column(col);
-      const std::string& name = column->name();
 
       if( valid_column[col] )
       {
