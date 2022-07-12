@@ -1,3 +1,9 @@
+/*
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ */
+
 #include "plot_docker.h"
 #include "plotwidget_editor.h"
 #include "Qads/DockSplitter.h"
@@ -283,7 +289,7 @@ DockWidget::DockWidget(PlotDataMapRef& datamap, QWidget* parent)
   setFeature(ads::CDockWidget::DockWidgetFloatable, false);
   setFeature(ads::CDockWidget::DockWidgetDeleteOnClose, true);
 
-  _toolbar = new DraggableToolbar(this);
+  _toolbar = new DockToolbar(this);
   _toolbar->label()->setText("...");
   qobject_cast<QBoxLayout*>(layout())->insertWidget(0, _toolbar);
 
@@ -293,9 +299,13 @@ DockWidget::DockWidget(PlotDataMapRef& datamap, QWidget* parent)
   connect(_toolbar->buttonSplitVertical(), &QPushButton::clicked, this,
           &DockWidget::splitVertical);
 
+  connect(_toolbar, &DockToolbar::backgroundColorRequest,
+          _plot_widget, &PlotWidget::onBackgroundColorRequest);
+
   connect(_plot_widget, &PlotWidget::splitHorizontal, this, &DockWidget::splitHorizontal);
 
   connect(_plot_widget, &PlotWidget::splitVertical, this, &DockWidget::splitVertical);
+
 
   auto FullscreenAction = [=]() {
     PlotDocker* parent_docker = static_cast<PlotDocker*>(dockManager());
@@ -375,124 +385,9 @@ PlotWidget* DockWidget::plotWidget()
   return _plot_widget;
 }
 
-DraggableToolbar* DockWidget::toolBar()
+DockToolbar* DockWidget::toolBar()
 {
   return _toolbar;
 }
 
-static void setButtonIcon(QPushButton* button, QIcon icon)
-{
-  button->setIcon(icon);
-  button->setText("");
-}
 
-DraggableToolbar::DraggableToolbar(ads::CDockWidget* parent)
-  : QWidget(parent)
-  , _parent(parent)
-  , ui(new Ui::DraggableToolbar)
-  , _fullscreen_mode(false)
-{
-  ui->setupUi(this);
-
-  QSettings settings;
-  QString theme = settings.value("StyleSheet::theme", "light").toString();
-  on_stylesheetChanged(theme);
-
-  ui->buttonFullscreen->setVisible(false);
-  ui->buttonSplitHorizontal->setVisible(false);
-  ui->buttonSplitVertical->setVisible(false);
-
-  setMouseTracking(true);
-  ui->widgetButtons->setMouseTracking(true);
-
-  ui->label->installEventFilter(this);
-}
-
-DraggableToolbar::~DraggableToolbar()
-{
-  delete ui;
-}
-
-void DraggableToolbar::toggleFullscreen()
-{
-  _fullscreen_mode = !_fullscreen_mode;
-
-  setButtonIcon(ui->buttonFullscreen, _fullscreen_mode ? _collapse_icon : _expand_icon);
-
-  ui->buttonClose->setHidden(_fullscreen_mode);
-  if (_fullscreen_mode)
-  {
-    ui->buttonSplitHorizontal->setVisible(false);
-    ui->buttonSplitVertical->setVisible(false);
-  }
-}
-
-void DraggableToolbar::mousePressEvent(QMouseEvent* ev)
-{
-  _parent->dockAreaWidget()->titleBar()->mousePressEvent(ev);
-}
-
-void DraggableToolbar::mouseReleaseEvent(QMouseEvent* ev)
-{
-  _parent->dockAreaWidget()->titleBar()->mouseReleaseEvent(ev);
-}
-
-void DraggableToolbar::mouseMoveEvent(QMouseEvent* ev)
-{
-  ui->buttonFullscreen->setVisible(true);
-  ui->buttonSplitHorizontal->setVisible(!_fullscreen_mode);
-  ui->buttonSplitVertical->setVisible(!_fullscreen_mode);
-  _parent->dockAreaWidget()->titleBar()->mouseMoveEvent(ev);
-
-  ev->accept();
-  QWidget::mouseMoveEvent(ev);
-}
-
-void DraggableToolbar::enterEvent(QEvent* ev)
-{
-  ui->buttonFullscreen->setVisible(true);
-  ui->buttonSplitHorizontal->setVisible(!_fullscreen_mode);
-  ui->buttonSplitVertical->setVisible(!_fullscreen_mode);
-
-  ev->accept();
-  QWidget::enterEvent(ev);
-}
-
-bool DraggableToolbar::eventFilter(QObject* object, QEvent* event)
-{
-  if (event->type() == QEvent::MouseButtonDblClick)
-  {
-    bool ok = true;
-    QString newName =
-        QInputDialog::getText(this, tr("Change name of the Area"), tr("New name:"),
-                              QLineEdit::Normal, ui->label->text(), &ok);
-    if (ok)
-    {
-      ui->label->setText(newName);
-    }
-    return true;
-  }
-  else
-  {
-    return QObject::eventFilter(object, event);
-  }
-}
-
-void DraggableToolbar::on_stylesheetChanged(QString theme)
-{
-  _expand_icon = LoadSvg(":/resources/svg/expand.svg", theme);
-  _collapse_icon = LoadSvg(":/resources/svg/collapse.svg", theme);
-  setButtonIcon(ui->buttonFullscreen, _fullscreen_mode ? _collapse_icon : _expand_icon);
-  setButtonIcon(ui->buttonClose, LoadSvg(":/resources/svg/close-button.svg", theme));
-  setButtonIcon(ui->buttonSplitHorizontal,
-                LoadSvg(":/resources/svg/add_column.svg", theme));
-  setButtonIcon(ui->buttonSplitVertical, LoadSvg(":/resources/svg/add_row.svg", theme));
-}
-
-void DraggableToolbar::leaveEvent(QEvent* ev)
-{
-  ui->buttonFullscreen->setVisible(_fullscreen_mode);
-  ui->buttonSplitHorizontal->setVisible(false);
-  ui->buttonSplitVertical->setVisible(false);
-  QWidget::leaveEvent(ev);
-}

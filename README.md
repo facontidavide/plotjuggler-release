@@ -1,13 +1,15 @@
 ![PlotJuggler](docs/plotjuggler3_banner.svg)
 
-[![cmake](https://github.com/facontidavide/PlotJuggler/actions/workflows/cmake.yaml/badge.svg)](https://github.com/facontidavide/PlotJuggler/actions/workflows/cmake.yaml)
-[![CI](https://github.com/facontidavide/PlotJuggler/workflows/ros1/badge.svg)](https://github.com/facontidavide/PlotJuggler/actions?query=workflow%3Aros1)
-[![CI](https://github.com/facontidavide/PlotJuggler/workflows/ros2/badge.svg)](https://github.com/facontidavide/PlotJuggler/actions?query=workflow%3Aros2)
+[![windows](https://github.com/facontidavide/PlotJuggler/actions/workflows/windows.yaml/badge.svg)](https://github.com/facontidavide/PlotJuggler/actions/workflows/windows.yaml)
+[![ubuntu](https://github.com/facontidavide/PlotJuggler/actions/workflows/ubuntu.yaml/badge.svg)](https://github.com/facontidavide/PlotJuggler/actions/workflows/ubuntu.yaml)
+[![macos](https://github.com/facontidavide/PlotJuggler/actions/workflows/macos.yaml/badge.svg)](https://github.com/facontidavide/PlotJuggler/actions/workflows/macos.yaml)
+[![ROS1](https://github.com/facontidavide/PlotJuggler/workflows/ros1/badge.svg)](https://github.com/facontidavide/PlotJuggler/actions?query=workflow%3Aros1)
+[![ROS2](https://github.com/facontidavide/PlotJuggler/workflows/ros2/badge.svg)](https://github.com/facontidavide/PlotJuggler/actions?query=workflow%3Aros2)
 [![Tweet](https://img.shields.io/twitter/url/http/shields.io.svg?style=social)](https://twitter.com/intent/tweet?text=I%20use%20PlotJuggler%20and%20it%20is%20amazing%0D%0A&url=https://github.com/facontidavide/PlotJuggler&via=facontidavide&hashtags=dataviz,plotjuggler,GoROS,PX4)
 
 **Gold Sponsor**: [Greenzie](https://www.greenzie.com/)
 
-# PlotJuggler 3.4
+# PlotJuggler 3.5
 
 PlotJuggler is a tool to visualize time series that is **fast**, **powerful** and  **intuitive**.
 
@@ -78,10 +80,10 @@ If you want a simple example to learn how to write your own plugins, have a look
 ### Binary installers (with basic plugins)
 
 **Linux AppImage** (compatible with Ubuntu 18.04 or later): 
-[PlotJuggler-3.4.1-x86_64.AppImage](https://github.com/facontidavide/PlotJuggler/releases/download/3.4.1/PlotJuggler-3.4.1-x86_64.AppImage)
+[PlotJuggler-3.5.0-x86_64.AppImage](https://github.com/facontidavide/PlotJuggler/releases/download/3.5.0/PlotJuggler-3.5.0-x86_64.AppImage)
 
 **Windows Installer**: 
-[PlotJuggler-Windows-3.4.0-installer](https://github.com/facontidavide/PlotJuggler/releases/download/3.4.0/PlotJuggler-Windows-3.4.0-installer.exe)
+[PlotJuggler-Windows-3.5.0-installer](https://github.com/facontidavide/PlotJuggler/releases/download/3.5.0/PlotJuggler-Windows-3.5.0-installer.exe)
 
 ### For ROS User
 
@@ -133,7 +135,7 @@ https://github.com/PlotJuggler/plotjuggler-ros-plugins
 
 Refer to the instructions in the this repository if you want to compile PJ and its ROS plugins from source.
 
-# If you like PlotJuggler, support it.
+# Sponsorship and commercial support
 
 PlotJuggler required a lot of work to be developed; my goal is to build the most 
 intuitive and powerfull tool to visualize data and timeseries.
@@ -141,9 +143,17 @@ intuitive and powerfull tool to visualize data and timeseries.
 If you find PlotJuggler useful, consider making a donation on [PayPal](https://www.paypal.me/facontidavide) or become a 
 [Github Sponsor](https://github.com/sponsors/facontidavide).
 
-If you use PlotJuggler at work, your company can support the development of those specific features they need.
+If you need to extend any of the functionalities of PlotJuggler to cover a specific 
+need or to parse your custom data formats, you can receive commercial
+support from the main author, [Davide Faconti](mailto:davide.faconti@gmail.com).
 
-[Contact me](https://www.plotjuggler.io/support) for more details.
+# License
+
+PlotJuggler is released under the [Mozilla Public License Version 2.0](LICENSE.md),
+which allows user to develop closed-source plugins.
+
+Please note that some third party dependencies (including Qt) use the
+**GNU Lesser General Public License**.
 
 # Stargazers
 

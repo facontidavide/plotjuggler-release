@@ -2,6 +2,26 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+3.5.0 (2022-07-12)
+------------------
+* license changed to MPL 2.0
+* Macos ci (`#685 <https://github.com/facontidavide/PlotJuggler/issues/685>`_)
+* Add CSV table preview and CSV highlighting (`#680 <https://github.com/facontidavide/PlotJuggler/issues/680>`_)
+  * Add CSV table preview and CSV highlighting
+  * add toggles for enabling CSV table view and syntax highlighting
+* Fix start/end time bug in CSV Exporter (`#682 <https://github.com/facontidavide/PlotJuggler/issues/682>`_)
+* Add tooltips to CSV publisher buttons (`#683 <https://github.com/facontidavide/PlotJuggler/issues/683>`_)
+  -Add tooltips to the buttons that set the start/end time based on vertical time tracker position
+  -add missing space in text ("timerange" to "time range")
+* Fix `#415 <https://github.com/facontidavide/PlotJuggler/issues/415>`_
+* add statistics
+* Add background editor
+* fix crash in Parquet plugin
+* Add line numbers to csv loader (`#679 <https://github.com/facontidavide/PlotJuggler/issues/679>`_)
+* Fix type-o in reactive script editor (`#678 <https://github.com/facontidavide/PlotJuggler/issues/678>`_)
+  missing "r" in "ScatterXY"
+* Contributors: Bartimaeus-, Davide Faconti
+
 3.4.5 (2022-06-29)
 ------------------
 * fix compilation
