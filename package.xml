@@ -1,11 +1,11 @@
 <?xml version="1.0"?>
 <package format="3">
     <name>plotjuggler</name>
-    <version>3.5.0</version>
+    <version>3.5.1</version>
     <description>PlotJuggler: juggle with data</description>
 
     <maintainer email="davide.faconti@gmail.com">Davide Faconti</maintainer>
-    <license>LGPLv3</license>
+    <license>MPL-2.0</license>
 
     <url type="website">https://github.com/facontidavide/PlotJuggler</url>
 
