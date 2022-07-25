@@ -2,6 +2,26 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+3.5.1 (2022-07-25)
+------------------
+* Dev/ros1 ros2 snap (`#698 <https://github.com/facontidavide/PlotJuggler/issues/698>`_)
+* update nlohmann json to fix `#640 <https://github.com/facontidavide/PlotJuggler/issues/640>`_
+* should prevent error `#696 <https://github.com/facontidavide/PlotJuggler/issues/696>`_
+* Merge branch 'improved_zoomout' into main
+* cleanup after `#702 <https://github.com/facontidavide/PlotJuggler/issues/702>`_
+* Statistics dialog improvements and bug fixes (`#702 <https://github.com/facontidavide/PlotJuggler/issues/702>`_)
+* Include std::thread instead of QThread, since it is being utilized in the mqtt plugin instead of QThread. (`#700 <https://github.com/facontidavide/PlotJuggler/issues/700>`_)
+* fix zmq compilation
+* cherry picking from `#698 <https://github.com/facontidavide/PlotJuggler/issues/698>`_
+* increase playback step precision (`#692 <https://github.com/facontidavide/PlotJuggler/issues/692>`_)
+* Fix typo in ColorMap warning (`#693 <https://github.com/facontidavide/PlotJuggler/issues/693>`_)
+* Set buttonBackground icon in .ui file (`#694 <https://github.com/facontidavide/PlotJuggler/issues/694>`_)
+* Update README.md
+* Fix `#697 <https://github.com/facontidavide/PlotJuggler/issues/697>`_
+* update sol2 and fix `#687 <https://github.com/facontidavide/PlotJuggler/issues/687>`_
+* try to improve the linked zoomout
+* Contributors: Bartimaeus-, Davide Faconti, Guillaume Beuzeboc, Hugal31, ozzdemir
+
 3.5.0 (2022-07-12)
 ------------------
 * license changed to MPL 2.0
