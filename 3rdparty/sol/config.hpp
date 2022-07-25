@@ -47,8 +47,8 @@ https://sol2.readthedocs.io/en/latest/safety.html ! You can also pass them throu
 the build system, or the command line options of your compiler.
 
 */
-
-#define SOL_ALL_SAFETIES_ON ON
+#define SOL_ALL_SAFETIES_ON 1
+#define SOL_DEFAULT_PASS_ON_ERROR 1
 
 // end of sol/config.hpp
 
