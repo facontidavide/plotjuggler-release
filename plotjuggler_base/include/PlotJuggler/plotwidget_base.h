@@ -13,9 +13,9 @@
 
 class QwtPlot;
 class QwtPlotCurve;
-class QwtPlotPanner;
 class QwtPlotMarker;
 
+class PlotPanner;
 class PlotZoomer;
 class PlotMagnifier;
 class PlotLegend;
