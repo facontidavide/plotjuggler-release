@@ -307,6 +307,11 @@ int main(int argc, char* argv[])
                                     "file_name (no extension)");
   parser.addOption(start_streamer);
 
+  QCommandLineOption window_title(QStringList() << "window_title",
+                                  "Set the window title",
+                                  "window_title");
+  parser.addOption(window_title);
+  
   parser.process(*qApp);
 
   if (parser.isSet(publish_option) && !parser.isSet(layout_option))
@@ -348,11 +353,11 @@ int main(int argc, char* argv[])
 
   QNetworkRequest request;
 
-  //  QString uuid = settings.value("UUID", QUuid::createUuid().toString()).toString();
-  //  settings.setValue("UUID", uuid);
+  QString uuid = settings.value("UUID", QUuid::createUuid().toString()).toString();
+  settings.setValue("UUID", uuid);
 
-  //  request.setUrl(QUrl(QString("https://l4g9l4.deta.dev/check_updates/%1").arg(uuid))
-  //  ); manager.get(request);
+  request.setUrl(QUrl(QString("https://l4g9l4.deta.dev/check_updates/%1").arg(uuid)));
+  manager.get(request);
 
   MainWindow* w = nullptr;
 
