@@ -1,11 +1,13 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.10.2)
 
-PROJECT(plotjuggler LANGUAGES C CXX VERSION 3.5.1)
+PROJECT(plotjuggler LANGUAGES C CXX VERSION 3.5.2)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}  "${CMAKE_CURRENT_LIST_DIR}/cmake")
+
+
 
 add_definitions(
     -DPJ_MAJOR_VERSION=${PROJECT_VERSION_MAJOR}
@@ -29,6 +31,16 @@ include_directories( plotjuggler_base/include )
 include_directories( plotjuggler_base/src )
 
 add_definitions( -DFMT_HEADER_ONLY )
+
+if (EXISTS ${CMAKE_BINARY_DIR}/conanbuildinfo.txt)
+    set(BUILDING_WITH_CONAN ON)
+    message(STATUS "BUILDING_WITH_CONAN")
+endif()
+
+if(VCPKG_TOOLCHAIN)
+    set(BUILDING_WITH_VCPKG ON)
+    message(STATUS "BUILDING_WITH_VCPKG")
+endif()
 
 # http://answers.ros.org/question/230877/optionally-build-a-package-with-catkin/
 if( CATKIN_DEVEL_PREFIX OR catkin_FOUND OR CATKIN_BUILD_BINARY_PACKAGE)
@@ -167,6 +179,7 @@ add_library( plotjuggler_base
      plotjuggler_base/src/plotzoomer.cpp
      plotjuggler_base/src/plotmagnifier.cpp
      plotjuggler_base/src/plotlegend.cpp
+     plotjuggler_base/src/plotpanner.cpp
      plotjuggler_base/src/timeseries_qwt.cpp
      plotjuggler_base/src/reactive_function.cpp
      )
@@ -177,10 +190,6 @@ target_include_directories(plotjuggler_base INTERFACE
   $<INSTALL_INTERFACE:include>
 )
 
-target_include_directories(plotjuggler_base INTERFACE
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-  $<INSTALL_INTERFACE:include>
-)
 #########################  INSTALL  ####################################
 
 if(COMPILING_WITH_CATKIN)
@@ -271,6 +280,8 @@ export(PACKAGE ${PROJECT_NAME})
 
 if(NOT COMPILING_WITH_AMENT AND NOT COMPILING_WITH_CATKIN)
 
+    include(GNUInstallDirs)
+
     set(PJ_CMAKECONFIG_INSTALL_DIR ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME})
 
     install(
@@ -296,6 +307,8 @@ if(NOT COMPILING_WITH_AMENT AND NOT COMPILING_WITH_CATKIN)
      VERSION ${PROJECT_VERSION}
      COMPATIBILITY SameMajorVersion
     )
+
+    message (STATUS "CMAKE_CURRENT_BINARY_DIR = ${CMAKE_CURRENT_BINARY_DIR}")
 
     install(
       FILES
