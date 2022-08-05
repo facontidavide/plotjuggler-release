@@ -2,6 +2,21 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+3.5.2 (2022-08-05)
+------------------
+* fix issue `#642 <https://github.com/facontidavide/PlotJuggler/issues/642>`_
+* fix FFT toolbox
+* Add options for enabling/disabling autozoom in preferences (`#704 <https://github.com/facontidavide/PlotJuggler/issues/704>`_)
+* add support for custom window titles (`#715 <https://github.com/facontidavide/PlotJuggler/issues/715>`_)
+* Fix/snap rosbag (`#714 <https://github.com/facontidavide/PlotJuggler/issues/714>`_)
+* fix mosquitto build in linux
+* Better cmake (`#710 <https://github.com/facontidavide/PlotJuggler/issues/710>`_)
+* fix `#707 <https://github.com/facontidavide/PlotJuggler/issues/707>`_
+* better installation instructions
+* fix(snap): reapply changes remove by the merge of main (`#703 <https://github.com/facontidavide/PlotJuggler/issues/703>`_)
+* save ColorMaps in layout
+* Contributors: Bartimaeus-, Davide Faconti, Guillaume Beuzeboc, grekiki
+
 3.5.1 (2022-07-25)
 ------------------
 * Dev/ros1 ros2 snap (`#698 <https://github.com/facontidavide/PlotJuggler/issues/698>`_)
