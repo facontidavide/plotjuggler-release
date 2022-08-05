@@ -1,14 +1,21 @@
+if(BUILDING_WITH_VCPKG)
+    message(STATUS "Finding ZeroMQ with vcpkg")
+    set(ZeroMQ_LIBRARIES libzmq libzmq-static)
+elseif(BUILDING_WITH_CONAN)
+    message(STATUS "Finding ZeroMQ with conan")
+    set(ZeroMQ_LIBRARIES libzmq-static)
+else()
+    message(STATUS "Finding ZeroMQ without package managers")
+    list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
+endif()
 
-set(CMAKE_CONFIG_PATH ${CMAKE_MODULE_PATH}  "${CMAKE_CURRENT_LIST_DIR}/cmake")
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CONFIG_PATH}")
+find_package(ZeroMQ QUIET)
 
-find_package(ZMQ QUIET)
+if(ZeroMQ_FOUND)
 
-if(ZMQ_FOUND)
+    message(STATUS "[ZeroMQ] found")
 
-    message(STATUS "ZMQ_FOUND")
-
-    include_directories(../ ${ZMQ_INCLUDE_DIR})
+    include_directories(../ ${ZeroMQ_INCLUDE_DIR})
 
     add_definitions(${QT_DEFINITIONS})
     add_definitions(-DQT_PLUGIN)
@@ -22,11 +29,11 @@ if(ZMQ_FOUND)
     target_link_libraries(DataStreamZMQ
         ${Qt5Widgets_LIBRARIES}
         plotjuggler_base
-        ${ZMQ_LIBRARY}
+        ${ZeroMQ_LIBRARIES}
         )
 
     install(TARGETS DataStreamZMQ DESTINATION ${PJ_PLUGIN_INSTALL_DIRECTORY}  )
 else()
-    message("[libzmq-dev] not found. Skipping plugin DataStreamZMQ.")
+    message("[ZeroMQ] not found. Skipping plugin DataStreamZMQ.")
 endif()
 

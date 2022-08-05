@@ -91,29 +91,9 @@ Install the debian packages using:
 
      sudo apt install ros-$ROS_DISTRO-plotjuggler-ros
 
-## How to build
+## How to build and deploy
 
-Clone the repository as usual:
-
-    git clone https://github.com/facontidavide/PlotJuggler.git
-
-The only binary dependency that you need installed in your system is Qt5. 
-On Ubuntu, the debians can be installed with the the command:
-
-    sudo apt -y install qtbase5-dev libqt5svg5-dev libqt5websockets5-dev libqt5opengl5-dev libqt5x11extras5-dev libprotoc-dev
-    
-On Fedora:
-
-    sudo dnf install qt5-qtbase-devel qt5-qtsvg-devel qt5-websockets-devel qt5-qtopendl-devel qt5-qtx11extras-devel
-    
-Then compile using cmake (qmake is NOT supported):
-
-     mkdir build; cd build
-     cmake ..
-     make
-     sudo make install
- 
-Note: the plugins need to be installed in the same folder of the executable.
+You can find build and installation instructions in [COMPILE.md](COMPILE.md).
 
 ## Note for ROS users
 

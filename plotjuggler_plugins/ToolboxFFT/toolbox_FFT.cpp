@@ -87,8 +87,13 @@ void ToolboxFFT::calculateCurveFFT()
     }
     PlotData& curve_data = it->second;
 
-    int min_index = 0;
-    int max_index = curve_data.size() - 1;
+    if( curve_data.size() == 0)
+    {
+      return;
+    }
+
+    size_t min_index = 0;
+    size_t max_index = curve_data.size() - 1;
 
     if (ui->radioZoomed->isChecked())
     {
@@ -96,10 +101,7 @@ void ToolboxFFT::calculateCurveFFT()
       max_index = curve_data.getIndexFromX(_zoom_range.max);
     }
 
-    double min_t = curve_data.at(min_index).x;
-    double max_t = curve_data.at(max_index).x;
-
-    int N = 1 + max_index - min_index;
+    size_t N = 1 + max_index - min_index;
 
     if (N & 1)
     {  // if not even, make it even
@@ -107,7 +109,7 @@ void ToolboxFFT::calculateCurveFFT()
       max_index--;
     }
 
-    if (N < 8 || min_index < 0 || max_index < 0)
+    if (N < 8)
     {
       return;
     }
@@ -117,16 +119,25 @@ void ToolboxFFT::calculateCurveFFT()
     std::vector<kiss_fft_scalar> input;
     input.reserve(curve_data.size());
 
-    // double std_dev = 0.0;
+    double sum = 0;
+    if(ui->checkAverage->isChecked())
+    {
+      for (size_t i = 0; i < N; i++)
+      {
+        sum += curve_data[i + min_index].y;
+      }
+    }
+    double average = sum / double(N);
 
     for (size_t i = 0; i < N; i++)
     {
-      const auto& p = curve_data[i];
-      input.push_back(static_cast<kiss_fft_scalar>(p.y));
+      size_t index = i + min_index;
+      const auto& p = curve_data[index];
+      input.push_back(static_cast<kiss_fft_scalar>(p.y - average));
 
       if (i != 0)
       {
-        double dTi = (p.x - curve_data[i - 1].x);
+        double dTi = (p.x - curve_data[index - 1].x);
         double diff = dTi - dT;
         // std_dev += diff*diff;
       }
@@ -143,7 +154,7 @@ void ToolboxFFT::calculateCurveFFT()
 
     auto& curver_fft = _local_data.getOrCreateScatterXY(curve_id);
     curver_fft.clear();
-    for (int i = 0; i < N / 2; i++)
+    for (size_t i = 0; i < N / 2; i++)
     {
       kiss_fft_scalar Hz = i * (1.0 / dT) / double(N);
       kiss_fft_scalar amplitude = std::hypot(out[i].r, out[i].i) / N;
