@@ -2,6 +2,18 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+3.6.0 (2022-08-13)
+------------------
+* More memes
+* Refactoring of the MessageParser plugins 
+* Mcap support (`#722 <https://github.com/facontidavide/PlotJuggler/issues/722>`_)
+* Improve CSV loader error handling (`#721 <https://github.com/facontidavide/PlotJuggler/issues/721>`_)
+* Fix plotwidget drag and drop bug (Issue `#716 <https://github.com/facontidavide/PlotJuggler/issues/716>`_) (`#717 <https://github.com/facontidavide/PlotJuggler/issues/717>`_)
+* fix(snap): remove yaml grade (`#718 <https://github.com/facontidavide/PlotJuggler/issues/718>`_)
+  grade is set from the part
+  YAML grade has priority over the programmed one so we remove it
+* Contributors: Bartimaeus-, Davide Faconti, Guillaume Beuzeboc
+
 3.5.2 (2022-08-05)
 ------------------
 * fix issue `#642 <https://github.com/facontidavide/PlotJuggler/issues/642>`_
