@@ -188,17 +188,14 @@ bool Parser::deserialize(Span<const uint8_t> buffer,
           {
             ExpandVectorIfNecessary(flat_container->name, name_index);
 
+            std::string str;
+            deserializer->deserializeString( str );
+
             if (DO_STORE_ARRAY)
             {
               flat_container->name[name_index].first = FieldsVector(new_tree_leaf);
-              std::string& str = flat_container->name[name_index].second;
-              deserializer->deserializeString( str );
+              flat_container->name[name_index].second = str;
               name_index++;
-            }
-            else
-            {
-              uint32_t string_size = deserializer->deserializeUInt32();
-              deserializer->jump(string_size);
             }
           }
           else if (field_type.isBuiltin())
