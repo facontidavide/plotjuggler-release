@@ -193,7 +193,6 @@ set( QWT_SRC
 
 add_library(plotjuggler_qwt STATIC ${QWT_SRC})
 
-
 target_link_libraries(plotjuggler_qwt
     ${Qt5Widgets_LIBRARIES}
     ${Qt5Concurrent_LIBRARIES}
@@ -201,6 +200,9 @@ target_link_libraries(plotjuggler_qwt
     )
 target_compile_definitions(plotjuggler_qwt PUBLIC QWT_MOC_INCLUDE)
 #target_compile_definitions(plotjuggler_qwt PUBLIC QWT_DLL QWT_MAKEDLL )
+
+add_library(plotjuggler_qwt_objects OBJECT ${QWT_SRC})
+target_compile_definitions(plotjuggler_qwt_objects PUBLIC QWT_MOC_INCLUDE)
 
 #install(
 #    TARGETS plotjuggler_qwt
