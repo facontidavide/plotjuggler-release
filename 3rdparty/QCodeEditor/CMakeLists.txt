@@ -94,6 +94,7 @@ if(CMAKE_COMPILER_IS_GNUCXX)
 		-Weffc++
 		-Woverloaded-virtual
 		-Winit-self
+		-std=c++11
 		-Wunreachable-code
 	)
 endif(CMAKE_COMPILER_IS_GNUCXX)
