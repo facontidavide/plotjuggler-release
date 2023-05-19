@@ -9,7 +9,7 @@
 
 **Gold Sponsor**: [Greenzie](https://www.greenzie.com/)
 
-# PlotJuggler 3.6
+# PlotJuggler 3.7
 
 PlotJuggler is a tool to visualize time series that is **fast**, **powerful** and  **intuitive**.
 
@@ -77,43 +77,63 @@ If you want a simple example to learn how to write your own plugins, have a look
 
 ## Installation
 
-### Binary installers (with basic plugins)
+### Binary installers
+
+Note that these installers do __not__ include ROS plugins.
 
 **Linux AppImage** (compatible with Ubuntu 20.04 or later): 
-[PlotJuggler-3.5.0-x86_64.AppImage](https://github.com/facontidavide/PlotJuggler/releases/download/3.5.0/PlotJuggler-3.5.0-x86_64.AppImage)
+[PlotJuggler-3.6.0-x86_64.AppImage](https://github.com/facontidavide/PlotJuggler/releases/download/3.6.0/PlotJuggler-3.6.0-x86_64.AppImage)
 
 **Windows Installer**: 
-[PlotJuggler-Windows-3.5.0-installer](https://github.com/facontidavide/PlotJuggler/releases/download/3.5.0/PlotJuggler-Windows-3.5.0-installer.exe)
+[PlotJuggler-Windows-3.6.0-installer](https://github.com/facontidavide/PlotJuggler/releases/download/3.6.0/PlotJuggler-Windows-3.6.0-installer.exe)
 
-### For ROS User
+### Debian packages for ROS User
 
-Install the debian packages using: 
+Install the ROS packages with: 
 
-     sudo apt install ros-$ROS_DISTRO-plotjuggler-ros
-
-## How to build and deploy
-
-You can find build and installation instructions in [COMPILE.md](COMPILE.md).
-
-## Note for ROS users
-
-To install PlotJuggler, just type:
-
-    sudo apt install ros-${ROS_DISTRO}-plotjuggler-ros
-       
+```
+sudo apt install ros-$ROS_DISTRO-plotjuggler-ros
+```
 To launch PlotJuggler on ROS, use the command:
 
-      rosrun plotjuggler plotjuggler
+```
+rosrun plotjuggler plotjuggler
+```
 
 or, if are using ROS2:
 
-       ros2 run plotjuggler plotjuggler
+```
+ros2 run plotjuggler plotjuggler
+```
 
-Since version 3.x, ROS plugins have been moved to a separate repository:
+ROS plugins are available in a separate repository: https://github.com/PlotJuggler/plotjuggler-ros-plugins
 
-https://github.com/PlotJuggler/plotjuggler-ros-plugins
+Refer to the instructions in that repository if you want to compile PJ and its ROS plugins from source.
 
-Refer to the instructions in the this repository if you want to compile PJ and its ROS plugins from source.
+## Install with Snap
+
+This massive file will install a version of PlotJuggler that can work with both ROS1 and ROS2. 
+
+[![Get it from the Snap Store](https://snapcraft.io/static/images/badges/en/snap-store-black.svg)](https://snapcraft.io/plotjuggler)
+
+```
+sudo snap install plotjuggler
+```
+
+When launching you have two options available:
+
+- `plotjuggler.ros` to load the ROS1 plugins
+- `plotjuggler.ros2` to load the ROS2 plugins
+
+In addition, the command `plotjuggler` is an alias to `plotjuggler.ros`.
+If you'd prefer to alias `plotjuggler.ros2` instead,
+you can do so with the command `sudo snap set plotjuggler ros-plugin-version=2`.
+Revert it simply replacing `2` with `1`.
+Note that this also affect the desktop launcher.
+
+## Compile from source
+
+You can find find the detailed instructions here: [COMPILE.md](COMPILE.md).
 
 # Sponsorship and commercial support
 
@@ -138,3 +158,9 @@ Please note that some third party dependencies (including Qt) use the
 # Stargazers
 
 [![Stargazers over time](https://starchart.cc/facontidavide/PlotJuggler.svg)](https://starchart.cc/facontidavide/PlotJuggler)
+
+# Contributors
+
+<a href="https://github.com/facontidavide/plotjuggler/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=facontidavide/plotjuggler" />
+</a>

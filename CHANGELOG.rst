@@ -2,6 +2,76 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+3.7.0 (2023-05-19)
+------------------
+* Handle protobuf maps (`#824 <https://github.com/facontidavide/PlotJuggler/issues/824>`_)
+  Protobuf maps are just repeated protobuf messages with only 2 fields
+  "key" and "value". Extract the map's key and use it in the series name
+  and skip adding series for "key" fields to reduce the number of non
+  useful series. Additionally don't include "value" in the series name for
+  the value of a map.
+* add progress dialog to MCAP loading
+* new plugin: DataTamer parser
+* performance optimization in pushBack
+* more information in MCAP error
+* optimization in MoveData
+* address `#820 <https://github.com/facontidavide/PlotJuggler/issues/820>`_
+* Prevent runtime_error exceptions from plugins crashing the main app (`#812 <https://github.com/facontidavide/PlotJuggler/issues/812>`_)
+  Catch runtime_error exceptions thrown from the plugins and skip the throwing plugins, so that the main app can continue its normal operation.
+* fix(snap): add libzstd for mcap support (`#815 <https://github.com/facontidavide/PlotJuggler/issues/815>`_)
+* Update README.md
+* Add a "central difference" method of derivative calculation (`#813 <https://github.com/facontidavide/PlotJuggler/issues/813>`_)
+* Updating COMPILE dependencies to install (`#810 <https://github.com/facontidavide/PlotJuggler/issues/810>`_)
+  Taken from CI: https://github.com/facontidavide/PlotJuggler/blob/main/.github/workflows/ubuntu.yaml#L20-L31
+* Fix the bug where the shared library Parquet is not linked (`#807 <https://github.com/facontidavide/PlotJuggler/issues/807>`_)
+  The actual path to the shared library is in `${PARQUET_SHARED_LIB}` instead of in
+  `${PARQUET_LIBRARIES}`.
+* Add CMake into comp vars and minor format improvements (`#804 <https://github.com/facontidavide/PlotJuggler/issues/804>`_)
+  Co-authored-by: Erick G. Islas Osuna <eislasosuna@netflix.com>
+* Fix for missing preferences (`#795 <https://github.com/facontidavide/PlotJuggler/issues/795>`_)
+* fix typos in "tips and tricks" cheatsheet (`#798 <https://github.com/facontidavide/PlotJuggler/issues/798>`_)
+  fix a couple of minor typos in dialog text
+* Support Proto's That Reference Google/Protobuf (`#793 <https://github.com/facontidavide/PlotJuggler/issues/793>`_)
+* Fix for segfault in DataLoadCSV destructor (`#784 <https://github.com/facontidavide/PlotJuggler/issues/784>`_)
+  - Change order of deletion for dialogs.
+  - First delete child dialog `_dateTime_dialog` then parent
+  `_dialog`.
+* Add CodeQL workflow (`#765 <https://github.com/facontidavide/PlotJuggler/issues/765>`_)
+* [bugfix] String deserialization (`#780 <https://github.com/facontidavide/PlotJuggler/issues/780>`_)
+* forgot throw
+* fixing nan check (`#777 <https://github.com/facontidavide/PlotJuggler/issues/777>`_)
+* Update Reactive Scripts on playback loop (`#771 <https://github.com/facontidavide/PlotJuggler/issues/771>`_)
+* fix
+* Contributors: Alistair, AndyZe, Bartimaeus-, Connor Anderson, Davide Faconti, Erick G. Islas-Osuna, Guillaume Beuzeboc, Mark Cutler, Michael Orlov, Peter Stöckli, Sam Pfeiffer, Zach Davis, Zheng Qu, augustinmanecy, ozzdemir
+
+3.6.1 (2022-12-18)
+------------------
+* apply changes suggested in `#767 <https://github.com/facontidavide/PlotJuggler/issues/767>`_
+* fix parsing of custom types added multiple times in messages (`#769 <https://github.com/facontidavide/PlotJuggler/issues/769>`_)
+* ZMQ: Add topics filtering (`#730 <https://github.com/facontidavide/PlotJuggler/issues/730>`_)
+* Add CSV loader date-time format help dialog (`#731 <https://github.com/facontidavide/PlotJuggler/issues/731>`_)
+* Set MQTT topics list to be multi-selectable (`#745 <https://github.com/facontidavide/PlotJuggler/issues/745>`_)
+* Always use topic names for creating MQTT parsers (`#746 <https://github.com/facontidavide/PlotJuggler/issues/746>`_)
+* fix typo (`#770 <https://github.com/facontidavide/PlotJuggler/issues/770>`_)
+* Fix/add other dds vendors (`#763 <https://github.com/facontidavide/PlotJuggler/issues/763>`_)
+* Add option to build plotjuggler_base to shared library (`#757 <https://github.com/facontidavide/PlotJuggler/issues/757>`_)
+* Add a new meme with The Rock (`#751 <https://github.com/facontidavide/PlotJuggler/issues/751>`_)
+* Add precision to CSV export to handle geocoordinates (`#753 <https://github.com/facontidavide/PlotJuggler/issues/753>`_)
+* compile: add cmake to brew install (`#742 <https://github.com/facontidavide/PlotJuggler/issues/742>`_)
+* Add MIT license notice to QCodeEditor dddition (`#733 <https://github.com/facontidavide/PlotJuggler/issues/733>`_)
+  Added per https://github.com/facontidavide/PlotJuggler/issues/732
+* Fix multi-plugin selection (`#739 <https://github.com/facontidavide/PlotJuggler/issues/739>`_)
+  Broken in `#726 <https://github.com/facontidavide/PlotJuggler/issues/726>`_. If all plugins are enabled, then opening a file supported by multiple plugins does not work.
+* - Add drag n drop (`#726 <https://github.com/facontidavide/PlotJuggler/issues/726>`_)
+  - Ignore VSCode and OS X files
+* readme: add details about default snap command (`#727 <https://github.com/facontidavide/PlotJuggler/issues/727>`_)
+* Add mac compilation section (`#725 <https://github.com/facontidavide/PlotJuggler/issues/725>`_)
+* Update README.md (`#723 <https://github.com/facontidavide/PlotJuggler/issues/723>`_)
+  minor typos
+* Update README.md
+* Update COMPILE.md
+* Contributors: Andrew Van Overloop, Bartimaeus-, Bonkura, Davide Faconti, Guillaume Beuzeboc, Jeff Ithier, Jeremie Deray, Mark Cutler, Orhan G. Hafif, Romain Reignier, Zach Davis
+
 3.6.0 (2022-08-13)
 ------------------
 * More memes

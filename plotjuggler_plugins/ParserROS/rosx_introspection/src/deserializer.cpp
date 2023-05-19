@@ -126,7 +126,7 @@ Variant FastCDR_Deserializer::deserialize(BuiltinType type)
     }
 
     default:
-      std::runtime_error("FastCDR_Deserializer: type not recognized");
+      throw std::runtime_error("FastCDR_Deserializer: type not recognized");
   }
 
   return {};
