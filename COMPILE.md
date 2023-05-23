@@ -26,7 +26,7 @@ Then compile using cmake (qmake is NOT supported):
 
 ```shell
 cmake -S src/PlotJuggler -B build/PlotJuggler -DCMAKE_INSTALL_PREFIX=install
-cmake --build build/PlotJuggler --config RelWithDebInfo --parallel --target install
+cmake --build build/PlotJuggler --config RelWithDebInfo --target install
 ```
 
 ## Optional: build with Conan
@@ -45,7 +45,7 @@ cmake -S src/PlotJuggler -B build/PlotJuggler \
       -DCMAKE_INSTALL_PREFIX=install \
       -DCMAKE_POLICY_DEFAULT_CMP0091=NEW
 
-cmake --build build/PlotJuggler --config RelWithDebInfo --parallel --target install
+cmake --build build/PlotJuggler --config RelWithDebInfo --target install
 ```
 
 ## Deploy as an AppImage
@@ -74,6 +74,12 @@ cp -v install/bin/* AppDir/usr/bin
     -d ./src/PlotJuggler/PlotJuggler.desktop \
     -i ./src/PlotJuggler/plotjuggler.png \
     --plugin qt --output appimage
+```
+
+## Deploy as an AppImage via Docker
+
+```shell
+docker buildx build -o . .
 ```
 
 # Compile in Mac
@@ -111,7 +117,7 @@ Then compile using cmake:
 
 ```shell
 cmake -S src/PlotJuggler -B build/PlotJuggler -DCMAKE_INSTALL_PREFIX=install
-cmake --build build/PlotJuggler --config RelWithDebInfo --parallel --target install
+cmake --build build/PlotJuggler --config RelWithDebInfo --target install
 ```
 
 # Compile in Windows
@@ -153,7 +159,7 @@ cmake -G "Visual Studio 16" ^
       -DCMAKE_POLICY_DEFAULT_CMP0091=NEW
 
 
-cmake --build build/PlotJuggler --config Release --parallel --target install
+cmake --build build/PlotJuggler --config Release --target install
 ```
 
 ## Build with vcpkg
@@ -168,7 +174,7 @@ cmake -G "Visual Studio 16" ^
       -DCMAKE_TOOLCHAIN_FILE=%CMAKE_TOOLCHAIN%  ^
       -DCMAKE_INSTALL_PREFIX=%cd%/install
 
-cmake --build build/PlotJuggler --config Release --parallel --target install
+cmake --build build/PlotJuggler --config Release --target install
 ```
 
 ## Create a Windows installer
