@@ -85,7 +85,7 @@ public:
 private:
   void trimRange()
   {
-    if(_max_range_x < std::numeric_limits<double>::max())
+    if(_max_range_x < std::numeric_limits<double>::max() && !_points.empty())
     {
       auto const back_point_x = _points.back().x;
       while (_points.size() > 2 && (back_point_x - _points.front().x) > _max_range_x)

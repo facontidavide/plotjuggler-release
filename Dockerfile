@@ -1,10 +1,17 @@
-#Download base image ubuntu 18.04
-FROM ubuntu:18.04
+FROM ubuntu:22.04 as builder
 
-RUN apt update
+RUN apt-get update && \
+    apt-get -y install cmake build-essential wget file qtbase5-dev libqt5svg5-dev libqt5websockets5-dev libqt5opengl5-dev libqt5x11extras5-dev libprotoc-dev libzmq3-dev liblz4-dev libzstd-dev libmosquittopp-dev
 
-RUN apt install cmake git build-essential qtbase5-dev libqt5svg5-dev libqt5websockets5-dev libqt5opengl5-dev libqt5x11extras5-dev nano qt5-default -y && \
-    rm -rf /var/lib/apt/lists/* && \
-    apt clean
+RUN mkdir -p /opt/plotjuggler
+COPY . /opt/plotjuggler
+RUN mkdir /opt/plotjuggler/build
+WORKDIR /opt/plotjuggler/build
+RUN cmake .. -DCMAKE_INSTALL_PREFIX=/usr 
+RUN make -j `nproc`
+RUN make install DESTDIR=AppDir
+RUN /opt/plotjuggler/appimage/AppImage.sh
 
+FROM scratch as exporter
+COPY --from=builder /opt/plotjuggler/build/PlotJuggler-x86_64.AppImage /
 
