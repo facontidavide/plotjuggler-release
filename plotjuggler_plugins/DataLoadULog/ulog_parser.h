@@ -5,6 +5,7 @@
 #include <map>
 #include <set>
 #include <string.h>
+#include <cstdint>
 
 #include "string_view.hpp"
 

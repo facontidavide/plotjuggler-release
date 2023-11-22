@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.10.2)
 
-PROJECT(plotjuggler LANGUAGES C CXX VERSION 3.7.1)
+PROJECT(plotjuggler LANGUAGES C CXX VERSION 3.8.0)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -42,8 +42,11 @@ if(VCPKG_TOOLCHAIN)
     message(STATUS "BUILDING_WITH_VCPKG")
 endif()
 
+find_package(ament_cmake QUIET)
+find_package(catkin QUIET)
+
 # http://answers.ros.org/question/230877/optionally-build-a-package-with-catkin/
-if( CATKIN_DEVEL_PREFIX OR catkin_FOUND OR CATKIN_BUILD_BINARY_PACKAGE)
+if(catkin_FOUND)
     set(COMPILING_WITH_CATKIN 1)
 
     message(STATUS "--------------------------------------------------")
@@ -63,7 +66,7 @@ message(STATUS ${catkin_INCLUDE_DIRS})
     include_directories(${catkin_INCLUDE_DIRS})
     add_definitions(-DCOMPILED_WITH_CATKIN)
 
-elseif( DEFINED ENV{AMENT_PREFIX_PATH})
+elseif(ament_cmake_FOUND)
     set(COMPILING_WITH_AMENT 1)
 
     find_package(ament_cmake REQUIRED)
@@ -280,6 +283,8 @@ add_subdirectory( plotjuggler_plugins/ToolboxLuaEditor )
 add_subdirectory( plotjuggler_plugins/ParserProtobuf )
 add_subdirectory( plotjuggler_plugins/ParserROS )
 add_subdirectory( plotjuggler_plugins/ParserDataTamer )
+
+add_subdirectory( plotjuggler_plugins/PluginsZcm )
 
 # Install targets
 

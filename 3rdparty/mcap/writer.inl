@@ -1,10 +1,9 @@
 #include "crc32.hpp"
+#include <algorithm>
 #include <cassert>
 #include <iostream>
 #include <lz4frame.h>
 #include <lz4hc.h>
-
-#define ZSTD_STATIC_LINKING_ONLY
 #include <zstd.h>
 #include <zstd_errors.h>
 
@@ -40,50 +39,29 @@ FileWriter::~FileWriter() {
   end();
 }
 
-Status FileWriter::open(std::string_view filename, size_t bufferCapacity) {
+Status FileWriter::open(std::string_view filename) {
   end();
   file_ = std::fopen(filename.data(), "wb");
   if (!file_) {
     const auto msg = internal::StrCat("failed to open file \"", filename, "\" for writing");
     return Status(StatusCode::OpenFailed, msg);
   }
-  bufferCapacity_ = bufferCapacity;
-  buffer_.reserve(bufferCapacity);
   return StatusCode::Success;
 }
 
 void FileWriter::handleWrite(const std::byte* data, uint64_t size) {
   assert(file_);
-
-  // If this will overflow the buffer, flush it
-  if (buffer_.size() > 0 && buffer_.size() + size > bufferCapacity_) {
-    const size_t written = std::fwrite(buffer_.data(), 1, buffer_.size(), file_);
-    (void)written;
-    assert(written == buffer_.size());
-    buffer_.clear();
-  }
-  // Append to the buffer if it will fit, otherwise directly write
-  if (buffer_.size() + size <= bufferCapacity_) {
-    buffer_.insert(buffer_.end(), data, data + size);
-  } else {
-    const size_t written = std::fwrite(data, 1, size, file_);
-    (void)written;
-    assert(written == size);
-  }
-
+  const size_t written = std::fwrite(data, 1, size, file_);
+  (void)written;
+  assert(written == size);
   size_ += size;
 }
 
 void FileWriter::end() {
   if (file_) {
-    if (buffer_.size() > 0) {
-      std::fwrite(buffer_.data(), 1, buffer_.size(), file_);
-    }
-
     std::fclose(file_);
     file_ = nullptr;
   }
-  buffer_.clear();
   size_ = 0;
 }
 
@@ -264,8 +242,8 @@ void ZStdWriter::handleWrite(const std::byte* data, uint64_t size) {
 void ZStdWriter::end() {
   const auto dstCapacity = ZSTD_compressBound(uncompressedBuffer_.size());
   compressedBuffer_.resize(dstCapacity);
-  const int dstSize = ZSTD_compress2(zstdContext_, compressedBuffer_.data(), dstCapacity,
-                                     uncompressedBuffer_.data(), uncompressedBuffer_.size());
+  const size_t dstSize = ZSTD_compress2(zstdContext_, compressedBuffer_.data(), dstCapacity,
+                                        uncompressedBuffer_.data(), uncompressedBuffer_.size());
   if (ZSTD_isError(dstSize)) {
     const auto errCode = ZSTD_getErrorCode(dstSize);
     std::cerr << "ZSTD_compress2 failed: " << ZSTD_getErrorName(dstSize) << " ("
@@ -326,11 +304,12 @@ void McapWriter::open(IWritable& writer, const McapWriterOptions& options) {
   }
   auto* chunkWriter = getChunkWriter();
   if (chunkWriter) {
-    chunkWriter->crcEnabled = !options.noCRC;
+    chunkWriter->crcEnabled = !options.noChunkCRC;
     if (chunkWriter->crcEnabled) {
       chunkWriter->resetCrc();
     }
   }
+  writer.crcEnabled = options.enableDataCRC;
   output_ = &writer;
   writeMagic(writer);
   write(writer, Header{options.profile, options.library});
@@ -352,22 +331,28 @@ void McapWriter::open(std::ostream& stream, const McapWriterOptions& options) {
   open(*streamOutput_, options);
 }
 
+void McapWriter::closeLastChunk() {
+  if (!opened_ || !output_) {
+    return;
+  }
+  auto& fileOutput = *output_;
+  auto* chunkWriter = getChunkWriter();
+  if (chunkWriter && !chunkWriter->empty()) {
+    writeChunk(fileOutput, *chunkWriter);
+  }
+}
+
 void McapWriter::close() {
   if (!opened_ || !output_) {
     return;
   }
-  auto* chunkWriter = getChunkWriter();
+  closeLastChunk();
+
   auto& fileOutput = *output_;
 
-  // Check if there is an open chunk that needs to be closed
-  if (chunkWriter && !chunkWriter->empty()) {
-    writeChunk(fileOutput, *chunkWriter);
-  }
-
   // Write the Data End record
-  uint32_t dataSectionCrc = 0;
-  write(fileOutput, DataEnd{dataSectionCrc});
-  if (!options_.noCRC) {
+  write(fileOutput, DataEnd{fileOutput.crc()});
+  if (!options_.noSummaryCRC) {
     output_->crcEnabled = true;
     output_->resetCrc();
   }
@@ -458,7 +443,7 @@ void McapWriter::close() {
   }
 
   // Write the footer and trailing magic
-  write(fileOutput, Footer{summaryStart, summaryOffsetStart}, !options_.noCRC);
+  write(fileOutput, Footer{summaryStart, summaryOffsetStart}, !options_.noSummaryCRC);
   writeMagic(fileOutput);
 
   // Flush output
@@ -514,7 +499,8 @@ Status McapWriter::write(const Message& message) {
     const auto& channel = channels_[channelIndex];
 
     // Check if the Schema record needs to be written
-    if (writtenSchemas_.find(channel.schemaId) == writtenSchemas_.end()) {
+    if ((channel.schemaId != 0) &&
+        (writtenSchemas_.find(channel.schemaId) == writtenSchemas_.end())) {
       const size_t schemaIndex = channel.schemaId - 1;
       if (schemaIndex >= schemas_.size()) {
         const auto msg = internal::StrCat("invalid schema id ", channel.schemaId);
@@ -590,7 +576,7 @@ Status McapWriter::write(Attachment& attachment) {
     writeChunk(fileOutput, *chunkWriter);
   }
 
-  if (!options_.noCRC) {
+  if (!options_.noAttachmentCRC) {
     // Calculate the CRC32 of the attachment
     uint32_t sizePrefix = 0;
     uint32_t crc = internal::CRC32_INIT;
@@ -600,10 +586,10 @@ Status McapWriter::write(Attachment& attachment) {
     crc = internal::crc32Update(crc, reinterpret_cast<const std::byte*>(&sizePrefix), 4);
     crc = internal::crc32Update(crc, reinterpret_cast<const std::byte*>(attachment.name.data()),
                                 sizePrefix);
-    sizePrefix = uint32_t(attachment.contentType.size());
+    sizePrefix = uint32_t(attachment.mediaType.size());
     crc = internal::crc32Update(crc, reinterpret_cast<const std::byte*>(&sizePrefix), 4);
     crc = internal::crc32Update(
-      crc, reinterpret_cast<const std::byte*>(attachment.contentType.data()), sizePrefix);
+      crc, reinterpret_cast<const std::byte*>(attachment.mediaType.data()), sizePrefix);
     crc = internal::crc32Update(crc, reinterpret_cast<const std::byte*>(&attachment.dataSize), 8);
     crc = internal::crc32Update(crc, reinterpret_cast<const std::byte*>(attachment.data),
                                 attachment.dataSize);
@@ -737,11 +723,18 @@ void McapWriter::writeChunk(IWritable& output, IChunkWriter& chunkData) {
     const uint64_t messageIndexOffset = output.size();
     if (!options_.noMessageIndex) {
       // Write the message index records
-      for (const auto& [channelId, messageIndex] : currentMessageIndex_) {
-        chunkIndexRecord.messageIndexOffsets.emplace(channelId, output.size());
-        write(output, messageIndex);
+      for (auto& [channelId, messageIndex] : currentMessageIndex_) {
+        // currentMessageIndex_ contains entries for every channel ever seen, not just in this
+        // chunk. Only write message index records for channels with messages in this chunk.
+        if (messageIndex.records.size() > 0) {
+          chunkIndexRecord.messageIndexOffsets.emplace(channelId, output.size());
+          write(output, messageIndex);
+          // reset this message index for the next chunk. This allows us to re-use
+          // allocations vs. the alternative strategy of allocating a fresh set of MessageIndex
+          // objects per chunk.
+          messageIndex.records.clear();
+        }
       }
-      currentMessageIndex_.clear();
     }
     const uint64_t messageIndexLength = output.size() - messageIndexOffset;
 
@@ -757,10 +750,17 @@ void McapWriter::writeChunk(IWritable& output, IChunkWriter& chunkData) {
     chunkIndexRecord.uncompressedSize = uncompressedSize;
   } else if (!options_.noMessageIndex) {
     // Write the message index records
-    for (const auto& [channelId, messageIndex] : currentMessageIndex_) {
-      write(output, messageIndex);
+    for (auto& [channelId, messageIndex] : currentMessageIndex_) {
+      // currentMessageIndex_ contains entries for every channel ever seen, not just in this
+      // chunk. Only write message index records for channels with messages in this chunk.
+      if (messageIndex.records.size() > 0) {
+        write(output, messageIndex);
+        // reset this message index for the next chunk. This allows us to re-use
+        // allocations vs. the alternative strategy of allocating a fresh set of MessageIndex
+        // objects per chunk.
+        messageIndex.records.clear();
+      }
     }
-    currentMessageIndex_.clear();
   }
 
   // Reset uncompressedSize and start/end times for the next chunk
@@ -858,15 +858,15 @@ uint64_t McapWriter::write(IWritable& output, const Message& message) {
 }
 
 uint64_t McapWriter::write(IWritable& output, const Attachment& attachment) {
-  const uint64_t recordSize = 4 + attachment.name.size() + 8 + 8 + 4 +
-                              attachment.contentType.size() + 8 + attachment.dataSize + 4;
+  const uint64_t recordSize = 4 + attachment.name.size() + 8 + 8 + 4 + attachment.mediaType.size() +
+                              8 + attachment.dataSize + 4;
 
   write(output, OpCode::Attachment);
   write(output, recordSize);
   write(output, attachment.logTime);
   write(output, attachment.createTime);
   write(output, attachment.name);
-  write(output, attachment.contentType);
+  write(output, attachment.mediaType);
   write(output, attachment.dataSize);
   write(output, attachment.data, attachment.dataSize);
   write(output, attachment.crc);
@@ -904,7 +904,7 @@ uint64_t McapWriter::write(IWritable& output, const Chunk& chunk) {
 }
 
 uint64_t McapWriter::write(IWritable& output, const MessageIndex& index) {
-  const uint32_t recordsSize = index.records.size() * 16;
+  const uint32_t recordsSize = (uint32_t)(index.records.size()) * 16;
   const uint64_t recordSize = 2 + 4 + recordsSize;
 
   write(output, OpCode::MessageIndex);
@@ -921,7 +921,7 @@ uint64_t McapWriter::write(IWritable& output, const MessageIndex& index) {
 }
 
 uint64_t McapWriter::write(IWritable& output, const ChunkIndex& index) {
-  const uint32_t messageIndexOffsetsSize = index.messageIndexOffsets.size() * 10;
+  const uint32_t messageIndexOffsetsSize = (uint32_t)(index.messageIndexOffsets.size()) * 10;
   const uint64_t recordSize = /* start_time */ 8 +
                               /* end_time */ 8 +
                               /* chunk_start_offset */ 8 +
@@ -960,7 +960,7 @@ uint64_t McapWriter::write(IWritable& output, const AttachmentIndex& index) {
                               /* create_time */ 8 +
                               /* data_size */ 8 +
                               /* name */ 4 + index.name.size() +
-                              /* content_type */ 4 + index.contentType.size();
+                              /* media_type */ 4 + index.mediaType.size();
 
   write(output, OpCode::AttachmentIndex);
   write(output, recordSize);
@@ -970,7 +970,7 @@ uint64_t McapWriter::write(IWritable& output, const AttachmentIndex& index) {
   write(output, index.createTime);
   write(output, index.dataSize);
   write(output, index.name);
-  write(output, index.contentType);
+  write(output, index.mediaType);
 
   return 9 + recordSize;
 }
@@ -990,7 +990,7 @@ uint64_t McapWriter::write(IWritable& output, const MetadataIndex& index) {
 }
 
 uint64_t McapWriter::write(IWritable& output, const Statistics& stats) {
-  const uint32_t channelMessageCountsSize = stats.channelMessageCounts.size() * 10;
+  const uint32_t channelMessageCountsSize = (uint32_t)(stats.channelMessageCounts.size()) * 10;
   const uint64_t recordSize = /* message_count */ 8 +
                               /* schema_count */ 2 +
                               /* channel_count */ 4 +

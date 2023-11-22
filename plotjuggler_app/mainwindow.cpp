@@ -818,8 +818,21 @@ QStringList MainWindow::initializePlugins(QString directory_name)
         connect(toolbox, &ToolboxPlugin::closed, this,
                 [=]() { ui->widgetStack->setCurrentIndex(0); });
 
-        connect(toolbox, &ToolboxPlugin::plotCreated, this, [=](std::string name) {
-          _curvelist_widget->addCustom(QString::fromStdString(name));
+        connect(toolbox, &ToolboxPlugin::importData, this,
+                [this](PlotDataMapRef& new_data, bool remove_old) {
+                  importPlotDataMap(new_data, remove_old);
+                  updateDataAndReplot(true);
+                });
+
+        connect(toolbox, &ToolboxPlugin::plotCreated, this, [=](std::string name, bool is_custom) {
+          if (is_custom)
+          {
+            _curvelist_widget->addCustom(QString::fromStdString(name));
+          }
+          else
+          {
+            _curvelist_widget->addCurve(name);
+          }
           _curvelist_widget->updateAppearance();
           _curvelist_widget->clearSelections();
         });
@@ -837,6 +850,11 @@ QStringList MainWindow::initializePlugins(QString directory_name)
   for (auto& [name, streamer] : _data_streamer)
   {
     streamer->setParserFactories(&_parser_factories);
+  }
+
+  for (auto& [name, toolbox] : _toolboxes)
+  {
+    toolbox->setParserFactories(&_parser_factories);
   }
 
   for (auto& [name, loader] : _data_loader)
