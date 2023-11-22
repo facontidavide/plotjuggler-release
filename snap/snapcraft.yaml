@@ -165,7 +165,6 @@ parts:
       - ros-foxy-ackermann-msgs
       - ros-foxy-action-msgs
       - ros-foxy-actionlib-msgs
-      - ros-foxy-astuff-sensor-msgs
       - ros-foxy-automotive-autonomy-msgs
       - ros-foxy-automotive-navigation-msgs
       - ros-foxy-automotive-platform-msgs
@@ -233,7 +232,6 @@ parts:
       - ros-foxy-object-recognition-msgs
       - ros-foxy-octomap-msgs
       - ros-foxy-ouster-msgs
-      - ros-foxy-pacmod-msgs
       - ros-foxy-pcl-msgs
       - ros-foxy-pendulum-msgs
       - ros-foxy-phidgets-msgs

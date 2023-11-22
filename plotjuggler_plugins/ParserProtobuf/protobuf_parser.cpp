@@ -228,7 +228,8 @@ bool ProtobufParser::parseMessage(const MessageRef serialized_msg,
 
   // start recursion
   ParseImpl(*mutable_msg, _topic_name, false);
-
+  
+  delete mutable_msg;
   return true;
 }
 

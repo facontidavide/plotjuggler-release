@@ -1,0 +1,10 @@
+#!/bin/bash
+
+# Paths to ROS 2 plugins
+export PLUGIN_FOLDERS=$SNAP/opt/ros/snap/lib/plotjuggler_ros
+export AMENT_PREFIX_PATH=$SNAP/opt/ros/humble
+# Disable FastDDS shared-memory
+export FASTRTPS_DEFAULT_PROFILES_FILE=${SNAP}/usr/share/fastdds_no_shared_memory.xml
+
+${SNAP}/usr/local/bin/plotjuggler --plugin_folders $PLUGIN_FOLDERS $@
+

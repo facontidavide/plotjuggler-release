@@ -13,6 +13,7 @@
 #include "PlotJuggler/plotdata.h"
 #include "PlotJuggler/pj_plugin.h"
 #include "PlotJuggler/transform_function.h"
+#include "PlotJuggler/messageparser_base.h"
 
 namespace PJ
 {
@@ -35,15 +36,29 @@ public:
 
   virtual std::pair<QWidget*, WidgetType> providedWidget() const = 0;
 
+  void setParserFactories( ParserFactories* parsers)
+  {
+    _parser_factories = parsers;
+  }
+
+  const ParserFactories* parserFactories() const
+  {
+    return _parser_factories;
+  }
+
 public slots:
 
   virtual bool onShowWidget() = 0;
 
 signals:
 
-  void plotCreated(std::string plot_name);
+  void plotCreated(std::string plot_name, bool is_custom = true);
+
+  void importData(PlotDataMapRef& new_data, bool remove_old);
 
   void closed();
+private:
+    ParserFactories* _parser_factories = nullptr;
 };
 
 using ToolboxPluginPtr = std::shared_ptr<ToolboxPlugin>;
