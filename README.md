@@ -9,7 +9,7 @@
 
 **Gold Sponsor**: [Greenzie](https://www.greenzie.com/)
 
-# PlotJuggler 3.7
+# PlotJuggler 3.8
 
 PlotJuggler is a tool to visualize time series that is **fast**, **powerful** and  **intuitive**.
 
@@ -122,8 +122,8 @@ sudo snap install plotjuggler
 
 When launching you have two options available:
 
-- `plotjuggler.ros` to load the ROS1 plugins
-- `plotjuggler.ros2` to load the ROS2 plugins
+- `plotjuggler.ros` to load the ROS1 plugins.
+- `plotjuggler.ros2` to load the ROS2 plugins.
 
 In addition, the command `plotjuggler` is an alias to `plotjuggler.ros`.
 If you'd prefer to alias `plotjuggler.ros2` instead,

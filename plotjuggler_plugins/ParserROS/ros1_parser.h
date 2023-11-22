@@ -27,7 +27,7 @@ public:
   }
   const char* encoding() const override
   {
-    return "ros1";
+    return "ros1msg";
   }
 
   MessageParserPtr createParser(const std::string& topic_name,
