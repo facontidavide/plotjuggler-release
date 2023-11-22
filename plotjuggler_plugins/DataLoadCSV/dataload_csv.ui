@@ -97,6 +97,11 @@
              <string>&quot; &quot; (space)</string>
             </property>
            </item>
+           <item>
+            <property name="text">
+             <string>&quot;\t&quot; (tab)</string>
+            </property>
+           </item>
           </widget>
          </item>
          <item>

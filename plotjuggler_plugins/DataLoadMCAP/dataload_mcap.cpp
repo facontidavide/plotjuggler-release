@@ -8,11 +8,9 @@
 #include <QDateTime>
 #include <QInputDialog>
 #include <QPushButton>
-#include "QSyntaxStyle"
 
 #include "mcap/reader.hpp"
 #include "dialog_mcap.h"
-#include "PlotJuggler/fmt/format.h"
 
 #include <QStandardItemModel>
 
@@ -39,52 +37,71 @@ bool DataLoadMCAP::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_dat
   {
     throw std::runtime_error("No parsing available");
   }
-  // open file
-  std::ifstream input(info->filename.toStdString(), std::ios::binary);
-  mcap::FileStreamReader data_source(input);
 
-  // read metainfo
-  mcap::TypedRecordReader type_reader(data_source, 8);
+  // open file
+  mcap::McapReader reader;
+  auto status = reader.open(info->filename.toStdString());
+  if (!status.ok())
+  {
+    QMessageBox::warning(nullptr, "Can't open file",
+                         tr("Code: %0\n Message: %1")
+                             .arg(int(status.code))
+                             .arg(QString::fromStdString(status.message)));
+    return false;
+  }
+
+  status = reader.readSummary(mcap::ReadSummaryMethod::NoFallbackScan);
+  if (!status.ok())
+  {
+    QMessageBox::warning(nullptr, "Can't open summary of the file",
+                         tr("Code: %0\n Message: %1")
+                             .arg(int(status.code))
+                             .arg(QString::fromStdString(status.message)));
+    return false;
+  }
+  auto statistics = reader.statistics();
 
   std::unordered_map<int, mcap::SchemaPtr> schemas; // schema_id
   std::unordered_map<int, mcap::ChannelPtr> channels; // channel_id
   std::unordered_map<int, MessageParserPtr> parsers_by_channel; // channel_id
 
-  type_reader.onSchema = [&](const mcap::SchemaPtr recordPtr,
-                             mcap::ByteOffset, std::optional<mcap::ByteOffset>)
+  for (const auto& [schema_id, shema_ptr] : reader.schemas())
   {
-    schemas.insert( {recordPtr->id, recordPtr} );
-  };
+    schemas.insert( {schema_id, shema_ptr} );
+  }
 
-  type_reader.onChannel = [&](const mcap::ChannelPtr recordPtr,
-                              mcap::ByteOffset, std::optional<mcap::ByteOffset>)
+  std::set<QString> notified_encoding_problem;
+
+  for (const auto& [channel_id, channel_ptr] : reader.channels())
   {
-    if(channels.count(recordPtr->id) != 0)
-    {
-      return;
-    }
-    channels.insert( {recordPtr->id, recordPtr} );
-
-    auto schema = schemas.at(recordPtr->schemaId);
-    const auto& topic_name = recordPtr->topic;
+    channels.insert( {channel_id, channel_ptr} );
+    const auto& schema = schemas.at(channel_ptr->schemaId);
+    const auto& topic_name = channel_ptr->topic;
     std::string definition(reinterpret_cast<const char*>(schema->data.data()),
                            schema->data.size());
 
-    QString encoding = QString::fromStdString(recordPtr->messageEncoding);
 
-    auto it = parserFactories()->find( encoding );
+    QString channel_encoding = QString::fromStdString(channel_ptr->messageEncoding);
+    QString schema_encoding = QString::fromStdString(schema->encoding);
+
+    auto it = parserFactories()->find( channel_encoding );
 
     if(it == parserFactories()->end() )
     {
-      encoding = QString::fromStdString(schema->encoding);
-      it = parserFactories()->find( encoding );
+      it = parserFactories()->find( schema_encoding );
     }
 
     if(it == parserFactories()->end() )
     {
-      throw std::runtime_error(
-        fmt::format("No parsing available for encoding [{}] nor [{}]",
-                    schema->encoding, recordPtr->messageEncoding) );
+      // show message only once per encoding type
+      if(notified_encoding_problem.count(schema_encoding) == 0)
+      {
+        notified_encoding_problem.insert(schema_encoding);
+        auto msg = QString("No parser available for encoding [%0] nor [%1]")
+                       .arg(channel_encoding).arg(schema_encoding);
+        QMessageBox::warning(nullptr, "Encoding problem", msg);
+      }
+      continue;
     }
 
     auto& parser_factory = it->second;
@@ -92,23 +109,8 @@ bool DataLoadMCAP::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_dat
                                                schema->name,
                                                definition,
                                                plot_data);
-    parsers_by_channel.insert( {recordPtr->id, parser} );
+    parsers_by_channel.insert( {channel_ptr->id, parser} );
   };
-
-  bool running = true;
-  while (running)
-  {
-    running = type_reader.next();
-    if (!type_reader.status().ok())
-    {
-      QMessageBox::warning(nullptr, tr("MCAP parsing"),
-                           QString("Error reading the MCAP file:\n%1.\n%2")
-                               .arg(info->filename)
-                               .arg(QString::fromStdString(type_reader.status().message)),
-                           QMessageBox::Cancel);
-      return false;
-    }
-  }
 
   DialogMCAP dialog(channels, schemas);
   auto ret = dialog.exec();
@@ -135,22 +137,12 @@ bool DataLoadMCAP::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_dat
 
   //-------------------------------------------
   //---------------- Parse messages -----------
-  mcap::McapReader msg_reader;
-  auto status = msg_reader.open(data_source);
-  if (!status.ok())
-  {
-    auto msg = QString::fromStdString(status.message);
-    QMessageBox::warning(nullptr, "MCAP parsing",
-                         QString("Error reading the MCAP file: %1").arg(msg),
-                         QMessageBox::Cancel);
-    return false;
-  }
 
   auto onProblem = [](const mcap::Status& problem) {
     qDebug() << QString::fromStdString(problem.message);
   };
 
-  auto messages = msg_reader.readMessages(onProblem);
+  auto messages = reader.readMessages(onProblem);
 
   QProgressDialog progress_dialog("Loading... please wait",
                                   "Cancel",
@@ -195,7 +187,7 @@ bool DataLoadMCAP::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_dat
     }
   }
 
-  msg_reader.close();
+  reader.close();
   return true;
 }
 

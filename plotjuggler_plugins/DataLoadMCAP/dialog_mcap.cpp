@@ -42,12 +42,11 @@ DialogMCAP::DialogMCAP(const std::unordered_map<int, mcap::ChannelPtr> &channels
   for(const auto& [id, channel]: channels )
   {
     auto topic = QString::fromStdString(channel->topic);
-    auto encoding = channel->messageEncoding;
-    auto schema = schemas.at( channel->schemaId )->name;
+    auto const& schema = schemas.at( channel->schemaId );
 
     ui->tableWidget->setItem(row, 0, new QTableWidgetItem(topic) );
-    ui->tableWidget->setItem(row, 1, new QTableWidgetItem(QString::fromStdString(schema)) );
-    ui->tableWidget->setItem(row, 2, new QTableWidgetItem(QString::fromStdString(encoding)) );
+    ui->tableWidget->setItem(row, 1, new QTableWidgetItem(QString::fromStdString(schema->name)) );
+    ui->tableWidget->setItem(row, 2, new QTableWidgetItem(QString::fromStdString(schema->encoding)) );
 
     if( selected.contains(topic) )
     {
@@ -56,8 +55,6 @@ DialogMCAP::DialogMCAP(const std::unordered_map<int, mcap::ChannelPtr> &channels
     row++;
   }
   ui->tableWidget->sortByColumn(0);
-
-
 }
 
 DialogMCAP::~DialogMCAP()

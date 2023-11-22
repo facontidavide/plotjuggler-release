@@ -311,6 +311,7 @@ int DataLoadCSV::launchDialog(QFile& file, std::vector<std::string>* column_name
     int comma_count = first_line.count(QLatin1Char(','));
     int semicolon_count = first_line.count(QLatin1Char(';'));
     int space_count = first_line.count(QLatin1Char(' '));
+    int tab_count = first_line.count(QLatin1Char('\t'));
 
     if (comma_count > 3 && comma_count > semicolon_count)
     {
@@ -327,7 +328,11 @@ int DataLoadCSV::launchDialog(QFile& file, std::vector<std::string>* column_name
       _ui->comboBox->setCurrentIndex(2);
       _delimiter = ' ';
     }
-    file.close();
+    if (tab_count > 3 && comma_count == 0 && semicolon_count == 0)
+    {
+      _ui->comboBox->setCurrentIndex(3);
+      _delimiter = '\t';
+    }    file.close();
   }
 
 
@@ -360,6 +365,9 @@ int DataLoadCSV::launchDialog(QFile& file, std::vector<std::string>* column_name
                          break;
                        case 2:
                          _delimiter = ' ';
+                         break;
+                       case 3:
+                         _delimiter = '\t';
                          break;
                      }
                      _csvHighlighter.delimiter = _delimiter;
