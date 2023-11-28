@@ -2,7 +2,7 @@
 #include <iostream>
 
 #include "datatamer_parser.h"
-#include "contrib/data_tamer_parser.hpp"
+#include "data_tamer_parser/data_tamer_parser.hpp"
 #include "PlotJuggler/fmt/format.h"
 
 using namespace PJ;
