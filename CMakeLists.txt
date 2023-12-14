@@ -177,7 +177,6 @@ set(PLOTJUGGLER_BASE_SRC
     plotjuggler_base/src/plotpanner.cpp
     plotjuggler_base/src/timeseries_qwt.cpp
     plotjuggler_base/src/reactive_function.cpp
-    plotjuggler_base/src/special_messages.cpp
 )
 
 qt5_wrap_cpp(PLOTJUGGLER_BASE_MOCS

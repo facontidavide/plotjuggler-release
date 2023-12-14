@@ -425,7 +425,7 @@ inline bool ParseSnapshot(const Schema& schema, SnapshotView snapshot,
     const auto& field = schema.fields[i];
     if (GetBit(snapshot.active_mask, i))
     {
-      ParseSnapshotRecursive(field, schema.custom_types, buffer, callback_number, "");
+      ParseSnapshotRecursive(field, schema.custom_types, buffer, callback_number, {});
     }
   }
   return true;
