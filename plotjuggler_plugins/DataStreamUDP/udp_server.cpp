@@ -107,11 +107,11 @@ bool UDP_Server::start(QStringList*)
   ParserFactoryPlugin::Ptr parser_creator;
 
   connect(dialog.ui->comboBoxProtocol,
-          qOverload<const QString &>(&QComboBox::currentIndexChanged),
-          this, [&](const QString & selected_protocol) {
+          qOverload<const QString&>(&QComboBox::currentIndexChanged), this,
+          [&](const QString& selected_protocol) {
             if (parser_creator)
             {
-              if( auto prev_widget = parser_creator->optionsWidget())
+              if (auto prev_widget = parser_creator->optionsWidget())
               {
                 prev_widget->setVisible(false);
               }

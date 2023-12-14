@@ -155,9 +155,9 @@ which allows user to develop closed-source plugins.
 Please note that some third party dependencies (including Qt) use the
 **GNU Lesser General Public License**.
 
-# Stargazers
+# Star History
 
-[![Stargazers over time](https://starchart.cc/facontidavide/PlotJuggler.svg)](https://starchart.cc/facontidavide/PlotJuggler)
+[![Star History Chart](https://api.star-history.com/svg?repos=facontidavide/PlotJuggler&type=Date)](https://star-history.com/#facontidavide/PlotJuggler&Date)
 
 # Contributors
 
