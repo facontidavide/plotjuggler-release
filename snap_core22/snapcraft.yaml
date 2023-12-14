@@ -10,7 +10,6 @@ description: |
 
     $ plotjuggler
 
-  launching PlotJuggler with ROS 2 plugins by default.
 
 issues: https://github.com/facontidavide/plotjuggler/issues
 source-code: https://github.com/facontidavide/plotjuggler
@@ -246,9 +245,6 @@ parts:
 
         # prevent rosdep from installing plotjuggler
         sed -i "s|<depend>plotjuggler</depend>||" plotjuggler-ros-plugins/package.xml
-
-        # add plotjuggler_LIBRARIES link
-        sed -i '/\${Qt5Xml_LIBRARIES}/a ${plotjuggler_LIBRARIES}' plotjuggler-ros-plugins/plugins/CMakeLists.txt
 
         # Qt dependencies are managed by the kde neon-extension
         sed -i '/qt/d' plotjuggler-ros-plugins/package.xml
