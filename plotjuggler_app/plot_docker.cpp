@@ -169,7 +169,7 @@ void PlotDocker::restoreSplitter(QDomElement elem, DockWidget* widget)
         (orientation == Qt::Horizontal) ? widgets[i]->width() : widgets[i]->height();
   }
 
-  auto sizes_str = elem.attribute("sizes").splitRef(";", QString::SkipEmptyParts);
+  auto sizes_str = elem.attribute("sizes").split(";");
   QList<int> sizes;
 
   for (int i = 0; i < splitter_count; i++)
