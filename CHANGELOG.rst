@@ -2,6 +2,11 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+3.8.4 (2023-12-20)
+------------------
+* critical bug fix: `#864 <https://github.com/facontidavide/PlotJuggler/issues/864>`_ `#856 <https://github.com/facontidavide/PlotJuggler/issues/856>`_
+* Contributors: Davide Faconti
+
 3.8.1 (2023-11-23)
 ------------------
 * data_tamer added to rosx_introspection
