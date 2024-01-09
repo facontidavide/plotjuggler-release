@@ -205,7 +205,7 @@ void ParserROS::parseQuaternion(const std::string& prefix, double& timestamp)
   getSeries(prefix + "/x").pushBack({ timestamp, quat.x });
   getSeries(prefix + "/y").pushBack({ timestamp, quat.y });
   getSeries(prefix + "/z").pushBack({ timestamp, quat.z });
-  getSeries(prefix + "/z").pushBack({ timestamp, quat.w });
+  getSeries(prefix + "/w").pushBack({ timestamp, quat.w });
 
   auto rpy = Msg::QuaternionToRPY(quat);
   getSeries(prefix + "/roll").pushBack({ timestamp, rpy.roll });
