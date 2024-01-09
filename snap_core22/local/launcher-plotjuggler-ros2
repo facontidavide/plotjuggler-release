@@ -1,5 +1,7 @@
 #!/bin/bash
 
+export LD_LIBRARY_PATH=$SNAP/opt/ros/humble/lib:$SNAP/opt/ros/snap/lib:$SNAP/usr/local/lib:$LD_LIBRARY_PATH
+
 # Paths to ROS 2 plugins
 export PLUGIN_FOLDERS=$SNAP/opt/ros/snap/lib/plotjuggler_ros
 export AMENT_PREFIX_PATH=$SNAP/opt/ros/humble
