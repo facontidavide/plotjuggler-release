@@ -114,22 +114,20 @@ Refer to the instructions in that repository if you want to compile PJ and its R
 
 This massive file will install a version of PlotJuggler that can work with both ROS1 and ROS2. 
 
-[![Get it from the Snap Store](https://snapcraft.io/static/images/badges/en/snap-store-black.svg)](https://snapcraft.io/plotjuggler)
+![Get it from the Snap Store](https://snapcraft.io/static/images/badges/en/snap-store-black.svg)
+
+To install it in Ubuntu 22.04, with ROS2 support, run:
 
 ```
 sudo snap install plotjuggler
 ```
 
-When launching you have two options available:
+If you are still use ROS1 (Ubuntu 20.04), install instead:
 
-- `plotjuggler.ros` to load the ROS1 plugins.
-- `plotjuggler.ros2` to load the ROS2 plugins.
+```
+sudo snap install plotjuggler-ros
+```
 
-In addition, the command `plotjuggler` is an alias to `plotjuggler.ros`.
-If you'd prefer to alias `plotjuggler.ros2` instead,
-you can do so with the command `sudo snap set plotjuggler ros-plugin-version=2`.
-Revert it simply replacing `2` with `1`.
-Note that this also affect the desktop launcher.
 
 ## Compile from source
 
