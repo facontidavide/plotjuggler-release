@@ -1,4 +1,4 @@
-name: plotjuggler
+name: plotjuggler-ros
 adopt-info: plotjuggler # parse metadata from the plotjuggler part
 summary: The timeseries visualization tool that you deserve
 description: |
@@ -8,7 +8,7 @@ description: |
   The snap comes with only ROS 2 plugins.
   You can launch it with
 
-    $ plotjuggler
+    $ plotjuggler-ros
 
 issues: https://github.com/facontidavide/plotjuggler/issues
 source-code: https://github.com/facontidavide/plotjuggler
@@ -28,7 +28,7 @@ package-repositories:
     url: http://packages.ros.org/ros/ubuntu
 
 apps:
-  plotjuggler:
+  plotjuggler-ros:
     command: usr/bin/launcher-plotjuggler-ros
     plugs: [network, network-bind, home, removable-media]
     extensions: [kde-neon]
@@ -87,6 +87,8 @@ parts:
       - python3-vcstool
       - ros-noetic-ros-environment
       - ros-noetic-catkin
+    stage-packages:
+      - libpsm-infinipath1
     override-pull: |
       if [ ! -d plotjuggler-ros-plugins ]; then
 

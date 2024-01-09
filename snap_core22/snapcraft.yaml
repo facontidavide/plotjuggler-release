@@ -6,7 +6,7 @@ description: |
   using an intuitive "drag and drop" interface.
 
   The snap comes with only ROS 2 plugins.
-  You can launch it with
+  You can launch it with:
 
     $ plotjuggler
 
