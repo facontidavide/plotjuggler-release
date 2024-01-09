@@ -508,9 +508,51 @@ bool DataLoadCSV::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_data
   bool parse_date_format = _ui->checkBoxDateFormat->isChecked();
   QString format_string = _ui->lineEditDateFormat->text();
 
+  auto ParseTimestamp = [&](QString str, bool& is_number) {
+      QString str_trimmed = str.trimmed();
+      double val = 0.0;
+      is_number = false;
+      // Support the case where the timestamp is in nanoseconds / microseconds
+      uint64_t ts = str_trimmed.toULong(&is_number);
+      uint64_t first_ts = 1400000000; //May 13, 2014
+      uint64_t last_ts  = 2000000000; // May 18, 2033
+      if(is_number)
+      {
+        if(ts > first_ts*1e9 && ts < last_ts*1e9) {
+          // convert from nanoseconds to seconds
+          val = double(ts) * 1e-9;
+        }
+        else if(ts > first_ts*1e6 && ts < last_ts*1e6) {
+          // convert from nanoseconds to seconds
+          val = double(ts) * 1e-6;
+        }
+      }
+      // Try a double value (seconds)
+      if (!is_number) {
+        val = str_trimmed.toDouble(&is_number);
+      }
+
+      // handle numbers with comma instead of point as decimal separator
+      if (!is_number)
+      {
+          static QLocale locale_with_comma(QLocale::German);
+          val = locale_with_comma.toDouble(str_trimmed, &is_number);
+      }
+      if (!is_number && parse_date_format && !format_string.isEmpty())
+      {
+          QDateTime ts = QDateTime::fromString(str_trimmed, format_string);
+          is_number = ts.isValid();
+          if (is_number)
+          {
+              val = ts.toMSecsSinceEpoch() / 1000.0;
+          }
+      }
+      return val;
+  };
+
   auto ParseNumber = [&](QString str, bool& is_number) {
     QString str_trimmed = str.trimmed();
-    double val = str_trimmed.toDouble(&is_number);
+    double val = val = str_trimmed.toDouble(&is_number);
     // handle numbers with comma instead of point as decimal separator
     if (!is_number)
     {
@@ -589,13 +631,13 @@ bool DataLoadCSV::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_data
       return false;
     }
 
-    double t = linecount;
+    double timestamp = linecount;
 
     if (time_index >= 0)
     {
       bool is_number = false;
       t_str = string_items[time_index];
-      t = ParseNumber(t_str, is_number);
+      timestamp = ParseTimestamp(t_str, is_number);
       time_header_str = header_string_items[time_index];
 
       if (!is_number)
@@ -627,7 +669,7 @@ bool DataLoadCSV::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_data
         return false;
       }
 
-      if (prev_time > t && !sortRequired)
+      if (prev_time > timestamp && !sortRequired)
       {
         QMessageBox msgBox;
         QString timeName;
@@ -671,7 +713,7 @@ bool DataLoadCSV::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_data
         }
       }
 
-      prev_time = t;
+      prev_time = timestamp;
       prev_t_str = t_str;
     }
 
@@ -682,11 +724,11 @@ bool DataLoadCSV::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_data
       double y = ParseNumber(str, is_number);
       if (is_number)
       {
-        plots_vector[i]->pushBack({ t, y });
+        plots_vector[i]->pushBack({ timestamp, y });
       }
       else
       {
-        string_vector[i]->pushBack({ t, str.toStdString() });
+        string_vector[i]->pushBack({ timestamp, str.toStdString() });
       }
     }
 
