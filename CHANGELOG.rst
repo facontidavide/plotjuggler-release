@@ -2,6 +2,13 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+3.8.6 (2024-01-09)
+------------------
+* fix issue `#906 <https://github.com/facontidavide/PlotJuggler/issues/906>`_: support nanoseconds timestamp in csv
+* fix issue `#904 <https://github.com/facontidavide/PlotJuggler/issues/904>`_: wring ROS odometry parsing
+* add moving variance
+* Contributors: Davide Faconti
+
 3.8.5 (2024-01-03)
 ------------------
 * fix issue `#901 <https://github.com/facontidavide/PlotJuggler/issues/901>`_

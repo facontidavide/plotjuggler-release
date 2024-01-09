@@ -277,6 +277,9 @@ void ParserROS::parseImu(const std::string& prefix, double& timestamp)
 void ParserROS::parseOdometry(const std::string& prefix, double& timestamp)
 {
   parseHeader(prefix + "/header", timestamp);
+  std::string child_frame_id;
+  _deserializer->deserializeString(child_frame_id);
+  getStringSeries(prefix + "/child_frame_id").pushBack({ timestamp, child_frame_id });
   parsePoseWithCovariance(prefix + "/pose", timestamp);
   parseTwistWithCovariance(prefix + "/twist", timestamp);
 }
