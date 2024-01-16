@@ -6,7 +6,6 @@
 
 #include <functional>
 #include <stdio.h>
-#include <numeric>
 
 #include <QApplication>
 #include <QActionGroup>
@@ -42,7 +41,6 @@
 #include "curvelist_panel.h"
 #include "tabbedplotwidget.h"
 #include "PlotJuggler/plotdata.h"
-#include "qwt_plot_canvas.h"
 #include "transforms/function_editor.h"
 #include "transforms/lua_custom_function.h"
 #include "utils.h"
@@ -760,8 +758,12 @@ QStringList MainWindow::initializePlugins(QString directory_name)
       }
       else if (message_parser)
       {
-        _parser_factories.insert(
-            std::make_pair(message_parser->encoding(), message_parser));
+        QStringList encodings = QString(message_parser->encoding()).split(";");
+        auto parser_ptr = std::shared_ptr<ParserFactoryPlugin>(message_parser);
+        for(const QString& encoding: encodings)
+        {
+          _parser_factories[encoding] = parser_ptr;
+        }
       }
       else if (streamer)
       {
@@ -1369,7 +1371,7 @@ bool MainWindow::loadDataFromFiles(QStringList filenames)
   filenames.sort();
   std::map<QString, QString> filename_prefix;
 
-  if (filenames.size() > 1)
+  if (filenames.size() > 1 || ui->checkBoxAddPrefixAndMerge->isChecked())
   {
     DialogMultifilePrefix dialog(filenames, this);
     int ret = dialog.exec();
@@ -1409,7 +1411,7 @@ bool MainWindow::loadDataFromFiles(QStringList filenames)
   {
     data_replaced_entirely = true;
   }
-  else
+  else if(!ui->checkBoxAddPrefixAndMerge->isChecked())
   {
     QMessageBox::StandardButton reply;
     reply = QMessageBox::question(

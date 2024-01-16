@@ -143,6 +143,7 @@ public:
 
   // provide an identifier of the provided encoding.
   // example "ros1", "ros2", "json", "protobuf", etc.
+  // If more than one, separate the name using semicolon
   virtual const char* encoding() const = 0;
 
   // create an instance of MessageParser, already configured to
