@@ -2,6 +2,13 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+3.8.7 (2024-01-16)
+------------------
+* add "prefix and merge" checkbox
+* fix warning "transparent.png"
+* fix issue `#912 <https://github.com/facontidavide/PlotJuggler/issues/912>`_
+* Contributors: Davide Faconti
+
 3.8.6 (2024-01-09)
 ------------------
 * fix issue `#906 <https://github.com/facontidavide/PlotJuggler/issues/906>`_: support nanoseconds timestamp in csv
