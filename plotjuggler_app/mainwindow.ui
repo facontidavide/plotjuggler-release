@@ -9,7 +9,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>822</width>
+    <width>825</width>
     <height>720</height>
    </rect>
   </property>
@@ -147,7 +147,6 @@
              <property name="font">
               <font>
                <pointsize>9</pointsize>
-               <weight>50</weight>
                <bold>false</bold>
               </font>
              </property>
@@ -274,6 +273,29 @@
               </widget>
              </item>
             </layout>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="checkBoxAddPrefixAndMerge">
+             <property name="focusPolicy">
+              <enum>Qt::NoFocus</enum>
+             </property>
+             <property name="toolTip">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Useful when comparing 2 or more files containing the same timeseries.&lt;br/&gt;&lt;br/&gt;You will be asked to add a prefix to the name of the timeseries, and you will &lt;span style=&quot; font-weight:700;&quot;&gt;not&lt;/span&gt; remove previously loaded data.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+             <property name="text">
+              <string>Add prefix and merge</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="Line" name="line">
+             <property name="frameShadow">
+              <enum>QFrame::Plain</enum>
+             </property>
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+            </widget>
            </item>
            <item>
             <layout class="QHBoxLayout" name="horizontalLayout_11">
@@ -481,7 +503,6 @@
              <property name="font">
               <font>
                <pointsize>9</pointsize>
-               <weight>50</weight>
                <bold>false</bold>
               </font>
              </property>
@@ -892,7 +913,6 @@
              <property name="font">
               <font>
                <pointsize>9</pointsize>
-               <weight>50</weight>
                <bold>false</bold>
               </font>
              </property>
@@ -1161,7 +1181,7 @@
                   <string>tt</string>
                  </property>
                  <property name="icon">
-                  <iconset>
+                  <iconset resource="resource.qrc">
                    <normaloff>:/style_light/line_tracker_1.png</normaloff>:/style_light/line_tracker_1.png</iconset>
                  </property>
                  <property name="iconSize">
@@ -1376,7 +1396,7 @@
                   <string/>
                  </property>
                  <property name="icon">
-                  <iconset>
+                  <iconset resource="resource.qrc">
                    <normaloff>:/resources/svg/t0.svg</normaloff>:/resources/svg/t0.svg</iconset>
                  </property>
                  <property name="iconSize">
@@ -1426,7 +1446,7 @@
                   <string/>
                  </property>
                  <property name="icon">
-                  <iconset>
+                  <iconset resource="resource.qrc">
                    <normaloff>:/resources/svg/ratio.svg</normaloff>:/resources/svg/ratio.svg</iconset>
                  </property>
                  <property name="iconSize">
@@ -1702,7 +1722,6 @@
                    <widget class="QLabel" name="label">
                     <property name="font">
                      <font>
-                      <weight>75</weight>
                       <bold>true</bold>
                      </font>
                     </property>
@@ -1752,7 +1771,6 @@
                    <widget class="QLabel" name="label_2">
                     <property name="font">
                      <font>
-                      <weight>75</weight>
                       <bold>true</bold>
                      </font>
                     </property>
@@ -1811,7 +1829,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>822</width>
+     <width>825</width>
      <height>26</height>
     </rect>
    </property>
@@ -1887,7 +1905,7 @@
   </action>
   <action name="actionReportBug">
    <property name="icon">
-    <iconset>
+    <iconset resource="resource.qrc">
      <normaloff>:/resources/github.png</normaloff>:/resources/github.png</iconset>
    </property>
    <property name="text">
@@ -1948,7 +1966,7 @@
   </action>
   <action name="actionShare_the_love">
    <property name="icon">
-    <iconset>
+    <iconset resource="resource.qrc">
      <normaloff>:/resources/twitter.png</normaloff>:/resources/twitter.png</iconset>
    </property>
    <property name="text">
@@ -1979,6 +1997,8 @@
    <header location="global">menubar.h</header>
   </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="resource.qrc"/>
+ </resources>
  <connections/>
 </ui>

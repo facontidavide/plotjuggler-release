@@ -104,9 +104,7 @@ bool ParserROS::parseMessage(const PJ::MessageRef serialized_msg, double& timest
       ts = sec + 1e-9*nsec;
     }
     else {
-      auto sec = _flat_msg.value[1].second.convert<double>();
-      auto nsec = _flat_msg.value[2].second.convert<double>();
-      ts = sec + 1e-9*nsec;
+      ts = _flat_msg.value[1].second.convert<RosMsgParser::Time>().toSec();
     }
     timestamp = (ts > 0) ? ts : timestamp;
   }
