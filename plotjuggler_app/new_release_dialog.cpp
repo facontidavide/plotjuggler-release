@@ -18,8 +18,10 @@ NewReleaseDialog::NewReleaseDialog(QWidget* parent, QString release, QString tit
   ui->setupUi(this);
   setWindowFlags(Qt::WindowStaysOnTopHint);
 
-  connect(ui->pushButtonWeb, &QPushButton::clicked, this,
-          [=] { QDesktopServices::openUrl(QUrl(url)); });
+  connect(ui->pushButtonWeb, &QPushButton::clicked, this, [=] {
+      QDesktopServices::openUrl(QUrl(url));
+      link_opened = true;
+  });
 
   connect(ui->buttonBox, &QDialogButtonBox::rejected, this, [=] {
     if (ui->dontShowAgain->isChecked())
@@ -29,7 +31,6 @@ NewReleaseDialog::NewReleaseDialog(QWidget* parent, QString release, QString tit
     }
   });
 
-  ui->labelRelease->setText(release);
   ui->labelTitle->setText(title);
 }
 
