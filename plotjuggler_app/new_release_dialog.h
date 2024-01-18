@@ -22,6 +22,7 @@ public:
   NewReleaseDialog(QWidget* parent, QString release, QString title, QString url);
   ~NewReleaseDialog();
 
+  bool link_opened = false;
 private:
   Ui::NewReleaseDialog* ui;
 };
