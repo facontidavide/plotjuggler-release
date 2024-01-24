@@ -19,7 +19,7 @@ public:
 
 protected:
   RosMsgParser::Parser _parser;
-  std::shared_ptr<RosMsgParser::Deserializer> _deserializer;
+  std::unique_ptr<RosMsgParser::Deserializer> _deserializer;
   RosMsgParser::FlatMessage _flat_msg;
   std::string _topic;
 
