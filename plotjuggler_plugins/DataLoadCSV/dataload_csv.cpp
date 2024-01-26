@@ -9,6 +9,7 @@
 #include <QInputDialog>
 #include <QPushButton>
 #include "QSyntaxStyle"
+#include <array>
 #include "datetimehelp.h"
 
 #include <QStandardItemModel>
@@ -353,21 +354,8 @@ int DataLoadCSV::launchDialog(QFile& file, std::vector<std::string>* column_name
   QObject* context = pcontext.get();
   QObject::connect(_ui->comboBox, qOverload<int>(&QComboBox::currentIndexChanged),
                    context, [&](int index) {
-                     switch (index)
-                     {
-                       case 0:
-                         _delimiter = ',';
-                         break;
-                       case 1:
-                         _delimiter = ';';
-                         break;
-                       case 2:
-                         _delimiter = ' ';
-                         break;
-                       case 3:
-                         _delimiter = '\t';
-                         break;
-                     }
+                     const std::array<char,4> delimiters = {',', ';', ' ', '\t'};
+                     _delimiter = delimiters[std::clamp(index, 0, 3)];
                      _csvHighlighter.delimiter = _delimiter;
                      parseHeader(file, *column_names);
                    });
@@ -509,45 +497,50 @@ bool DataLoadCSV::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_data
   QString format_string = _ui->lineEditDateFormat->text();
 
   auto ParseTimestamp = [&](QString str, bool& is_number) {
-      QString str_trimmed = str.trimmed();
-      double val = 0.0;
-      is_number = false;
-      // Support the case where the timestamp is in nanoseconds / microseconds
-      uint64_t ts = str_trimmed.toULong(&is_number);
-      uint64_t first_ts = 1400000000; //May 13, 2014
-      uint64_t last_ts  = 2000000000; // May 18, 2033
-      if(is_number)
-      {
-        if(ts > first_ts*1e9 && ts < last_ts*1e9) {
-          // convert from nanoseconds to seconds
-          val = double(ts) * 1e-9;
-        }
-        else if(ts > first_ts*1e6 && ts < last_ts*1e6) {
-          // convert from nanoseconds to seconds
-          val = double(ts) * 1e-6;
-        }
+    QString str_trimmed = str.trimmed();
+    double val = 0.0;
+    is_number = false;
+    // Support the case where the timestamp is in nanoseconds / microseconds
+    int64_t ts = str_trimmed.toLong(&is_number);
+    const int64_t first_ts = 1400000000; // July 14, 2017
+    const int64_t last_ts  = 2000000000; // May 18, 2033
+    if(is_number)
+    {
+      // check if it is an absolute time in nanoseconds.
+      // convert to seconds if it is
+      if(ts > first_ts*1e9 && ts < last_ts*1e9) {
+        val = double(ts) * 1e-9;
       }
+      else if(ts > first_ts*1e6 && ts < last_ts*1e6) {
+        // check if it is an absolute time in microseconds.
+        // convert to seconds if it is
+        val = double(ts) * 1e-6;
+      }
+      else {
+        val = double(ts);
+      }
+    }
+    else {
       // Try a double value (seconds)
-      if (!is_number) {
-        val = str_trimmed.toDouble(&is_number);
-      }
+      val = str_trimmed.toDouble(&is_number);
+    }
 
-      // handle numbers with comma instead of point as decimal separator
-      if (!is_number)
+    // handle numbers with comma instead of point as decimal separator
+    if (!is_number)
+    {
+      static QLocale locale_with_comma(QLocale::German);
+      val = locale_with_comma.toDouble(str_trimmed, &is_number);
+    }
+    if (!is_number && parse_date_format && !format_string.isEmpty())
+    {
+      QDateTime ts = QDateTime::fromString(str_trimmed, format_string);
+      is_number = ts.isValid();
+      if (is_number)
       {
-          static QLocale locale_with_comma(QLocale::German);
-          val = locale_with_comma.toDouble(str_trimmed, &is_number);
+        val = ts.toMSecsSinceEpoch() / 1000.0;
       }
-      if (!is_number && parse_date_format && !format_string.isEmpty())
-      {
-          QDateTime ts = QDateTime::fromString(str_trimmed, format_string);
-          is_number = ts.isValid();
-          if (is_number)
-          {
-              val = ts.toMSecsSinceEpoch() / 1000.0;
-          }
-      }
-      return val;
+    }
+    return val;
   };
 
   auto ParseNumber = [&](QString str, bool& is_number) {

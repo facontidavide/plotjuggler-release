@@ -28,7 +28,11 @@ ParserROS::ParserROS(const std::string& topic_name, const std::string& type_name
 
   using std::placeholders::_1;
   using std::placeholders::_2;
-  if (Msg::DiagnosticArray::id() == type_name)
+  if(Msg::Empty::id() == type_name)
+  {
+    _customized_parser = std::bind(&ParserROS::parseEmpty, this, _1, _2);
+  }
+  else if (Msg::DiagnosticArray::id() == type_name)
   {
     _customized_parser = std::bind(&ParserROS::parseDiagnosticMsg, this, _1, _2);
   }
@@ -172,6 +176,11 @@ void ParserROS::parseHeader(const std::string& prefix, double& timestamp)
   {
     getSeries(prefix + "/header/seq").pushBack({ timestamp, double(header.seq) });
   }
+}
+
+void ParserROS::parseEmpty(const std::string &prefix, double &timestamp)
+{
+  getSeries(prefix).pushBack({ timestamp, 0 });
 }
 
 
