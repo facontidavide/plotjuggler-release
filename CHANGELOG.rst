@@ -7,7 +7,6 @@ Changelog for package plotjuggler
 * Fix issue #924: crash when loading rosbag with std_msgs/Empty
 * Allow ZMQ plugin to work as server
 * Link against Abseil for macOS builds & improve macOS compile docs `#845 <https://github.com/facontidavide/PlotJuggler/issues/845>`_ (`#905 <https://github.com/facontidavide/PlotJuggler/issues/905>`_)
-* PlotJuggler with Fast-CDR-2.x.x (`#920 <https://github.com/facontidavide/PlotJuggler/issues/920>`_)
 * fix issue in CSV `#926 <https://github.com/facontidavide/PlotJuggler/issues/926>`_
 * attempt to match ambiguous ros msg within package before using external known type (`#922 <https://github.com/facontidavide/PlotJuggler/issues/922>`_)
 * Contributors: Davide Faconti, Manuel Valch, Will MacCormack, rugged-robotics
