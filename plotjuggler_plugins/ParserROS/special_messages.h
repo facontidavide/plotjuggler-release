@@ -28,6 +28,12 @@ struct Header
   PJ::Msg::Time stamp;
   std::string frame_id;
 };
+
+struct Empty
+{
+  static const char* id() { return "std_msgs/Empty"; }
+};
+
 //--------------------
 struct DiagnosticStatus
 {

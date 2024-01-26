@@ -32,11 +32,6 @@ public:
                                 const std::string& type_name, const std::string& schema,
                                 PlotDataMapRef& data) override
   {
-    if (schema.empty())
-    {
-      throw std::runtime_error("ParserFactoryROS1 requires a schema (message "
-                               "definition)");
-    }
     return std::make_shared<ParserROS>(topic_name, type_name, schema,
                                        new RosMsgParser::ROS_Deserializer(), data);
   }
