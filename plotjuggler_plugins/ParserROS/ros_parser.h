@@ -25,6 +25,7 @@ protected:
 
   PJ::Msg::Header readHeader(double& timestamp);
   void parseHeader(const std::string& prefix, double& timestamp);
+  void parseEmpty(const std::string& prefix, double& timestamp);
 
   template <size_t N>
   void parseCovariance(const std::string& prefix, double& timestamp);

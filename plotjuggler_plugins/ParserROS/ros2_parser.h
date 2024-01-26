@@ -32,11 +32,6 @@ public:
                                 const std::string& type_name, const std::string& schema,
                                 PlotDataMapRef& data) override
   {
-    if (schema.empty())
-    {
-      throw std::runtime_error("ParserFactoryROS2 requires a schema (message "
-                               "definition)");
-    }
     std::string msg_type =
         QString::fromStdString(type_name).replace("/msg/", "/").toStdString();
 
