@@ -2,6 +2,21 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+3.9.0 (2024-02-04)
+------------------
+* new status bar with messages from the internet
+* Merge branch 'ulog_improvement'
+* new memes
+* quick file reload!
+* transforms have now default values from previous
+* add icons to dialog Delete Series
+* cleanup and fix ULOG
+* add ULOG parameters as 1 sample timeseries
+* fix issue `#929 <https://github.com/facontidavide/PlotJuggler/issues/929>`_ : numerical truncation
+* bypass truncation check
+* Fixed parsing JointState messages (`#927 <https://github.com/facontidavide/PlotJuggler/issues/927>`_)
+* Contributors: Davide Faconti, Martin Pecka
+
 3.8.10 (2024-01-26)
 -------------------
 * Fix issue #924: crash when loading rosbag with std_msgs/Empty
