@@ -22,9 +22,14 @@ public:
 
   void reset() override;
 
-  const char* name() const override
+  static const char* transformName()
   {
     return "Moving Root Mean Squared";
+  }
+
+  const char* name() const override
+  {
+    return transformName();
   }
 
   QWidget* optionsWidget() override;

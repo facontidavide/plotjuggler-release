@@ -17,6 +17,11 @@ public:
 
   void setLargeArraysPolicy(bool clamp, unsigned max_size) override;
 
+  void enableTruncationCheck(bool enable)
+  {
+    _strict_truncation_check = enable;
+  }
+
 protected:
   RosMsgParser::Parser _parser;
   std::unique_ptr<RosMsgParser::Deserializer> _deserializer;
@@ -60,6 +65,7 @@ protected:
   std::function<void(const std::string& prefix, double&)> _customized_parser;
 
   bool _has_header = false;
+  bool _strict_truncation_check = true;
 };
 
 template <size_t N>

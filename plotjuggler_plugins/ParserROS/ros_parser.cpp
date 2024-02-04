@@ -128,7 +128,34 @@ bool ParserROS::parseMessage(const PJ::MessageRef serialized_msg, double& timest
   {
     key.toStr(series_name);
     PlotData& data = getSeries(series_name);
-    data.pushBack({ timestamp, value.convert<double>() });
+
+    if(!_strict_truncation_check)
+    {
+      // bypass the truncation check
+      if(value.getTypeID() == BuiltinType::INT64)
+      {
+        data.pushBack({ timestamp, double(value.convert<int64_t>()) });
+        continue;
+      }
+      if(value.getTypeID() == BuiltinType::UINT64)
+      {
+        data.pushBack({ timestamp, double(value.convert<uint64_t>()) });
+        continue;
+      }
+    }
+    try{
+      data.pushBack({ timestamp, value.convert<double>() });
+    }
+    catch(RangeException& ex)
+    {
+      std::string msg = std::string(ex.what());
+      if(msg == "Floating point truncated")
+      {
+        msg += ".\n\nYou can disable this check in:\n"
+               "App -> Preferences... -> Behavior -> Parsing";
+      }
+      throw std::runtime_error(msg);
+    }
   }
   return true;
 }
@@ -409,17 +436,17 @@ void ParserROS::parseJointStateMsg(const std::string& prefix, double& timestamp)
   }
   //---------------------------
   std::string series_name;
-  for (size_t i = 0; i < std::max(name_size, pos_size); i++)
+  for (size_t i = 0; i < std::min(name_size, pos_size); i++)
   {
     series_name = fmt::format("{}/{}/position", _topic, msg.name[i]);
     getSeries(series_name).pushBack({ timestamp, msg.position[i] });
   }
-  for (size_t i = 0; i < std::max(name_size, vel_size); i++)
+  for (size_t i = 0; i < std::min(name_size, vel_size); i++)
   {
     series_name = fmt::format("{}/{}/velocity", _topic, msg.name[i]);
     getSeries(series_name).pushBack({ timestamp, msg.velocity[i] });
   }
-  for (size_t i = 0; i < std::max(name_size, eff_size); i++)
+  for (size_t i = 0; i < std::min(name_size, eff_size); i++)
   {
     series_name = fmt::format("{}/{}/effort", _topic, msg.name[i]);
     getSeries(series_name).pushBack({ timestamp, msg.effort[i] });

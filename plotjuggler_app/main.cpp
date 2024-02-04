@@ -113,7 +113,7 @@ QPixmap getFunnySplashscreen()
   srand(time(nullptr));
 
   auto getNum = []() {
-    const int last_image_num = 89;
+    const int last_image_num = 93;
     int n = rand() % (last_image_num + 2);
     if (n > last_image_num)
     {
@@ -376,13 +376,12 @@ int main(int argc, char* argv[])
   QIcon app_icon("://resources/plotjuggler.svg");
   QApplication::setWindowIcon(app_icon);
 
-  QNetworkAccessManager manager;
-  QObject::connect(&manager, &QNetworkAccessManager::finished, OpenNewReleaseDialog);
+  QNetworkAccessManager manager_new_release;
+  QObject::connect(&manager_new_release, &QNetworkAccessManager::finished, OpenNewReleaseDialog);
 
-  QNetworkRequest request;
-  request.setUrl(QUrl("https://api.github.com/repos/facontidavide/PlotJuggler/releases/latest"));
-
-  manager.get(request);
+  QNetworkRequest request_new_release;
+  request_new_release.setUrl(QUrl("https://api.github.com/repos/facontidavide/PlotJuggler/releases/latest"));
+  manager_new_release.get(request_new_release);
 
   MainWindow* window = nullptr;
 
@@ -461,6 +460,26 @@ int main(int argc, char* argv[])
   {
     window->on_buttonStreamingStart_clicked();
   }
+
+  QNetworkAccessManager manager_message;
+  QObject::connect(&manager_message, &QNetworkAccessManager::finished,
+                   [window](QNetworkReply* reply)
+                   {
+                     if (reply->error())
+                     {
+                       return;
+                     }
+                     QString answer = reply->readAll();
+                     QJsonDocument document = QJsonDocument::fromJson(answer.toUtf8());
+                     QJsonObject data = document.object();
+                     QString message = data["message"].toString();
+                     window->setStatusBarMessage(message);
+                   });
+
+  QNetworkRequest request_message;
+  request_message.setUrl(QUrl("https://fastapi-example-7kz3.onrender.com"));
+  manager_message.get(request_message);
+
 
   return app.exec();
 }
