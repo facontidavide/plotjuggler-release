@@ -34,6 +34,7 @@ QT5_WRAP_UI ( UI_SRC
     transforms/moving_rms.ui
     transforms/outlier_removal.ui
     transforms/integral_transform.ui
+    transforms/scale_transform.ui
 
     cheatsheet/cheatsheet_dialog.ui
     )

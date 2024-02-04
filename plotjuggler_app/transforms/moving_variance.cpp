@@ -78,6 +78,10 @@ bool MovingVarianceFilter::xmlSaveState(QDomDocument& doc,
                                        QDomElement& parent_element) const
 {
   QDomElement widget_el = doc.createElement("options");
+  if(widget_el.isNull())
+  {
+    return false;
+  }
   widget_el.setAttribute("value", ui->spinBoxSamples->value());
   widget_el.setAttribute("apply_sqrt",
                          ui->checkBoxStdDev->isChecked() ? "true" : "false");

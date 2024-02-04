@@ -8,14 +8,15 @@
 #include <QDateTime>
 #include <QInputDialog>
 #include <QPushButton>
-#include "QSyntaxStyle"
+#include <QSyntaxStyle>
 #include <array>
 #include "datetimehelp.h"
 
 #include <QStandardItemModel>
 
-const int TIME_INDEX_NOT_DEFINED = -2;
-const int TIME_INDEX_GENERATED = -1;
+static constexpr int TIME_INDEX_NOT_DEFINED = -2;
+static constexpr int TIME_INDEX_GENERATED = -1;
+static constexpr const char* INDEX_AS_TIME = "__TIME_INDEX_GENERATED__";
 
 void SplitLine(const QString& line, QChar separator, QStringList& parts)
 {
@@ -147,7 +148,8 @@ const std::vector<const char*>& DataLoadCSV::compatibleFileExtensions() const
   return _extensions;
 }
 
-void DataLoadCSV::parseHeader(QFile& file, std::vector<std::string>& column_names)
+void DataLoadCSV::parseHeader(QFile& file,
+                              std::vector<std::string>& column_names)
 {
   file.open(QFile::ReadOnly);
 
@@ -402,33 +404,27 @@ int DataLoadCSV::launchDialog(QFile& file, std::vector<std::string>* column_name
   return TIME_INDEX_NOT_DEFINED;
 }
 
-bool DataLoadCSV::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_data)
+bool DataLoadCSV::readDataFromFile(FileLoadInfo* info,
+                                   PlotDataMapRef& plot_data)
 {
-  bool use_provided_configuration = false;
   multiple_columns_warning_ = true;
 
   _fileInfo = info;
-  _default_time_axis.clear();
-
-  if (info->plugin_config.hasChildNodes())
-  {
-    use_provided_configuration = true;
-    xmlLoadState(info->plugin_config.firstChildElement());
-  }
 
   QFile file(info->filename);
   std::vector<std::string> column_names;
 
   int time_index = TIME_INDEX_NOT_DEFINED;
 
-  if (!use_provided_configuration)
+  if (!info->plugin_config.hasChildNodes())
   {
+    _default_time_axis.clear();
     time_index = launchDialog(file, &column_names);
   }
   else
   {
     parseHeader(file, column_names);
-    if (_default_time_axis == "__TIME_INDEX_GENERATED__")
+    if (_default_time_axis == INDEX_AS_TIME)
     {
       time_index = TIME_INDEX_GENERATED;
     }
@@ -468,6 +464,7 @@ bool DataLoadCSV::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_data
   }
 
   QProgressDialog progress_dialog;
+  progress_dialog.setWindowTitle("Loading the CSV file");
   progress_dialog.setLabelText("Loading... please wait");
   progress_dialog.setWindowModality(Qt::ApplicationModal);
   progress_dialog.setRange(0, tot_lines - 1);
@@ -750,7 +747,7 @@ bool DataLoadCSV::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_data
   }
   else if (time_index == TIME_INDEX_GENERATED)
   {
-    _default_time_axis = "__TIME_INDEX_GENERATED__";
+    _default_time_axis = INDEX_AS_TIME;
   }
 
   // cleanups
@@ -776,7 +773,7 @@ bool DataLoadCSV::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_data
 
 bool DataLoadCSV::xmlSaveState(QDomDocument& doc, QDomElement& parent_element) const
 {
-  QDomElement elem = doc.createElement("default");
+  QDomElement elem = doc.createElement("parameters");
   elem.setAttribute("time_axis", _default_time_axis.c_str());
   elem.setAttribute("delimiter", _ui->comboBox->currentIndex());
 
@@ -792,35 +789,36 @@ bool DataLoadCSV::xmlSaveState(QDomDocument& doc, QDomElement& parent_element) c
 
 bool DataLoadCSV::xmlLoadState(const QDomElement& parent_element)
 {
-  QDomElement elem = parent_element.firstChildElement("default");
-  if (!elem.isNull())
+  QDomElement elem = parent_element.firstChildElement("parameters");
+  if (elem.isNull())
   {
-    if (elem.hasAttribute("time_axis"))
+    return false;
+  }
+  if (elem.hasAttribute("time_axis"))
+  {
+    _default_time_axis = elem.attribute("time_axis").toStdString();
+  }
+  if (elem.hasAttribute("delimiter"))
+  {
+    int separator_index = elem.attribute("delimiter").toInt();
+    _ui->comboBox->setCurrentIndex(separator_index);
+    switch (separator_index)
     {
-      _default_time_axis = elem.attribute("time_axis").toStdString();
+      case 0:
+        _delimiter = ',';
+        break;
+      case 1:
+        _delimiter = ';';
+        break;
+      case 2:
+        _delimiter = ' ';
+        break;
     }
-    if (elem.hasAttribute("delimiter"))
-    {
-      int separator_index = elem.attribute("delimiter").toInt();
-      _ui->comboBox->setCurrentIndex(separator_index);
-      switch (separator_index)
-      {
-        case 0:
-          _delimiter = ',';
-          break;
-        case 1:
-          _delimiter = ';';
-          break;
-        case 2:
-          _delimiter = ' ';
-          break;
-      }
-    }
-    if (elem.hasAttribute("date_format"))
-    {
-      _ui->checkBoxDateFormat->setChecked(true);
-      _ui->lineEditDateFormat->setText(elem.attribute("date_format"));
-    }
+  }
+  if (elem.hasAttribute("date_format"))
+  {
+    _ui->checkBoxDateFormat->setChecked(true);
+    _ui->lineEditDateFormat->setText(elem.attribute("date_format"));
   }
   return true;
 }

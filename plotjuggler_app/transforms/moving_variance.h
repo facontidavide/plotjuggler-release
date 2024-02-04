@@ -23,9 +23,14 @@ public:
 
   void reset() override;
 
+  static const char* transformName()
+  {
+    return "Moving Variance / Stdev";
+  }
+
   const char* name() const override
   {
-    return "Moving Variance";
+    return transformName();
   }
 
   QWidget* optionsWidget() override;
