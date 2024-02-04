@@ -52,6 +52,9 @@ PreferencesDialog::PreferencesDialog(QWidget* parent)
   bool autozoom_filter_applied = settings.value("Preferences::autozoom_filter_applied",true).toBool();
   ui->checkBoxAutoZoomFilter->setChecked(autozoom_filter_applied);
 
+  bool truncation_check = settings.value("Preferences::truncation_check", true).toBool();
+  ui->checkBoxTruncation->setChecked(truncation_check);
+
   //---------------
   auto custom_plugin_folders =
       settings.value("Preferences::plugin_folders", true).toStringList();
@@ -94,6 +97,7 @@ void PreferencesDialog::on_buttonBox_accepted()
   settings.setValue("Preferences::autozoom_visibility", ui->checkBoxAutoZoomVisibility->isChecked());
   settings.setValue("Preferences::autozoom_curve_added", ui->checkBoxAutoZoomAdded->isChecked());
   settings.setValue("Preferences::autozoom_filter_applied", ui->checkBoxAutoZoomFilter->isChecked());
+  settings.setValue("Preferences::truncation_check", ui->checkBoxTruncation->isChecked());
 
   QStringList plugin_folders;
   for (int row = 0; row < ui->listWidgetCustom->count(); row++)

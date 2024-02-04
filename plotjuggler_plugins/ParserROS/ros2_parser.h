@@ -3,6 +3,7 @@
 #include "PlotJuggler/messageparser_base.h"
 
 #include <QCheckBox>
+#include <QSettings>
 #include <QDebug>
 #include <string>
 
@@ -35,7 +36,10 @@ public:
     std::string msg_type =
         QString::fromStdString(type_name).replace("/msg/", "/").toStdString();
 
-    return std::make_shared<ParserROS>(topic_name, msg_type, schema,
-                                       new RosMsgParser::ROS2_Deserializer, data);
+    auto parser = std::make_shared<ParserROS>(topic_name, type_name, schema,
+                                              new RosMsgParser::ROS2_Deserializer(), data);
+    QSettings settings;
+    parser->enableTruncationCheck(settings.value("Preferences::truncation_check", true).toBool());
+    return parser;
   }
 };

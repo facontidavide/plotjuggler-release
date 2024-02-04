@@ -20,9 +20,14 @@ public:
 
   ~OutlierRemovalFilter() override;
 
-  const char* name() const override
+  static const char* transformName()
   {
     return "Outlier Removal";
+  }
+
+  const char* name() const override
+  {
+    return transformName();
   }
 
   QWidget* optionsWidget() override;
