@@ -9,7 +9,7 @@
 
 **Gold Sponsor**: [Greenzie](https://www.greenzie.com/)
 
-# PlotJuggler 3.8
+# PlotJuggler 3.9
 
 PlotJuggler is a tool to visualize time series that is **fast**, **powerful** and  **intuitive**.
 
@@ -95,15 +95,12 @@ If you are still using ROS1 (Ubuntu 20.04), install instead:
 sudo snap install plotjuggler-ros
 ```
 
-### Binary installers
+### Windows Binary installer
 
-Note that these installers do __not__ include ROS plugins.
-
-**Linux AppImage** (compatible with Ubuntu 20.04 or later): 
-[PlotJuggler-3.6.0-x86_64.AppImage](https://github.com/facontidavide/PlotJuggler/releases/download/3.6.0/PlotJuggler-3.6.0-x86_64.AppImage)
+This installer does __not__ include ROS plugins.
 
 **Windows Installer**: 
-[PlotJuggler-Windows-3.6.0-installer](https://github.com/facontidavide/PlotJuggler/releases/download/3.6.0/PlotJuggler-Windows-3.6.0-installer.exe)
+[PlotJuggler-Windows-3.9.0-installer](https://github.com/facontidavide/PlotJuggler/releases/download/3.9.0/PlotJuggler-Windows-3.9.0-installer.exe)
 
 ### Debian packages for ROS User
 

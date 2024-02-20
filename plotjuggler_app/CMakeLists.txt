@@ -35,6 +35,7 @@ QT5_WRAP_UI ( UI_SRC
     transforms/outlier_removal.ui
     transforms/integral_transform.ui
     transforms/scale_transform.ui
+    transforms/samples_count.ui
 
     cheatsheet/cheatsheet_dialog.ui
     )
@@ -86,6 +87,7 @@ SET( PLOtJUGGLER_SRC
     transforms/outlier_removal.cpp
     transforms/integral_transform.cpp
     transforms/absolute_transform.cpp
+    transforms/samples_count.cpp
 
     transforms/first_derivative.cpp
     transforms/scale_transform.cpp
@@ -103,7 +105,7 @@ add_executable(plotjuggler
     ${PLOtJUGGLER_SRC}
     ${RES_SRC}
     ${UI_SRC}
-    ${BACKWARD_ENABLE})
+    ${BACKWARD_ENABLE} )
 
 if (NOT WIN32)
     add_backward(plotjuggler)
