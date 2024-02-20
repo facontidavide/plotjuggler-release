@@ -24,6 +24,7 @@
 
 #include "PlotJuggler/transform_function.h"
 #include "transforms/first_derivative.h"
+#include "transforms/samples_count.h"
 #include "transforms/scale_transform.h"
 #include "transforms/moving_average_filter.h"
 #include "transforms/moving_variance.h"
@@ -113,7 +114,7 @@ QPixmap getFunnySplashscreen()
   srand(time(nullptr));
 
   auto getNum = []() {
-    const int last_image_num = 93;
+    const int last_image_num = 94;
     int n = rand() % (last_image_num + 2);
     if (n > last_image_num)
     {
@@ -245,6 +246,7 @@ int main(int argc, char* argv[])
   TransformFactory::registerTransform<IntegralTransform>();
   TransformFactory::registerTransform<AbsoluteTransform>();
   TransformFactory::registerTransform<MovingVarianceFilter>();
+  TransformFactory::registerTransform<SamplesCountFilter>();
   //---------------------------
 
   QCommandLineParser parser;

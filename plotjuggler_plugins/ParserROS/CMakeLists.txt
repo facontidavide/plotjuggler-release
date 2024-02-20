@@ -3,6 +3,10 @@ add_definitions(${QT_DEFINITIONS})
 add_definitions(-DQT_PLUGIN)
 
 SET(INTROSPECTION_TESTS OFF CACHE BOOL "Compile the tests")
+
+# Check if default fastCdr library generation is needed
+find_package(fastcdr QUIET)
+
 add_subdirectory(rosx_introspection)
 
 include_directories( rosx_introspection/include )
