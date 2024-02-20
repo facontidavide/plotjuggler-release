@@ -20,7 +20,7 @@ public:
 
   static const char* transformName()
   {
-    return "Scale / Offset";
+    return "Scale/Offset";
   }
 
   const char* name() const override
