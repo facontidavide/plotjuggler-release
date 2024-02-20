@@ -9,13 +9,15 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-find_package(fastcdr QUIET)
-
 if(NOT fastcdr_FOUND )
+    message(STATUS "[FastCdr] not found, create shared libraries")
     # Override Fast-CDR option: compile as static lib
     SET(BUILD_SHARED_LIBS OFF CACHE BOOL "Create shared libraries by default")
     add_subdirectory(3rdparty/Fast-CDR)
     include_directories(3rdparty/Fast-CDR/include)
+else()
+    # Mention that FastCdr has been found on system
+    message(STATUS "[FastCdr] found, version: ${fastcdr_VERSION}")
 endif()
 
 ###############################################

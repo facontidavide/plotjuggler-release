@@ -81,7 +81,7 @@ inline void ParserROS::parseCovariance(const std::string& prefix, double& timest
     for (int j = i; j < N; j++)
     {
       const size_t index = i * N + j;
-      getSeries(fmt::format("{}[{};{}]", prefix, i, j)).pushBack({ timestamp, cov[index] });
+      getSeries(fmt::format("{}/[{};{}]", prefix, i, j)).pushBack({ timestamp, cov[index] });
     }
   }
 }

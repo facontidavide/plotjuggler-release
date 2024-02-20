@@ -2,6 +2,17 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+3.9.1 (2024-02-20)
+------------------
+* embed zstd 1.5.5
+* updated lz4 1.9.4
+* PlotJuggler with Fast-CDR-2.x.x (`#932 <https://github.com/facontidavide/PlotJuggler/issues/932>`_)
+* fix ROS2 parser bug
+* fix `#935 <https://github.com/facontidavide/PlotJuggler/issues/935>`_ and `#934 <https://github.com/facontidavide/PlotJuggler/issues/934>`_
+* Add Sample Count to transforms
+* fix compilation in Windows
+* Contributors: Davide Faconti, Manuel Valch
+
 3.9.0 (2024-02-04)
 ------------------
 * new status bar with messages from the internet
